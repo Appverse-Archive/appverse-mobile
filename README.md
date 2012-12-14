@@ -1,6 +1,6 @@
 # Appverse Mobile
 
-This repository contains the Java, C# and HTML implementations for the core interfaces, platform and runtime of the Appverse Mobile platform. 
+This repository contains the Java, C# and HTML implementations for the core interfaces, platform specific code and runtime of the Appverse Mobile platform. 
 
 The following modules are contained within this repository:
 
