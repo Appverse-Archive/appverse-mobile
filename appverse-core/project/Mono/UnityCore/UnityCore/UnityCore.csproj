@@ -1,0 +1,214 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1659340D-4CAA-43D4-9636-406A5F634741}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>UnityCore</RootNamespace>
+    <AssemblyName>UnityCore</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <BaseDirectory>..\..\..\..\src\csharp</BaseDirectory>
+    <newfilesearch>OnLoadAutoInsert</newfilesearch>
+    <ReleaseVersion>1.1</ReleaseVersion>
+    <CodePage>65001</CodePage>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+    </Reference>
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\FormatUtils.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOHeader.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Telephony\AbstractTelephony.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Telephony\ICallControl.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Telephony\ITelephony.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Telephony\TelephonyEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\AbstractSystem.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\CPUInfo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\DisplayInfo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\HardwareInfo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\IDisplay.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\IHumanInteraction.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\IMemory.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\IOperatingSystem.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\IPower.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\IProcessor.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Locale.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\MemoryStatus.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\OSInfo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\PowerInfo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\SystemEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\SystemLogger.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Service\AbstractInvocationManager.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Service\AbstractServiceLocator.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Service\IInvocationManager.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Service\IServiceLocator.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Service\ResourceInvocationManager.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Service\Service.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Service\ServiceInvocationManager.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Service\ServicesConfig.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Service\ServiceURIHandler.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\ServerEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\ByteBuilder.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\ClientData.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\ClientInfo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\FallbackHandler.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\HandlerThread.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\HttpRequest.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\HttpResponse.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\HttpServer.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\IHttpHandler.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\Parameter.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\ParameterType.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\Server.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Net\Session.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Cryptography\BaseCrypto.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Cryptography\EncryptionUtils.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Cryptography\SimpleDecryptor.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Server\Cryptography\SimpleEncryptor.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Resource\RemoteResourceHandler.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Resource\Resource.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Resource\ResourceEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Resource\ResourceHandler.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Share\AbstractShare.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Share\IShare.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\FileSystem\AbstractFileSystem.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\FileSystem\DirectoryData.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\FileSystem\FileData.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\FileSystem\IFileSystem.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Database\AbstractDatabase.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Database\Database.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Database\IDatabase.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Database\IResultSet.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Database\ResultSet.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Database\ResultSetRow.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\AbstractSecurity.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\ISecurity.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\AbstractPim.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\CalendarAlarm.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\CalendarAttendee.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\CalendarEntry.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\CalendarRecurrence.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\Contact.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\ContactAddress.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\ContactEmail.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\ContactPhone.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\ICalendar.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\IContacts.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\PimEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\AbstractNotification.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\ActionSheet.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\INotification.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\AbstractNet.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\BrowserCommand.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\INet.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\NetEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Messaging\AbstractMessaging.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Messaging\AttachmentData.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Messaging\EmailAddress.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Messaging\EmailData.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Messaging\IMessaging.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Media\AbstractMedia.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Media\IMediaOperations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Media\MediaEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Media\MediaMetadata.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Media\Video\IVideo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Media\Camera\ICamera.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Media\Audio\IAudio.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\AbstractIO.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IIo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOHeaders.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IORequest.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOResponse.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOResponseHandle.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOResponseHandler.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOService.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOServiceEndpoint.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOServicesConfig.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOSessionContext.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JavaScriptConverter.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JavaScriptDateTimeConverter.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JavaScriptSerializer.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JavaScriptTypeResolver.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\ScriptIgnoreAttribute.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\SimpleTypeResolver.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\CountingTextWriter.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JavaScriptConstructor.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JavaScriptConvert.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JavaScriptParameters.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JavaScriptUtils.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JsonReader.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JsonReaderException.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JsonSerializationException.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JsonSerializer.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JsonToken.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JsonWriter.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\JsonWriterException.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\ScriptSerialization\JSON\ReflectionUtils.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\I18N\AbstractI18N.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\I18N\II18N.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\I18N\Locale.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\I18N\ResourceLiteralDictionary.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\AbstractGeo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\Acceleration.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\GeoDecoderAttributes.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\GeoEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\GeoUtils.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\ILocation.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\IMap.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\JSLocationCoordinateConverter.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\LocationCategory.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\LocationCoordinate.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\LocationDescription.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Geo\POI.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Log\AbstractLog.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Log\ILog.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Log\LogEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\AssemblyInfo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOCookie.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Analytics\IAnalytics.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Analytics\AbstractAnalytics.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\UnityContext.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\IWebtrekk.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\AbstractWebtrekk.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\WebtrekkParametersCollection.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\WebtrekkParameter.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /E /Y  "$(TargetPath)" "$(SolutionDir)..\UnityPlatformWindows\lib\unity\$(ConfigurationName)"</PostBuildEvent>
+  </PropertyGroup>
+</Project>

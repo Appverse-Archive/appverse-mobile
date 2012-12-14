@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="UnityCoreJava" default="build">
+
+	<property name="src" location="../../src" />
+	<property name="bin" location="../../bin" />
+	<property name="dist" location="../../dist" />
+	<property name="jar" value="${dist}/UnityCoreJava.jar" />
+
+	<target name="clean">
+		<delete dir="${bin}" />
+		<delete dir="${dist}" />
+	</target>
+
+	<target name="compile">
+		<mkdir dir="${bin}" />
+		<javac srcdir="${src}" destdir="${bin}" target="6" includeantruntime="false" />
+	</target>
+
+	<target name="jar" depends="compile">
+		<mkdir dir="${dist}" />
+		<jar destfile="${jar}">
+			<fileset dir="${bin}" />
+		</jar>
+	</target>
+
+	<target name="build" depends="clean, jar" />
+
+</project>

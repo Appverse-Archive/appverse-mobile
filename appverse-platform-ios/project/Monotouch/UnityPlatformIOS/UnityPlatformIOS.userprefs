@@ -1,0 +1,37 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhoneSimulator" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../../src/csharp/UnityViewController.cs">
+    <Files>
+      <File FileName="../../../src/csharp/AppDelegate.cs" Line="1" Column="1" />
+      <File FileName="../../../src/csharp/AssemblyInfo.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneAnalytics.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneDatabase.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneFileSystem.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneGeo.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneHandlerThread.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneI18N.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneIO.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneLog.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneMedia.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneMessaging.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneNet.cs" Line="24" Column="1" />
+      <File FileName="../../../src/csharp/IPhoneNotification.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhonePIM.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneResourceHandler.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneSecurity.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneServer.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneServiceLocator.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneSystem.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneTelephony.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneUIApplicationDelegate.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneUIViewController.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/IPhoneUtils.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/SplashScreenView.cs" Line="23" Column="4" />
+      <File FileName="../../../src/csharp/UnityViewController.cs" Line="23" Column="4" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
