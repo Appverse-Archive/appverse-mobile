@@ -1,0 +1,521 @@
+/*
+ Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
+
+ This Source  Code Form  is subject to the  terms of  the Appverse Public License 
+ Version 2.0  ("APL v2.0").  If a copy of  the APL  was not  distributed with this 
+ file, You can obtain one at http://www.appverse.mobi/licenses/apl_v2.0.pdf.
+
+ Redistribution and use in  source and binary forms, with or without modification, 
+ are permitted provided that the  conditions  of the  AppVerse Public License v2.0 
+ are met.
+
+ THIS SOFTWARE IS PROVIDED BY THE  COPYRIGHT HOLDERS  AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS  OR IMPLIED WARRANTIES, INCLUDING, BUT  NOT LIMITED TO,   THE IMPLIED
+ WARRANTIES   OF  MERCHANTABILITY   AND   FITNESS   FOR A PARTICULAR  PURPOSE  ARE
+ DISCLAIMED. EXCEPT IN CASE OF WILLFUL MISCONDUCT OR GROSS NEGLIGENCE, IN NO EVENT
+ SHALL THE  COPYRIGHT OWNER  OR  CONTRIBUTORS  BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL,  SPECIAL,   EXEMPLARY,  OR CONSEQUENTIAL DAMAGES  (INCLUDING, BUT NOT
+ LIMITED TO,  PROCUREMENT OF SUBSTITUTE  GOODS OR SERVICES;  LOSS OF USE, DATA, OR
+ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT(INCLUDING NEGLIGENCE OR OTHERWISE) 
+ ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
+ POSSIBILITY OF SUCH DAMAGE.
+ */
+package com.gft.unity.android;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds;
+import android.provider.ContactsContract.CommonDataKinds.Email;
+import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
+import android.provider.ContactsContract.CommonDataKinds.Nickname;
+import android.provider.ContactsContract.CommonDataKinds.Note;
+import android.provider.ContactsContract.CommonDataKinds.Organization;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.CommonDataKinds.Photo;
+import android.provider.ContactsContract.CommonDataKinds.Relation;
+import android.provider.ContactsContract.CommonDataKinds.StructuredName;
+import android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import android.provider.ContactsContract.CommonDataKinds.Website;
+import android.provider.ContactsContract.Intents.Insert;
+import android.provider.ContactsContract.RawContactsEntity;
+import android.util.Base64;
+
+import com.gft.unity.core.pim.AbstractPim;
+import com.gft.unity.core.pim.CalendarEntry;
+import com.gft.unity.core.pim.Contact;
+import com.gft.unity.core.pim.ContactAddress;
+import com.gft.unity.core.pim.ContactEmail;
+import com.gft.unity.core.pim.ContactPhone;
+import com.gft.unity.core.pim.DateTime;
+import com.gft.unity.core.pim.DispositionType;
+import com.gft.unity.core.pim.NumberType;
+import com.gft.unity.core.pim.RelationshipType;
+
+// TODO all devices should have at least 1 google account setup for add/update to work??
+// TODO logging
+public class AndroidPim extends AbstractPim {
+
+	private static final Map<Integer, NumberType> PHONE_TYPES_MAP = new HashMap<Integer, NumberType>();
+	private static final Map<Integer, DispositionType> ADDRESS_TYPES_MAP = new HashMap<Integer, DispositionType>();
+	private static final Map<Integer, RelationshipType> RELATION_TYPES_MAP = new HashMap<Integer, RelationshipType>();
+
+	public static final String PRIMARY_ACCOUNT_TYPE = "com.google";
+
+	static {
+
+		// Phone
+		PHONE_TYPES_MAP.put(Phone.TYPE_FAX_HOME, NumberType.HomeFax);
+		PHONE_TYPES_MAP.put(Phone.TYPE_HOME, NumberType.FixedLine);
+		PHONE_TYPES_MAP.put(Phone.TYPE_MOBILE, NumberType.Mobile);
+		PHONE_TYPES_MAP.put(Phone.TYPE_PAGER, NumberType.Pager);
+		PHONE_TYPES_MAP.put(Phone.TYPE_WORK, NumberType.Work);
+		PHONE_TYPES_MAP.put(Phone.TYPE_FAX_WORK, NumberType.WorkFax);
+		PHONE_TYPES_MAP.put(Phone.TYPE_COMPANY_MAIN, NumberType.Work);
+		PHONE_TYPES_MAP.put(Phone.TYPE_WORK_MOBILE, NumberType.Work);
+		PHONE_TYPES_MAP.put(Phone.TYPE_WORK_PAGER, NumberType.Pager);
+		PHONE_TYPES_MAP.put(Phone.TYPE_CUSTOM, NumberType.Other);
+
+		// Address
+		ADDRESS_TYPES_MAP.put(StructuredPostal.TYPE_HOME,
+				DispositionType.Personal);
+		ADDRESS_TYPES_MAP.put(StructuredPostal.TYPE_WORK, DispositionType.Work);
+		ADDRESS_TYPES_MAP.put(StructuredPostal.TYPE_OTHER,
+				DispositionType.Other);
+
+		// relationship
+		RELATION_TYPES_MAP.put(Relation.TYPE_BROTHER, RelationshipType.Brother);
+		RELATION_TYPES_MAP.put(Relation.TYPE_CHILD, RelationshipType.Child);
+		RELATION_TYPES_MAP.put(Relation.TYPE_FRIEND, RelationshipType.Friend);
+		RELATION_TYPES_MAP.put(Relation.TYPE_PARENT, RelationshipType.Parent);
+		RELATION_TYPES_MAP.put(Relation.TYPE_PARTNER, RelationshipType.Partner);
+		RELATION_TYPES_MAP.put(Relation.TYPE_RELATIVE,
+				RelationshipType.Relative);
+		RELATION_TYPES_MAP.put(Relation.TYPE_SISTER, RelationshipType.Sister);
+		RELATION_TYPES_MAP.put(Relation.TYPE_SPOUSE, RelationshipType.Spouse);
+	}
+
+	@Override
+	public CalendarEntry CreateCalendarEntry(CalendarEntry entry) {
+		// TODO implement ICalendar.CreateCalendarEntry
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+	
+	// TODO old implementation
+	protected CalendarEntry CreateCalendarEntryOld(CalendarEntry entry) {
+
+		Intent intent = new Intent(Intent.ACTION_EDIT);
+		intent.setType("vnd.android.cursor.item/event");
+
+		// getting begintime in milliseconds
+		DateTime beginDate = entry.getStartDate();
+		Calendar calBeginDate = Calendar.getInstance();
+		if (beginDate != null) {
+			// DateTime.getMonth() are values between 1 and 12 --> on
+			// Calendar.set() month starts at 0...
+			calBeginDate.set(beginDate.getYear(), beginDate.getMonth() - 1,
+					beginDate.getDay(), beginDate.getHour(),
+					beginDate.getMinute(), beginDate.getSecond());
+		}
+		intent.putExtra("beginTime", calBeginDate.getTimeInMillis());
+
+		// getting endtime in milliseconds
+		DateTime endDate = entry.getEndDate();
+		Calendar calEndDate = (Calendar) calBeginDate.clone();
+		if (endDate == null) {
+			// If the endtime was not provided, the endtime will be by default 1
+			// hour later
+			calEndDate.add(Calendar.HOUR, 1);
+		} else {
+			// DateTime.getMonth() are values between 1 and 12 --> on
+			// Calendar.set() month starts at 0...
+			calEndDate.set(endDate.getYear(), endDate.getMonth() - 1,
+					endDate.getDay(), endDate.getHour(), endDate.getMinute(),
+					endDate.getSecond());
+		}
+		intent.putExtra("endTime", calEndDate.getTimeInMillis());
+		intent.putExtra("allDay", entry.getIsAllDayEvent());
+		intent.putExtra("title", entry.getTitle());
+		intent.putExtra("eventLocation", entry.getLocation());
+		intent.putExtra("description", entry.getNotes());
+		AndroidServiceLocator.getContext().startActivity(intent);
+
+		return entry;
+	}
+
+	@Override
+	public boolean DeleteCalendarEntry(CalendarEntry entry) {
+		// TODO implement ICalendar.DeleteCalendarEntry
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public CalendarEntry[] ListCalendarEntries(DateTime date) {
+		// TODO implement ICalendar.ListCalendarEntries
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public CalendarEntry[] ListCalendarEntries(DateTime startDate,
+			DateTime endDate) {
+		// TODO implement ICalendar.ListCalendarEntries
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public boolean MoveCalendarEntry(CalendarEntry entry,
+			DateTime newStartDate, DateTime newEndDate) {
+		// TODO implement ICalendar.MoveCalendarEntry
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	// TODO handle all contact data fields
+	public Contact CreateContact(Contact contactData) {
+
+		ContactAddress[] addresses = contactData.getAddresses();
+		ContactPhone[] phones = contactData.getPhones();
+		ContactEmail[] emails = contactData.getEmails();
+		Context context = AndroidServiceLocator.getContext();
+
+		Bundle extras = new Bundle();
+
+		Uri uri = null;
+		if (phones != null && phones.length > 0) {
+			for (ContactPhone phone : phones) {
+				if (uri == null) {
+					uri = Uri.parse("tel:" + phone.getNumber());
+				} else {
+					if (extras.getString(Insert.PHONE) == null) {
+						extras.putString(Insert.PHONE, phone.getNumber());
+						extras.putBoolean(Insert.PHONE_ISPRIMARY,
+								phone.getIsPrimary());
+						extras.putInt(Insert.PHONE_TYPE,
+								getPhoneType(phone.getType()));
+					} else if (extras.getString(Insert.SECONDARY_PHONE) == null) {
+						extras.putString(Insert.SECONDARY_PHONE,
+								phone.getNumber());
+						extras.putInt(Insert.SECONDARY_PHONE_TYPE,
+								getPhoneType(phone.getType()));
+					} else if (extras.getString(Insert.TERTIARY_PHONE) == null) {
+						extras.putString(Insert.TERTIARY_PHONE,
+								phone.getNumber());
+						extras.putInt(Insert.TERTIARY_PHONE_TYPE,
+								getPhoneType(phone.getType()));
+					}
+				}
+			}
+		}
+
+		if (emails != null && emails.length > 0) {
+			for (ContactEmail email : emails) {
+				if (uri == null) {
+					uri = Uri.parse("mailto:" + email.getAddress());
+				} else {
+					if (extras.getString(Insert.EMAIL) == null) {
+						extras.putString(Insert.EMAIL, email.getAddress());
+						extras.putBoolean(Insert.EMAIL_ISPRIMARY,
+								email.getIsPrimary());
+						extras.putInt(Insert.EMAIL_TYPE,
+								getAddressType(email.getType()));
+					} else if (extras.getString(Insert.SECONDARY_EMAIL) == null) {
+						extras.putString(Insert.SECONDARY_EMAIL,
+								email.getAddress());
+						extras.putInt(Insert.SECONDARY_EMAIL_TYPE,
+								getAddressType(email.getType()));
+					} else if (extras.getString(Insert.TERTIARY_EMAIL) == null) {
+						extras.putString(Insert.TERTIARY_EMAIL,
+								email.getAddress());
+						extras.putInt(Insert.TERTIARY_EMAIL_TYPE,
+								getAddressType(email.getType()));
+					}
+				}
+			}
+		}
+
+		// Only 1 address can be added
+		if (addresses != null && addresses.length > 0) {
+			for (ContactAddress address : addresses) {
+				if (extras.getString(Insert.POSTAL) == null) {
+					extras.putString(Insert.POSTAL, address.getAddress());
+					// No primary in the ContactAddress class
+					extras.putBoolean(Insert.POSTAL_ISPRIMARY, true);
+					extras.putInt(Insert.POSTAL_TYPE,
+							getAddressType(address.getType()));
+				}
+			}
+		}
+
+		if (contactData.getNotes() != null) {
+			extras.putString(Insert.NOTES, contactData.getNotes());
+		}
+		if (contactData.getCompany() != null) {
+			extras.putString(Insert.COMPANY, contactData.getCompany());
+		}
+		if (contactData.getName() != null) {
+			extras.putString(Insert.NAME, contactData.getName());
+		}
+		if (contactData.getJobTitle() != null) {
+			extras.putString(Insert.JOB_TITLE, contactData.getJobTitle());
+		}
+
+		Intent intent;
+		if (uri != null) {
+			intent = new Intent(
+					ContactsContract.Intents.SHOW_OR_CREATE_CONTACT, uri);
+		} else {
+			intent = new Intent(
+					ContactsContract.Intents.SHOW_OR_CREATE_CONTACT,
+					Uri.parse("mailto:"));
+		}
+		intent.putExtra(ContactsContract.Intents.EXTRA_FORCE_CREATE, true);
+		intent.putExtras(extras);
+		((Activity) context).startActivity(intent);
+
+		return contactData;
+	}
+
+	@Override
+	public boolean DeleteContact(Contact contact) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	// TODO this services returns all contacts -> use parameter queryText!
+	public Contact[] ListContacts(String queryText) {
+
+		Uri uri = ContactsContract.Contacts.CONTENT_URI;
+		Context context = AndroidServiceLocator.getContext();
+		ContentResolver cr = context.getContentResolver();
+		Cursor contactsCursor = null;
+		
+		try {
+			// querying the content resolver for all contacts
+			contactsCursor = cr.query(uri, new String[] {
+					ContactsContract.Contacts._ID,
+					ContactsContract.Contacts.DISPLAY_NAME }, null, null,
+					ContactsContract.Contacts.DISPLAY_NAME
+							+ " COLLATE LOCALIZED ASC");
+			List<Contact> contactList = new ArrayList<Contact>();
+			contactsCursor.moveToFirst();
+			while (!contactsCursor.isAfterLast()) {
+				Contact contact = new Contact();
+				Long id = contactsCursor.getLong(0);
+				contact.setID(id.toString());
+				contact.setDisplayName(contactsCursor.getString(1));
+
+				String company = null, department = null, firstname = null, group = null, jobTitle = null, lastname = null, name = null, notes = null, photoBase64Encoded = null;
+				List<ContactAddress> addressList = new ArrayList<ContactAddress>();
+				List<ContactEmail> emailList = new ArrayList<ContactEmail>();
+				List<ContactPhone> phoneList = new ArrayList<ContactPhone>();
+				List<String> webSiteList = new ArrayList<String>();
+				byte[] photo = new byte[0]; // TODO gets the default contacts
+				// photo
+				RelationshipType relationship = RelationshipType.None;
+				Cursor raws = cr.query(RawContactsEntity.CONTENT_URI, null,
+						RawContactsEntity.CONTACT_ID + " = " + id, null, null);
+				try {
+					raws.moveToFirst();
+					while (!raws.isAfterLast()) {
+						String type = raws
+								.getString(raws
+										.getColumnIndex(ContactsContract.Data.MIMETYPE));
+						if (StructuredName.CONTENT_ITEM_TYPE.equals(type)) {
+							// structured name
+						} else if (Phone.CONTENT_ITEM_TYPE.equals(type)) {
+							// it's a phone, gets all properties and add in
+							// the phone list
+							ContactPhone phone = new ContactPhone();
+							String number = raws.getString(raws
+									.getColumnIndex(Phone.NUMBER));
+							phone.setNumber(number);
+							int primary = raws.getInt(raws
+									.getColumnIndex(Phone.IS_PRIMARY));
+							phone.setIsPrimary(primary != 0);
+							int phonetype = raws.getInt(raws
+									.getColumnIndex(Phone.TYPE));
+							phone.setType(getNumberType(phonetype));
+							phoneList.add(phone);
+						} else if (StructuredPostal.CONTENT_ITEM_TYPE
+								.equals(type)) {
+							// it's an Address, gets all properties and add
+							// in
+							// the address list
+							ContactAddress address = new ContactAddress();
+							String city = raws.getString(raws
+									.getColumnIndex(StructuredPostal.CITY));
+							String country = raws.getString(raws
+									.getColumnIndex(StructuredPostal.COUNTRY));
+							String postcode = raws.getString(raws
+									.getColumnIndex(StructuredPostal.POSTCODE));
+							String street = raws.getString(raws
+									.getColumnIndex(StructuredPostal.STREET));
+							// TODO Check about Number, as Android doesn't store
+							// number in a different column. (Is in the street)
+							// (linked with the way contacts are stored by this
+							// class)
+							int typeInt = raws.getInt(raws
+									.getColumnIndex(StructuredPostal.TYPE));
+							DispositionType dType = getAddressType(typeInt);
+							address.setType(dType);
+							address.setAddress(street);
+							address.setCity(city);
+							address.setCountry(country);
+							address.setPostCode(postcode);
+							/*
+							 * TODO: how to get the number?
+							 * address.setAddressNumber(number);
+							 */
+							addressList.add(address);
+						} else if (Email.CONTENT_ITEM_TYPE.equals(type)) {
+							// it's an Email address, gets all properties
+							// and add in the email list
+							ContactEmail email = new ContactEmail();
+							String emailaddress = raws
+									.getString(raws
+											.getColumnIndex(CommonDataKinds.Email.DATA1));
+							email.setAddress(emailaddress);
+							email.setCommonName(raws.getString(raws
+									.getColumnIndex(Email.DISPLAY_NAME)));
+							// TODO set first name and last name
+							emailList.add(email);
+						} else if (Organization.CONTENT_ITEM_TYPE.equals(type)) {
+							if (raws.getInt(raws
+									.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
+									|| company == null || company.equals("")) {
+								company = raws.getString(raws
+										.getColumnIndex(Organization.COMPANY));
+								department = raws
+										.getString(raws
+												.getColumnIndex(Organization.DEPARTMENT));
+								jobTitle = raws.getString(raws
+										.getColumnIndex(Organization.TITLE));
+							}
+						} else if (GroupMembership.CONTENT_ITEM_TYPE
+								.equals(type)) {
+							// TODO get the group
+						} else if (Relation.CONTENT_ITEM_TYPE.equals(type)) {
+							if (raws.getInt(raws
+									.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
+									|| group == null || group.equals("")) {
+								relationship = getRelationShipType(raws
+										.getInt(raws
+												.getColumnIndex(Relation.TYPE)));
+							}
+						} else if (Photo.CONTENT_ITEM_TYPE.equals(type)) {
+							photo = raws.getBlob(raws
+									.getColumnIndex(Photo.PHOTO));
+							photoBase64Encoded = photo != null ? new String(
+									Base64.encode(photo, Base64.DEFAULT))
+									: null;
+						} else if (CommonDataKinds.Website.CONTENT_ITEM_TYPE
+								.equals(type)) {
+							webSiteList.add(raws.getString(raws
+									.getColumnIndex(Website.URL)));
+						} else if (Nickname.CONTENT_ITEM_TYPE.equals(type)) {
+							// No need for nickname 
+						} else if (Note.CONTENT_ITEM_TYPE.equals(type)) {
+							if (raws.getInt(raws
+									.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
+									|| notes == null || notes.equals("")) {
+								notes = raws.getString(raws
+										.getColumnIndex(Note.NOTE));
+							}
+						}
+						raws.moveToNext();
+					}
+
+				} finally {
+					if (raws != null) {
+						raws.close();
+					}
+				}
+				
+				// filling the bean
+				contact.setPhones(phoneList.toArray(new ContactPhone[phoneList
+						.size()]));
+				contact.setAddresses(addressList
+						.toArray(new ContactAddress[addressList.size()]));
+				contact.setEmails(emailList.toArray(new ContactEmail[emailList
+						.size()]));
+				contact.setWebSites(webSiteList.toArray(new String[webSiteList
+						.size()]));
+				contact.setCompany(company);
+				contact.setDepartment(department);
+				contact.setFirstname(firstname);
+				contact.setGroup(group);
+				contact.setJobTitle(jobTitle);
+				contact.setLastname(lastname);
+				contact.setName(name);
+				contact.setNotes(notes);
+				contact.setPhoto(photo);
+				contact.setPhotoBase64Encoded(photoBase64Encoded);
+				contact.setRelationship(relationship);
+				contactList.add(contact);
+				contactsCursor.moveToNext();
+			}
+
+			return contactList.toArray(new Contact[contactList.size()]);
+		} finally {
+			if (contactsCursor != null) {
+				contactsCursor.close();
+			}
+		}
+	}
+
+	@Override
+	public boolean UpdateContact(String ID, Contact newContactData) {
+		// TODO implement IContact.UpdateContact
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	private static NumberType getNumberType(int phoneType) {
+		return PHONE_TYPES_MAP.get(phoneType) == null ? NumberType.Other
+				: PHONE_TYPES_MAP.get(phoneType);
+	}
+
+	private static int getPhoneType(NumberType numberType) {
+		
+		for (Entry<Integer, NumberType> e : PHONE_TYPES_MAP.entrySet()) {
+			if (e.getValue().equals(numberType)) {
+				return e.getKey();
+			}
+		}
+		
+		return Phone.TYPE_OTHER;
+	}
+
+	private static DispositionType getAddressType(int addressType) {
+		return ADDRESS_TYPES_MAP.get(addressType) == null ? DispositionType.Other
+				: ADDRESS_TYPES_MAP.get(addressType);
+	}
+
+	private static int getAddressType(DispositionType addressType) {
+		
+		for (Entry<Integer, DispositionType> e : ADDRESS_TYPES_MAP.entrySet()) {
+			if (e.getValue().equals(addressType)) {
+				return e.getKey();
+			}
+		}
+		
+		return StructuredPostal.TYPE_OTHER;
+	}
+
+	private static RelationshipType getRelationShipType(int relationType) {
+		return RELATION_TYPES_MAP.get(relationType) == null ? RelationshipType.None
+				: RELATION_TYPES_MAP.get(relationType);
+	}
+}
