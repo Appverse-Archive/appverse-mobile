@@ -20,7 +20,7 @@
     <header>
       <div class="inner">
         <h1>Appverse Mobile</h1>
-        <h2>HTML5+CSS3+JS+Native = Cool Apps!</h2>
+        <h2>html5 + css3 + js + native = cool apps</h2>
         <a href="https://github.com/Appverse/appverse-mobile" class="button"><small>View project on</small>GitHub</a>
       </div>
     </header>
@@ -28,11 +28,146 @@
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
-          <h2>Overview</h2>
+          <p><img src="http://www.google.com/a/cpanel/appverse.mobi/images/logo.gif" alt="Appverse"></p>
 
-<p>Appverse Mobile is an open-source mobile development platform developed by GFT Appverse. It allows developers to use HTML5, JavaScript, CSS3 and to leverage native functionalities of a mobile device to build apps. The platform currently supports Android, iOS and Windows and provides a broad set of APIs to access the native functionalities of a mobile device via a consistent and uniform JavaScript interface for the supported operating systems.</p>
+<h2>Overview</h2>
 
-<p>Appverse is licensed under the Appverse Public License (APL) based on the Mozilla Public License V2.0. Please visit <a href="http://appverse.org">http://appverse.org</a> for more information.</p>
+<p>Appverse is an open-source mobile development platform developed by GFT Appverse. It allows developers to use HTML5, JavaScript, CSS3 and to leverage native functionalities of a mobile device to build apps. The platform currently supports Android, iOS and Windows and provides a broad set of APIs to access the native functionalities of a mobile device via a consistent and uniform JavaScript interface for the supported operating systems.</p>
+
+<p><img src="http://appverse.github.com/appverse-mobile/images/appverse-overview.png" alt="Appverse organization"></p>
+
+<p>Appverse is licensed under the Appverse Public License (APL) based on the Mozilla Public License V2.0. You can get a copy of the license <a href="http://www.appverse.mobi/licenses/apl_v2.0.pdf?attredirects=0">here</a>. </p>
+
+<h2>Project Organization</h2>
+
+<h3>Web</h3>
+
+<ul>
+<li><a href="http://www.appverse.mobi">Informational site</a></li>
+<li><a href="http://appverse.github.com/">Project site</a></li>
+<li><a href="https://github.com/Appverse/appverse.github.com/wiki">Wiki site</a></li>
+</ul><h3>Mailing Lists</h3>
+
+<h4>Users &amp; Developers</h4>
+
+<p><a href="mailto:appverse@googlegroups.com">appverse@googlegroups.com</a> - The Users &amp; Developers mailing list is available to the public. To subscribe to the mailing list send a mail to <a href="mailto:appverse+subscribe@googlegroups.com">appverse+subscribe@googlegroups.com</a>. To unsubscribe send a mail to <a href="mailto:appverse+unsubscribe@googlegroups.com">appverse+unsubscribe@googlegroups.com</a>.</p>
+
+<h4>Question &amp; Answers</h4>
+
+<p><a href="mailto:appverse-qa@googlegroups.com">appverse-qa@googlegroups.com</a> - The Question &amp; Answers mailing list is available to the public. To subscribe to the mailing list send a mail to <a href="mailto:appverse-qa+subscribe@googlegroups.com">appverse-qa+subscribe@googlegroups.com</a>. To unsubscribe send a mail to <a href="mailto:appverse-qa+unsubscribe@googlegroups.com">appverse-qa+unsubscribe@googlegroups.com</a>.</p>
+
+<h4>Commits</h4>
+
+<p><a href="mailto:appverse-commits@googlegroups.com">appverse-commits@googlegroups.com</a> - The Commits mailing list is available to the public and provides automatic details of recent activity in the Appverse source repositories - this information is useful if you're submitting patches or watching for latest fixes and requested features. To subscribe to the mailing list send a mail to <a href="mailto:appverse-commits+subscribe@googlegroups.com">appverse-commits+subscribe@googlegroups.com</a>. To unsubscribe send a mail to <a href="mailto:appverse-commits+unsubscribe@googlegroups.com">appverse-commits+unsubscribe@googlegroups.com</a>.</p>
+
+<h4>Private</h4>
+
+<p><a href="mailto:appverse-private@googlegroups.com">appverse-private@googlegroups.com</a> - The Private mailing list is only for committers and direct contributors to the Appverse project. When you become a contributor you'll be invited to the group. If not, please send a mail to the project mentor who administers to the project as a whole.</p>
+
+<h3>Forum</h3>
+
+<h4>Users &amp; Developers</h4>
+
+<p><a href="https://groups.google.com/d/forum/appverse">https://groups.google.com/d/forum/appverse</a> - The Users &amp; Developers forum is available to the public. This forum provides a web interface to the aforementioned mailing list.</p>
+
+<h4>Question &amp; Answers</h4>
+
+<p><a href="https://groups.google.com/d/forum/appverse-qa">https://groups.google.com/d/forum/appverse-qa</a> - The Question &amp; Answers forum is available to the public. This forum provides a web interface to the aforementioned mailing list.</p>
+
+<h3>Issue Tracking</h3>
+
+<p>Issues are tracked separately for each of the modules of Appverse. Please raise issues in the correct module. For new features, please raise issues in the core module of Appverse. The committer team will create the corresponding issues in their respective modules.</p>
+
+<ul>
+<li><a href="https://github.com/Appverse/appverse-core/issues">core issues</a></li>
+<li><a href="https://github.com/Appverse/appverse-core-webresources/issues">core-webresources issues</a></li>
+<li><a href="https://github.com/Appverse/appverse-platform-android/issues">platform-android issues</a></li>
+<li><a href="https://github.com/Appverse/appverse-platform-ios/issues">platform-ios issues</a></li>
+<li><a href="https://github.com/Appverse/appverse-runtime-android/issues">runtime-android issues</a></li>
+<li><a href="https://github.com/Appverse/appverse-runtime-ios/issues">runtime-ios issues</a></li>
+</ul><h3>Source Code Repositories</h3>
+
+<h4>Module Organization</h4>
+
+<h5>Core</h5>
+
+<p>The core module contains interfaces and abstract classes that are implemented by the platform modules. The core module is available in C# and Java.</p>
+
+<h5>Platform</h5>
+
+<p>The platform modules contain implementations of the core interfaces; C# and Java that are used for iOS using Monotouch and Android SDK respectively.</p>
+
+<h5>Runtime</h5>
+
+<p>The runtime modules contain implementations of the UI and use the platform and core modules of the Appverse platform. The runtime module contains:</p>
+
+<ul>
+<li>iOS Monotouch implementations of UIWebView and the control of the application's lifecycle</li>
+<li>Android SDK implementation of WebView and the control of the application's lifecycle</li>
+</ul><h4>Repositories</h4>
+
+<ul>
+<li><a href="https://github.com/Appverse/appverse-core">core repo</a></li>
+<li><a href="https://github.com/Appverse/appverse-core-webresources">core-webresources repo</a></li>
+<li><a href="https://github.com/Appverse/appverse-platform-android">platform-android repo</a></li>
+<li><a href="https://github.com/Appverse/appverse-platform-ios">platform-ios repo</a></li>
+<li><a href="https://github.com/Appverse/appverse-runtime-android">runtime-android repo</a></li>
+<li><a href="https://github.com/Appverse/appverse-runtime-ios">runtime-ios repo</a></li>
+</ul><h4>License &amp; Agreements</h4>
+
+<ul>
+<li><a href="http://www.appverse.mobi/licenses/apl_v2.0.pdf">Appverse Public License v2.0</a></li>
+<li><a href="http://www.appverse.mobi/licenses/apl_v2.0_ccla.pdf">Corporate Contributor License Agreement</a></li>
+<li><a href="http://www.appverse.mobi/licenses/apl_v2.0_icla.pdf">Individual Contributor License Agreement</a></li>
+</ul><h2>Authors &amp; Contributors</h2>
+
+<h3>Mentor &amp; Administrator</h3>
+
+<ul>
+<li>
+<a href="https://github.com/carloslozano" class="user-mention">@carloslozano</a> - Carlos Lozano <a href="mailto:carlos@appverse.mobi">carlos@appverse.mobi</a>
+</li>
+</ul><h3>Committers</h3>
+
+<ul>
+<li>Pending: Awaiting CCLA &amp; ICLA from initial team.</li>
+</ul><h2>Contribute</h2>
+
+<p>Appverse is licensed under the Appverse Public License (APL) based on the Mozilla Public License V2.0. You can get a copy of the license <a href="http://www.appverse.mobi/licenses/apl_v2.0.pdf?attredirects=0">here</a>.</p>
+
+<h3>Community Contributions</h3>
+
+<p>If you wish to contribute to the community, please refer to the Mailing Lists and Forum section of the project organization section of this site.</p>
+
+<h3>Source Code Contributions</h3>
+
+<h4>Corporate Contributors</h4>
+
+<p>If your company wishes to empower employees to contribute to the Appverse project as a committer, you will need to complete and sign the Corporate Contributors License Agreement (CCLA). You can find the document <a href="http://www.appverse.mobi/licenses/apl_v2.0_ccla.pdf?attredirects=0&amp;d=1">here</a>. The completed document should be sent to Appverse as detailed within the CCLA document itself.</p>
+
+<p>Additionally, for each of the nominated employees we will also need a completed and signed Individual Contributor License Agreement (ICLA). You can find the document <a href="http://www.appverse.mobi/licenses/apl_v2.0_icla.pdf?attredirects=0&amp;d=1">here</a>. The completed document should be sent to Appverse as detailed within the ICLA document itself.</p>
+
+<p>These documents are designed to increase transparency, ensure license awareness and protect you and the Appverse project from inadvertent intellectual property rights infringements. The Appverse project reserves the right to refuse committer applications at their discretion.</p>
+
+<p>The Appverse project welcomes pull requests from developers providing patches to existing code. If you wish to become an official committer to the project - especially when providing new code subject to other copyrights/intellectual property holders -  we will require an authorized CCLA and ICLA on file. </p>
+
+<h4>Individual Contributors</h4>
+
+<p>If you're an individual developer and would like to become a committer to the Appverse project, we will require a completed and signed Individual Contributor License Agreement (ICLA). You can find the document <a href="http://www.appverse.mobi/licenses/apl_v2.0_icla.pdf?attredirects=0&amp;d=1">here</a>. The completed document should be sent to Appverse as detailed within the ICLA document itself. </p>
+
+<p>These documents are designed to increase transparency, ensure license awareness and protect you and the Appverse project from inadvertent intellectual property rights infringements. The Appverse project reserves the right to refuse committer applications at their discretion.</p>
+
+<p>The Appverse project welcomes pull requests from developers providing patches to existing code. If you wish to contribute additional original work we will require an ICLA on file. </p>
+
+<h2>Support &amp; Contact</h2>
+
+<p>This project is open-source and supported by the team of committers and the community. If you require commercial support for your application, please contact <a href="mailto:sales@appverse.mobi">sales@appverse.mobi</a> to discuss your needs. We recommend you check out our mailing lists and forums for other information and development support.</p>
+
+<h2>Licenses &amp; Legal</h2>
+
+<p>Appverse is licensed under the Appverse Public License (APL) based on the Mozilla Public License V2.0. You can get a copy of the license <a href="http://www.appverse.mobi/licenses/apl_v2.0.pdf?attredirects=0">here</a>. </p>
+
+<p>Copyright © 2012 Appverse™. Appverse® is a registered trademark of GFT Appverse S.L. Apple, Apple logo and iOS are copyright and trademarks of Apple, Inc.  Android logo, Android and Google are copyright and trademarks of Google, Inc. All other logos and trademarks are copyright of their respective owners. In case of issues relating to copyrights and trademarks, please contact <a href="mailto:legal@appverse.mobi">legal@appverse.mobi</a> to request the appropriate attributions or rectifications.</p>
         </section>
 
         <aside id="sidebar">
