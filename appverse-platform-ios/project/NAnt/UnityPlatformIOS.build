@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<project name="Build UNITY Platform iOS using Monotouch framework" default="compile-c">
+   
+	<property name="dll.name" value="UnityPlatformIOS" overwrite="true"/>
+	
+	<property name="output.dir" value="../Monotouch/UnityPlatformIOS/UnityPlatformIOS/bin" overwrite="true"/>
+	<property name="source.dir" value="../../src/csharp" overwrite="true"/>
+	<property name="mode" value="Debug_Simulator" overwrite="true"/>
+	
+	<property name="build.mode.dir" value="iPhoneSimulator/Debug" if="${mode == 'Debug_Simulator'}" />
+	<property name="build.mode.dir" value="iPhoneSimulator/Release" if="${mode == 'Release_Simulator'}" />
+	<property name="build.mode.dir" value="iPhone/Debug" if="${mode == 'Debug_Device'}" />
+	<property name="build.mode.dir" value="iPhone/Release" if="${mode == 'Release_Device'}" />
+	
+	<property name="build.dir" value="${output.dir}/${build.mode.dir}" />
+	
+	<property name="build.core" value="true" overwrite="true"/>
+	<property name="core.build.file" value="../../../UnityCore/project/NAnt/UnityCoreMonotouch.build" overwrite="true"/>
+	<property name="core.dll" value="../../../UnityCore/project/MonoTouch/UnityCore/UnityCore/bin/${build.mode.dir}/UnityCore.dll"/>
+	
+	<property name="monotouch.bin.dir" value="/Developer/MonoTouch/usr/bin"/>
+	<property name="monotouch.lib.dir" value="/Developer/MonoTouch/usr/lib"/>
+	<property name="monotouch.lib.mono" value="/mono/2.1"/>
+	<property name="monotouch.command.smcs" value="${monotouch.bin.dir}/smcs"/>
+	<property name="monotouch.command.mtouch" value="${monotouch.bin.dir}/mtouch"/>
+	
+	<property name="source.files" value=""/>
+	
+	<target name="clean">
+		<delete dir="${build.dir}" />
+    </target>
+
+    <target name="compile-c" depends="clean">
+        <mkdir dir="${build.dir}" />
+
+		<echo message="Compiling C# sources to generate UNITY Platform iOS DLL: ${build.dir}/${dll.name}.dll"/>
+		
+		<echo message="#### Mono references: "/>
+		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/System.dll"/>
+		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/System.Xml.dll"/>
+		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/System.Core.dll"/>
+		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/monotouch.dll"/>
+		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/System.Data.dll"/>
+		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/Mono.Data.Sqlite.dll"/>
+		
+		<echo message="#### UNITY references: "/>
+		<nant buildfile="${core.build.file}" if="${build.core}">
+		    <properties>
+		        <property name="dll.name" value="UnityCore" />
+		        <property name="mode" value="${mode}" />
+		    </properties>
+		</nant>
+		
+		<property name="lib.core.dll" value="../../lib/Unity/Debug/UnityCore.dll" if="${mode == 'Debug_Simulator' or mode == 'Debug_Device'}" />
+		<property name="lib.core.dll" value="../../lib/Unity/Release/UnityCore.dll" if="${mode == 'Release_Simulator' or mode == 'Release_Device'}" />
+		
+		<copy file="${core.dll}" tofile="${lib.core.dll}" />
+		<echo message="## ${lib.core.dll}" />
+		
+		<echo message="## Searching for source files on: ${source.dir}"/>
+		<foreach item="File" property="filename">
+			<in>
+				<items basedir="${source.dir}">
+					<include name="**/*.cs" />
+				</items>
+			</in>
+		    <do>
+		    	<echo message="## Added source file: ${filename}"/>
+				<property name="source.files" value="${source.files}${filename} "/>
+		    </do>
+		</foreach>
+		
+		<exec program="${monotouch.command.smcs}" verbose="true">
+			<arg value="/noconfig"/>
+			<arg value="/out:${build.dir}/${dll.name}.dll"/>
+			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.dll" />
+			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Xml.dll" />
+			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Core.dll" />
+			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/monotouch.dll" />
+			<arg value="/r:${lib.core.dll}" />
+			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/Mono.Data.Sqlite.dll" />
+			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Data.dll" />
+			<arg value="/r:../../lib/GoogleAnalytics.dll" />
+			<arg value="/r:../../lib/Webtrekk.dll" />
+			<arg value="/r:../../lib/SharpZipLib.dll" />
+			<arg value="/r:../../lib/BouncyCastle.Crypto.dll" />
+			<arg value="/nologo" />
+			<arg value="/warn:4" />
+			<arg value="/debug:+" if="${mode == 'Debug_Simulator' or mode == 'Debug_Device'}"/>
+			<arg value="/debug:full" if="${mode == 'Debug_Simulator' or mode == 'Debug_Device'}"/>
+			<arg value="/optimize-" />
+			<arg value="/codepage:utf8" />
+			<arg value="/define:DEBUG;MONOTOUCH" if="${mode == 'Debug_Simulator' or mode == 'Debug_Device'}"/>
+			<arg value="/t:library" />
+			<arg line="${source.files}" />
+		</exec>
+	</target>
+</project>
