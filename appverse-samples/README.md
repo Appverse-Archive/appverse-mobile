@@ -1,8 +1,8 @@
-# Appverse Example Applications for all platforms: iOS, Android, etc.
+# Appverse Application Samples
 
 This module contains application samples build using the Appverse platform.
 
-You will find here a bunch of application projects ready to be compiled and executed, in the following configurations:
+You will find here a bunch of application projects ready to be compiled and executed for all supported platforms (iOS, Android, etc), in the following project configurations:
 
 * Monotouch C# Project Samples (iOS application)
 * Eclipse Project Samples (Android application)
