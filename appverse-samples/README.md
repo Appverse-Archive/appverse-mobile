@@ -22,8 +22,8 @@ But when you create your own application project, you should check and reconfigu
 
 * <b>How to embedded your Web resources</b>
 	* In order to add the web resources for an application, you first need to add them to the project in MonoDevelop. To accomplish this perform the following steps:
-		* Copy your web resources into the project’s location, under the following folder structure: "WebResources">"www"
-		* Right-click on the project folder (or Ctrl-Click) and select *Add* > *Add Exiting folder…*, displaying the *Add folder* dialog window.
+		* Copy your web resources into the project's location, under the following folder structure: "WebResources">"www"
+		* Right-click on the project folder (or Ctrl-Click) and select *Add* > *Add Exiting folder...*, displaying the *Add folder* dialog window.
 		* Select the "WebResources" folder and then select all the needed resources in the path.
 		* Mark all resources as <b>Content</b> in the <b>Build Action</b> selector at the *Add folder* dialog window.
 		* Once included, if new resources are added to the project don't forget to mark them as *Content*. Right-click on each field to see its *Properties*.
@@ -36,13 +36,13 @@ But when you create your own application project, you should check and reconfigu
  * <b>*Bundle Display Name*</b>: the actual name of the bundle (the display name of the application). 
 		* Configure it at *Info.plist* file using the property *CFBundleDisplayName*, or in the *Project Options* > IPhone Application* settings > *Summary* tab > *Application name* property.
 	
- * <b>*Bundle Identifier*</b>: an identifier string that uniquely identifies the bundle. Each distinct app or bundle on the system must have a unique bundle ID. The system uses this string to identify your app in many ways. The string should be in reverse DNS format using only the Roman alphabet in upper and lower case (A–Z, a–z), the dot (“.”), and the hyphen (“-”).
+ * <b>*Bundle Identifier*</b>: an identifier string that uniquely identifies the bundle. Each distinct app or bundle on the system must have a unique bundle ID. The system uses this string to identify your app in many ways. The string should be in reverse DNS format using only the Roman alphabet in upper and lower case (A-Z, a-z), the dot (.), and the hyphen (-).
 		* Configure it at *Info.plist* file using the property *CFBundleIdentifier*, or in the *Project Options* > IPhone Application* settings > *Summary* tab > *Identifier* property.
 	
  * <b>*Bundle Version*</b>: specifies the build version number of the bundle, which identifies an iteration (released or unreleased) of the bundle. The build version number should be a string comprised of three non-negative, period-separated integers with the first integer being greater than zero. The string should only contain numeric (0-9) and period (.) characters. Leading zeros are truncated from each integer and will be ignored (that is, 1.02.3 is equavalent to 1.2.3).
 		* Configure it at *Info.plist* file using the property *CFBundleVersion*, or in the *Project Options* > *IPhone Application* settings > *Summary* tab > *Version* property.
 
- * <b>*Bundle Executable*</b>: the name of the bundle’s executable file.
+ * <b>*Bundle Executable*</b>: the name of the bundle's executable file.
 		* Configure it at *Info.plist* file using the property *CFBundleExecutable*, or in the *Project Options* > *IPhone Application* settings > *Advanced* tab > *Executable File* property.
 	
  * <b>*Minimun OS Version*</b>: indicates the minimum version of OS X required for this app to run in a device. This string must be of the form n.n.n where n is a number. The first number is the major version number of the system. The second and third numbers are minor revision numbers.
@@ -76,7 +76,7 @@ But when you create your own application project, you should check and reconfigu
 
 		* iPad Retina icon: the high resolution version of the main icon for applications running on iPad; 144x144 pixels.
 
- * <b>*Prerendered Icon*</b>: specifies whether the app’s icon already includes a shine effect. Select "true" if you don't want that the iOS applies a shine effect to the app icon.
+ * <b>*Prerendered Icon*</b>: specifies whether the app's icon already includes a shine effect. Select "true" if you don't want that the iOS applies a shine effect to the app icon.
 		* Configure it at *Info.plist* file using the property *UIPrerenderedIcon*, or in the *Project Options* > *IPhone Application* settings > *Summary* tab > *Universal Icons* section > *App Icons* > *Prerendered* checkbox.
 
 		* Default value is:true.
@@ -95,19 +95,19 @@ But when you create your own application project, you should check and reconfigu
  * <b>*Launch Images*</b>: the images to be used as the application launch image. The images should be included on the project with the appropriate name and dimensions.
 		* Attach them at the *Project Options* > *IPhone Application* settings > *Summary* tab > *Universal Icons* section > *iPhone Launch Images* and *iPad Launch Images*.
 
-		* iPhone: the launch image displayed for applications running on iPhone (*Default.png*); 320x480 pixels.
+		* iPhone: the launch image displayed for applications running on iPhone ( *Default.png* ); 320x480 pixels.
 
-		* iPhone Retina: the high resolution version of the launch image displayed for applications running on iPhone (*Default@2x.png*); 640x960 pixels.
+		* iPhone Retina: the high resolution version of the launch image displayed for applications running on iPhone ( *Default@2x.png* ); 640x960 pixels.
 
-		* iPhone 5: the high resolution version of the launch image displayed for applications running on iPhone 5 (*Default-568h@2x.png*); 640x1136 pixels.
+		* iPhone 5: the high resolution version of the launch image displayed for applications running on iPhone 5 ( *Default-568h@2x.png* ); 640x1136 pixels.
 
-		* iPad portrait: the launch image displayed for applications running on iPad in portrait mode (*Default-Portrait.png*); 768x1004 pixels.
+		* iPad portrait: the launch image displayed for applications running on iPad in portrait mode ( *Default-Portrait.png* ); 768x1004 pixels.
 
-		* iPad landscape: the launch image displayed for applications running on iPad in landscape mode (*Default-Landscape.png*); 1024x748 pixels.
+		* iPad landscape: the launch image displayed for applications running on iPad in landscape mode ( *Default-Landscape.png* ); 1024x748 pixels.
 
-		* iPad Retina portrait: the high resolution version of the launch image displayed for applications running on iPad in portrait mode (*Default-Portrait@2x.png*); 1536x2008 pixels.
+		* iPad Retina portrait: the high resolution version of the launch image displayed for applications running on iPad in portrait mode ( *Default-Portrait@2x.png* ); 1536x2008 pixels.
 
-		* iPad Retina landscape: the high resolution version of the launch image displayed for applications running on iPad in landscape mode (*Default-Landscape@2x.png*); 2048x1496 pixels.
+		* iPad Retina landscape: the high resolution version of the launch image displayed for applications running on iPad in landscape mode ( *Default-Landscape@2x.png* ); 2048x1496 pixels.
 	
 * <b>Signing</b>
 
@@ -134,7 +134,7 @@ Under construction
     Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
      This Source  Code Form  is subject to the  terms of  the Appverse Public License 
-     Version 2.0  (ìAPL v2.0î).  If a copy of  the APL  was not  distributed with this 
+     Version 2.0  ("APL v2.0").  If a copy of  the APL  was not  distributed with this 
      file, You can obtain one at <http://www.appverse.mobi/licenses/apl_v2.0.pdf>.
 
      Redistribution and use in  source and binary forms, with or without modification, 
