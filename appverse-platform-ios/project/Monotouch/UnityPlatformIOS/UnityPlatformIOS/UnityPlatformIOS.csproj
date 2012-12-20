@@ -107,5 +107,6 @@
     <Compile Include="..\..\..\..\src\csharp\SplashScreenView.cs" />
     <Compile Include="..\..\..\..\src\csharp\SecurityUtils.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneWebtrekk.cs" />
+	<Compile Include="..\..\..\..\src\csharp\IPhoneServiceURIHandler.cs"/>
   </ItemGroup>
 </Project>
