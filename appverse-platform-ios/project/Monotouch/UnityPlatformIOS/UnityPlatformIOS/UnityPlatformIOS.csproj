@@ -15,45 +15,45 @@
     <newfilesearch>OnLoadAutoInsert</newfilesearch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <MtouchDebug>true</MtouchDebug>
-    <ConsolePause>false</ConsolePause>
+    <MtouchDebug>True</MtouchDebug>
+    <ConsolePause>False</ConsolePause>
     <MtouchLink>None</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>none</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ConsolePause>False</ConsolePause>
     <MtouchLink>None</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\iPhone\Debug</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <MtouchDebug>true</MtouchDebug>
-    <ConsolePause>false</ConsolePause>
+    <MtouchDebug>True</MtouchDebug>
+    <ConsolePause>False</ConsolePause>
     <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\iPhone\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ConsolePause>False</ConsolePause>
     <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
   <ItemGroup>
@@ -69,10 +69,18 @@
     <Reference Include="UnityCore">
       <HintPath>..\..\..\..\lib\Unity\Release\UnityCore.dll</HintPath>
     </Reference>
+    <Reference Include="SharpZipLib">
+      <HintPath>..\..\..\..\lib\SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Webtrekk">
+      <HintPath>..\..\..\..\lib\Webtrekk.dll</HintPath>
+    </Reference>
+    <Reference Include="BouncyCastle.Crypto">
+      <HintPath>..\..\..\..\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Compile Include="..\..\..\..\src\csharp\AppDelegate.cs" />
     <Compile Include="..\..\..\..\src\csharp\AssemblyInfo.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneDatabase.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneFileSystem.cs" />
@@ -93,10 +101,11 @@
     <Compile Include="..\..\..\..\src\csharp\IPhoneUIApplicationDelegate.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneUIViewController.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneUtils.cs" />
-    <Compile Include="..\..\..\..\src\csharp\UnityViewController.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneLog.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneAnalytics.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneSecurity.cs" />
     <Compile Include="..\..\..\..\src\csharp\SplashScreenView.cs" />
+    <Compile Include="..\..\..\..\src\csharp\SecurityUtils.cs" />
+    <Compile Include="..\..\..\..\src\csharp\IPhoneWebtrekk.cs" />
   </ItemGroup>
 </Project>
