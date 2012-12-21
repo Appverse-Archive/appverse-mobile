@@ -3,7 +3,7 @@
 This module contains the Android Java implementation of the core interfaces of Appverse. 
 
 For more information, please refer to <http://appverse.github.com>.
-This software is licensed under APL 2.0 <http://www.appverse.mobi/licenses/apl_v2.0.pdf>.
+This software is licensed under APL 2.0 <http://appverse.org/legal/appverse-license/>.
 
 ## License
 
@@ -11,7 +11,7 @@ This software is licensed under APL 2.0 <http://www.appverse.mobi/licenses/apl_v
 
      This Source  Code Form  is subject to the  terms of  the Appverse Public License 
      Version 2.0  ("APL v2.0").  If a copy of  the APL  was not  distributed with this 
-     file, You can obtain one at <http://www.appverse.mobi/licenses/apl_v2.0.pdf>.
+     file, You can obtain one at <http://appverse.org/legal/appverse-license/>.
 
      Redistribution and use in  source and binary forms, with or without modification, 
      are permitted provided that the  conditions  of the  AppVerse Public License v2.0 

@@ -3,7 +3,7 @@
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
  Version 2.0  (ÒAPL v2.0Ó).  If a copy of  the APL  was not  distributed with this 
- file, You can obtain one at http://www.appverse.mobi/licenses/apl_v2.0.pdf.
+ file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
  are permitted provided that the  conditions  of the  AppVerse Public License v2.0 

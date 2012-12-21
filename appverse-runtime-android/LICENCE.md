@@ -1,6 +1,6 @@
 # Appverse Public License Version 2.0
 
-<http://www.appverse.mobi/licenses/apl_v2.0.pdf>
+<http://appverse.org/legal/appverse-license/>
 
 GFT Appverse, S.L., Sociedad Unipersonal (hereinafter referred to as “GFT”) has developed a software called Appverse. By virtue of this agreement, GFT (as initial “Contributor”, as this term is defined below) and each of the subsequent Contributors of the Appverse software grant You a license on Appverse (the “Appverse Public License Version 2.0” or "APL v2.0") in accordance with the terms and conditions set forth below.
 
