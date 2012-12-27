@@ -121,12 +121,55 @@ But when you create your own application project, you should check and reconfigu
 
 ### Eclipse Android Application
 
-Under construction
+Before you start with your first Android app as an Eclipse project, you will need to check that you have your development environment set up.
+You will need to install the following:
+
+1. Download the Android SDK: [http://developer.android.com/sdk/index.html]
+2. Install the ADT Plugin for Eclipse. See instructions here: [http://developer.android.com/tools/sdk/eclipse-adt.html] and [http://developer.android.com/sdk/installing/installing-adt.html]
+3. Download the latest SDK Tools and platforms using the SDK Manager.
+
+**System requirements**:
+
+*Operating Systems*
+* Windows XP (32-bit), Vista (32- or 64-bit), or Windows 7 (32- or 64-bit)
+* Mac OS X 10.5.8 or later (x86 only)
+* Linux (tested on Ubuntu Linux, Lucid Lynx)
+	* GNU C Library (glibc) 2.7 or later is required.
+	* On Ubuntu Linux, version 8.04 or later is required.
+	* 64-bit distributions must be capable of running 32-bit applications.
+
+*Eclipse IDE*
+* Eclipse 3.6.2 (Helios) or greater
+	> Note: Eclipse 3.5 (Galileo) is no longer supported with the latest version of ADT.
+* Eclipse JDT plugin (included in most Eclipse IDE packages)
+* JDK 6 (JRE alone is not sufficient)
+* Android Development Tools plugin (recommended)
+* Not compatible with GNU Compiler for Java (gcj)
+
 
 ### NetBeans Android Application
 
-Under construction
+Before you start with your first Android app as a NetBeans project, you will need to check that you have your development environment set up.
+You will need to install the following:
 
+1. Download the Android SDK: [http://developer.android.com/sdk/index.html]
+2. Install the NBAndroid Plugin for NetBeans (optional). See instructions here: [http://kenai.com/projects/nbandroid/pages/Install]
+3. Download the latest SDK Tools and platforms using the SDK Manager.
+
+**System requirements**:
+
+*Operating Systems*
+* Windows XP (32-bit), Vista (32- or 64-bit), or Windows 7 (32- or 64-bit)
+* Mac OS X 10.5.8 or later (x86 only)
+* Linux (tested on Ubuntu Linux, Lucid Lynx)
+	* GNU C Library (glibc) 2.7 or later is required.
+	* On Ubuntu Linux, version 8.04 or later is required.
+	* 64-bit distributions must be capable of running 32-bit applications.
+
+*NetBeans IDE*
+* JDK 6 (JRE alone is not sufficient)
+* Apache Ant 1.8 or later
+* Not compatible with Gnu Compiler for Java (gcj)
 
 
 ## License
