@@ -1,0 +1,151 @@
+/**
+	Project custom style
+*/
+/*Appverse
+$toolbarColor:#b90000;
+$darkColor:#b90000;
+$lightColor:#e03636;
+$logo:'logo.gif';
+$logoSize: 149px 34px;*/
+/*Appverse*/
+.basePanel {
+  font-family: Arial; }
+  .basePanel div.x-panel-body {
+    /*padding:20px;*/ }
+  .basePanel div.mid {
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #000;
+    font-family: Arial;
+    text-align: center;
+    box-shadow: 5px 5px 5px #ccc;
+    -webkit-box-shadow: 5px 5px 5px #ccc;
+    text-shadow: 2px 2px 2px #CCC;
+    padding: 20px; }
+
+/************************************************/
+/* Changing style for all application toolbars */
+/* helping tool for making gradient toolbars colors: http://www.colorzilla.com/gradient-editor/*/
+/************************************************/
+.x-toolbar {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, white), color-stop(3%, white), color-stop(100%, white));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, white 0%, white 3%, white 100%);
+  border-bottom: 1px solid #2879D0 !important; }
+  .x-toolbar .x-toolbar-title {
+    background-image: url("../images/header-bg.jpg");
+    /*background-size: 115px 34px;*/
+	font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif;
+	font-size:26px;
+	font-weight: normal;
+	letter-spacing: 1px;
+    background-repeat: repeat-x;
+    background-position: center;
+    line-height: 44px; }
+  .x-toolbar .x-button {
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, white), color-stop(3%, #2879D0), color-stop(100%, #9DDCFF));
+    /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, white 0%, #2879D0 3%, #9DDCFF 100%);
+    border: 1px solid #2879D0; }
+    .x-toolbar .x-button img.x-icon-mask {
+      width: 1.3em;
+      height: 1.3em;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center center; }
+      .x-toolbar .x-button img.x-icon-mask.locate {
+        -webkit-mask-image: url("../images/locator_map_icon.png");
+        -webkit-mask-size: 12px 21px; }
+      .x-toolbar .x-button img.x-icon-mask.home {
+        -webkit-mask-image: url("../images/list_button.png");
+        -webkit-mask-size: 18px 18px; }
+    .x-toolbar .x-button.x-button-pressed {
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, white), color-stop(3%, #9DDCFF), color-stop(100%, #2879D0));
+      /* Chrome,Safari4+ */
+      background: -webkit-linear-gradient(top, white 0%, #9DDCFF 3%, #2879D0 100%); }
+
+/************************************************/
+/* Changing style for search toolbar */
+/************************************************/
+.searchToolbar {
+  padding: 0px;
+  height: 44px;
+  border-bottom: 1px solid #2879D0 !important; }
+  .searchToolbar .x-field {
+    margin: 0px;
+    padding: 0px; }
+  .searchToolbar .searchBar {
+    height: 44px;
+    width: 100% !important;
+    -webkit-box-shadow: inset 0 1px 3px #565656;
+    background-color: #FFF;
+    border: none;
+    border-bottom: 1px solid #e03636 !important; }
+    .searchToolbar .searchBar .x-input-search {
+      border-radius: 0px;
+      background-color: transparent;
+      height: 44px;
+      font-size: 14px;
+      color: #565656;
+      font-weight: normal;
+      padding-left: 28px;
+      -webkit-box-shadow: none;
+      -webkit-background-size: 15px 15px;
+      background-image: url("../images/glass_icon.png"); }
+      .searchToolbar .searchBar .x-input-search::-webkit-input-placeholder {
+        color: #898989; }
+    .searchToolbar .searchBar .x-field-clear-container {
+      background-color: transparent;
+      padding: 0 .7em; }
+      .searchToolbar .searchBar .x-field-clear-container .x-field-clear {
+        background-color: #565656; padding-top: 0.18em; padding-left:0.28em;}
+
+/************************************************/
+/* Changing style for tweets list */
+/************************************************/
+
+div[class*="_ibani_"] div:nth-of-type(2) {
+    overflow-y: hidden !important;
+    overflow-x: hidden !important; 
+}
+div[class*="_ibani_"]:nth-of-type(1) div:nth-of-type(2){
+	height: 100px !important;
+}
+.bubbleBG {
+	height: 100px !important;
+}
+
+.tweetImage {
+  width: 18%;
+  text-align:center;
+  float: left; }
+  
+.tweetText {
+  width: 74%;
+  float: left;
+  margin-left: 4%;
+  font-size: 15px;
+  text-shadow: 0 -1px 0 white; }
+  .tweetText div:first-child {
+    color: #666;
+    font-weight: bold; }
+  .tweetText div:last-child {
+    color: #666;
+    margin-top: 8px;
+    font-size: 12px; }
+
+.tweetList .x-list-item {
+  padding: 4%;
+  background-color: white;
+  border-bottom: 1px solid #2879D0;
+  border-top: 1px solid #FFF; }
+  .tweetList .x-list-item:first-child.x-item-selected {
+    border-top: none; }
+  .tweetList .x-list-item.x-item-selected, .tweetList .x-list-item.x-item-pressed {
+    background-image: none;
+    background-color: #9DDCFF;
+    border-bottom: 1px solid #2879D0;
+    border-top: 1px solid #FFF; }
+    .tweetList .x-list-item.x-item-selected .tweetText, .tweetList .x-list-item.x-item-pressed .tweetText {
+      text-shadow: 0 -1px 0 #9DDCFF; }

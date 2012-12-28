@@ -1,0 +1,196 @@
+/**
+	Project custom style
+*/
+
+
+/*Appverse
+$toolbarColor:#b90000;
+$darkColor:#b90000;
+$lightColor:#e03636;
+$logo:'logo.gif';
+$logoSize: 149px 34px;*/
+/*Appverse*/
+$toolbarColor:#fff;
+$darkColor:#b90000;
+$lightColor:#e03636;
+$logo:'logo.png';
+$logoSize: 149px 34px;
+
+.basePanel
+{
+    font-family: Arial;
+    div{
+    
+        &.x-panel-body{
+            /*padding:20px;*/
+        }
+        &.mid {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #000;
+            font-family: Arial;
+            text-align: center;
+            box-shadow: 5px 5px 5px #ccc;
+            -webkit-box-shadow: 5px 5px 5px #ccc;
+            text-shadow: 2px 2px 2px #CCC;
+            padding: 20px;
+        }
+    }
+}
+
+/************************************************/
+/* Changing style for all application toolbars */
+/* helping tool for making gradient toolbars colors: http://www.colorzilla.com/gradient-editor/*/
+/************************************************/
+.x-toolbar
+{
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(3%,lighten($toolbarColor,20%)), color-stop(100%,$toolbarColor)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #ffffff 0%,lighten($toolbarColor,20%) 3%,$toolbarColor 100%);
+    border-bottom: 1px solid darken($toolbarColor,10%) !important;
+    
+    .x-toolbar-title {
+        background-image: url('../images/'+$logo);
+        background-size: $logoSize;
+		background-repeat: no-repeat;
+		background-position: center;
+        line-height: 44px;
+        
+    }
+    
+    .x-button {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(3%,lighten($darkColor,20%)), color-stop(100%,$darkColor)); /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(top, #ffffff 0%,lighten($darkColor,20%) 3%,$darkColor 100%);
+        border: 1px solid darken($darkColor, 20%);
+        
+        img {
+    
+            &.x-icon-mask {
+                width: 1.3em;
+                height: 1.3em;
+                
+                -webkit-mask-repeat:no-repeat;
+                -webkit-mask-position:center center;
+    
+                &.locate {
+                    -webkit-mask-image: url('../images/locator_map_icon.png');
+                    -webkit-mask-size: 12px 21px;
+                }
+        
+                &.home {
+                    -webkit-mask-image: url('../images/list_button.png');
+                    -webkit-mask-size: 18px 18px;
+                }
+            }
+        }
+        
+        &.x-button-pressed {
+             background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(3%,$darkColor), color-stop(100%,darken($darkColor, 20%))); /* Chrome,Safari4+ */
+			 background: -webkit-linear-gradient(top, #ffffff 0%, $darkColor 3%,darken($darkColor, 20%) 100%);
+        }
+    }
+}
+
+/************************************************/
+/* Changing style for search toolbar */
+/************************************************/
+
+.searchToolbar {
+     padding: 0px;
+     height:44px;
+     border-bottom:1px solid lighten($lightColor, 30%) !important;
+     .x-field{
+        margin: 0px;
+        padding: 0px;
+     }    
+    
+    .searchBar {
+      height: 44px  ;
+      width:100% !important;
+      -webkit-box-shadow: inset 0 1px 3px #565656;
+      background-color:#FFF;
+      border:none;
+      border-bottom:1px solid $lightColor !important;
+      
+      .x-input-search{
+            border-radius: 0px;
+            background-color:transparent;
+            height:44px;
+            font-size:14px;
+            color:#565656;
+            font-weight:normal;
+            padding-left:28px;
+            -webkit-box-shadow: none;
+            -webkit-background-size: 15px 15px;
+            background-image: url('../images/glass_icon.png');
+            &::-webkit-input-placeholder
+            {
+                    color:lighten(#565656, 20%);
+            }
+        
+      }
+        .x-field-clear-container {
+            background-color:transparent;
+            padding:0 .7em;
+            .x-field-clear{
+                    background-color:#565656  ;
+            }
+        }  
+        
+    }
+    
+}
+
+/************************************************/
+/* Changing style for tweets list */
+/************************************************/
+
+.tweetImage {
+        width:18%;
+        float:left;
+}
+
+.tweetText {
+        width:74%;
+        float:left;
+        margin-left:4%;
+        font-size: 15px;
+        text-shadow: 0 -1px 0 #FFF;
+        div:first-child {
+            color: $darkColor;
+            font-weight: bold;
+        }
+        div:last-child {
+            color: lighten($darkColor, 30%);
+            margin-top: 8px;
+            font-size:12px;
+        }
+}
+
+.tweetList {
+    .x-list-item {
+        padding: 4%;
+        background-color:lighten($lightColor, 50%);
+        border-bottom: 1px solid lighten($lightColor, 40%);
+        border-top: 1px solid #FFF;
+      
+    
+        
+        &:first-child {
+            &.x-item-selected {
+                border-top: none;
+            }
+        }
+    
+        &.x-item-selected, &.x-item-pressed {
+            background-image:none;
+            background-color:lighten($lightColor, 40%);
+            border-bottom: 1px solid lighten($lightColor, 30%);
+            border-top: 1px solid #FFF;
+            .tweetText {
+                text-shadow: 0 -1px 0 #FFF;
+            }
+        }
+    }
+}
