@@ -115,6 +115,7 @@ You will need to install the following:
 1. Download the Android SDK: [http://developer.android.com/sdk/index.html]
 2. Install the ADT Plugin for Eclipse. See instructions here: [http://developer.android.com/tools/sdk/eclipse-adt.html] and [http://developer.android.com/sdk/installing/installing-adt.html]
 3. Download the latest SDK Tools and platforms using the SDK Manager.
+	* API level 11 is required as it is the Appverse Android default target.
 
 **System requirements**:
 
@@ -181,6 +182,15 @@ You will need to install the following:
 	*  the *launch_portrait_tablet.png* 800x1232 pixels image at the *res/drawable* folder; for the tablet portrait launch mode.
 	*  the *launch_lansacape_tablet.png* 1280x752 pixels image at the *res/drawable* folder; for the tablet landscape launch mode.
 
+**Android Emulator behind a Proxy**
+
+If you need to execute an application that connects to remote servers and you are behind a coporate proxy, you should configure your proxy settings in your Eclipse IDE:
+
+<Project> >> Run as >> Run Configurations... >> (setup a custom configuration for an Android Application) >> Target tab >> "Additional Emulator Command Line Options"
+
+Place your proxy settings as the following command line option:
+
+<p>-http-proxy http://<your proxy host>:<your proxy port></p>
 
 ### NetBeans Android Application
 
@@ -189,7 +199,9 @@ You will need to install the following:
 
 1. Download the Android SDK: [http://developer.android.com/sdk/index.html]
 2. Install the NBAndroid Plugin for NetBeans (optional). See instructions here: [http://kenai.com/projects/nbandroid/pages/Install]
+	* Configure the Android SDK Location and create your new project using the plugin. See instructions here: [http://kenai.com/projects/nbandroid/pages/Intro] 
 3. Download the latest SDK Tools and platforms using the SDK Manager.
+	* API level 11 is required as it is the Appverse Android default target.
 
 **System requirements**:
 
@@ -205,6 +217,28 @@ You will need to install the following:
 * JDK 6 (JRE alone is not sufficient)
 * Apache Ant 1.8 or later
 * Not compatible with Gnu Compiler for Java (gcj)
+
+**How to embed your Web resources**:
+
+Embeded resources are included in the same way as in the Eclipse project. Please, check above the corresponding instructions.
+
+**Appverse and Third-party Libraries**:
+
+Required libraries are included in the same way as in the Eclipse project. Please, check above the corresponding instructions.
+
+**General Settings**
+
+The settings you could configure in the NetBeans project are the same as in the Eclipse project. Please, check above the corresponding instructions.
+
+**Android Emulator behind a Proxy**
+
+If you need to execute an application that connects to remote servers and you are behind a coporate proxy, you should configure your proxy settings in your NetBeans IDE:
+
+<Project> >> Properties >> Run >> Emulator options
+
+Place your proxy settings as the following command line option:
+
+<p>-http-proxy http://<your proxy host>:<your proxy port></p>
 
 
 ## License
