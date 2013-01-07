@@ -186,11 +186,11 @@ You will need to install the following:
 
 If you need to execute an application that connects to remote servers and you are behind a coporate proxy, you should configure your proxy settings in your Eclipse IDE:
 
-<Project> >> Run as >> Run Configurations... >> (setup a custom configuration for an Android Application) >> Target tab >> "Additional Emulator Command Line Options"
+MyProject >> Run as >> Run Configurations... >> (setup a custom configuration for an Android Application) >> Target tab >> "Additional Emulator Command Line Options"
 
 Place your proxy settings as the following command line option:
 
-<p>-http-proxy http://<your proxy host>:<your proxy port></p>
+<p>-http-proxy http://proxy_host>:proxy_port</p>
 
 ### NetBeans Android Application
 
@@ -234,11 +234,11 @@ The settings you could configure in the NetBeans project are the same as in the 
 
 If you need to execute an application that connects to remote servers and you are behind a coporate proxy, you should configure your proxy settings in your NetBeans IDE:
 
-<Project> >> Properties >> Run >> Emulator options
+MyProject >> Properties >> Run >> Emulator options
 
 Place your proxy settings as the following command line option:
 
-<p>-http-proxy http://<your proxy host>:<your proxy port></p>
+<p>-http-proxy http://proxy_host:proxy_port</p>
 
 
 ## License
