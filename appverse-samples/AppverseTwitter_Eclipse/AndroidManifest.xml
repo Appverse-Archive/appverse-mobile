@@ -42,7 +42,7 @@
 		</activity>
 		<activity android:name="org.appverse.mobile.android.ui.BrowserActivity" android:hardwareAccelerated="true">
 			<intent-filter>
-				<action android:name="com.gft.UNITYAPPLICATIONID.SHOW_BROWSER" />
+				<action android:name="org.appverse.mobile.samples.appversetwitter.SHOW_BROWSER" />
 				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
 		</activity>
