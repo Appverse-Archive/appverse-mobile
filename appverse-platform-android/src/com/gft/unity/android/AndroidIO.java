@@ -318,13 +318,35 @@ public class AndroidIO extends AbstractIO {
 							trustStore = KeyStore.getInstance("AndroidCAStore");
 							trustStore.load(null,null);					
 						}else{
-							trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-							String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);
-							FileInputStream is = new FileInputStream(filename);
-							trustStore.load(is,"changeit".toCharArray());
-					        is.close();
+							try{
+								trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+								String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);
+								FileInputStream is = new FileInputStream(filename);
+								trustStore.load(is,"changeit".toCharArray());
+						        is.close();
+							}catch(Exception ex)
+							{
+								try{
+									/*
+							        /******************************** 
+									 * HTC 2.3.5 Access Keystore problem
+									 * See more details on jira ticket [MOBPLAT-91]
+									 ********************************
+									 */
+									trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+									String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);
+									FileInputStream is = new FileInputStream(filename);
+									trustStore.load(is,null);
+							        is.close();
+								}catch(Exception e)
+								{
+									trustStore = null;
+									LOG.Log(Module.PLATFORM, "A problem has been detecting while accessing the device keystore.",e);
+									return null;
+								}
+							}
 						}
-				        socketFactory =  ValidatingSSLSocketFactory.GetInstance(trustStore);
+						socketFactory =  ValidatingSSLSocketFactory.GetInstance(trustStore);
 				        socketFactory.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
 					}
 					LOG.Log(Module.PLATFORM, "Certificate Validation Enabled = " + this.Validatecertificates());
