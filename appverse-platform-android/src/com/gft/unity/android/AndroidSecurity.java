@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import android.os.Build;
+
 import com.gft.unity.core.security.AbstractSecurity;
 
 public class AndroidSecurity extends AbstractSecurity {
@@ -35,8 +37,15 @@ public class AndroidSecurity extends AbstractSecurity {
 	@Override
 	public boolean IsDeviceModified() {
 		if (checkRootMethod1()){return true;}
-        if (checkRootMethod2()){return true;}
-        if (checkRootMethod3()){return true;}
+		if (checkRootMethod2()){return true;}
+
+		// Tactical solution applied (16/01/2013) ::
+		// ICS devices (levels 14 & 15) hang the application when the checkRootMethod3 is used. 
+		// Application processes are blocked in that case and the address port could not be used anymore by any app till the device is fully restarted.
+		if(Build.VERSION.SDK_INT < 14 || Build.VERSION.SDK_INT > 15) {
+        	if (checkRootMethod3()){return true;}
+		}
+		
         return false;
 	}
 	
