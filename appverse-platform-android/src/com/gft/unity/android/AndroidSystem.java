@@ -31,6 +31,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.BatteryManager;
 import android.os.Environment;
@@ -157,17 +158,17 @@ public class AndroidSystem extends AbstractSystem {
 		this.locked = lock;
 		this.lockedOrientation = orientation == null ? DisplayOrientation.Unknown
 				: orientation;
-		int configOrientation = Configuration.ORIENTATION_UNDEFINED;
+		int configOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 		if (locked) {
 			switch (lockedOrientation) {
 			case Portrait:
-				configOrientation = Configuration.ORIENTATION_PORTRAIT;
+				configOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 				break;
 			case Landscape:
-				configOrientation = Configuration.ORIENTATION_LANDSCAPE;
+				configOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 				break;
 			default:
-				configOrientation = Configuration.ORIENTATION_PORTRAIT;
+				configOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 				break;
 			}
 		}
