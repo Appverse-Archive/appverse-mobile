@@ -32,6 +32,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.AssetManager;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Display;
@@ -459,12 +460,12 @@ public class MainActivity extends Activity {
 			DisplayOrientation lockedOrientation = system
 					.GetLockedOrientation();
 			if (DisplayOrientation.Portrait.equals(lockedOrientation)) {
-				configOrientation = Configuration.ORIENTATION_PORTRAIT;
+				configOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 			} else if (DisplayOrientation.Landscape.equals(lockedOrientation)) {
-				configOrientation = Configuration.ORIENTATION_LANDSCAPE;
+				configOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 			} else {
 				// Portrait as default orientation
-				configOrientation = Configuration.ORIENTATION_PORTRAIT;
+				configOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 			}
 			if (newConfig.orientation != configOrientation) {
 				LOG.Log(Module.GUI, "Main Activity onConfigurationChanged setting requested orientation: " + configOrientation);
