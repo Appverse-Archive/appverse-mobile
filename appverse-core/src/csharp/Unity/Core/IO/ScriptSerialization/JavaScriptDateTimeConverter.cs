@@ -72,12 +72,14 @@ namespace Unity.Core.IO.ScriptSerialization
 				int minute = 0;
 				int second = 0;
 				int millisecond = 0;
+				bool timeFilled = false;
 				
 				try { 
 					if (dictionary.ContainsKey (HOUR_KEY)) {
 						object objHour = dictionary [HOUR_KEY];
 						string sHour = objHour.ToString ();
 						hour = Int32.Parse (sHour);
+						timeFilled = true;
 					}
 					
 					if (dictionary.ContainsKey (MINUTE_KEY)) {
@@ -100,8 +102,12 @@ namespace Unity.Core.IO.ScriptSerialization
 				} catch (Exception) {
 					// exception not handle
 				}
-				
-				return new DateTime (year, month, day, hour, minute, second, millisecond);
+
+				if(timeFilled) {
+					return new DateTime (year, month, day, hour, minute, second, millisecond);
+				} else {
+					return new DateTime (year, month, day);
+				}
 				
 			} catch (Exception) {
 				// on exception, return default datetime
