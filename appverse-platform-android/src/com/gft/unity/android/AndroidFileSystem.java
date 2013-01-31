@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -102,10 +103,24 @@ public class AndroidFileSystem extends AbstractFileSystem {
 				"toPath" }, new Object[] { url, toPath });
 
 		BufferedInputStream bis = null;
+		HttpURLConnection connection = null;
 		try {
 			// open source URL
 			URL mUrl = new URL(url);
-			bis = new BufferedInputStream(mUrl.openStream(), BUFFER_SIZE);
+			connection = (HttpURLConnection) mUrl.openConnection();
+			//bis = new BufferedInputStream(mUrl.openStream(), BUFFER_SIZE);
+			bis = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
+			
+			// used HttpURLConnection to follow redirects (redirects from HTTP to HTTPS or viceversa are not followed by default)
+			while(!mUrl.getProtocol().equals(connection.getURL().getProtocol())) {
+				closeStream(bis);
+				if(connection!=null) {
+					connection.disconnect();
+				}
+				mUrl = new URL(url.replace(mUrl.getProtocol(), connection.getURL().getProtocol()));
+				connection = (HttpURLConnection) mUrl.openConnection();
+				bis = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
+			}
 
 			// write to internal storage file
 			write(bis, toPath);
@@ -115,6 +130,9 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			LOGGER.logError("CopyFromRemote", "Error", ex);
 		} finally {
 			closeStream(bis);
+			if(connection!=null) {
+				connection.disconnect();
+			}
 			LOGGER.logOperationEnd("CopyFromRemote", result);
 		}
 
