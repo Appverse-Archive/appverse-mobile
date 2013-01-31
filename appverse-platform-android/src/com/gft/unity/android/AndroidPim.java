@@ -36,6 +36,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds;
@@ -64,10 +65,18 @@ import com.gft.unity.core.pim.DateTime;
 import com.gft.unity.core.pim.DispositionType;
 import com.gft.unity.core.pim.NumberType;
 import com.gft.unity.core.pim.RelationshipType;
+import com.gft.unity.core.system.log.Logger;
+import com.gft.unity.core.system.log.Logger.LogCategory;
 
 // TODO all devices should have at least 1 google account setup for add/update to work??
-// TODO logging
 public class AndroidPim extends AbstractPim {
+	
+	private static final String LOGGER_MODULE_CONTACTS = "IContacts";
+	private static final String LOGGER_MODULE_CALENDAR = "ICalendar";
+	private static final Logger LOGGER_CONTACTS = Logger.getInstance(
+			LogCategory.PLATFORM, LOGGER_MODULE_CONTACTS);
+	private static final Logger LOGGER_CALENDAR = Logger.getInstance(
+			LogCategory.PLATFORM, LOGGER_MODULE_CALENDAR);
 
 	private static final Map<Integer, NumberType> PHONE_TYPES_MAP = new HashMap<Integer, NumberType>();
 	private static final Map<Integer, DispositionType> ADDRESS_TYPES_MAP = new HashMap<Integer, DispositionType>();
@@ -108,10 +117,103 @@ public class AndroidPim extends AbstractPim {
 		RELATION_TYPES_MAP.put(Relation.TYPE_SPOUSE, RelationshipType.Spouse);
 	}
 
+	
+	private final class CalendarContract {
+		public static final String EXTRA_EVENT_BEGIN_TIME = "beginTime";
+		public static final String EXTRA_EVENT_END_TIME = "endTime";
+		
+	}
+	
+	private final static class Events {
+		public static final Uri CONTENT_URI = Uri.parse("content://com.android.calendar/events"); // just available for API level >=14
+		public static final String INTENT_TYPE = "vnd.android.cursor.item/event"; // for API level < 14
+		public static final String TITLE = "title";
+		public static final String DESCRIPTION = "description";
+		public static final String ALL_DAY = "allDay";
+		public static final String EVENT_LOCATION = "eventLocation";
+		
+		public static final String AVAILABILITY = "availability";
+		public static final int AVAILABILITY_BUSY = 0;
+		public static final int AVAILABILITY_FREE = 1;
+		
+	}
+	
 	@Override
 	public CalendarEntry CreateCalendarEntry(CalendarEntry entry) {
-		// TODO implement ICalendar.CreateCalendarEntry
-		throw new UnsupportedOperationException("Not supported yet.");
+		
+		if (entry != null) {
+			
+			try {
+			
+				// getting begintime in milliseconds
+				DateTime beginDate = entry.getStartDate();
+				Calendar calBeginDate = Calendar.getInstance();
+				if (beginDate != null) {
+					// DateTime.getMonth() are values between 1 and 12 --> on
+					// Calendar.set() month starts at 0...
+					if(beginDate.getHour() > 0) {
+						calBeginDate.set(beginDate.getYear(), beginDate.getMonth() - 1,
+							beginDate.getDay(), beginDate.getHour(),
+							beginDate.getMinute(), beginDate.getSecond());
+					} else {
+						calBeginDate.set(beginDate.getYear(), beginDate.getMonth() - 1, beginDate.getDay());
+					}
+				}
+				
+				LOGGER_CALENDAR.logInfo("CreateCalendarEntry", "Begin Date: " + beginDate.toString());
+				
+				// getting endtime in milliseconds
+				DateTime endDate = entry.getEndDate();
+				Calendar calEndDate = (Calendar) calBeginDate.clone();
+				if (endDate == null) {
+					// If the endtime was not provided, the endtime will be by default 1
+					// hour later
+					calEndDate.add(Calendar.HOUR, 1);
+				} else {
+					// DateTime.getMonth() are values between 1 and 12 --> on
+					// Calendar.set() month starts at 0...
+					if(endDate.getHour() > 0) {
+						calEndDate.set(endDate.getYear(), endDate.getMonth() - 1,
+							endDate.getDay(), endDate.getHour(), endDate.getMinute(),
+							endDate.getSecond());
+					} else {
+						calEndDate.set(endDate.getYear(), endDate.getMonth() - 1, endDate.getDay());
+					}
+				}
+				
+				LOGGER_CALENDAR.logInfo("CreateCalendarEntry", "End Date: " + endDate.toString());
+				
+				Intent intent = null;
+				
+				if(Build.VERSION.SDK_INT < 14) {
+					
+					intent = new Intent(Intent.ACTION_EDIT);
+					intent.setType(Events.INTENT_TYPE);
+					
+				} else {
+					intent = new Intent(Intent.ACTION_INSERT)
+							.setData(Events.CONTENT_URI);
+				}
+				if(intent!= null) {
+					intent
+					.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, calBeginDate.getTimeInMillis())
+					.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, calEndDate.getTimeInMillis())
+					.putExtra(Events.ALL_DAY, entry.getIsAllDayEvent())
+					.putExtra(Events.TITLE, (entry.getTitle()!=null? entry.getTitle() : ""))
+					.putExtra(Events.DESCRIPTION, (entry.getNotes()!=null? entry.getNotes() : ""))
+					.putExtra(Events.EVENT_LOCATION, (entry.getLocation()!=null? entry.getLocation() : ""))
+					.putExtra(Events.AVAILABILITY, Events.AVAILABILITY_BUSY);
+					
+					AndroidServiceLocator.getContext().startActivity(intent);
+				}
+			} catch(Exception ex) {
+				LOGGER_CALENDAR.logError("CreateCalendarEntry", 
+						"There was an error trying to insert a calendar entry", ex);
+			}
+		}
+				
+		return entry;
+		
 	}
 	
 	// TODO old implementation
@@ -186,6 +288,7 @@ public class AndroidPim extends AbstractPim {
 	// TODO handle all contact data fields
 	public Contact CreateContact(Contact contactData) {
 
+		LOGGER_CONTACTS.logInfo("CreateContact", "creating contact data for " + contactData.getName());
 		ContactAddress[] addresses = contactData.getAddresses();
 		ContactPhone[] phones = contactData.getPhones();
 		ContactEmail[] emails = contactData.getEmails();
@@ -195,6 +298,7 @@ public class AndroidPim extends AbstractPim {
 
 		Uri uri = null;
 		if (phones != null && phones.length > 0) {
+			LOGGER_CONTACTS.logInfo("CreateContact", "adding " + phones.length + " phones to the contact");
 			for (ContactPhone phone : phones) {
 				if (uri == null) {
 					uri = Uri.parse("tel:" + phone.getNumber());
@@ -221,6 +325,7 @@ public class AndroidPim extends AbstractPim {
 		}
 
 		if (emails != null && emails.length > 0) {
+			LOGGER_CONTACTS.logInfo("CreateContact", "adding " + emails.length + " emails to the contact");
 			for (ContactEmail email : emails) {
 				if (uri == null) {
 					uri = Uri.parse("mailto:" + email.getAddress());
@@ -297,6 +402,7 @@ public class AndroidPim extends AbstractPim {
 	// TODO this services returns all contacts -> use parameter queryText!
 	public Contact[] ListContacts(String queryText) {
 
+		LOGGER_CONTACTS.logInfo("ListContacts", "Start listing contacts...");
 		Uri uri = ContactsContract.Contacts.CONTENT_URI;
 		Context context = AndroidServiceLocator.getContext();
 		ContentResolver cr = context.getContentResolver();
@@ -467,7 +573,7 @@ public class AndroidPim extends AbstractPim {
 				contactList.add(contact);
 				contactsCursor.moveToNext();
 			}
-
+			LOGGER_CONTACTS.logInfo("ListContacts", "Contacts list size: " + contactList.size());
 			return contactList.toArray(new Contact[contactList.size()]);
 		} finally {
 			if (contactsCursor != null) {

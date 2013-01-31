@@ -26,18 +26,31 @@ using MonoTouch.UIKit;
 using MonoTouch.Foundation;
 using Unity.Platform.IPhone;
 using Unity.Core.System;
+using MonoTouch.EventKit;
 
 namespace Unity.Platform.IPhone
 {
 	public abstract partial class IPhoneUIApplicationDelegate: UIApplicationDelegate
 	{
 
+		/// <summary>
+		/// The EKEventStore is intended to be long-lived. It's expensive to new it up
+		/// and can be thought of as a database, so we create a single instance of it
+		/// and reuse it throughout the app
+		/// </summary>
+		public EKEventStore EventStore
+		{
+			get { return eventStore; }
+		}
+		protected EKEventStore eventStore;
+	
 		public IPhoneUIApplicationDelegate () : base()
 		{
 			#if DEBUG
 			log ("AppDelegate constructor default");
 			#endif
 			IPhoneServiceLocator.CurrentDelegate = this;
+			eventStore = new EKEventStore ( );
 		}
 
 		public IPhoneUIApplicationDelegate (IntPtr ptr) : base(ptr)
@@ -46,6 +59,7 @@ namespace Unity.Platform.IPhone
 			log ("AppDelegate constructor IntPtr");
 			#endif
 			IPhoneServiceLocator.CurrentDelegate = this;
+			eventStore = new EKEventStore ( );
 		}
 
 		public IPhoneUIApplicationDelegate (NSCoder coder) : base(coder)
@@ -54,6 +68,7 @@ namespace Unity.Platform.IPhone
 			log ("AppDelegate constructor NSCoder");
 			#endif
 			IPhoneServiceLocator.CurrentDelegate = this;
+			eventStore = new EKEventStore ( );
 		}
 
 		public IPhoneUIApplicationDelegate (NSObjectFlag flag) : base(flag)
@@ -62,6 +77,7 @@ namespace Unity.Platform.IPhone
 			log ("AppDelegate constructor NSObjectFlag");
 			#endif
 			IPhoneServiceLocator.CurrentDelegate = this;
+			eventStore = new EKEventStore ( );
 		}
 
 		public abstract UIWindow MainAppWindow ();
