@@ -41,134 +41,9 @@ namespace Unity.Platform.IPhone
 {
 	public class IPhonePIM : AbstractPim
 	{
+
+		#region CONTACTS API
 		public static ABPersonSortBy DEFAULT_CONTACTS_LIST_SORT = ABPersonSortBy.FirstName;
-		
-		public override CalendarEntry CreateCalendarEntry (CalendarEntry entry)
-		{
-			if(entry!=null) {
-				using (var pool = new NSAutoreleasePool ()) {
-					var thread = new Thread (ShowCreateCalendarEventView);
-					thread.Start (entry);
-				};
-			}
-			// TODO return CalendarEntry object should return the inserted ID event.
-			return entry;
-		}
-		
-		[Export("ShowCreateCalendarEventView")]
-		private void ShowCreateCalendarEventView (object entryObject)
-		{
-			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				CalendarEntry entry  = (CalendarEntry)entryObject;
-				
-				EKEventStore store = new EKEventStore();
-				EKCalendar calendar = store.DefaultCalendarForNewEvents;
-				
-				EKEvent calendarEvent = EKEvent.FromStore(store);
-				// add event to the default calendar for the new events
-				calendarEvent.Calendar = calendar;
-				
-				try {
-					// add event details
-					calendarEvent.Title = entry.Title;
-					if(entry.Notes == null) {
-						entry.Notes = "";
-					}
-					calendarEvent.Notes = entry.Notes;
-					calendarEvent.Location = entry.Location;
-					calendarEvent.AllDay = entry.IsAllDayEvent;
-					calendarEvent.StartDate = entry.StartDate;
-					calendarEvent.EndDate = entry.EndDate;
-					
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Creating Calendar Event: " + calendarEvent.Title);
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Default Calendar: " + calendar.Title);
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Event StartDate: " + calendarEvent.StartDate.ToString());
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Event EndDate: " + calendarEvent.EndDate.ToString());
-					// TODO: locate how to translate this features
-					// entry.Type (birthday, exchange, etc)
-					//calendarEvent.  = entry.IsEditable
-					
-					// Attendees
-					if(entry.Attendees != null && entry.Attendees.Length >0) {
-						int attendeesNum = entry.Attendees.Length;
-						// TODO : check another way to add participants
-						// calendarEvent.Attendees --> READ ONLY !!!
-					}
-					
-					// Alarms
-					if(entry.Alarms != null && entry.Alarms.Length >0) {
-						foreach(CalendarAlarm alarm in entry.Alarms) {
-							EKAlarm eventAlarm = new EKAlarm();
-							eventAlarm.AbsoluteDate = alarm.Trigger;
-							// TODO: how to manage "action", "sound" and "emailaddress"
-							calendarEvent.AddAlarm(eventAlarm);
-						}
-					}
-					
-					// Recurrence Rules
-					if(entry.IsRecurrentEvent && entry.Recurrence != null) {
-						EKRecurrenceFrequency recurrenceFrequency = EKRecurrenceFrequency.Daily;
-						if(entry.Recurrence.Type == RecurrenceType.Weekly) {
-							recurrenceFrequency = EKRecurrenceFrequency.Weekly;
-						} else if(entry.Recurrence.Type == RecurrenceType.Montly) {
-							recurrenceFrequency = EKRecurrenceFrequency.Monthly;
-						} else if(entry.Recurrence.Type == RecurrenceType.Yearly) {
-							recurrenceFrequency = EKRecurrenceFrequency.Yearly;
-						} else if(entry.Recurrence.Type == RecurrenceType.FourWeekly) {
-							recurrenceFrequency = EKRecurrenceFrequency.Weekly;
-							entry.Recurrence.Interval = 4; // force event to be repeated "every 4 weeks"
-						} else if(entry.Recurrence.Type == RecurrenceType.Fortnightly) {
-							recurrenceFrequency = EKRecurrenceFrequency.Weekly;
-							entry.Recurrence.Interval = 2; // force event to be repeated "every 2 weeks"
-						}
-						EKRecurrenceEnd recurrenceEnd = null;
-						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence Frequency: " + recurrenceFrequency);
-						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence Interval: " + entry.Recurrence.Interval);
-						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence EndDate (requested): " + entry.Recurrence.EndDate.ToString());
-						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence number: " + entry.RecurrenceNumber);
-						if(entry.Recurrence.EndDate.CompareTo(entry.EndDate)>0) {
-							recurrenceEnd = EKRecurrenceEnd.FromEndDate(entry.Recurrence.EndDate);
-							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence EndDate (applied): " + recurrenceEnd.EndDate.ToString());
-						} else if(entry.RecurrenceNumber > 0) {
-							recurrenceEnd = EKRecurrenceEnd.FromOccurrenceCount((int)entry.RecurrenceNumber);
-							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence OcurrenceCount: " + recurrenceEnd.OccurrenceCount);
-						} else {
-							recurrenceEnd = new EKRecurrenceEnd();
-						}
-						EKRecurrenceRule recurrenceRule = new EKRecurrenceRule(recurrenceFrequency,entry.Recurrence.Interval, recurrenceEnd);
-						if(entry.Recurrence.DayOfTheWeek > 0) {
-							EKRecurrenceDayOfWeek dayOfWeek = EKRecurrenceDayOfWeek.FromWeekDay(entry.Recurrence.DayOfTheWeek,0);
-							EKRecurrenceDayOfWeek[] arrayDayOfWeek = new EKRecurrenceDayOfWeek[1];
-							arrayDayOfWeek[0] = dayOfWeek;
-							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Setting DayOfTheWeek: " + dayOfWeek.DayOfTheWeek);
-							recurrenceRule = new EKRecurrenceRule(recurrenceFrequency,entry.Recurrence.Interval, arrayDayOfWeek, null, null, null, null, null, recurrenceEnd);
-						}
-						
-						calendarEvent.AddRecurrenceRule(recurrenceRule);
-					}
-				} catch (Exception e) {
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, "ERROR Creating Calendar Event [" + calendarEvent.Title + "]. Error message: " + e.Message);
-				}
-					
-				EKEventEditViewController eventViewController = new EKEventEditViewController();
-				eventViewController.Event = calendarEvent;
-				eventViewController.EventStore = store;
-				eventViewController.Completed += delegate(object sender, EKEventEditEventArgs e) {
-					UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-						SystemLogger.Log(SystemLogger.Module.PLATFORM, "On EKEventEditViewController Completed: " + e.Action);
-						if(e.Action == EKEventEditViewAction.Saved) {
-							INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
-							if (notificationService != null) {
-								notificationService.StartNotifyAlert ("Calendar Alert", "Calendar Entry Saved", "OK");
-							}
-						}
-						IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
-					});
-				};
-				
-				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (eventViewController, true);
-			});
-		}
 		
 		/// <summary>
 		/// 
@@ -295,112 +170,7 @@ namespace Unity.Platform.IPhone
 				e.ShouldPerformDefaultAction = true;
 			});
 		}
-		
-		public override bool DeleteCalendarEntry (CalendarEntry entry)
-		{
-			throw new System.NotImplementedException();
-		}
-		
-		public override bool DeleteContact (Contact contact)
-		{
-			throw new System.NotImplementedException();
-		}
-		
-		public override CalendarEntry[] ListCalendarEntries (DateTime date)
-		{
-			// list calendar entries fro the same start and end dates.
-			return ListCalendarEntries(date, date);
-		}
-		
-		public override CalendarEntry[] ListCalendarEntries (DateTime startDate, DateTime endDate)
-		{
-			
-			List<CalendarEntry> eventsList = new List<CalendarEntry>();
-			EKEventStore store = new EKEventStore();
-		    EKCalendar calendar = store.DefaultCalendarForNewEvents;
-		
-		    // Query the event
-		    if (calendar != null)
-		    {
-		        // Searches for every event in the range of given dates
-		        NSPredicate predicate = store.PredicateForEvents(startDate,endDate,new EKCalendar[] {calendar});
-				store.EnumerateEvents(predicate, delegate(EKEvent currentEvent, ref bool stop)
-		        {
-		            // Perform your check for an event type
-					CalendarEntry entry = new CalendarEntry();
-					entry.Uid = currentEvent.EventIdentifier;
-					entry.Title = currentEvent.Title;
-					entry.Notes = currentEvent.Notes;
-					entry.Location = currentEvent.Location;
-					entry.IsAllDayEvent = currentEvent.AllDay;
-					entry.StartDate = currentEvent.StartDate;
-					entry.EndDate = currentEvent.EndDate;
-				
-					// TODO: locate how to translate this features
-					// entry.Type (birthday, exchange, etc)
-					//calendarEvent.  = entry.IsEditable
-				
-					// Attendees
-					if(currentEvent.Attendees != null && currentEvent.Attendees.Length>0) {
-						int attendeesNum = currentEvent.Attendees.Length;
-						entry.Attendees = new CalendarAttendee[attendeesNum];
-						int index = 0;
-						foreach(EKParticipant participant in currentEvent.Attendees) {
-							CalendarAttendee attendee = new CalendarAttendee();
-							attendee.Name = participant.Name;
-							attendee.Address = participant.Url.AbsoluteString;
-							if(participant.ParticipantStatus == EKParticipantStatus.Unknown || participant.ParticipantStatus == EKParticipantStatus.Pending) {
-								attendee.Status = AttendeeStatus.NeedsAction;
-								}
-							entry.Attendees[index] = attendee;
-							index++;
-						}
-					}
-						
-				
-					// Alarms
-					if(currentEvent.HasAlarms && currentEvent.Alarms != null && currentEvent.Alarms.Length >0) {
-						int alarmsNum = currentEvent.Alarms.Length;
-						entry.Alarms = new CalendarAlarm[alarmsNum];
-						int index = 0;
-						foreach(EKAlarm alarm in currentEvent.Alarms) {
-							CalendarAlarm eventAlarm = new CalendarAlarm();
-							eventAlarm.Trigger = alarm.AbsoluteDate;
-							// TODO: how to manage "action", "sound" and "emailaddress"
-							entry.Alarms[index] = eventAlarm;
-							index++;
-						}
-					}
-				
-					// Recurrence Rules (pick only the first one)
-					if(currentEvent.HasRecurrenceRules && currentEvent.RecurrenceRules != null && currentEvent.RecurrenceRules.Length >0) {
-						entry.IsRecurrentEvent = true;
-						EKRecurrenceRule rule = currentEvent.RecurrenceRules[0];
-						if(rule != null) {
-							entry.Recurrence = new CalendarRecurrence();
-							if(rule.Frequency == EKRecurrenceFrequency.Weekly) {
-								entry.Recurrence.Type = RecurrenceType.Weekly;
-							} else if(rule.Frequency == EKRecurrenceFrequency.Monthly) {
-								entry.Recurrence.Type = RecurrenceType.Montly;
-							} else if(rule.Frequency == EKRecurrenceFrequency.Yearly) {
-								entry.Recurrence.Type = RecurrenceType.Yearly;
-							}
-							if(rule.RecurrenceEnd != null) {
-								entry.Recurrence.EndDate = rule.RecurrenceEnd.EndDate;
-								entry.Recurrence.Interval = rule.Interval;
-								entry.RecurrenceNumber = rule.RecurrenceEnd.OccurrenceCount;
-							}
-						}
-					}
-					
-					eventsList.Add(entry);
-		        });
-		
-		    }
-			
-			return eventsList.ToArray();
-		}
-		
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -932,15 +702,313 @@ namespace Unity.Platform.IPhone
 			return multableMultilabel;
 		}
 		
+		public override bool UpdateContact (string ID, Contact newContactData)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public override bool DeleteContact (Contact contact)
+		{
+			throw new System.NotImplementedException();
+		}
+
+#endregion
+
+		#region CALENDAR API
+	
+		public override CalendarEntry CreateCalendarEntry (CalendarEntry entry)
+		{
+			if(entry!=null) {
+				if (UIDevice.CurrentDevice.CheckSystemVersion (6, 0)) {
+					RequestAccessToCalendar (EKEntityType.Event, () => { LaunchCreateNewEvent (entry); } );
+				} else {
+					using (var pool = new NSAutoreleasePool ()) {
+						var thread = new Thread (ShowCreateCalendarEventView);
+						thread.Start (entry);
+					};
+				}
+			}
+			
+			// TODO return CalendarEntry object should return the inserted ID event.
+			return entry;
+		}
+
+		[Export("ShowCreateCalendarEventView")]
+		private void ShowCreateCalendarEventView (object entryObject)
+		{
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				CalendarEntry entry  = (CalendarEntry)entryObject;
+				LaunchCreateNewEvent (entry);
+			});
+		}
+		
+		/// <summary>
+		/// A convenience method that requests access to the appropriate calendar and 
+		/// shows an alert if access is not granted, otherwise executes the completion 
+		/// method.
+		/// </summary>
+		protected void RequestAccessToCalendar ( EKEntityType type, Action completion )
+		{
+			IPhoneServiceLocator.CurrentDelegate.EventStore.RequestAccess (type, 
+			                                                               (bool granted, NSError e) => {
+				if (granted) {
+					UIApplication.SharedApplication.InvokeOnMainThread ( () => { completion.Invoke(); } );
+				} else {
+					INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
+					if (notificationService != null) {
+						notificationService.StartNotifyAlert ("Access Denied", "User Denied Access to Calendars/Reminders. Go to Privacy Settings to change it.", "OK");
+					}
+				}
+			} );
+		}
+		
+		/// <summary>
+		/// Launchs the create new event controller.
+		/// </summary>
+		protected void LaunchCreateNewEvent (CalendarEntry entry)
+		{
+			EKEventStore store = IPhoneServiceLocator.CurrentDelegate.EventStore;
+			EKCalendar calendar = store.DefaultCalendarForNewEvents;
+			
+			EKEvent calendarEvent = EKEvent.FromStore(store);
+			// add event to the default calendar for the new events
+			calendarEvent.Calendar = calendar;
+			
+			try {
+				// add event details
+				calendarEvent.Title = entry.Title;
+				if(entry.Notes == null) {
+					entry.Notes = "";
+				}
+				calendarEvent.Notes = entry.Notes;
+				calendarEvent.Location = entry.Location;
+				calendarEvent.AllDay = entry.IsAllDayEvent;
+				calendarEvent.StartDate = entry.StartDate;
+				calendarEvent.EndDate = entry.EndDate;
+				
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Creating Calendar Event: " + calendarEvent.Title);
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Default Calendar: " + calendar.Title);
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Event StartDate: " + calendarEvent.StartDate.ToString());
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Event EndDate: " + calendarEvent.EndDate.ToString());
+				// TODO: locate how to translate this features
+				// entry.Type (birthday, exchange, etc)
+				//calendarEvent.  = entry.IsEditable
+				
+				// Attendees
+				if(entry.Attendees != null && entry.Attendees.Length >0) {
+					int attendeesNum = entry.Attendees.Length;
+					// TODO : check another way to add participants
+					// calendarEvent.Attendees --> READ ONLY !!!
+				}
+				
+				// Alarms
+				if(entry.Alarms != null && entry.Alarms.Length >0) {
+					foreach(CalendarAlarm alarm in entry.Alarms) {
+						EKAlarm eventAlarm = new EKAlarm();
+						eventAlarm.AbsoluteDate = alarm.Trigger;
+						// TODO: how to manage "action", "sound" and "emailaddress"
+						calendarEvent.AddAlarm(eventAlarm);
+					}
+				}
+
+				if (UIDevice.CurrentDevice.CheckSystemVersion (5, 0)) {
+					// Recurrence Rules
+					if(entry.IsRecurrentEvent && entry.Recurrence != null) {
+						EKRecurrenceFrequency recurrenceFrequency = EKRecurrenceFrequency.Daily;
+						if(entry.Recurrence.Type == RecurrenceType.Weekly) {
+							recurrenceFrequency = EKRecurrenceFrequency.Weekly;
+						} else if(entry.Recurrence.Type == RecurrenceType.Montly) {
+							recurrenceFrequency = EKRecurrenceFrequency.Monthly;
+						} else if(entry.Recurrence.Type == RecurrenceType.Yearly) {
+							recurrenceFrequency = EKRecurrenceFrequency.Yearly;
+						} else if(entry.Recurrence.Type == RecurrenceType.FourWeekly) {
+							recurrenceFrequency = EKRecurrenceFrequency.Weekly;
+							entry.Recurrence.Interval = 4; // force event to be repeated "every 4 weeks"
+						} else if(entry.Recurrence.Type == RecurrenceType.Fortnightly) {
+							recurrenceFrequency = EKRecurrenceFrequency.Weekly;
+							entry.Recurrence.Interval = 2; // force event to be repeated "every 2 weeks"
+						}
+						EKRecurrenceEnd recurrenceEnd = null;
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence Frequency: " + recurrenceFrequency);
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence Interval: " + entry.Recurrence.Interval);
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence EndDate (requested): " + entry.Recurrence.EndDate.ToString());
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence number: " + entry.RecurrenceNumber);
+						if(entry.Recurrence.EndDate.CompareTo(entry.EndDate)>0) {
+							recurrenceEnd = EKRecurrenceEnd.FromEndDate(entry.Recurrence.EndDate);
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence EndDate (applied): " + recurrenceEnd.EndDate.ToString());
+						} else if(entry.RecurrenceNumber > 0) {
+							recurrenceEnd = EKRecurrenceEnd.FromOccurrenceCount((int)entry.RecurrenceNumber);
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence OcurrenceCount: " + recurrenceEnd.OccurrenceCount);
+						} else {
+							recurrenceEnd = new EKRecurrenceEnd();
+						}
+						EKRecurrenceRule recurrenceRule = new EKRecurrenceRule(recurrenceFrequency,entry.Recurrence.Interval, recurrenceEnd);
+						if(entry.Recurrence.DayOfTheWeek > 0) {
+							EKRecurrenceDayOfWeek dayOfWeek = EKRecurrenceDayOfWeek.FromWeekDay(entry.Recurrence.DayOfTheWeek,0);
+							EKRecurrenceDayOfWeek[] arrayDayOfWeek = new EKRecurrenceDayOfWeek[1];
+							arrayDayOfWeek[0] = dayOfWeek;
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Setting DayOfTheWeek: " + dayOfWeek.DayOfTheWeek);
+							recurrenceRule = new EKRecurrenceRule(recurrenceFrequency,entry.Recurrence.Interval, arrayDayOfWeek, null, null, null, null, null, recurrenceEnd);
+						}
+						
+						calendarEvent.AddRecurrenceRule(recurrenceRule);
+					}
+				}
+			} catch (Exception e) {
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "ERROR Creating Calendar Event [" + calendarEvent.Title + "]. Error message: " + e.Message);
+			}
+			
+			EKEventEditViewController eventViewController = new EKEventEditViewController();
+			eventViewController.Event = calendarEvent;
+			eventViewController.EventStore = store;
+			eventViewController.Completed += delegate(object sender, EKEventEditEventArgs e) {
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "On EKEventEditViewController Completed: " + e.Action);
+					if(e.Action == EKEventEditViewAction.Saved) {
+						INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
+						if (notificationService != null) {
+							notificationService.StartNotifyAlert ("Calendar Alert", "Calendar Entry Saved", "OK");
+						}
+					}
+					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
+				});
+			};
+			
+			IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (eventViewController, true);
+			
+		}
+		
+		/*
+		[Export("ShowCreateCalendarEventView")]
+		private void ShowCreateCalendarEventView (object entryObject)
+		{
+			CalendarEntry entry  = (CalendarEntry)entryObject;
+			RequestAccess (EKEntityType.Event, () => { LaunchCreateNewEvent (entry); } );
+		}
+		*/
+		
+		public override bool DeleteCalendarEntry (CalendarEntry entry)
+		{
+			throw new System.NotImplementedException();
+		}
+		
 		public override bool MoveCalendarEntry (CalendarEntry entry, DateTime newStartDate, DateTime newEndDate)
 		{
 			throw new System.NotImplementedException();
 		}
 		
-		public override bool UpdateContact (string ID, Contact newContactData)
+		public override CalendarEntry[] ListCalendarEntries (DateTime date)
 		{
-			throw new System.NotImplementedException();
+			// list calendar entries fro the same start and end dates.
+			return ListCalendarEntries(date, date);
 		}
 		
+		/// <summary>
+		/// This method retrieves all the events for the past week via a query and displays them
+		/// on the EventList Screen.
+		/// </summary>
+		protected void GetEventsViaQuery (DateTime startDate, DateTime endDate)
+		{
+			List<CalendarEntry> eventsList = new List<CalendarEntry>();
+			EKEventStore store = new EKEventStore();
+			EKCalendar calendar = store.DefaultCalendarForNewEvents;
+			
+			// Query the event
+			if (calendar != null)
+			{
+				// Searches for every event in the range of given dates
+				NSPredicate predicate = store.PredicateForEvents(startDate,endDate,new EKCalendar[] {calendar});
+				store.EnumerateEvents(predicate, delegate(EKEvent currentEvent, ref bool stop)
+				                      {
+					// Perform your check for an event type
+					CalendarEntry entry = new CalendarEntry();
+					entry.Uid = currentEvent.EventIdentifier;
+					entry.Title = currentEvent.Title;
+					entry.Notes = currentEvent.Notes;
+					entry.Location = currentEvent.Location;
+					entry.IsAllDayEvent = currentEvent.AllDay;
+					entry.StartDate = currentEvent.StartDate;
+					entry.EndDate = currentEvent.EndDate;
+					
+					// TODO: locate how to translate this features
+					// entry.Type (birthday, exchange, etc)
+					//calendarEvent.  = entry.IsEditable
+					
+					// Attendees
+					if(currentEvent.Attendees != null && currentEvent.Attendees.Length>0) {
+						int attendeesNum = currentEvent.Attendees.Length;
+						entry.Attendees = new CalendarAttendee[attendeesNum];
+						int index = 0;
+						foreach(EKParticipant participant in currentEvent.Attendees) {
+							CalendarAttendee attendee = new CalendarAttendee();
+							attendee.Name = participant.Name;
+							attendee.Address = participant.Url.AbsoluteString;
+							if(participant.ParticipantStatus == EKParticipantStatus.Unknown || participant.ParticipantStatus == EKParticipantStatus.Pending) {
+								attendee.Status = AttendeeStatus.NeedsAction;
+							}
+							entry.Attendees[index] = attendee;
+							index++;
+						}
+					}
+					
+					
+					// Alarms
+					if(currentEvent.HasAlarms && currentEvent.Alarms != null && currentEvent.Alarms.Length >0) {
+						int alarmsNum = currentEvent.Alarms.Length;
+						entry.Alarms = new CalendarAlarm[alarmsNum];
+						int index = 0;
+						foreach(EKAlarm alarm in currentEvent.Alarms) {
+							CalendarAlarm eventAlarm = new CalendarAlarm();
+							eventAlarm.Trigger = alarm.AbsoluteDate;
+							// TODO: how to manage "action", "sound" and "emailaddress"
+							entry.Alarms[index] = eventAlarm;
+							index++;
+						}
+					}
+					
+					// Recurrence Rules (pick only the first one)
+					if(currentEvent.HasRecurrenceRules && currentEvent.RecurrenceRules != null && currentEvent.RecurrenceRules.Length >0) {
+						entry.IsRecurrentEvent = true;
+						EKRecurrenceRule rule = currentEvent.RecurrenceRules[0];
+						if(rule != null) {
+							entry.Recurrence = new CalendarRecurrence();
+							if(rule.Frequency == EKRecurrenceFrequency.Weekly) {
+								entry.Recurrence.Type = RecurrenceType.Weekly;
+							} else if(rule.Frequency == EKRecurrenceFrequency.Monthly) {
+								entry.Recurrence.Type = RecurrenceType.Montly;
+							} else if(rule.Frequency == EKRecurrenceFrequency.Yearly) {
+								entry.Recurrence.Type = RecurrenceType.Yearly;
+							}
+							if(rule.RecurrenceEnd != null) {
+								entry.Recurrence.EndDate = rule.RecurrenceEnd.EndDate;
+								entry.Recurrence.Interval = rule.Interval;
+								entry.RecurrenceNumber = rule.RecurrenceEnd.OccurrenceCount;
+							}
+						}
+					}
+					
+					eventsList.Add(entry);
+				});
+				
+			}
+
+			// TODO :: this API could no longer be invoked in this way.
+			// the list of entries must be queried after checking access --> so, process has to send data via callback
+			
+			// return eventsList.ToArray();
+		}
+		
+		public override CalendarEntry[] ListCalendarEntries (DateTime startDate, DateTime endDate)
+		{
+			if (UIDevice.CurrentDevice.CheckSystemVersion (6, 0)) {
+				RequestAccessToCalendar (EKEntityType.Event, () => { GetEventsViaQuery (startDate, endDate); } );
+			} else {
+				GetEventsViaQuery (startDate, endDate);
+			}
+			// TODO provide a way to send back the query result data
+			return null;
+		}
+
+#endregion
 	}
 }
