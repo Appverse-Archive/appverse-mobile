@@ -80,6 +80,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -120,6 +121,7 @@ import android.content.Context;
 import android.os.Build;
 
 import com.gft.unity.core.io.AbstractIO;
+import com.gft.unity.core.io.HTTPProtocolVersion;
 import com.gft.unity.core.io.IOCookie;
 import com.gft.unity.core.io.IOHeader;
 import com.gft.unity.core.io.IORequest;
@@ -264,13 +266,24 @@ public class AndroidIO extends AbstractIO {
 				return response;
 			}
 
+			String requestMethod = service.getRequestMethod().toString();
+			if(request.getMethod() != null && request.getMethod().length()>0) requestMethod = request.getMethod().toUpperCase();
+			
 			String requestUriString = endpoint.getHost() + ":"
 					+ endpoint.getPort() + endpoint.getPath();
 			if (endpoint.getPort() == 0) {
 				requestUriString = endpoint.getHost() + endpoint.getPath();
 			}
 
+			if (requestMethod.equalsIgnoreCase(RequestMethod.GET.toString())) {
+				// add request content to the URI string when GET method.
+				if (request.getContent() != null) {
+					requestUriString += request.getContent();
+				}
+			}
+			
 			LOG.Log(Module.PLATFORM, "Requesting service: " + requestUriString);
+			LOG.Log(Module.PLATFORM, "Request method: " + requestMethod);
 			
 			Thread timeoutThread = null;
 			
@@ -362,11 +375,16 @@ public class AndroidIO extends AbstractIO {
 				// preserving the cookies between requests
 				httpClient.setCookieStore(cookieStore);
 				
-				httpClient.getParams().setParameter("http.protocol.version", HttpVersion.HTTP_1_0);  // not chunked requests
+				if(request.getProtocolVersion() == HTTPProtocolVersion.HTTP11) {
+					httpClient.getParams().setParameter("http.protocol.version", HttpVersion.HTTP_1_1);
+				} else {
+					httpClient.getParams().setParameter("http.protocol.version", HttpVersion.HTTP_1_0);  // not chunked requests
+				}
+				
 				httpClient.getParams().setIntParameter("http.connection.timeout", DEFAULT_READWRITE_TIMEOUT);
 				httpClient.getParams().setIntParameter("http.socket.timeout", DEFAULT_RESPONSE_TIMEOUT);
 			
-				HttpUriRequest httpRequest = null;
+				
 
 				if (endpoint.getProxyUrl() != null
 						&& !endpoint.getProxyUrl().equals("")
@@ -378,17 +396,12 @@ public class AndroidIO extends AbstractIO {
 							ConnRoutePNames.DEFAULT_PROXY, proxyHost);
 				}
 
-				if (service.getRequestMethod() != RequestMethod.POST) {
-					// add request content to the URI string when GET method.
-					if (request.getContent() != null) {
-						requestUriString += request.getContent();
-					}
-					httpRequest = new HttpGet(requestUriString);
-				} else {
-					httpRequest = new HttpPost(requestUriString);
+				HttpEntityEnclosingRequestBase httpRequest = new HttpAppverse(new URI(requestUriString), requestMethod);
+				
+				if(!requestMethod.equalsIgnoreCase(RequestMethod.GET.toString())){
 					if (request.getContent() != null
 							&& request.getContent().length() > 0) {
-						((HttpPost) httpRequest).setEntity(new StringEntity(
+						httpRequest.setEntity(new StringEntity(
 								request.getContent(), HTTP.UTF_8));
 					}
 				}
@@ -594,7 +607,21 @@ public class AndroidIO extends AbstractIO {
 			}
 			
 		}
+	}
+	
+	public class HttpAppverse extends HttpEntityEnclosingRequestBase {
 		
+		private String method = null;
+		
+		public HttpAppverse(final URI uri, String method) {
+			this.setURI(uri);
+			this.method = method;
+		}
+
+		@Override
+		public String getMethod() {
+			return method;
+		}	
 	}
 	
 	public class MySSLSocketFactory extends SSLSocketFactory {

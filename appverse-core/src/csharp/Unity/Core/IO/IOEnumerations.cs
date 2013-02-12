@@ -49,4 +49,11 @@ namespace Unity.Core.IO
 		POST,
 		GET
 	}
+
+    [XmlTypeAttribute()]
+    public enum HTTPProtocolVersion
+    {
+        HTTP10,
+        HTTP11
+    }
 }

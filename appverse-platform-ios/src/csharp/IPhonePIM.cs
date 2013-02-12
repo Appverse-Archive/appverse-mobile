@@ -57,10 +57,16 @@ namespace Unity.Platform.IPhone
 		public override Contact CreateContact (Contact contactData)
 		{
 			if(contactData!=null) {
+
+				if (UIDevice.CurrentDevice.CheckSystemVersion (6, 0)) {
+					RequestAccessToContacts(() => { LaunchCreateNewContact (contactData); } );
+				} else {
 				using (var pool = new NSAutoreleasePool ()) {
 					var thread = new Thread (ShowCreateContactView);
 					thread.Start (contactData);
 				};
+			}
+
 			}
 			// TODO return Contact object should return the inserted ID.
 			return contactData;
@@ -71,6 +77,48 @@ namespace Unity.Platform.IPhone
 		{
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 				Contact contact  = (Contact)contactObject;
+				LaunchCreateNewContact(contact);
+			});
+		}
+
+		/// <summary>
+		/// A convenience method that requests access to the appropriate contacts ap and 
+		/// shows an alert if access is not granted, otherwise executes the completion 
+		/// method.
+		/// </summary>
+		protected void RequestAccessToContacts ( Action completion )
+		{
+			if(IPhoneServiceLocator.CurrentDelegate.AddressBook != null) {
+				IPhoneServiceLocator.CurrentDelegate.AddressBook.RequestAccess ( (bool granted, NSError e) => {
+					if (granted) {
+						UIApplication.SharedApplication.InvokeOnMainThread ( () => { completion.Invoke(); } );
+					} else {
+						NotifyDeniedAccessToContacts();
+					}
+				} );
+			} else {
+				NotifyDeniedAccessToContacts();
+			}
+		}
+
+		/// <summary>
+		/// Notifies the denied access to contacts.
+		/// </summary>
+		private void NotifyDeniedAccessToContacts() {
+			INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
+			if (notificationService != null) {
+				notificationService.StartNotifyAlert ("Access Denied", "User Denied Access to Contacts. Go to Privacy Settings to change it.", "OK");
+			}
+		}
+
+		/// <summary>
+		/// Launchs the create new contact.
+		/// </summary>
+		/// <param name='contact'>
+		/// Contact.
+		/// </param>
+		/// 
+		protected void LaunchCreateNewContact(Contact contact) {
 				
 				ABPerson person = new ABPerson();
 				// Basic Info
@@ -109,7 +157,7 @@ namespace Unity.Platform.IPhone
 				}
 				
 				ABUnknownPersonViewController unknownPersonViewController = new ABUnknownPersonViewController();
-				unknownPersonViewController.AddressBook = new ABAddressBook();
+			unknownPersonViewController.AddressBook = IPhoneServiceLocator.CurrentDelegate.AddressBook;
 				unknownPersonViewController.AllowsActions = false;
 				unknownPersonViewController.AllowsAddingToAddressBook = true;
 				unknownPersonViewController.DisplayedPerson = person;
@@ -125,7 +173,6 @@ namespace Unity.Platform.IPhone
 				contactNavController.PushViewController(unknownPersonViewController,false);
 				
 				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (contactNavController, true);
-			});
 		}
 
 		void HandleBackButtonItemClicked (object sender, EventArgs e)
@@ -184,7 +231,7 @@ namespace Unity.Platform.IPhone
 		{
 			List<Contact> contactList = new List<Contact>();
 			
-			ABAddressBook addressBook = new ABAddressBook();
+			ABAddressBook addressBook = IPhoneServiceLocator.CurrentDelegate.AddressBook;
 			ABPerson[] people = null;
 			
 			if(queryText == null) {

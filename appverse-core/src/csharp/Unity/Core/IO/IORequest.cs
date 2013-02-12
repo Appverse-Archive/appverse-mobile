@@ -29,5 +29,8 @@ namespace Unity.Core.IO
 {
 	public class IORequest : IOHeaders
 	{
+        public String Method {get;set;}
+
+        public HTTPProtocolVersion ProtocolVersion { get; set; }
 	}
 }
