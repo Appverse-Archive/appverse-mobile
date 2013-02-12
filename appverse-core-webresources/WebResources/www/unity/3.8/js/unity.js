@@ -2318,6 +2318,19 @@ IO = function() {
 	 * @type int
 	 */
 	this.SERVICETYPE_GWT_RPC = 9;
+	
+	/**
+	 * HTTP Protocol Version "HTTP/1.0".
+ 	 * <br> @version 3.8
+	 * @type int
+	 */
+	this.HTTP_PROTOCOL_VERSION_1_0 = 0;
+	/**
+	 * HTTP Protocol Version "HTTP/1.1".
+ 	 * <br> @version 3.8
+	 * @type int
+	 */
+	this.HTTP_PROTOCOL_VERSION_1_1 = 1;
 }
 
 Unity.IO = new IO();

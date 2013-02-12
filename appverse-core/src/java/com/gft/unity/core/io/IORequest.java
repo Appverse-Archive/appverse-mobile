@@ -30,6 +30,27 @@ public class IORequest extends IOHeaders {
     public IORequest() {
     }
 
+    private String method;
+    private HTTPProtocolVersion protocolVersion;
+    
+     public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String requestMethod) {
+        this.method = requestMethod;
+    }
+    
+     public HTTPProtocolVersion getProtocolVersion() {
+        return protocolVersion;
+    }
+
+    public void setProtocolVersion(HTTPProtocolVersion protocolVersion) {
+        this.protocolVersion = protocolVersion;
+    }
+    
+    
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -41,6 +62,10 @@ public class IORequest extends IOHeaders {
         builder.append(getContent());
         builder.append(", getSession()=");
         builder.append(getSession());
+        builder.append(", getMethod()=");
+        builder.append(getMethod());
+        builder.append(", getProtocolVersion()=");
+        builder.append(getProtocolVersion().toString());
         builder.append("]");
         return builder.toString();
     }
