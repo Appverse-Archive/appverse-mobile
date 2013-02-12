@@ -73,20 +73,24 @@ public class AndroidSecurity extends AbstractSecurity {
 		 if (new ExecShell().executeCommand(ExecShell.SHELL_CMD.check_su_binary) != null){
 			 return true;
 	     }else{
-	         return false;
+	    	 if (new ExecShell().executeCommand(ExecShell.SHELL_CMD.check_su_permission) != null){
+	    		 return true;
+	    	 }else return false;
 	     }
 	 }
 	 
 	 private static class ExecShell
 	 {
 		 public static enum SHELL_CMD {
-			 
-			 check_su_binary(new String[] {"/system/xbin/which","su"});
+			 check_su_binary(new String[] {"/system/xbin/which","su"}),
+			 check_su_permission(new String[] {"su","-v"});
 			 
 			 String[] command;
 		     SHELL_CMD(String[] command){
 		    	 this.command = command;
 		     }
+		     
+		     
 		 }
 
 		 public ArrayList<String> executeCommand(SHELL_CMD shellCmd){
@@ -102,11 +106,19 @@ public class AndroidSecurity extends AbstractSecurity {
 			 }
 
 			 BufferedReader in = new BufferedReader(new InputStreamReader(localProcess.getInputStream()));
+			 BufferedReader er = new BufferedReader(new InputStreamReader(localProcess.getErrorStream()));
 
 			 try {
 				 while ((line = in.readLine()) != null) {
 					 fullResponse.add(line);
 				 }
+				 if(fullResponse.size()<=0){
+					 while ((line = er.readLine()) != null) {
+						 fullResponse.add(line);
+					 }
+				 }
+				 in.close();
+				 er.close();
 			 } catch (Exception e) {
 				 //e.printStackTrace();
 			 }

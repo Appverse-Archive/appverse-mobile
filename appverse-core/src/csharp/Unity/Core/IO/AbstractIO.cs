@@ -233,6 +233,9 @@ namespace Unity.Core.IO
 			if (service != null) {
 				SystemLogger.Log (SystemLogger.Module .CORE, "Request content: " + request.Content);
 				byte[] requestData = request.GetRawContent ();
+                String reqMethod = service.RequestMethod.ToString(); // default is POST
+                if (request.Method != null && request.Method != String.Empty) reqMethod = request.Method.ToUpper();
+
 				
 				if (service.Endpoint == null) {
 					SystemLogger.Log (SystemLogger.Module .CORE, "No endpoint configured for this service name: " + service.Name);
@@ -244,8 +247,9 @@ namespace Unity.Core.IO
 					requestUriString = String.Format ("{0}{1}", service.Endpoint.Host, service.Endpoint.Path);
 				}
 				
-				if (service.RequestMethod == RequestMethod.GET && request.Content != null) {
-					// add request content to the URI string when GET method.
+                if (reqMethod.Equals(RequestMethod.GET.ToString()) && request.Content != null)
+                {
+					// add request content to the URI string when NOT POST method (GET, PUT, DELETE).
 					requestUriString += request.Content;
 				}
 				
@@ -257,13 +261,15 @@ namespace Unity.Core.IO
 					ServicePointManager.ServerCertificateValidationCallback = ValidateWebCertificates;
 					
 					HttpWebRequest req = (HttpWebRequest)WebRequest.Create (requestUriString);
-					req.Method = service.RequestMethod.ToString (); // default is POST
+                    req.Method = reqMethod; // default is POST
 					req.ContentType = contentTypes [service.Type];
 
 					// check specific request ContentType defined, and override service type in that case
 					if (request.ContentType != null && request.ContentType.Length > 0) {
 						req.ContentType = request.ContentType;
 					}
+
+                    
 					SystemLogger.Log (SystemLogger.Module.CORE, "Request content type: " + req.ContentType);
 					SystemLogger.Log (SystemLogger.Module.CORE, "Request method: " + req.Method);
 
@@ -274,6 +280,7 @@ namespace Unity.Core.IO
 					req.ReadWriteTimeout = DEFAULT_READWRITE_TIMEOUT; // in milliseconds
 					req.KeepAlive = false;
 					req.ProtocolVersion = HttpVersion.Version10;
+                    if (request.ProtocolVersion == HTTPProtocolVersion.HTTP11) req.ProtocolVersion = HttpVersion.Version11;
 					
 					// user agent needs to be informed - some servers check this parameter and send 500 errors when not informed.
 					req.UserAgent = this.IOUserAgent;
@@ -313,7 +320,8 @@ namespace Unity.Core.IO
 					timeoutThread = new Thread(CheckInvokeTimeout);
 					timeoutThread.Start(req);
 					
-					if (req.Method == RequestMethod.POST.ToString ()) {
+                    if (!reqMethod.Equals(RequestMethod.GET.ToString()) && requestData != null)
+                    {
 						// send data only for POST method.
 						SystemLogger.Log (SystemLogger.Module.CORE, "Sending data on the request stream... (POST)");
 						SystemLogger.Log (SystemLogger.Module.CORE, "request data length: " + requestData.Length);
