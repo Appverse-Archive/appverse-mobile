@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
+	<!-- we have removed this orientation configuration and delegated it to the UnityUI_iOSViewController#GetSupportedInterfaceOrientations() method for iOS 6 and later, 
+	and UnityUI_iOSViewController#ShouldAutorotateToInterfaceOrientation for <iOS 6 
     <key>UISupportedInterfaceOrientations</key>
     <array>
       <string>UIInterfaceOrientationPortrait</string>
@@ -9,5 +11,6 @@
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+	-->
   </dict>
 </plist>
