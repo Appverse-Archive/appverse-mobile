@@ -49,7 +49,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebSettings;
 import android.widget.ImageView;
-import android.widget.Toast;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
@@ -142,15 +141,7 @@ public class MainActivity extends Activity {
 		appView.getSettings().setDatabasePath(databasePath);
 
 		webChromeClient = new WebChromeClient() {
-
-			@Override
-			public boolean onJsAlert(WebView view, String url, String message,
-					android.webkit.JsResult result) {
-				Toast.makeText(getApplicationContext(), message,
-						Toast.LENGTH_SHORT);
-				return super.onJsAlert(view, url, message, result);
-			};
-
+			
 			// Required settings to enable HTML5 database storage
 			@Override
 			public void onExceededDatabaseQuota(String url,
