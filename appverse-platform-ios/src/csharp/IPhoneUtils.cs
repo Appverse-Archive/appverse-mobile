@@ -42,7 +42,7 @@ namespace Unity.Platform.IPhone
 	{
 		private static string _ResourcesZipped = "$ResourcesZipped$";
 		private static string APP_RESOURCES_ZIP = "app-encrypted.zip";
-		private static string ENCRYPTION_PASSWORD = "hashB";
+		private static string ENCRYPTION_PASSWORD = "$hashB$";
 		private ZipFile _zipFile = null;
 		private string[] _zipEntriesNames = null;
 		private Dictionary<string, ZipEntry> _zipEntries = null; 
