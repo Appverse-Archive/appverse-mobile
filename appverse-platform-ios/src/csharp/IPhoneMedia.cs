@@ -341,13 +341,14 @@ namespace Unity.Platform.IPhone
 		private void ShowMediaPlayer (object url)
 		{
 			NSUrl nsUrl = (NSUrl) url;
-			
+
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {	
-				MPMoviePlayerViewController vcMediaPlayer = new MPMoviePlayerViewController(nsUrl);
+				AppverseMoviePlayerViewController vcMediaPlayer = new AppverseMoviePlayerViewController(nsUrl);
 				this.playerController = vcMediaPlayer.MoviePlayer;
 				this.CurrentMedia = GetMetadataFromUrl(nsUrl);
 				this.State = MediaState.Playing;
-				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (vcMediaPlayer, true);
+
+				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentMoviePlayerViewController(vcMediaPlayer);
 			});
 			
 		}
@@ -539,7 +540,27 @@ namespace Unity.Platform.IPhone
 			this.Stop();
 		}
 		#endregion
+
 		
-		
+	}
+
+	public class AppverseMoviePlayerViewController : MPMoviePlayerViewController {
+
+		public AppverseMoviePlayerViewController(NSUrl url) : base(url) {
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "AppverseMoviePlayerViewController init with url: " + url);
+		}
+
+		public override bool ShouldAutorotate ()
+		{ 
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "AppverseMoviePlayerViewController ShouldAutorotate? " + true);
+			return true;
+		}
+
+		public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations ()
+		{
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "AppverseMoviePlayerViewController SupportedInterfaceOrientations: " + UIInterfaceOrientationMask.AllButUpsideDown);
+			return UIInterfaceOrientationMask.AllButUpsideDown;
+		}
+	
 	}
 }
