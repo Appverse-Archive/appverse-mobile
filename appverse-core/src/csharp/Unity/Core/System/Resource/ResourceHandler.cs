@@ -63,6 +63,16 @@ namespace Unity.Core.System.Resource
 			MimeTypes [".pdf"] = "application/pdf";
 			
 			MimeTypes [".json"] = "application/json";
+			MimeTypes [".txt"] = "text/plain";
+			MimeTypes [".zip"] = "application/x-zip-compressed";
+
+			// needed for displaying internal resources in an HTML5 <video> tag
+			// http://www.w3schools.com/tags/tag_video.asp
+			MimeTypes [".mp4"] = "video/mp4";
+			MimeTypes [".m4v"] = "video/m4v";
+			MimeTypes [".webm"] = "video/webm";
+			MimeTypes [".ogg"] = "video/ogg";
+			MimeTypes [".ogv"] = "video/ogg";
 		}
 
 		/// <summary>
