@@ -47,6 +47,12 @@ namespace UnityUI.iOS
 		private bool IsLogging = true;
 		SplashScreenView splashView = null;
 		bool splashscreenShownOnStartupTime = false;
+		private bool orientationSupportedPortrait = false;
+		private bool orientationSupportedPortraitUpsideDown = false;
+		private bool orientationSupportedLandscapeLeft = false;
+		private bool orientationSupportedLandscapeRight = false;
+		private NSArray supportedOrientations = null;
+		
 		
 		#region Constructors
 		
@@ -69,8 +75,31 @@ namespace UnityUI.iOS
 		{
 			log ("Initialize view");
 			this.ShowSplashScreenOnStartupTime( UIApplication.SharedApplication.StatusBarOrientation);
+			
+			NSObject supportedOrientationsObj = NSBundle.MainBundle.ObjectForInfoDictionary ("CustomUISupportedInterfaceOrientations");
+			if (supportedOrientationsObj != null) {
+				if (supportedOrientationsObj is NSArray) {
+					supportedOrientations = (NSArray)supportedOrientationsObj;
+					
+					for (uint index = 0; index < supportedOrientations.Count; index++) {
+						NSString mySupportedOrientation = new NSString (supportedOrientations.ValueAt (index));
+						if (("UIInterfaceOrientation" + UIInterfaceOrientation.Portrait.ToString ()) == mySupportedOrientation.ToString ()) {
+							orientationSupportedPortrait = true;
+						}
+						if (("UIInterfaceOrientation" + UIInterfaceOrientation.PortraitUpsideDown.ToString ()) == mySupportedOrientation.ToString ()) {
+							orientationSupportedPortraitUpsideDown = true;
+						}
+						if (("UIInterfaceOrientation" + UIInterfaceOrientation.LandscapeLeft.ToString ()) == mySupportedOrientation.ToString ()) {
+							orientationSupportedLandscapeLeft = true;
+						}
+						if (("UIInterfaceOrientation" + UIInterfaceOrientation.LandscapeRight.ToString ()) == mySupportedOrientation.ToString ()) {
+							orientationSupportedLandscapeRight = true;
+						}
+					}
+					
+				} 
+			}
 		}
-		
 		
 		private void ShowSplashScreenOnStartupTime(UIInterfaceOrientation orientation) {
 			
@@ -163,28 +192,23 @@ namespace UnityUI.iOS
 		}
 #endregion
 		
-		/// DEPRECATED, not called anymore
+		/// DEPRECATED for iOS 6 and later, but needed for iOS 5 and earlier to support additional orientations
 		public override bool ShouldAutorotateToInterfaceOrientation (UIInterfaceOrientation toInterfaceOrientation)
 		{
 			bool shouldAutorotate = IPhoneUtils.GetInstance ().ShouldAutorotate ();
 			
 			if (shouldAutorotate) {
 				// Check supported orientations
-				NSObject supportedOrientationsObj = NSBundle.MainBundle.ObjectForInfoDictionary ("UISupportedInterfaceOrientations");
-				if (supportedOrientationsObj != null) {
-					if (supportedOrientationsObj is NSArray) {
-						
-						NSArray supportedOrientations = (NSArray)supportedOrientationsObj;
-						bool orientationSupported = false;
-						for (uint index = 0; index < supportedOrientations.Count; index++) {
-							NSString mySupportedOrientation = new NSString (supportedOrientations.ValueAt (index));
-							if (("UIInterfaceOrientation" + toInterfaceOrientation.ToString ()) == mySupportedOrientation.ToString ()) {
-								orientationSupported = true;
-								break;
-							}
+				if (supportedOrientations != null) {
+					bool orientationSupported = false;
+					for (uint index = 0; index < supportedOrientations.Count; index++) {
+						NSString mySupportedOrientation = new NSString (supportedOrientations.ValueAt (index));
+						if (("UIInterfaceOrientation" + toInterfaceOrientation.ToString ()) == mySupportedOrientation.ToString ()) {
+							orientationSupported = true;
+							break;
 						}
-						shouldAutorotate = orientationSupported;
 					}
+				    shouldAutorotate = orientationSupported;
 				} else {
 					log ("Supported orientations not configured. All orientations are supported by default");
 				}
@@ -198,6 +222,65 @@ namespace UnityUI.iOS
 			
 			return shouldAutorotate;
 			
+		}
+		
+		/// Available in iOS 6.0 and later.
+		public override bool ShouldAutorotate ()
+		{ 
+			bool shouldAutorotate = IPhoneUtils.GetInstance ().ShouldAutorotate ();
+			
+			if (!shouldAutorotate) {
+				log (" ** Autorotation blocked by application at runtime. ");
+			}
+		
+			log("ShouldAutorotate? " + shouldAutorotate);
+			return shouldAutorotate;
+		}
+		
+		/// Available in iOS 6.0 and later.
+		public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations ()
+		{
+			UIInterfaceOrientationMask supportedOrientationMask = UIInterfaceOrientationMask.All;
+			
+			if(orientationSupportedPortrait && orientationSupportedLandscapeLeft && orientationSupportedLandscapeRight && !orientationSupportedPortraitUpsideDown)  {
+				supportedOrientationMask = UIInterfaceOrientationMask.AllButUpsideDown;
+			} else {
+				if(orientationSupportedPortrait && !orientationSupportedLandscapeLeft && !orientationSupportedLandscapeRight && !orientationSupportedPortraitUpsideDown) {
+					supportedOrientationMask = UIInterfaceOrientationMask.Portrait;
+				}
+				
+				if(orientationSupportedPortrait && !orientationSupportedLandscapeLeft && !orientationSupportedLandscapeRight && orientationSupportedPortraitUpsideDown) {
+					supportedOrientationMask = UIInterfaceOrientationMask.Portrait;
+				}
+				
+				if(!orientationSupportedPortrait && !orientationSupportedLandscapeLeft && !orientationSupportedLandscapeRight && orientationSupportedPortraitUpsideDown) {
+					supportedOrientationMask = UIInterfaceOrientationMask.PortraitUpsideDown;
+				}
+				
+				if(!orientationSupportedPortrait && orientationSupportedLandscapeLeft && !orientationSupportedLandscapeRight && !orientationSupportedPortraitUpsideDown) {
+					supportedOrientationMask = UIInterfaceOrientationMask.LandscapeLeft;
+				}
+				
+				if(!orientationSupportedPortrait && !orientationSupportedLandscapeLeft && orientationSupportedLandscapeRight && !orientationSupportedPortraitUpsideDown) {
+					supportedOrientationMask = UIInterfaceOrientationMask.LandscapeRight;
+				}
+				
+				if(!orientationSupportedPortrait && orientationSupportedLandscapeLeft && orientationSupportedLandscapeRight && !orientationSupportedPortraitUpsideDown) {
+					supportedOrientationMask = UIInterfaceOrientationMask.Landscape;
+				}
+			}
+			
+			log("SupportedInterfaceOrientations: " + supportedOrientationMask);
+			return supportedOrientationMask;
+			
+		}
+		
+		public override bool ShouldAutomaticallyForwardRotationMethods {
+			get {
+				log ("ShouldAutomaticallyForwardRotationMethods true");
+				//return base.ShouldAutomaticallyForwardRotationMethods;
+				return true;
+			}
 		}
 		
 		/*
