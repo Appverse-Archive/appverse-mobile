@@ -53,6 +53,7 @@ public class AndroidUtils {
 	
 	private static String _ResourcesZipped = "$ResourcesZipped$";
 	private static String APP_RESOURCES_ZIP = "app-encrypted.zip";
+	private static String ENCRYPTION_PASSWORD = "$hashB$";
 	private static int SALT_LENGTH = 8;
 	
 	//private ZipFile _zipFile = null;
@@ -116,7 +117,7 @@ public class AndroidUtils {
 		//LOG.Log(Module.PLATFORM, "# aesData length: " + aesData.length);
 		
 		// 3. Create Key and IV from password
-	    byte[] password = "hashB".getBytes("UTF8");
+	    byte[] password = ENCRYPTION_PASSWORD.getBytes("UTF8");
 	    MessageDigest md = MessageDigest.getInstance("MD5");
 	    
 	    int preKeyLength = password.length + salt.length;
