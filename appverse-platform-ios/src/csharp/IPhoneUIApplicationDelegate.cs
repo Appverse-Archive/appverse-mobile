@@ -44,7 +44,7 @@ namespace Unity.Platform.IPhone
 			get { return eventStore; }
 		}
 		protected EKEventStore eventStore;
-	
+
 
 		/// <summary>
 		/// The EKEventStore is intended to be long-lived. It's expensive to new it up
@@ -61,34 +61,34 @@ namespace Unity.Platform.IPhone
 		public IPhoneUIApplicationDelegate () : base()
 		{
 			#if DEBUG
-			log ("AppDelegate constructor default");
+			log ("IPhoneUIApplicationDelegate constructor default");
 			#endif
 			IPhoneServiceLocator.CurrentDelegate = this;
 			#if DEBUG
-			log ("AppDelegate creating event store instance");
+			log ("IPhoneUIApplicationDelegate creating event store instance");
 			#endif
 			eventStore = new EKEventStore ( );
 			#if DEBUG
-			log ("AppDelegate creating address book instance");
+			log ("IPhoneUIApplicationDelegate creating address book instance");
 			#endif
 			if (UIDevice.CurrentDevice.CheckSystemVersion (6, 0)) {
 				NSError nsError = new NSError();
 				addressBook =ABAddressBook.Create(out nsError);
 				#if DEBUG
-				log ("AppDelegate creating address book result: " +((nsError!=null)?nsError.Description:"no error"));
+				log ("IPhoneUIApplicationDelegate creating address book result: " +((nsError!=null)?nsError.Description:"no error"));
 				#endif
 			} else {
 				addressBook = new ABAddressBook();
 			}
 			#if DEBUG
-			log ("AppDelegate constructor successfully ended");
+			log ("IPhoneUIApplicationDelegate constructor successfully ended");
 			#endif
 		}
 
 		public IPhoneUIApplicationDelegate (IntPtr ptr) : base(ptr)
 		{
 			#if DEBUG
-			log ("AppDelegate constructor IntPtr");
+			log ("IPhoneUIApplicationDelegate constructor IntPtr");
 			#endif
 			IPhoneServiceLocator.CurrentDelegate = this;
 			eventStore = new EKEventStore ( );
@@ -96,7 +96,7 @@ namespace Unity.Platform.IPhone
 				NSError nsError = new NSError();
 				addressBook =ABAddressBook.Create(out nsError);
 				#if DEBUG
-				log ("AppDelegate creating address book result: " +((nsError!=null)?nsError.Description:"no error"));
+				log ("IPhoneUIApplicationDelegate creating address book result: " +((nsError!=null)?nsError.Description:"no error"));
 				#endif
 			} else {
 				addressBook = new ABAddressBook();
@@ -114,7 +114,7 @@ namespace Unity.Platform.IPhone
 				NSError nsError = new NSError();
 				addressBook =ABAddressBook.Create(out nsError);
 				#if DEBUG
-				log ("AppDelegate creating address book result: " +((nsError!=null)?nsError.Description:"no error"));
+				log ("IPhoneUIApplicationDelegate creating address book result: " +((nsError!=null)?nsError.Description:"no error"));
 				#endif
 			} else {
 				addressBook = new ABAddressBook();
@@ -124,7 +124,7 @@ namespace Unity.Platform.IPhone
 		public IPhoneUIApplicationDelegate (NSObjectFlag flag) : base(flag)
 		{
 			#if DEBUG
-			log ("AppDelegate constructor NSObjectFlag");
+			log ("IPhoneUIApplicationDelegate constructor NSObjectFlag");
 			#endif
 			IPhoneServiceLocator.CurrentDelegate = this;
 			eventStore = new EKEventStore ( );
@@ -132,7 +132,7 @@ namespace Unity.Platform.IPhone
 				NSError nsError = new NSError();
 				addressBook =ABAddressBook.Create(out nsError);
 				#if DEBUG
-				log ("AppDelegate creating address book result: " +((nsError!=null)?nsError.Description:"no error"));
+				log ("IPhoneUIApplicationDelegate creating address book result: " +((nsError!=null)?nsError.Description:"no error"));
 				#endif
 			} else {
 				addressBook = new ABAddressBook();
