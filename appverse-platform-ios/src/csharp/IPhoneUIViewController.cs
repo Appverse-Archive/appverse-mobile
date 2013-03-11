@@ -24,6 +24,7 @@
 using System;
 using MonoTouch.UIKit;
 using System.Drawing;
+using MonoTouch.Foundation;
 
 namespace Unity.Platform.IPhone
 {
@@ -44,6 +45,14 @@ namespace Unity.Platform.IPhone
 			backButton.Style = UIBarButtonItemStyle.Bordered;
 			backButton.Clicked += delegate(object sender, EventArgs e) {
 				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+					UIView[] subviews = this.View.Subviews;
+					foreach(UIView subview in subviews) {
+						if(subview.GetType() == typeof(UIWebView) ) {
+							UIWebView webView = (UIWebView) subview;
+							//clean webview by loading a blank page (prevent video players keep playing after view controller closes)
+							webView.LoadHtmlString("<html></html>", new NSUrl("/")); 						
+						}
+					}
 					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
 				});
 			};
