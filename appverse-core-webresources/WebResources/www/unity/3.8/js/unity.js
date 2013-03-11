@@ -372,6 +372,11 @@ Net.prototype.GetNetworkTypeReachable = function(url)
 
 /**
  * Opens the given url in a different Web View with a Navigation Bar.
+ * <br/><img src="resources/images/warning.png"/> &nbsp; <b>PDF</b> files could not be displayed on most <b>Android</b> devices (PDF viewer/reader is not included by default). A workaround could be to use the online Google DOCS viewer:<br/>
+ * <pre>To see this PDF url 'http://mydomain.com/folder/mypdffile.pdf', 
+ * you could use the URL, http://docs.google.com/viewer?url=http%3A%2F%2Fmydomain.com%2Ffolder%2Fmypdffile.pdf</pre>
+ * More info at: [https://docs.google.com/viewer?hl=en][1]
+ * [1]: https://docs.google.com/viewer?hl=en
  * <br> @version 1.0
  * @param {String} title The title of the Navigation Bar.
  * @param {String} buttonText The Back Button text of the Navigation Bar.
@@ -482,6 +487,11 @@ GetNetworkTypeReachable : function(url, callbackFunctionName, callbackId)
 
 /**
  * Opens ASYNC the given url in a different Web View with a Navigation Bar.
+ * <br/><img src="resources/images/warning.png"/> &nbsp; <b>PDF</b> files could not be displayed on most <b>Android</b> devices (PDF viewer/reader is not included by default). A workaround could be to use the online Google DOCS viewer:<br/>
+ * <pre>To see this PDF url 'http://mydomain.com/folder/mypdffile.pdf', 
+ * you could use the URL, http://docs.google.com/viewer?url=http%3A%2F%2Fmydomain.com%2Ffolder%2Fmypdffile.pdf</pre>
+ * More info at: [https://docs.google.com/viewer?hl=en][1]
+ * [1]: https://docs.google.com/viewer?hl=en
  * <br> @version 2.0
  * @param {String} title The title of the Navigation Bar.
  * @param {String} buttonText The Back Button text of the Navigation Bar.
