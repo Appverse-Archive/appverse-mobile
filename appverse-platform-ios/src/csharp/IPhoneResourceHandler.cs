@@ -86,7 +86,9 @@ namespace Unity.Platform.IPhone
 			if (request.Url.StartsWith (DOCUMENTS_URI)) {
 				SystemLogger.Log (SystemLogger.Module.PLATFORM, " ############## " + this.GetType () + " -> " + request.Url);
 				
-				string resourcePath = request.Url.Substring (DOCUMENTS_URI.Length);
+				string escapedUrl = Uri.UnescapeDataString(request.Url);
+				// url should be escaped to reach the real filesystem path for the requested file.
+				string resourcePath = escapedUrl.Substring (DOCUMENTS_URI.Length);
 				
 				// Getting mime type
 				string ext = Path.GetExtension (resourcePath.ToLower());
