@@ -63,7 +63,7 @@ public class AndroidMessaging extends AbstractMessaging {
 			}
 			emailIntent
 					.setType(emailData.getMessageBodyMimeType() != null ? emailData
-							.getMessageBodyMimeType() : "text/plain");
+							.getMessageBodyMimeType() : "text/html");
 			emailIntent.putExtra(Intent.EXTRA_SUBJECT, emailData.getSubject());
 			emailIntent.putExtra(Intent.EXTRA_TEXT, emailData.getMessageBody());
 			emailIntent.putExtra(Intent.EXTRA_EMAIL,
