@@ -255,7 +255,7 @@ namespace Unity.Platform.IPhone
 		public override bool DownloadFile (string url)
 		{
 			using (var pool = new NSAutoreleasePool ()) {
-				NSUrl urlParam = new NSUrl (url);
+				NSUrl urlParam = new NSUrl (Uri.EscapeUriString(url));
 				var thread = new Thread (OpenUrlOnThread);
 				thread.Start (urlParam);
 			}
@@ -269,7 +269,7 @@ namespace Unity.Platform.IPhone
 				BrowserCommand browserCommand = new BrowserCommand();
 				browserCommand.Title = title;
 				browserCommand.ButtonText = buttonText;
-				browserCommand.Url = url;
+				browserCommand.Url = Uri.EscapeUriString(url);
 				browserCommand.CheckNullsAndSetDefaults();
 				thread.Start (browserCommand);
 			}
