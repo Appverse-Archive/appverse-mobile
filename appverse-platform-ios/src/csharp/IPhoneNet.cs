@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using Unity.Core.Net;
 using MonoTouch.SystemConfiguration;
 using System.Net;
@@ -32,11 +33,14 @@ using System.Threading;
 using MonoTouch.UIKit;
 using Unity.Core.Notification;
 using Unity.Core.System;
+using System.Net.NetworkInformation;
 
 namespace Unity.Platform.IPhone
 {
     public class IPhoneNet : AbstractNet
     {
+		private const string NETWORKINTERFACE_3G = "pdp_ip0";
+		private const string NETWORKINTERFACE_WIFI = "en0";
 		/// <summary>
 		/// Returns supported NetworkTypes (for iphone/ipad, always Wifi and 3G) 
 		/// </summary>
@@ -260,6 +264,34 @@ namespace Unity.Platform.IPhone
 				thread.Start (urlParam);
 			}
 			return true;
+		}
+
+		public override NetworkData GetNetworkData ()
+		{
+			try{
+				NetworkInterface intf = NetworkInterface.GetAllNetworkInterfaces ().First (x => x.Name.ToLower ().Equals (NETWORKINTERFACE_WIFI)) as NetworkInterface;
+				intf = (intf == null || (intf!=null && intf.GetIPProperties().UnicastAddresses.Count == 0) ? NetworkInterface.GetAllNetworkInterfaces ().First (x => x.Name.ToLower ().Equals (NETWORKINTERFACE_3G)) as NetworkInterface : intf);
+				if (intf != null && intf.GetIPProperties().UnicastAddresses.Count > 0) {
+					NetworkData returnData = new NetworkData ();
+					foreach (var addrInfo in intf.GetIPProperties().UnicastAddresses) {
+						switch (addrInfo.Address.AddressFamily) {
+						case System.Net.Sockets.AddressFamily.InterNetwork:
+							//IPv4
+							returnData.IPv4 = addrInfo.Address.ToString ();
+							break;
+						case System.Net.Sockets.AddressFamily.InterNetworkV6:
+							//IPv6
+							returnData.IPv6 = addrInfo.Address.ToString ();
+							if(returnData.IPv6.Contains("%")) returnData.IPv6 = returnData.IPv6.Split('%')[0];
+							break;
+						default:
+							break;
+						}
+					}
+					return returnData;
+				}
+			}catch(Exception ex){ SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error found while retrieving NetworkData", ex);}
+			return null;
 		}
 		
 		public override bool OpenBrowser (string title, string buttonText, string url)
