@@ -23,9 +23,14 @@
  */
 package com.gft.unity.android;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import android.app.Service;
@@ -37,6 +42,7 @@ import android.net.Uri;
 
 import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.net.AbstractNet;
+import com.gft.unity.core.net.NetworkData;
 import com.gft.unity.core.net.NetworkType;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
@@ -270,5 +276,36 @@ public class AndroidNet extends AbstractNet {
 		}
 
 		return result;
+	}
+	
+	@Override
+	// TODO review INet.GetNetworkData implementation
+	public NetworkData GetNetworkData() {
+		//Different device manufacturers name the network interfaces differently, so cannot ask directly by name
+		//we have to loop thru them, only 1 of them will have a valid IP address
+		//if WIFI is active 3G IP address does not appear in the interfaces list
+		try{
+			NetworkData returnData = new NetworkData();
+			for(Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();){
+				NetworkInterface intf = en.nextElement();
+				for(Enumeration<InetAddress> ip = intf.getInetAddresses(); ip.hasMoreElements();){
+					InetAddress ia = ip.nextElement();
+					if(!ia.isLoopbackAddress()){
+						//Check IPv4 or IPv6
+						if(ia instanceof Inet4Address){  returnData.setIPv4(ia.getHostAddress().toString());}
+						else if(ia instanceof Inet6Address){
+							//remove the sufix that Android adds to v6 addresses, Suffix added is %NetworkInterface.Name (EG: 2001:db8::2:1%wlan0)
+							String v6Unparsed = ia.getHostAddress().toString();
+							if(v6Unparsed.contains("%")){
+								v6Unparsed = v6Unparsed.split("%")[0];
+							}
+							returnData.setIPv6(v6Unparsed);
+						}
+					}
+				}
+			}
+			return returnData;
+		}catch(Exception ex){LOG.Log(SystemLogger.Module.PLATFORM, "Error retrieveing Device IP Address", ex);}
+		return null;
 	}
 }
