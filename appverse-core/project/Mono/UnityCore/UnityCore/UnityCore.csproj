@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\FormatUtils.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOHeader.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\NetworkData.cs"/>
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Telephony\AbstractTelephony.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Telephony\ICallControl.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Telephony\ITelephony.cs" />

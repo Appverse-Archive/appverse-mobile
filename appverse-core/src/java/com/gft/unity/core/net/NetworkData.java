@@ -23,39 +23,32 @@
  */
 package com.gft.unity.core.net;
 
-public abstract class AbstractNet implements INet {
-
-    /**
-     * 1 minute time out (in ms).
-     */
-    protected static int DEFAULT_TIMEOUT = 60 * 1000;
-
-    public AbstractNet() {
-    }
-
-    @Override
-    public abstract NetworkType GetNetworkTypeReachable(String url);
-
-    @Override
-    public abstract NetworkType[] GetNetworkTypeReachableList(String url);
-
-    @Override
-    public abstract NetworkType[] GetNetworkTypeSupported();
-
-    @Override
-    public abstract boolean IsNetworkReachable(String url);
-
-    @Override
-    public abstract boolean OpenBrowser(String title, String buttonText,
-            String url);
-
-    @Override
-    public abstract boolean ShowHtml(String title, String buttonText,
-            String html);
-
-    @Override
-    public abstract boolean DownloadFile(String url);
+/**
+ *
+ * @author ddbc
+ */
+public class NetworkData {
     
-    @Override
-    public abstract NetworkData GetNetworkData();
+    private String IPv6;
+    private String IPv4;
+    
+    public NetworkData(){}
+    
+    public String getIPv6(){
+        return this.IPv6;
+    }
+    
+    public void setIPv6(String ipAddress){
+        this.IPv6 = ipAddress;
+    }
+    
+    public String getIPv4(){
+        return this.IPv4;
+    }
+    
+    public void setIPv4(String ipAddress){
+        this.IPv4 = ipAddress;
+    }
+    
+    
 }

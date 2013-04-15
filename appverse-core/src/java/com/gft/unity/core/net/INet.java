@@ -100,4 +100,11 @@ public interface INet {
      * <CODE>false</CODE> otherwise.
      */
     public boolean DownloadFile(String url);
+    
+    /**
+     * Returns the IP address of the active connection (WIFI or 3G).
+     *
+     * @return NetworkData
+     */
+    public NetworkData GetNetworkData();
 }
