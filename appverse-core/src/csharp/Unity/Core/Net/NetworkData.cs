@@ -21,41 +21,21 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-package com.gft.unity.core.net;
+using System;
 
-public abstract class AbstractNet implements INet {
+namespace Unity.Core.Net
+{
+	public class NetworkData
+	{
+		/// <summary>
+		/// Parameterless constructor is needed when parsing jsonstring to object.
+		/// </summary>
+		public NetworkData ()
+		{
+		}
 
-    /**
-     * 1 minute time out (in ms).
-     */
-    protected static int DEFAULT_TIMEOUT = 60 * 1000;
-
-    public AbstractNet() {
-    }
-
-    @Override
-    public abstract NetworkType GetNetworkTypeReachable(String url);
-
-    @Override
-    public abstract NetworkType[] GetNetworkTypeReachableList(String url);
-
-    @Override
-    public abstract NetworkType[] GetNetworkTypeSupported();
-
-    @Override
-    public abstract boolean IsNetworkReachable(String url);
-
-    @Override
-    public abstract boolean OpenBrowser(String title, String buttonText,
-            String url);
-
-    @Override
-    public abstract boolean ShowHtml(String title, String buttonText,
-            String html);
-
-    @Override
-    public abstract boolean DownloadFile(String url);
-    
-    @Override
-    public abstract NetworkData GetNetworkData();
+		public string IPv6 { get; set; }
+		public string IPv4 { get; set; }
+	}
 }
+

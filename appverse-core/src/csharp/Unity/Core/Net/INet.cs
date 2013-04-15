@@ -68,6 +68,12 @@ namespace Unity.Core.Net
 		/// </returns>
 		bool DownloadFile (string url);
 		
+		/// <summary>
+		/// Returns active network connection data.
+		/// </summary>
+		/// A <see cref="Unity.Core.Net.NetworkData"/>
+		NetworkData GetNetworkData();
+		
 		
 	}//end INet
 

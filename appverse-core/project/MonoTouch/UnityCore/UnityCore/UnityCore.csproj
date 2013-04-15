@@ -224,6 +224,7 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\AbstractWebtrekk.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\WebtrekkParameter.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\WebtrekkParametersCollection.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\NetworkData.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\Analytics\" />

@@ -90,6 +90,8 @@ namespace Unity.Core.Net
 		public abstract bool ShowHtml (string title, string buttonText, string html);
 
 		public abstract bool DownloadFile (string url);
+
+		public abstract NetworkData GetNetworkData();
 		
 		#endregion
 	}
