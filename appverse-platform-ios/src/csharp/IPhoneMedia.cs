@@ -332,6 +332,13 @@ namespace Unity.Platform.IPhone
 		{
 			// File path is relative path.
 			string absolutePath = IPhoneUtils.GetInstance().GetFileFullPath(filePath);
+			if(!File.Exists(absolutePath)) {
+				// file path was not under application bundle path
+				// try to find it under Documents folder
+				absolutePath = Path.Combine(IPhoneFileSystem.DEFAULT_ROOT_PATH, filePath);
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Media file does not exist on bundle path, checking under application documents: " + absolutePath);
+			}
+			
 			NSUrl nsUrl = this.GetNSUrlFromPath(absolutePath, true);
 			return this.PlayNSUrl(nsUrl);
 		}
