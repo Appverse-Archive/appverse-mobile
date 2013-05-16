@@ -50,6 +50,8 @@ Below is an example for the application "CODE_n", where we have a **dev**elopmen
 ./appverse-resign.sh CODE_n_dev.ipa "iPhone Distribution: My Company Signature Ltd" -p CODE_n_dist.mobileprovision -e entitlements-dist.plist CODE_n_dist.ipa
 ```
 
+**NOTE**: Remember to *chmod +x appverse-resign.sh* to make the script executable.
+
 ### Example entitlements.plist file
 
 You should change the entitlements.plist file with your seed and bundle indentifier. Below is an example with our identifier:
