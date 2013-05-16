@@ -43,13 +43,11 @@ Execute the script with the following parameters:
 
 ```
 ./appverse-resign.sh <IPA_SOURCE> "<CERTIFICATE_NAME>" -p <MOBILE_PROVISIONING_FILE> -e <ENTITLEMENTS_FILE> <IPA_DESTINATION>
-
 ```
 Below is an example for the application "CODE_n", where we have a **dev**elopment version and we want to create the **dist**ribution version:
 
 ```
 ./appverse-resign.sh CODE_n_dev.ipa "iPhone Distribution: My Company Signature Ltd" -p CODE_n_dist.mobileprovision -e entitlements-dist.plist CODE_n_dist.ipa
-
 ```
 
 ### Example entitlements.plist file
