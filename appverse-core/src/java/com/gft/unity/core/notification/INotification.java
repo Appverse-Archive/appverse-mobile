@@ -167,4 +167,17 @@ public interface INotification {
      * (completed).
      */
     public void UpdateNotifyLoading(float progress);
+    
+    /**
+     * Registers this application and device for receiving remote notifications.
+     * 
+     * @param senderId Sender identifier.
+     * @param types Remote notifications types accepted by this application.
+     */
+    public void RegisterForRemoteNotifications (String senderId, RemoteNotificationType[] types);
+
+    /**
+     * Unregisters this application and device for receiving remote notifications.
+     */
+    public void UnRegisterForRemoteNotifications ();
 }
