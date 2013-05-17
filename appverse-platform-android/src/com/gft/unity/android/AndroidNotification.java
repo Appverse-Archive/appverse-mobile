@@ -30,8 +30,10 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Vibrator;
+import com.google.android.gcm.GCMRegistrar;
 
 import com.gft.unity.core.notification.AbstractNotification;
+import com.gft.unity.core.notification.RemoteNotificationType;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
 
@@ -63,6 +65,8 @@ public class AndroidNotification extends AbstractNotification {
 		playingVibration = false;
 		runningLoading = false;
 	}
+
+	
 
 	@Override
 	public boolean IsNotifyActivityRunning() {
@@ -339,5 +343,34 @@ public class AndroidNotification extends AbstractNotification {
 	public void UpdateNotifyLoading(float progress) {
 		// TODO implement INotification.UpdateNotifyLoading
 		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
+	public void RegisterForRemoteNotifications(String senderID,
+			RemoteNotificationType[] types) {
+		LOGGER.logOperationBegin("RegisterForRemoteNotifications", new String[]{"senderID","types"},
+				new Object[]{senderID,types});
+		try{
+			Context ctx = AndroidServiceLocator.getContext();
+			GCMRegistrar.checkDevice(ctx);
+			GCMRegistrar.checkManifest(ctx);
+			if(GCMRegistrar.isRegistered(ctx)) LOGGER.logInfo("RegisterForRemoteNotifications", "REGISTERED");
+			String regId = GCMRegistrar.getRegistrationId(ctx);
+			if(regId.equals("")){ GCMRegistrar.register(ctx, "67240322760");
+			}else LOGGER.logInfo("RegisterForRemoteNotifications", "Device already registered with ID: " + regId); 
+		}catch(Exception ex){ LOGGER.logError("RegisterForRemoteNotifications", "Error", ex);
+		}finally{LOGGER.logOperationEnd("RegisterForRemoteNotifications", null);}
+	}
+
+	@Override
+	public void UnRegisterForRemoteNotifications() {
+		LOGGER.logOperationBegin("UnRegisterForRemoteNotifications", Logger.EMPTY_PARAMS,
+				Logger.EMPTY_VALUES);
+		try{
+			Context ctx = AndroidServiceLocator.getContext();
+			GCMRegistrar.unregister(ctx);
+		}catch(Exception ex){ LOGGER.logError("UnRegisterForRemoteNotifications", "Error", ex);
+		}finally{LOGGER.logOperationEnd("UnRegisterForRemoteNotifications", null);}
+		
 	}
 }
