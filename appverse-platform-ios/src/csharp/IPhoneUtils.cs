@@ -46,6 +46,7 @@ namespace Unity.Platform.IPhone
 		private ZipFile _zipFile = null;
 		private string[] _zipEntriesNames = null;
 		private Dictionary<string, ZipEntry> _zipEntries = null; 
+		private JavaScriptSerializer Serialiser = null;
 
 		private static IPhoneUtils singleton = null;
 		private IPhoneUtils() : base() {
@@ -149,6 +150,8 @@ namespace Unity.Platform.IPhone
 		public static IPhoneUtils GetInstance() {
 			if (singleton==null) {
 				singleton = new IPhoneUtils();
+
+				singleton.Serialiser = new JavaScriptSerializer ();
 
 				if(singleton.ResourcesZipped) {
 					singleton.LoadZippedFile();
@@ -413,10 +416,63 @@ namespace Unity.Platform.IPhone
 			return true; // by default
 		}
 		
+		public Dictionary<String,Object> ConvertToDictionary(NSMutableDictionary dictionary) {
+			Dictionary<String,Object> prunedDictionary = new Dictionary<String,Object>();
+			foreach (NSString key in dictionary.Keys) { 
+				NSObject dicValue = dictionary.ObjectForKey(key);  
+
+				if (dicValue is NSDictionary) {
+					prunedDictionary.Add (key.ToString(), ConvertToDictionary(new NSMutableDictionary(dicValue as NSDictionary)));
+				} else {
+					//SystemLogger.Log(SystemLogger.Module.PLATFORM, "***** key["+key.ToString ()+"] is instance of: " + dicValue.GetType().FullName);
+					if ( ! (dicValue is NSNull)) {
+						if(dicValue is NSString) {
+							prunedDictionary.Add (key.ToString(), ((NSString)dicValue).Description);
+						} else if(dicValue is NSNumber) {
+							prunedDictionary.Add (key.ToString(), ((NSNumber)dicValue).IntValue);
+						} else if(dicValue is NSArray) {
+							prunedDictionary.Add (key.ToString(), ConvertToArray((NSArray)dicValue));
+						} else {
+							prunedDictionary.Add (key.ToString(), dicValue);
+						}
+					} 
+				}
+			}
+			return prunedDictionary;
+		}
+
+		private Object[] ConvertToArray(NSArray nsArray) {
+			Object[] arr = new Object[nsArray.Count];
+			for (uint i = 0; i < nsArray.Count; i++) {
+				var o = MonoTouch.ObjCRuntime.Runtime.GetNSObject(nsArray.ValueAt(i));
+				if(o is NSArray) {
+					arr[i] = ConvertToArray((o as NSArray));
+				} else if (o is NSDictionary) {
+
+				} else if (o is NSMutableDictionary) {
+					arr[i] = ConvertToDictionary((o as NSMutableDictionary));
+				} if(o is NSString) {
+					arr[i] = (o as NSString).Description;
+				} else if(o is NSNumber) {
+					arr[i] = (o as NSNumber).IntValue;
+				}
+			}
+
+			return arr;
+		}
+
+		public String JSONSerialize(object data) {
+			try {
+
+				return Serialiser.Serialize(data);
+			} catch (Exception ex) {
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error trying to serialize object to JSON.", ex);
+			}
+			return null;
+		}
 		
 		public void FireUnityJavascriptEvent(string method, object data) {
-			JavaScriptSerializer serialiser = new JavaScriptSerializer ();
-			string dataJSONString = serialiser.Serialize(data);
+			string dataJSONString = Serialiser.Serialize(data);
 			string jsCallbackFunction = "if("+method+"){"+method+"("+dataJSONString+");}";
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript: " + method);
 			IPhoneServiceLocator.CurrentDelegate.MainUIWebView().EvaluateJavascript(jsCallbackFunction);
