@@ -51,6 +51,7 @@ import android.webkit.WebSettings;
 import android.widget.ImageView;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.app.NotificationManager;
 
 import com.gft.unity.android.AndroidServiceLocator;
 import com.gft.unity.android.AndroidSystem;
@@ -58,6 +59,7 @@ import com.gft.unity.android.activity.AndroidActivityManager;
 import com.gft.unity.android.log.AndroidLoggerDelegate;
 import com.gft.unity.android.server.HttpServer;
 import com.gft.unity.android.server.ProxySettings;
+import com.gft.unity.android.notification.RemoteNotificationIntentService;
 import com.gft.unity.android.server.AndroidNetworkReceiver;
 import com.gft.unity.core.system.DisplayOrientation;
 import com.gft.unity.core.system.SystemLogger;
@@ -131,6 +133,7 @@ public class MainActivity extends Activity {
 		appView.getSettings().setGeolocationEnabled(true);
 		appView.getSettings().setLightTouchEnabled(true);
 		appView.getSettings().setRenderPriority(RenderPriority.HIGH);
+		appView.getSettings().setDomStorageEnabled(true); // [MOBPLAT-129] enable HTML5 local storage
 
 		appView.setVerticalScrollBarEnabled(false);
 
@@ -218,6 +221,7 @@ public class MainActivity extends Activity {
 		
 		holdSplashScreenOnStartup =  checkUnityProperty("Unity_HoldSplashScreenOnStartup");
 		hasSplash = activityManager.showSplashScreen(appView);
+		RemoteNotificationIntentService.loadNotificationOptions(getResources(), appView, this);
 	}
 	
 	private boolean checkUnityProperty(String propertyName) {
@@ -287,7 +291,8 @@ public class MainActivity extends Activity {
 
 		// Save the context for further access
 		AndroidServiceLocator.setContext(this);
-
+		NotificationManager nMngr = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+		nMngr.cancelAll();
 		LOG.Log(Module.GUI, "onResume");
 		
 		/*
