@@ -28,6 +28,8 @@ using System.Threading;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using System.Drawing;
+using Unity.Core.System;
+using System.Collections.Generic;
 
 namespace Unity.Platform.IPhone
 {
@@ -39,6 +41,16 @@ namespace Unity.Platform.IPhone
 		private bool AUDIOSESSION_ACTIVE = false;
 		
 		private LoadingView loadingView = new LoadingView();
+		private static IDictionary<RemoteNotificationType, UIRemoteNotificationType> rnTypes = 
+								new Dictionary<RemoteNotificationType, UIRemoteNotificationType> ();
+
+		static IPhoneNotification() {
+			rnTypes[RemoteNotificationType.NONE] = UIRemoteNotificationType.None;
+			rnTypes[RemoteNotificationType.ALERT] = UIRemoteNotificationType.Alert;
+			rnTypes[RemoteNotificationType.BADGE] = UIRemoteNotificationType.Badge;
+			rnTypes[RemoteNotificationType.SOUND] = UIRemoteNotificationType.Sound;
+			rnTypes[RemoteNotificationType.CONTENT_AVAILABILITY] = UIRemoteNotificationType.NewsstandContentAvailability;
+		}
 
 		public override bool StartNotifyBeep ()
 		{
@@ -306,5 +318,61 @@ namespace Unity.Platform.IPhone
 			throw new System.NotImplementedException ();
 		}
 		
+
+
+		public override void RegisterForRemoteNotifications (string senderId, RemoteNotificationType[] types)
+		{
+			SystemLogger.Log(SystemLogger.Module.PLATFORM,"Registering senderId ["+ senderId +"] for receiving  push notifications");
+
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				UIRemoteNotificationType notificationTypes = UIRemoteNotificationType.None;
+				try {
+					if(types != null) {
+						SystemLogger.Log(SystemLogger.Module.PLATFORM,"Remote Notifications types enabled #num : " + types.Length);
+						foreach(RemoteNotificationType notificationType in types) {
+							notificationTypes = notificationTypes | rnTypes[notificationType] ;
+						}
+					}
+
+					SystemLogger.Log(SystemLogger.Module.PLATFORM,"Remote Notifications types enabled: " + notificationTypes);
+
+					//This tells our app to go ahead and ask the user for permission to use Push Notifications
+					// You have to specify which types you want to ask permission for
+					// Most apps just ask for them all and if they don't use one type, who cares
+					UIApplication.SharedApplication.RegisterForRemoteNotificationTypes(notificationTypes);
+				} catch(Exception e) {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM,"Exception ocurred: " + e.Message);
+				}
+			});
+		}
+
+
+		public override void UnRegisterForRemoteNotifications ()
+		{
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				UIApplication.SharedApplication.UnregisterForRemoteNotifications();
+			});
+		}
+
+		public override void SetApplicationIconBadgeNumber (int badge) {
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+				UIApplication.SharedApplication.ApplicationIconBadgeNumber = badge;
+			});
+		}
+		
+		public override void IncrementApplicationIconBadgeNumber () {
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+				int currentBadge = UIApplication.SharedApplication.ApplicationIconBadgeNumber;
+				UIApplication.SharedApplication.ApplicationIconBadgeNumber = currentBadge + 1 ;
+			});
+		}
+		
+		public override void DecrementApplicationIconBadgeNumber () {
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+				int currentBadge = UIApplication.SharedApplication.ApplicationIconBadgeNumber;
+				UIApplication.SharedApplication.ApplicationIconBadgeNumber = currentBadge - 1 ;
+			});
+		}
+
 	}
 }

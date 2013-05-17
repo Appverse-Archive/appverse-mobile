@@ -69,11 +69,11 @@
     <Reference Include="UnityCore">
       <HintPath>..\..\..\..\lib\Unity\Release\UnityCore.dll</HintPath>
     </Reference>
-    <Reference Include="SharpZipLib">
-      <HintPath>..\..\..\..\lib\SharpZipLib.dll</HintPath>
-    </Reference>
     <Reference Include="Webtrekk">
       <HintPath>..\..\..\..\lib\Webtrekk.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpZipLib">
+      <HintPath>..\..\..\..\lib\SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\..\..\..\lib\BouncyCastle.Crypto.dll</HintPath>
@@ -105,8 +105,8 @@
     <Compile Include="..\..\..\..\src\csharp\IPhoneAnalytics.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneSecurity.cs" />
     <Compile Include="..\..\..\..\src\csharp\SplashScreenView.cs" />
-    <Compile Include="..\..\..\..\src\csharp\SecurityUtils.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneWebtrekk.cs" />
-	<Compile Include="..\..\..\..\src\csharp\IPhoneServiceURIHandler.cs"/>
+    <Compile Include="..\..\..\..\src\csharp\SecurityUtils.cs" />
+    <Compile Include="..\..\..\..\src\csharp\IPhoneServiceURIHandler.cs" />
   </ItemGroup>
 </Project>
