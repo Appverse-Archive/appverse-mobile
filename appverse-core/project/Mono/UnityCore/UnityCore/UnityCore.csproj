@@ -207,6 +207,10 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\AbstractWebtrekk.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\WebtrekkParametersCollection.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\WebtrekkParameter.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\NotificationEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\NotificationData.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\RegistrationToken.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\RegistrationError.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

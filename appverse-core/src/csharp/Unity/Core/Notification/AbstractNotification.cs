@@ -77,6 +77,16 @@ namespace Unity.Core.Notification
 		public abstract bool StartNotifyBlink ();
 
 		public abstract bool StopNotifyBlink ();
+		
+		public abstract void RegisterForRemoteNotifications (string senderId, RemoteNotificationType[] types);
+
+		public abstract void UnRegisterForRemoteNotifications ();
+
+		public abstract void SetApplicationIconBadgeNumber (int badge);
+
+		public abstract void IncrementApplicationIconBadgeNumber ();
+
+		public abstract void DecrementApplicationIconBadgeNumber ();
 
         #endregion
 	}
