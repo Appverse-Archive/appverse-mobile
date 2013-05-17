@@ -129,6 +129,34 @@ namespace Unity.Core.Notification
 		/// <returns>True if blink notification could be stooped.</returns>
 		bool StopNotifyBlink ();
 
+		/// <summary>
+		/// Registers this application and device for receiving remote notifications.
+		/// </summary>
+		/// <param name="senderId">Sender identifier.</param>
+		/// <param name="types">Remote notifications types accepted by this application</param>
+		void RegisterForRemoteNotifications (string senderId, RemoteNotificationType[] types);
+
+		/// <summary>
+		/// Unregisters this application and device for receving remote notifications.
+		/// </summary>
+		void UnRegisterForRemoteNotifications ();
+
+		/// <summary>
+		/// Sets the application icon badge number.
+		/// </summary>
+		/// <param name="badge">Badge to be set.</param>
+		void SetApplicationIconBadgeNumber(int badge);
+
+		/// <summary>
+		/// Increments (add one to) the application icon badge number.
+		/// </summary>
+		void IncrementApplicationIconBadgeNumber();
+
+		/// <summary>
+		/// Decrements (substract one from) the application icon badge number.
+		/// </summary>
+		void DecrementApplicationIconBadgeNumber();
+
 	}//end INotification
 
 }//end namespace Notification
