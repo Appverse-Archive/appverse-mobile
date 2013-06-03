@@ -645,6 +645,7 @@ namespace Unity.Platform.IPhone
 				setAnnotationPoints ();
 				contentController.AddInnerView (unityMapView);
 				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (contentController, true);
+				IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
 			});
 			
 		}

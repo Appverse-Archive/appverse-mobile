@@ -78,6 +78,12 @@
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\..\..\..\lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <Reference Include="ZXing.Net.Mobile">
+      <HintPath>..\..\..\..\lib\ZXing.Net.Mobile.dll</HintPath>
+    </Reference>
+    <Reference Include="zxing.monotouch">
+      <HintPath>..\..\..\..\lib\zxing.monotouch.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
