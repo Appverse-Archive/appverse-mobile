@@ -374,5 +374,127 @@ namespace Unity.Platform.IPhone
 			});
 		}
 
+		private UILocalNotification PrepareLocalNotification (NotificationData notification) {
+			if(notification!=null) {
+				UILocalNotification localNotification = new UILocalNotification();
+				localNotification.AlertBody = notification.AlertMessage;
+				localNotification.ApplicationIconBadgeNumber = notification.Badge;
+				localNotification.SoundName = UILocalNotification.DefaultSoundName; // defaults
+				if(notification.Sound != null && notification.Sound.Length>0 && !notification.Sound.Equals("default")) {
+					// for sounds different from the default one
+					localNotification.SoundName = notification.Sound;
+				}
+				if(notification.CustomDataJsonString != null && notification.CustomDataJsonString.Length>0) {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM,"Custom Json String received: " + notification.CustomDataJsonString);
+
+					Dictionary<String,Object> userDictionary = (Dictionary<String,Object>) IPhoneUtils.GetInstance().JSONDeserialize<Dictionary<String,Object>>(notification.CustomDataJsonString);
+					localNotification.UserInfo = IPhoneUtils.GetInstance().ConvertToNSDictionary(userDictionary);
+				}
+				return localNotification;
+				
+			} else {
+				return null;
+			}
+		}
+
+		public override void PresentLocalNotificationNow (NotificationData notification)
+		{
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+				if(notification!=null) {
+					UILocalNotification localNotification = this.PrepareLocalNotification(notification);
+					UIApplication.SharedApplication.PresentLocationNotificationNow(localNotification);
+				} else {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM,"No suitable data object received for presenting local notification");
+				}
+			});
+		}
+
+		/// <summary>
+		/// Gets the current scheduled local notifications. SHOULD BE USED (INVOKED) INSIDE AN UIApplication.InvokeOnMainThread block.
+		/// </summary>
+		/// <returns>The current scheduled local notifications.</returns>
+		private int GetCurrentScheduledLocalNotifications() {
+			UILocalNotification[] localNotifications = UIApplication.SharedApplication.ScheduledLocalNotifications;
+			if (localNotifications == null) {
+				return 0;
+			}
+			return localNotifications.Length;
+		}
+
+		public override void ScheduleLocalNotification (NotificationData notification, SchedulingData schedule)
+		{
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+				if(notification!=null) {
+					UILocalNotification localNotification = this.PrepareLocalNotification(notification);
+					if(schedule != null) {
+						localNotification.FireDate = DateTime.SpecifyKind(schedule.FireDate, DateTimeKind.Local);
+						SystemLogger.Log(SystemLogger.Module.PLATFORM,"Scheduling local notification at " 
+						                 + schedule.FireDate.ToLongTimeString() + ", with a repeat interval of: " + schedule.RepeatInterval);
+						NSCalendarUnit repeatInterval = 0; // The default value is 0, which means don't repeat.
+						if(schedule.RepeatInterval.Equals(RepeatInterval.HOURLY)) {
+							repeatInterval = NSCalendarUnit.Hour;
+						} else if(schedule.RepeatInterval.Equals(RepeatInterval.DAILY)) {
+							repeatInterval = NSCalendarUnit.Day;
+						} else if(schedule.RepeatInterval.Equals(RepeatInterval.WEEKLY)) {
+							repeatInterval = NSCalendarUnit.Week;
+						} else if(schedule.RepeatInterval.Equals(RepeatInterval.MONTHLY)) {
+							repeatInterval = NSCalendarUnit.Month;
+						} else if(schedule.RepeatInterval.Equals(RepeatInterval.YEARLY)) {
+							repeatInterval = NSCalendarUnit.Year;
+						} 
+						localNotification.RepeatInterval = repeatInterval;
+						UIApplication.SharedApplication.ScheduleLocalNotification(localNotification);
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Local Notification scheduled successfully [" + localNotification.FireDate.ToString() +"]");
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Current scheduled #num of local notifications: " + this.GetCurrentScheduledLocalNotifications());
+					} else {
+						SystemLogger.Log(SystemLogger.Module.PLATFORM,"No suitable scheduling data object received for scheduling this local notification");
+					}
+				} else {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM,"No suitable data object received for presenting local notification");
+				}
+			});
+		}
+
+		public override void CancelLocalNotification (DateTime fireDate)
+		{
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+				int numScheduledLocalNotifications = this.GetCurrentScheduledLocalNotifications();
+				if(numScheduledLocalNotifications<=0) {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM,"No scheduled local notifications found. It is not possible to cancel the one requested");
+				} else {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "(1) Current scheduled #num of local notifications: " + numScheduledLocalNotifications);
+					NSDate fireDateNS = DateTime.SpecifyKind(fireDate, DateTimeKind.Local);
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Checking local notification to be cancelled, scheduled at " + fireDateNS.ToString());
+					foreach(UILocalNotification notification in UIApplication.SharedApplication.ScheduledLocalNotifications) {
+						if(notification.FireDate.SecondsSinceReferenceDate == fireDateNS.SecondsSinceReferenceDate) {
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Cancelling notification scheduled at: " + notification.FireDate.ToString());
+							UIApplication.SharedApplication.CancelLocalNotification(notification);
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Cancelled");
+						}
+					}
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "(2) Current scheduled #num of local notifications: " + this.GetCurrentScheduledLocalNotifications());
+				}
+			});
+
+		}
+
+		public override void CancelAllLocalNotifications ()
+		{
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+				UILocalNotification[] localNotifications = UIApplication.SharedApplication.ScheduledLocalNotifications;
+				if(localNotifications==null || localNotifications.Length<=0) {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM,"No scheduled notifications found to cancel");
+				} else {
+					foreach(UILocalNotification notification in localNotifications) {
+						SystemLogger.Log(SystemLogger.Module.PLATFORM,
+							"Cancelling local notification scheduled at: " + notification.FireDate.ToString() 
+						                 + ", with a repeat interval of: " + notification.RepeatInterval);
+					}
+				}
+
+				UIApplication.SharedApplication.CancelAllLocalNotifications();
+			});
+		}
+
 	}
 }

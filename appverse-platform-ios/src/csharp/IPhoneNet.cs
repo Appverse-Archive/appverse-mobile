@@ -346,6 +346,7 @@ namespace Unity.Platform.IPhone
 				contentController.AddInnerView(webView);     
 				
 				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController(contentController, true);				
+				IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
 				if(browserCommand.Url!=null && browserCommand.Url.Length>0) {
 					NSUrl nsUrl = new NSUrl (browserCommand.Url);				
 					NSUrlRequest  nsUrlRequest = new NSUrlRequest(nsUrl,NSUrlRequestCachePolicy.ReloadRevalidatingCacheData, 120.0);

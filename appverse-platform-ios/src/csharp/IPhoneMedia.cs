@@ -28,6 +28,7 @@ using System.Threading;
 using MonoTouch.AVFoundation;
 using MonoTouch.Foundation;
 using MonoTouch.MediaPlayer;
+using MonoTouch.MessageUI;
 using MonoTouch.UIKit;
 using Unity.Core.Media;
 using Unity.Core.Notification;
@@ -35,6 +36,8 @@ using Unity.Core.System;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using Unity.Core.Storage.FileSystem;
+using ZXing.Mobile;
+using ZXing.Client.Result;
 using System.Drawing;
 
 namespace Unity.Platform.IPhone
@@ -61,6 +64,112 @@ namespace Unity.Platform.IPhone
         {
             return this.State;
         }		
+		
+		public override void DetectQRCode (bool autoHandleQR)
+		{
+			String returnValue = String.Empty;
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				MobileBarcodeScanner scanner = new MobileBarcodeScanner(IPhoneServiceLocator.CurrentDelegate.MainUIViewController());
+				scanner.Scan().ContinueWith(t => {   
+					if (t.Result != null){
+						MediaQRContent resultQRContent = new MediaQRContent(t.Result.Text, ZxingToBarcode(t.Result.BarcodeFormat), getQRTypeFromCode(t.Result));
+						//SystemLogger.Log(SystemLogger.Module.PLATFORM, "QR CODE returnValue: " + resultQRContent);
+
+						UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+							IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.Media.onQRCodeDetected", resultQRContent);
+							if(autoHandleQR) HandleQRCode(resultQRContent);
+						});
+					}
+				});
+				IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
+			});
+		}
+
+		private BarCodeType ZxingToBarcode (ZXing.BarcodeFormat format){
+			foreach(BarCodeType type in Enum.GetValues(typeof(BarCodeType))){
+				if(format.ToString().Equals(type.ToString())) return type;
+			}
+			return BarCodeType.DEFAULT;
+		}
+
+		private ZXing.BarcodeFormat BarcodeToZxing (BarCodeType format){
+			foreach(ZXing.BarcodeFormat type in Enum.GetValues(typeof(ZXing.BarcodeFormat))){
+				if(format.ToString().Equals(type.ToString())) return type;
+			}
+			return ZXing.BarcodeFormat.QR_CODE;
+		}
+
+		private QRType getQRTypeFromCode (ZXing.Result readQRCode){
+			ParsedResult parsed = ResultParser.parseResult(readQRCode);
+			switch(parsed.Type){
+				case ParsedResultType.ADDRESSBOOK:
+				return QRType.ADDRESSBOOK;
+				break;
+				case ParsedResultType.CALENDAR:
+				return QRType.CALENDAR;
+				break;
+				case ParsedResultType.EMAIL_ADDRESS:
+				return QRType.EMAIL_ADDRESS;
+				break;
+				case ParsedResultType.GEO:
+				return QRType.GEO;
+				break;
+				case ParsedResultType.ISBN:
+				return QRType.ISBN;
+				break;
+				case ParsedResultType.PRODUCT:
+				return QRType.PRODUCT;
+				break;
+				case ParsedResultType.SMS:
+				return QRType.SMS;
+				break;
+				case ParsedResultType.TEL:
+				return QRType.TEL;
+				break;
+				case ParsedResultType.URI:
+				return QRType.URI;
+				break;
+				case ParsedResultType.WIFI:
+				return QRType.WIFI;
+				break;
+				case ParsedResultType.TEXT:
+				default:
+				return QRType.TEXT;
+				break;
+			}
+		}
+
+		public override QRType HandleQRCode (MediaQRContent mediaQRContent)
+		{
+			if (mediaQRContent != null && mediaQRContent.QRType!=null) {
+				INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
+				NSUrl param = new NSUrl (mediaQRContent.Text);
+
+				switch (mediaQRContent.QRType) {
+					case QRType.EMAIL_ADDRESS:
+					if ((UIApplication.SharedApplication.CanOpenUrl (param) )&& (MFMailComposeViewController.CanSendMail)) {
+							UIApplication.SharedApplication.OpenUrl (param);
+						}else if (notificationService != null) notificationService.StartNotifyAlert ("Mail Alert", "Sending of mail messages is not enabled or supported on this device.", "OK");
+						break;
+					case QRType.TEL:
+						if (UIApplication.SharedApplication.CanOpenUrl (param)) {
+							UIApplication.SharedApplication.OpenUrl (param);
+						}else if (notificationService != null) notificationService.StartNotifyAlert ("Phone Alert", "Establishing voice calls is not enabled or supported on this device.", "OK");
+						break;
+					case QRType.URI:
+						if (UIApplication.SharedApplication.CanOpenUrl (param)) {
+							UIApplication.SharedApplication.OpenUrl (param);
+						}else if (notificationService != null) notificationService.StartNotifyAlert ("Browser Alert", "The requested URL could not be automatically opened.", "OK");
+						break;
+					default:
+						if (notificationService != null)
+							notificationService.StartNotifyAlert ("QR Alert", "The QR Code " + mediaQRContent.QRType.ToString() + " cannot be processed automatically.", "OK");
+						break;
+				}
+				return mediaQRContent.QRType;
+			}
+			return QRType.TEXT;
+		}
 		
 		public override MediaMetadata GetMetadata (string filePath)
 		{
@@ -114,6 +223,7 @@ namespace Unity.Platform.IPhone
 				imagePickerController.Canceled += HandleImagePickerControllerCanceled;
 				
 				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (imagePickerController, true);
+				IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
 			} else {
 				INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
 				if (notificationService != null) {
@@ -356,6 +466,7 @@ namespace Unity.Platform.IPhone
 				this.State = MediaState.Playing;
 
 				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentMoviePlayerViewController(vcMediaPlayer);
+				IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
 			});
 			
 		}
