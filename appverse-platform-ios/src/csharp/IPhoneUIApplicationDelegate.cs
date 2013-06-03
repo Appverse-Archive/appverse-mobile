@@ -149,6 +149,8 @@ namespace Unity.Platform.IPhone
 
 		public abstract UIWebView MainUIWebView () ;
 
+		public abstract void SetMainUIViewControllerAsTopController(bool topController);
+		
 		#if DEBUG
 		private void log (string message)
 		{

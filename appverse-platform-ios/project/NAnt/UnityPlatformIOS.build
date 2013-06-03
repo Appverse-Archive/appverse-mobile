@@ -84,6 +84,8 @@
 			<arg value="/r:../../lib/Webtrekk.dll" />
 			<arg value="/r:../../lib/SharpZipLib.dll" />
 			<arg value="/r:../../lib/BouncyCastle.Crypto.dll" />
+			<arg value="/r:../../lib/zxing.monotouch.dll" />
+			<arg value="/r:../../lib/ZXing.Net.Mobile.dll" />
 			<arg value="/nologo" />
 			<arg value="/warn:4" />
 			<arg value="/debug:+" if="${mode == 'Debug_Simulator' or mode == 'Debug_Device'}"/>

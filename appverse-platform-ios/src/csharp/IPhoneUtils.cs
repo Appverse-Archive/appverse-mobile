@@ -441,6 +441,33 @@ namespace Unity.Platform.IPhone
 			return prunedDictionary;
 		}
 
+		public NSDictionary ConvertToNSDictionary(Dictionary<String,Object> dictionary) {
+			NSMutableDictionary prunedDictionary = new NSMutableDictionary();
+			foreach (String key in dictionary.Keys) { 
+				Object dicValue = dictionary[key];  
+				
+				if (dicValue is Dictionary<String,Object>) {
+					prunedDictionary.Add (new NSString(key), ConvertToNSDictionary((dicValue as Dictionary<String,Object>)));
+				} else {
+					//SystemLogger.Log(SystemLogger.Module.PLATFORM, "***** key["+key+"] is instance of: " + dicValue.GetType().FullName);
+					if (dicValue != null) {
+						if(dicValue is String) {
+							prunedDictionary.Add (new NSString(key), new NSString((dicValue as String)));
+						} else if(dicValue is int) {
+							prunedDictionary.Add (new NSString(key), new NSNumber((int) dicValue));
+						} else if(dicValue is Object[]) {
+							prunedDictionary.Add (new NSString(key), ConvertToNSArray((Object[])dicValue));
+						} else if(dicValue is System.Collections.ArrayList) {
+							prunedDictionary.Add (new NSString(key), ConvertToNSArray((dicValue as System.Collections.ArrayList).ToArray()));
+						}else {
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "*** exception parsing key["+key+"] instance of: " + dicValue.GetType().FullName +". No complex object are valid inside this dictionary");
+						}
+					} 
+				}
+			}
+			return prunedDictionary;
+		}
+
 		private Object[] ConvertToArray(NSArray nsArray) {
 			Object[] arr = new Object[nsArray.Count];
 			for (uint i = 0; i < nsArray.Count; i++) {
@@ -461,6 +488,10 @@ namespace Unity.Platform.IPhone
 			return arr;
 		}
 
+		private NSArray ConvertToNSArray(Object[] nsArray) {
+			return NSArray.FromObjects(nsArray);
+		}
+
 		public String JSONSerialize(object data) {
 			try {
 
@@ -471,8 +502,21 @@ namespace Unity.Platform.IPhone
 			return null;
 		}
 		
-		public void FireUnityJavascriptEvent(string method, object data) {
-			string dataJSONString = Serialiser.Serialize(data);
+		public T JSONDeserialize<T> (string json) {
+			try {
+				return Serialiser.Deserialize<T>(json);
+			} catch (Exception ex) {
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error trying to serialize object to JSON.", ex);
+			}
+			return default(T);
+		}
+
+		public void FireUnityJavascriptEvent (string method, object data)
+		{
+			string dataJSONString = Serialiser.Serialize (data);
+			if (data is String) {
+				dataJSONString = "'"+ (data as String) +"'";
+			}
 			string jsCallbackFunction = "if("+method+"){"+method+"("+dataJSONString+");}";
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript: " + method);
 			IPhoneServiceLocator.CurrentDelegate.MainUIWebView().EvaluateJavascript(jsCallbackFunction);

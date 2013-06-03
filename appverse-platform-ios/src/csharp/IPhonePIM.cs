@@ -173,6 +173,7 @@ namespace Unity.Platform.IPhone
 				contactNavController.PushViewController(unknownPersonViewController,false);
 				
 				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (contactNavController, true);
+			IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
 		}
 
 		void HandleBackButtonItemClicked (object sender, EventArgs e)
@@ -922,7 +923,7 @@ namespace Unity.Platform.IPhone
 			};
 			
 			IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (eventViewController, true);
-			
+			IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
 		}
 		
 		/*
