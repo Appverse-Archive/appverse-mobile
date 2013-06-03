@@ -68,6 +68,10 @@ namespace Unity.Core.Media
 
 		public abstract MediaMetadata TakeSnapshot ();
 
+		public abstract void DetectQRCode (bool autoHandleQR);
+
+		public abstract QRType HandleQRCode (MediaQRContent mediaQRContent);
+
         #endregion
 		
         #region IAudio implementation

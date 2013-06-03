@@ -229,6 +229,8 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\NotificationData.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\RegistrationToken.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\RegistrationError.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\SchedulingData.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Media\MediaQRContent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\Analytics\" />

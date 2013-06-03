@@ -88,6 +88,14 @@ namespace Unity.Core.Notification
 
 		public abstract void DecrementApplicationIconBadgeNumber ();
 
+		public abstract void PresentLocalNotificationNow(NotificationData notification);
+
+		public abstract void ScheduleLocalNotification(NotificationData notification, SchedulingData schedule);
+
+		public abstract void CancelLocalNotification(DateTime fireDate);
+
+		public abstract void CancelAllLocalNotifications();
+
         #endregion
 	}
 }

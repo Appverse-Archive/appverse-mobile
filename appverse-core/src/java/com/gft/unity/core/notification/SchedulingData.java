@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (ìAPL v2.0î).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  (‚ÄúAPL v2.0‚Äù).  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -21,30 +21,44 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-using System;
+package com.gft.unity.core.notification;
 
-namespace Unity.Core.Notification
-{
-	public class RegitrationToken
-	{
-		public RegitrationToken ()
-		{
-		}
+/**
+ *
+ * @author maps
+ */
+public class SchedulingData {
+    
+    private DateTime fireDate;
+    
+    private RepeatInterval repeatInterval;
 
-		public byte[] Binary { get; set; }
-		
-		public int BinaryLength {
-			get {
-				if (Binary != null) {
-					return Binary.Length;
-				} else {
-					return 0;
-				}
-			}
-		}
+    /**
+     * @return the fireDate
+     */
+    public DateTime getFireDate() {
+        return fireDate;
+    }
 
-		public string StringRepresentation { get; set; }
+    /**
+     * @param fireDate the fireDate to set
+     */
+    public void setFireDate(DateTime fireDate) {
+        this.fireDate = fireDate;
+    }
 
-	}
+    /**
+     * @return the repeatInterval
+     */
+    public RepeatInterval getRepeatInterval() {
+        return repeatInterval;
+    }
+
+    /**
+     * @param repeatInterval the repeatInterval to set
+     */
+    public void setRepeatInterval(RepeatInterval repeatInterval) {
+        this.repeatInterval = repeatInterval;
+    }
+    
 }
-
