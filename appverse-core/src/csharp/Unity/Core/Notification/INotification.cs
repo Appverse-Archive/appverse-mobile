@@ -21,6 +21,8 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+using System;
+
 namespace Unity.Core.Notification
 {
 	public interface INotification
@@ -156,6 +158,31 @@ namespace Unity.Core.Notification
 		/// Decrements (substract one from) the application icon badge number.
 		/// </summary>
 		void DecrementApplicationIconBadgeNumber();
+
+		/// <summary>
+		/// Presents a local notification immediately for the current application.
+		/// </summary>
+		/// <param name="notification">Notification to be presented.</param>
+		void PresentLocalNotificationNow(NotificationData notification);
+
+		/// <summary>
+		/// Schedules a local notification fo delivery on a scheduled date and time.
+		/// </summary>
+		/// <param name="notification">Notification data to be presented.</param>
+		/// <param name="schedule">Scheduling data with the fireDate.</param>
+		void ScheduleLocalNotification(NotificationData notification, SchedulingData schedule);
+
+		/// <summary>
+		/// Cancels a local notification given its fire date identifier.
+		/// </summary>
+		/// <param name="fireDate">The fire date of the local notification to be cancelled
+		/// (the fire date is the unique identifier of a local notification, only 1 notification could be scheduled for the same fire date... last scheduled wins)
+		void CancelLocalNotification(DateTime fireDate);
+
+		/// <summary>
+		/// Cancels any local notification scheduled.
+		/// </summary>
+		void CancelAllLocalNotifications();
 
 	}//end INotification
 

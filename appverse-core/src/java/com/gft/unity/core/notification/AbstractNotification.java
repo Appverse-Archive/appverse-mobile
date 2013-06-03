@@ -93,4 +93,16 @@ public abstract class AbstractNotification implements INotification {
 
     @Override
     public abstract void UnRegisterForRemoteNotifications ();
+    
+    @Override
+    public abstract void PresentLocalNotificationNow(NotificationData notification);
+
+    @Override
+    public abstract void ScheduleLocalNotification(NotificationData notification, SchedulingData schedule);
+  
+    @Override
+    public abstract void CancelLocalNotification(DateTime fireDate);
+
+    @Override
+    public abstract void CancelAllLocalNotifications();
 }

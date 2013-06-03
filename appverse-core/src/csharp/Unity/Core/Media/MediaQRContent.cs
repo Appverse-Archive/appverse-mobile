@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (ìAPL v2.0î).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  (‚ÄúAPL v2.0‚Äù).  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -23,28 +23,26 @@
  */
 using System;
 
-namespace Unity.Core.Notification
+namespace Unity.Core.Media
 {
-	public class RegitrationToken
+	public class MediaQRContent
 	{
-		public RegitrationToken ()
+		public string Text { get; set; }
+		public BarCodeType BarcodeType { get; set; }
+		public QRType QRType {get;set;}
+
+		public MediaQRContent ()
 		{
+			Text = String.Empty;
+			BarcodeType = BarCodeType.QR_CODE;
+			QRType = QRType.TEXT;
 		}
-
-		public byte[] Binary { get; set; }
-		
-		public int BinaryLength {
-			get {
-				if (Binary != null) {
-					return Binary.Length;
-				} else {
-					return 0;
-				}
-			}
+		public MediaQRContent (string text, BarCodeType barcodeType, QRType qrType)
+		{
+			Text = text;
+			BarcodeType=barcodeType;
+			QRType = qrType;
 		}
-
-		public string StringRepresentation { get; set; }
-
 	}
 }
 
