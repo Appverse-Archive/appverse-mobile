@@ -17,6 +17,10 @@
 	<uses-permission android:name="android.permission.WAKE_LOCK" />
 	$END_TOKEN_REMOTE_NOTIFICATIONS$-->
 
+	<!-- $START_TOKEN_LOCAL_NOTIFICATIONS$
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+	$END_TOKEN_LOCAL_NOTIFICATIONS$-->
+
 	
 	<!-- ANDROID PERMISSIONS WILL BE UNCOMMENTED - IF REQUIRED FOR ANY API - DURING THE APPLICATION BUILD --> 
 	<!--uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/--> <!-- Allows an application to access coarse (e.g., Cell-ID, WiFi) location -->
@@ -76,6 +80,29 @@
 				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
 		</activity>
+		<!-- $START_TOKEN_QR_CODE$
+		<activity android:name="com.google.zxing.client.android.CaptureActivity"
+		   android:screenOrientation="landscape"
+		   android:configChanges="orientation|keyboardHidden"
+		   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+		   android:windowSoftInputMode="stateAlwaysHidden">
+		   <intent-filter>
+		      <action android:name="android.intent.action.MAIN"/>
+		      <category android:name="android.intent.category.DEFAULT"/>
+		   </intent-filter>
+		   <intent-filter>
+		      <action android:name="com.google.zxing.client.android.SCAN"/>
+		      <category android:name="android.intent.category.DEFAULT"/>
+		    </intent-filter>
+		</activity>
+		<activity android:name="com.google.zxing.client.android.HelpActivity"
+		   android:screenOrientation="landscape">
+		   <intent-filter>
+		      <action android:name="android.intent.action.VIEW"/>
+		      <category android:name="android.intent.category.DEFAULT"/>
+		   </intent-filter>
+		</activity>
+		$END_TOKEN_QR_CODE$-->
 
 		<!-- $START_TOKEN_REMOTE_NOTIFICATIONS$
 		<service android:name="com.gft.unity.android.notification.RemoteNotificationIntentService" 
@@ -92,6 +119,18 @@
 			</intent-filter>
 		</receiver>
 		$END_TOKEN_REMOTE_NOTIFICATIONS$-->
+		
+		<!-- $START_TOKEN_LOCAL_NOTIFICATIONS$
+		<receiver android:name="com.gft.unity.android.notification.LocalNotificationReceiver" >
+		</receiver>
+		
+		<receiver android:name="com.gft.unity.android.notification.LocalNotificationOnBootReceiver" >
+		    <intent-filter>
+		        <action android:name="android.intent.action.BOOT_COMPLETED" />
+		    </intent-filter>
+		</receiver>
+		$END_TOKEN_LOCAL_NOTIFICATIONS$-->
+		
 	</application>
 
 </manifest>
