@@ -31,11 +31,14 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.UUID;
 
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.database.Cursor;
@@ -45,24 +48,35 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.telephony.PhoneNumberUtils;
 import android.webkit.MimeTypeMap;
+import android.webkit.WebSettings.ZoomDensity;
 
 import com.gft.unity.android.activity.AbstractActivityManagerListener;
 import com.gft.unity.android.activity.AndroidActivityManager;
 import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.media.AbstractMedia;
+import com.gft.unity.core.media.BarCodeType;
 import com.gft.unity.core.media.MediaMetadata;
+import com.gft.unity.core.media.MediaQRContent;
 import com.gft.unity.core.media.MediaState;
 import com.gft.unity.core.media.MediaType;
+import com.gft.unity.core.media.QRType;
+import com.gft.unity.core.notification.INotification;
 import com.gft.unity.core.storage.filesystem.IFileSystem;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.Result;
+import com.google.zxing.client.result.ParsedResult;
+import com.google.zxing.client.result.ResultParser;
 
 public class AndroidMedia extends AbstractMedia {
 
 	private static final String LOGGER_MODULE = "IMedia";
 	private static final Logger LOGGER = Logger.getInstance(
 			LogCategory.PLATFORM, LOGGER_MODULE);
+	private static final String PHONE_PREFIX = "tel://";
 
 	private MediaPlayer mp;
 	private MediaState state;
@@ -602,5 +616,152 @@ public class AndroidMedia extends AbstractMedia {
 			type = mime.getMimeTypeFromExtension(extension);
 		}
 		return type;
+	}
+
+	@Override
+	public void DetectQRCode(boolean autoHandleQR) {			
+		try {
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance()
+					.GetService(
+							AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+
+			Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+			intent.setPackage(AndroidServiceLocator.getContext().getPackageName());
+			intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+			
+			Context context = AndroidServiceLocator.getContext();
+			final PackageManager pckmanager = context.getPackageManager();
+			List<ResolveInfo> resolveInfo = pckmanager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+			if(resolveInfo.size()>0) {
+				aam.startActivityForResult(intent, AndroidActivityManager.QRCODE_DETECT_RC,
+						new DetectQRCodeListener(autoHandleQR));
+			} else {
+				LOGGER.logWarning("DetectQRCode", "Intent 'com.google.zxing.client.android.SCAN', is not found. Please verify you have configured it in your manifest.");
+			}
+		} catch (Exception ex) {
+			LOGGER.logError("DetectQRCode", "Error", ex);
+		}      	
+	}
+	
+	private class DetectQRCodeListener extends AbstractActivityManagerListener {
+		boolean bAutoHandle = false;
+
+		public DetectQRCodeListener(boolean autoHandleQR) {
+			bAutoHandle = autoHandleQR;
+		}
+
+		@Override
+		public void onOk(int requestCode, Intent data) {
+			LOGGER.logInfo("DetectQRCodeListener.onOk", ((data!=null)?data.getDataString(): ""));
+			try {			
+				String contents = data.getStringExtra("SCAN_RESULT");
+		        String format = data.getStringExtra("SCAN_RESULT_FORMAT");
+		        
+		        Result p = new Result(contents, null, null, BarcodeFormat.valueOf(format));
+		        MediaQRContent mediaQRContent = new MediaQRContent(contents, ZxingToBarcode(BarcodeFormat.valueOf(format)), getQRTypeFromCode(p));
+		        IActivityManager am = (IActivityManager) AndroidServiceLocator
+						.GetInstance().GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);	
+		        am.executeJS("Unity.Media.onQRCodeDetected", mediaQRContent);
+		        
+		        if(bAutoHandle){//HANDLE EVERYTHING
+		        	HandleQRCode(mediaQRContent);		        	
+		        }
+			} catch (Exception ex) {
+				LOGGER.logError("DetectQRCodeListener.onOk", "Error", ex);
+			}
+		}
+	}
+	
+	private BarCodeType ZxingToBarcode (BarcodeFormat format){
+		for (BarCodeType type : BarCodeType.values()) {
+			if(format.toString().equals(type.toString())){
+				return type;				
+			}
+		}
+		return BarCodeType.DEFAULT;		
+	}
+		
+	private QRType getQRTypeFromCode(Result readQRCode){
+		ParsedResult parsed = ResultParser.parseResult(readQRCode);
+		switch(parsed.getType()){
+			case ADDRESSBOOK:
+				return QRType.ADDRESSBOOK;			
+			case CALENDAR:
+				return QRType.CALENDAR;			
+			case EMAIL_ADDRESS:
+				return QRType.EMAIL_ADDRESS;
+			case GEO:
+				return QRType.GEO;
+			case ISBN:
+				return QRType.ISBN;
+			case PRODUCT:
+				return QRType.PRODUCT;
+			case SMS:
+				return QRType.SMS;
+			case TEL:
+				return QRType.TEL;
+			case URI:
+				return QRType.URI;
+			case WIFI:
+				return QRType.WIFI;
+			case TEXT:
+			default:
+				return QRType.TEXT;
+		}	
+	}
+	
+
+	@Override
+	public QRType HandleQRCode(MediaQRContent mediaQRContent) {
+		if(mediaQRContent != null && mediaQRContent.getQRType() != null){
+			INotification notificationService = (INotification) AndroidServiceLocator.GetInstance().GetService("notify");
+			
+			IActivityManager am = (IActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(
+							AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			Intent intent;
+			switch(mediaQRContent.getQRType()){				
+			case TEL:
+				String numberFormatted = PhoneNumberUtils.formatNumber(mediaQRContent.getText().substring(4));
+				intent = new Intent(Intent.ACTION_CALL,Uri.parse(PHONE_PREFIX + numberFormatted));
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				am.startActivity(intent);				
+				break;				
+			case URI:
+				intent = new Intent(Intent.ACTION_VIEW);
+				intent.setData(Uri.parse(mediaQRContent.getText()));
+				am.startActivity(intent);				
+				break;
+			case EMAIL_ADDRESS:
+				intent = new Intent(Intent.ACTION_SEND);
+				if(mediaQRContent.getText().toLowerCase().startsWith("mailto:")){
+					String[] emailFields = getEmailFieldsFromQR(mediaQRContent.getText());
+					intent.setType("text/html");
+					intent.putExtra(Intent.EXTRA_EMAIL, new String[] {emailFields[0]});
+					intent.putExtra(Intent.EXTRA_SUBJECT, emailFields[1]);
+					intent.putExtra(Intent.EXTRA_TEXT, emailFields[2]);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					am.startActivity(Intent.createChooser(intent, "Email"));
+					break;
+				}//else execute the DEFAULT block
+			default:
+				if(notificationService != null)
+					notificationService.StartNotifyAlert ("QR Alert", "The QR Code " + mediaQRContent.getQRType().toString() + " cannot be processed automatically.", "OK");
+				break;
+			}			
+			return mediaQRContent.getQRType();
+		}
+		return null;
+	}
+	
+	private String [] getEmailFieldsFromQR(String text){
+		String [] fields = new String[3];
+		fields[0] = text.split("\\?")[0].substring(7);
+		fields[1] = text.split("\\?")[1].split("\\&")[0].substring(8);
+		fields[2] = text.split("\\?")[1].split("\\&")[1].substring(5);
+		return fields;		
 	}
 }

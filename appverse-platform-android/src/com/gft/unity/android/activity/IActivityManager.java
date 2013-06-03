@@ -29,6 +29,7 @@ public interface IActivityManager {
 
 	public static final int GET_SNAPSHOT_RC = 5000;
 	public static final int TAKE_SNAPSHOT_RC = 5001;
+	public static final int QRCODE_DETECT_RC = 5002;
 
 	public boolean resolveActivity(Intent intent);
 	
