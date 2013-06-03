@@ -53,6 +53,7 @@ namespace UnityUI.iOS
 		private bool orientationSupportedLandscapeRight = false;
 		private NSArray supportedOrientations = null;
 		
+		bool isTopController = true;
 		
 		#region Constructors
 		
@@ -337,7 +338,18 @@ namespace UnityUI.iOS
 			//webView.EvaluateJavascript(@"window.onorientationchange();");
 		}
 
+		public override void ViewWillLayoutSubviews () {
+			log ("ViewWillLayoutSubviews");
+			if(!this.isTopController) {
+				log ("ViewWillLayoutSubviews: main UIViewController is NOT the top controller... executing refreshOrientation() JS function");
+				webView.EvaluateJavascript (@"refreshOrientation();");
+				this.isTopController = true;
+			}
+		}
 
+		public void SetAsTopController(bool topController) {
+			this.isTopController = topController; 
+		}
 
 		public override void DidReceiveMemoryWarning ()
 		{

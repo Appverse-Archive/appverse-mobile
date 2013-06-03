@@ -2,8 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-	<!-- we have removed this orientation configuration and delegated it to the UnityUI_iOSViewController#GetSupportedInterfaceOrientations() method for iOS 6 and later, 
-	and UnityUI_iOSViewController#ShouldAutorotateToInterfaceOrientation for <iOS 6 
+	<!-- We have removed this orientation configuration and delegated it to the UnityUI_iOSViewController#GetSupportedInterfaceOrientations() method for iOS 6 and later, 
+	and UnityUI_iOSViewController#ShouldAutorotateToInterfaceOrientation for <iOS 6 --> 
+	<!-- We need to place those values again, otherwise the correct splashscreen is not shown. 
+	UISupportedInterfaceOrientations will allow ALL orientations for all view controllers, 
+	CustomUISupportedInterfaceOrientations will restrict orientations as configured by the app for each device type iPhone/iPad just for the MAIN view controller -->
     <key>UISupportedInterfaceOrientations</key>
     <array>
       <string>UIInterfaceOrientationPortrait</string>
@@ -11,6 +14,5 @@
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
-	-->
   </dict>
 </plist>

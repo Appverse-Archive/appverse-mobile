@@ -104,6 +104,10 @@ namespace UnityUI.iOS
 			return MainViewController ().webView;
 		}
 		
+		public override void SetMainUIViewControllerAsTopController(bool topController) {
+			this.MainViewController ().SetAsTopController(topController);
+		}
+		
 		public override bool ShowSplashScreen (UIInterfaceOrientation orientation) {
 			return MainViewController().ShowSplashScreen(orientation);
 		}
@@ -177,10 +181,17 @@ namespace UnityUI.iOS
 
 			InitializeUnity ();
 			
+			UIApplicationState applicationState = application.ApplicationState;
+
+			MainUIWebView().LoadFinished += delegate {
+#if DEBUG
+				log ("************** WEBVIEW LOAD FINISHED");
+#endif
 			// The NSDictionary options variable would contain any notification data if the user clicked the 'view' button on the notification
 			// to launch the application. 
 			// This method processes these options from the FinishedLaunching, as well as the ReceivedRemoteNotification methods.
-			processNotification(launcOptions, true, application);
+				processNotification(launcOptions, true, applicationState);
+			};
 			
 			return true;
 		}
@@ -190,20 +201,44 @@ namespace UnityUI.iOS
 		/// </summary>
 		/// <param name="options">Options.</param>
 		/// <param name="fromFinishedLaunching">True if this method comes from the 'FinishedLaunching' delegated method</param>
-		/// <param name="application">The application that received the remote notification</param>
-		void processNotification(NSDictionary options, bool fromFinishedLaunching, UIApplication application)
+		/// <param name="applicationState">The application state that received the remote notification</param>
+		void processNotification(NSDictionary options, bool fromFinishedLaunching, UIApplicationState applicationState)
 		{
-			UIApplicationState applicationState = application.ApplicationState;
+
 #if DEBUG
 			log ("******* PROCESSING NOTIFICATION fromFinishedLaunching="+fromFinishedLaunching+". application state: "+ applicationState);
 #endif
+			if(options != null) {
+
+				// LOCAL NOTIFICATIONS
+
+				UILocalNotification localNotif = (UILocalNotification) options.ObjectForKey(UIApplication.LaunchOptionsLocalNotificationKey);
+				this.ProcessLocalNotification(applicationState, localNotif);
+
+				// REMOTE NOTIFICATIONS
+				if(fromFinishedLaunching) {
+					NSDictionary remoteNotif = (NSDictionary) options.ObjectForKey(UIApplication.LaunchOptionsRemoteNotificationKey);
+					this.ProcessRemoteNotification(remoteNotif, fromFinishedLaunching, applicationState);
+				} else {
+					this.ProcessRemoteNotification(options, fromFinishedLaunching, applicationState);
+				}
+
+			} else {
+#if DEBUG
+				log ("******* NO launch options");
+#endif
+			}
+
+		}
+
+		private void ProcessRemoteNotification(NSDictionary options, bool fromFinishedLaunching, UIApplicationState applicationState) {
    			
 			//Check to see if the dictionary has the aps key.  This is the notification payload you would have sent
-			if ( options!=null  && options.ContainsKey(new NSString("aps")))
+			if (options!=null && options.ContainsKey(new NSString("aps")))
 		    {
-				#if DEBUG
-				log (" ******* PROCESSING NOTIFICATION Notification Payload received");
-				#endif
+#if DEBUG
+				log (" ******* PROCESSING REMOTE NOTIFICATION Notification Payload received");
+#endif
 				
 		        //Get the aps dictionary
 		        NSDictionary aps = options.ObjectForKey(new NSString("aps")) as NSDictionary;
@@ -218,17 +253,17 @@ namespace UnityUI.iOS
 		        //      will be another NSDictionary... Basically the json gets dumped right into a NSDictionary, so keep that in mind
 		        if (aps.ContainsKey(new NSString("alert"))) {
 		            alert = (aps[new NSString("alert")] as NSString).ToString();
-					#if DEBUG
+#if DEBUG
 					log ("******* PROCESSING NOTIFICATION Notification Payload contains an alert message");
-					#endif
+#endif
 				}
 
 		        //Extract the sound string
 		        if (aps.ContainsKey(new NSString("sound"))) {
 		            sound = (aps[new NSString("sound")] as NSString).ToString();
-					#if DEBUG
+#if DEBUG
 					log ("******* PROCESSING NOTIFICATION Notification Payload contains sound");
-					#endif
+#endif
 				}
 
 		        //Extract the badge
@@ -236,9 +271,9 @@ namespace UnityUI.iOS
 		        {
 		            string badgeStr = (aps[new NSString("badge")] as NSObject).ToString();
 		            int.TryParse(badgeStr, out badge);
-					#if DEBUG
+#if DEBUG
 					log ("******* PROCESSING NOTIFICATION Notification Payload contains a badge number: " + badge);
-					#endif
+#endif
 		        }
 
 		        //If this came from the ReceivedRemoteNotification while the app was running,
@@ -261,29 +296,20 @@ namespace UnityUI.iOS
 #endif
 
 		            //Manually set the badge in case this came from a remote notification sent while the app was open
-					if (badgeEnabled && badge >= 0)
-		                UIApplication.SharedApplication.ApplicationIconBadgeNumber = badge;
+					if (badgeEnabled) {
+						this.UpdateApplicationIconBadgeNumber(badge);
+					}
 
 		            //Manually play the sound
-					if (soundEnabled && !string.IsNullOrEmpty(sound))
+					if (soundEnabled)
 		            {
-						//This assumes that in your json payload you sent the sound filename (like sound.caf)
-		                // and that you've included it in your project directory as a Content Build type.
-		                var soundObj = MonoTouch.AudioToolbox.SystemSound.FromFile(sound);
-						if(soundObj != null) {
-		                	soundObj.PlaySystemSound();
-						} else {
-#if DEBUG
-							log ("it was not able to play the specified sound: " + sound);
-#endif
-						}
+						this.PlayNotificationSound(sound);
 					}
 
 		            //Manually show an alert
-					if (alertEnabled && !string.IsNullOrEmpty(alert))
+					if (alertEnabled)
 		            {
-		                UIAlertView avAlert = new UIAlertView("Notification", alert, null, "OK", null);
-		                avAlert.Show();
+						this.ShowNotificationAlert("Notification", alert);
 		            }
 		        }
 
@@ -298,8 +324,91 @@ namespace UnityUI.iOS
 				
 				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnRemoteNotificationReceived", notificationData);
 
+			} else {
+#if DEBUG
+				log (" ******* NO Notification Payload received");
+#endif
+			}
+		}
+
+		/// <summary>
+		/// Processes the local notification.
+		/// </summary>
+		/// <param name="application">Application.</param>
+		/// <param name="localNotification">Local notification.</param>
+		private void ProcessLocalNotification(UIApplicationState applicationState, UILocalNotification localNotification) {
+			if(localNotification != null) {
+#if DEBUG
+				log ("******* Local NOTIFICATION received");
+#endif
+
+				if (applicationState == UIApplicationState.Active)
+				{
+					// we need to manually process the notification while application is running.
+#if DEBUG
+					log ("******* Application is running, manually showing notification");
+#endif
+					this.UpdateApplicationIconBadgeNumber(localNotification.ApplicationIconBadgeNumber);
+					this.PlayNotificationSound(localNotification.SoundName);
+					this.ShowNotificationAlert("Notification", localNotification.AlertBody);
+				}
+				
+				NotificationData notificationData = new NotificationData();
+				notificationData.AlertMessage = localNotification.AlertBody;
+				notificationData.Badge = localNotification.ApplicationIconBadgeNumber;
+				notificationData.Sound = localNotification.SoundName;
+				
+				if(localNotification.UserInfo != null) {
+					Dictionary<String,Object> customDic = IPhoneUtils.GetInstance().ConvertToDictionary(new NSMutableDictionary(localNotification.UserInfo));
+					notificationData.CustomDataJsonString = IPhoneUtils.GetInstance().JSONSerialize(customDic);
+				}
+
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnLocalNotificationReceived", notificationData);
+			}
+		}
+
+		/// <summary>
+		/// Manually shows a notification alert.
+		/// </summary>
+		/// <param name="title">Title.</param>
+		/// <param name="message">Message.</param>
+		private void ShowNotificationAlert(string title, string message) {
+			if (!string.IsNullOrEmpty(message))
+			{
+				UIAlertView avAlert = new UIAlertView(title, message, null, "OK", null);
+				avAlert.Show();
+			}
+		}
+
+		private void UpdateApplicationIconBadgeNumber(int badge) {
+			if(badge >= 0) {
+				UIApplication.SharedApplication.ApplicationIconBadgeNumber = badge;
+			}
+		}
+
+		private void PlayNotificationSound (String soundName) {
+			if (!string.IsNullOrEmpty(soundName))
+			{
+				// Assuming that the sound filename received (like sound.caf)
+				// has been included in the project directory as a Content Build type.
+				var soundObj = MonoTouch.AudioToolbox.SystemSound.FromFile(soundName);
+				if(soundObj != null) {
+					soundObj.PlaySystemSound();
+				} else {
+#if DEBUG
+					log ("it was not able to play the specified sound: " + soundName);
+#endif
+				}
+			}
 		    }
 
+		/// <summary>
+		/// Sent to the delegate when a running application receives a local notification.
+		/// </summary>
+		/// <param name="application">Application.</param>
+		/// <param name="localNotification">Local notification.</param>
+		public override void ReceivedLocalNotification (UIApplication application, UILocalNotification localNotification) {
+			this.ProcessLocalNotification(application.ApplicationState, localNotification);
 		}
 
 		/// <summary>
@@ -312,7 +421,7 @@ namespace UnityUI.iOS
 		    // This method gets called whenever the app is already running and receives a push notification
 		    // WE MUST HANDLE the notifications in this case.  Apple assumes if the app is running, it takes care of everything
 		    // this includes setting the badge, playing a sound, etc.
-		    processNotification(userInfo, false, application);
+		    processNotification(userInfo, false, application.ApplicationState);
 		}
 
 		/// <summary>
