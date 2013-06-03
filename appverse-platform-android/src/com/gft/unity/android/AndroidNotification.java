@@ -23,19 +23,30 @@
  */
 package com.gft.unity.android;
 
+import java.util.Map;
+import java.util.Set;
+
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Vibrator;
-import com.google.android.gcm.GCMRegistrar;
 
+import com.gft.unity.android.notification.LocalNotificationReceiver;
+import com.gft.unity.android.notification.NotificationUtils;
 import com.gft.unity.core.notification.AbstractNotification;
+import com.gft.unity.core.notification.DateTime;
+import com.gft.unity.core.notification.NotificationData;
 import com.gft.unity.core.notification.RemoteNotificationType;
+import com.gft.unity.core.notification.SchedulingData;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
+import com.google.android.gcm.GCMRegistrar;
 
 public class AndroidNotification extends AbstractNotification {
 
@@ -373,4 +384,99 @@ public class AndroidNotification extends AbstractNotification {
 		}finally{LOGGER.logOperationEnd("UnRegisterForRemoteNotifications", null);}
 		
 	}
+
+	@Override
+	public void CancelAllLocalNotifications() {
+		LOGGER.logOperationBegin("CancelAllLocalNotifications", Logger.EMPTY_PARAMS, Logger.EMPTY_VALUES);
+		
+		try {
+			Context context = AndroidServiceLocator.getContext();
+			
+			Map<String, ?> allLocalNotifications = NotificationUtils.getLocalNotificationsOnSharedPreferences(context);
+			final Set<String> allLocalNotificationsIds = allLocalNotifications.keySet();
+			LOGGER.logInfo("CancelAllLocalNotifications", "#num of scheduled local notifications to be cancelled: " + allLocalNotificationsIds.size());
+			
+			final AlarmManager am = NotificationUtils.getAlarmManager(context);
+			
+			for (String notificationId: allLocalNotificationsIds) {
+				
+				final Intent intent = new Intent(context, LocalNotificationReceiver.class);
+				intent.setAction(notificationId);
+				final PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+				LOGGER.logInfo("CancelAllLocalNotifications", "Canceling local notification by id: " + notificationId);
+				
+				am.cancel(pi);
+				
+			}
+			// removing notification from Shared Preferences
+			NotificationUtils.removeAllLocalNotificationsFromSharedPrefereces(context);
+				
+		} catch (Exception e) {
+			LOGGER.logError("CancelAllLocalNotifications", "Exception canceling local notification", e);
+		}
+		
+		LOGGER.logOperationEnd("CancelAllLocalNotifications", null);
+	}
+
+	@Override
+	public void CancelLocalNotification(DateTime fireDate) {
+		LOGGER.logOperationBegin("CancelLocalNotification", new String[]{"fireDate"}, new Object[]{fireDate});
+		
+		/*
+		 * Notification id is the identifier to cancel the notification 
+		 * and cancel it.
+		 */
+		Context context = AndroidServiceLocator.getContext();
+		final Intent intent = new Intent(context, LocalNotificationReceiver.class);
+		String notificationId = NotificationUtils.getLocalNotificationId(context, fireDate);
+		if(notificationId!=null) {
+			LOGGER.logInfo("CancelLocalNotification", "Canceling local notification by id: " + notificationId);
+			intent.setAction(notificationId);
+	
+			final PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+			final AlarmManager am = NotificationUtils.getAlarmManager(context);
+	
+			try {
+			    am.cancel(pi);
+			} catch (Exception e) {
+				LOGGER.logError("CancelLocalNotification", "Exception canceling local notification", e);
+			}
+			// removing notification from Shared Preferences
+			NotificationUtils.removeLocalNotificationFromSharedPrefereces(context, notificationId);
+		} else {
+			LOGGER.logError("CancelLocalNotification", "Could not find any scheduled local notification by given fire date: " + fireDate);
+		}
+		
+		LOGGER.logOperationEnd("CancelLocalNotification", null);
+		
+	}
+
+	@Override
+	public void PresentLocalNotificationNow(NotificationData notificationData) {
+		LOGGER.logOperationBegin("PresentLocalNotificationNow", new String[]{"notificationData"}, new Object[]{notificationData});
+		
+		Context context = AndroidServiceLocator.getContext();
+		NotificationUtils.processLocalNotification(context, notificationData, null);
+		
+		LOGGER.logOperationEnd("PresentLocalNotificationNow", null);
+	}
+
+
+	@Override
+	public void ScheduleLocalNotification(NotificationData notificationData, SchedulingData schedule) {
+		LOGGER.logOperationBegin("ScheduleLocalNotification", new String[]{"notificationData", "schedule"}, new Object[]{notificationData,schedule});
+		
+		Context context = AndroidServiceLocator.getContext();
+		if(schedule != null) {
+			int notificationId = NotificationUtils.processLocalNotification(context, notificationData, schedule);
+			if(notificationId!=-1) {
+				NotificationUtils.storeLocalNotificationOnSharedPreferences(context, ""+notificationId, notificationData, schedule);
+			}
+		} else {
+			LOGGER.logError("ScheduleLocalNotification", "No suitable scheduling data object received for scheduling this local notification");
+		}
+		
+		LOGGER.logOperationEnd("ScheduleLocalNotification", null);
+	}
+	
 }

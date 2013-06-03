@@ -1,7 +1,6 @@
 package com.gft.unity.android.notification;
 
 import java.util.HashMap;
-import java.util.Random;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -10,7 +9,6 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -53,8 +51,6 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 	private static final String FIELD_NODE_ATTRIBUTE = "FIELD";
 	private static final String TYPE_ATTRIBUTE = "type";
 	private static final String NAME_ATTRIBUTE = "name";
-	private static final String DRAWABLE_TYPE = "drawable";
-	private static final String DEFAULT_ICON_NAME = "icon";
 	
 	private static final Logger LOGGER = Logger.getInstance(
 			LogCategory.PLATFORM, "PUSH_NOTIFICATION_SERVICE");
@@ -162,22 +158,20 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 			if(APP_RESOURCES == null) APP_RESOURCES = context.getResources();
 			//Create the intent that will launch the application when the notification is clicked
 			NotificationManager notifyManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			Intent notificationIntent = new Intent("android.intent.action.MAIN");
-			notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			notificationIntent.setComponent(ComponentName.unflattenFromString(MAIN_ACTIVITY_CLASS_NAME));
-			notificationIntent.addCategory("android.intent.category.LAUNCHER");
-			PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 			
 			NOTIFICATION_STRUCTURE = storeIntentExtras(context,intent);
+			int notificationId = NotificationUtils.getNotificationId();
+			PendingIntent contentIntent = NotificationUtils.getMainActivityAsPendingIntent(
+					context, NotificationUtils.NOTIFICATION_TYPE_REMOTE, MAIN_ACTIVITY_CLASS_NAME, ""+notificationId, notificationData);
 			
-			int iIconId = APP_RESOURCES.getIdentifier(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_SMALL_ICON.toString()), DRAWABLE_TYPE, PACKAGE_NAME);;
+			int iIconId = APP_RESOURCES.getIdentifier(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_SMALL_ICON.toString()), NotificationUtils.DRAWABLE_TYPE, PACKAGE_NAME);;
 			if(iIconId == 0){
-				iIconId = APP_RESOURCES.getIdentifier(DEFAULT_ICON_NAME, DRAWABLE_TYPE, PACKAGE_NAME);
+				iIconId = APP_RESOURCES.getIdentifier(NotificationUtils.DEFAULT_ICON_NAME, NotificationUtils.DRAWABLE_TYPE, PACKAGE_NAME);
 			}
 			
 			Bitmap largeIconBMP = null;
 			if(NOTIFICATION_STRUCTURE.containsKey(RemoteNotificationFields.RN_LARGE_ICON.toString())){
-				int iLargeIconId = APP_RESOURCES.getIdentifier(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_LARGE_ICON.toString()), DRAWABLE_TYPE, PACKAGE_NAME);
+				int iLargeIconId = APP_RESOURCES.getIdentifier(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_LARGE_ICON.toString()), NotificationUtils.DRAWABLE_TYPE, PACKAGE_NAME);
 				largeIconBMP = BitmapFactory.decodeResource(APP_RESOURCES, iLargeIconId);
 			}
 
@@ -215,8 +209,6 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 				//else{notif = mBuilder.build();}
 			}
 			notif.flags = Notification.FLAG_SHOW_LIGHTS;
-			Random rd = new Random();
-			int notificationId =rd.nextInt(10000)+1;
 			notifyManager.notify(notificationId, notif);
 
 			if(appActivity != null && appView!=null){
