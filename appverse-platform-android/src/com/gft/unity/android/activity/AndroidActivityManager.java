@@ -52,6 +52,7 @@ public class AndroidActivityManager implements IActivityManager {
 
 	public static final int GET_SNAPSHOT_RC = 5000;
 	public static final int TAKE_SNAPSHOT_RC = 5001;
+	public static final int QRCODE_DETECT_RC = 5002;
 	
 	private static final String SPLASH_PORTRAIT_ID = "launch_portrait";
 	private static final String SPLASH_LANDSCAPE_ID = "launch_landscape";
