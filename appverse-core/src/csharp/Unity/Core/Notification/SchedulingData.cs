@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (ìAPL v2.0î).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  (‚ÄúAPL v2.0‚Äù).  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -25,26 +25,15 @@ using System;
 
 namespace Unity.Core.Notification
 {
-	public class RegitrationToken
+	public class SchedulingData
 	{
-		public RegitrationToken ()
+		public DateTime FireDate { get; set; }
+
+		public RepeatInterval RepeatInterval { get; set; }
+
+		public SchedulingData ()
 		{
 		}
-
-		public byte[] Binary { get; set; }
-		
-		public int BinaryLength {
-			get {
-				if (Binary != null) {
-					return Binary.Length;
-				} else {
-					return 0;
-				}
-			}
-		}
-
-		public string StringRepresentation { get; set; }
-
 	}
 }
 

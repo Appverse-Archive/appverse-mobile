@@ -9,5 +9,14 @@ namespace Unity.Core.Notification
 		ALERT,
 		CONTENT_AVAILABILITY
 	}
+
+	public enum RepeatInterval {
+		NO_REPEAT,
+		HOURLY,
+		DAILY,
+		WEEKLY,
+		MONTHLY,
+		YEARLY
+	}
 }
 

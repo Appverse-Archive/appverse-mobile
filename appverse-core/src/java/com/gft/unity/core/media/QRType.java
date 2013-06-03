@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (ìAPL v2.0î).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  (‚ÄúAPL v2.0‚Äù).  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -21,30 +21,18 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-using System;
+package com.gft.unity.core.media;
 
-namespace Unity.Core.Notification
-{
-	public class RegitrationToken
-	{
-		public RegitrationToken ()
-		{
-		}
-
-		public byte[] Binary { get; set; }
-		
-		public int BinaryLength {
-			get {
-				if (Binary != null) {
-					return Binary.Length;
-				} else {
-					return 0;
-				}
-			}
-		}
-
-		public string StringRepresentation { get; set; }
-
-	}
+public enum QRType {
+    ADDRESSBOOK,
+    EMAIL_ADDRESS,
+    PRODUCT,
+    URI,
+    TEXT,
+    GEO,
+    TEL,
+    SMS,
+    CALENDAR,
+    WIFI,
+    ISBN
 }
-

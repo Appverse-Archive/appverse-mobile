@@ -180,4 +180,29 @@ public interface INotification {
      * Unregisters this application and device for receiving remote notifications.
      */
     public void UnRegisterForRemoteNotifications ();
+    
+    /**
+     * Presents a local notification immediately for the current application.
+     * @param notification Notification to be presented.
+     */
+    public void PresentLocalNotificationNow(NotificationData notification);
+
+    /**
+     * Schedules a local notification for delivery on a scheduled date and time.
+     * @param notification Notification data to be presented.
+     * @param schedule Scheduling data with the fireDate.
+     */
+    public void ScheduleLocalNotification(NotificationData notification, SchedulingData schedule);
+  
+    /**
+     * Cancels a local notification given its fire date identifier.
+     * @param fireDate The fire date of the local notification to be canceled (the fire date is the unique identifier of a local notification, only 1 notification could be scheduled for the same fire date... last scheduled wins)
+     */
+    public void CancelLocalNotification(DateTime fireDate);
+
+    /**
+     * Cancels any local notification scheduled.
+     */
+    public void CancelAllLocalNotifications();
+    
 }

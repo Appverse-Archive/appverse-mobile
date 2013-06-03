@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (ìAPL v2.0î).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  (‚ÄúAPL v2.0‚Äù).  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -21,30 +21,48 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-using System;
+package com.gft.unity.core.media;
 
-namespace Unity.Core.Notification
-{
-	public class RegitrationToken
-	{
-		public RegitrationToken ()
-		{
-		}
+public class MediaQRContent {
+    private String Text;
+    private BarCodeType BarcodeType;
+    private QRType QRType;
 
-		public byte[] Binary { get; set; }
-		
-		public int BinaryLength {
-			get {
-				if (Binary != null) {
-					return Binary.Length;
-				} else {
-					return 0;
-				}
-			}
-		}
+    public String getText() {
+        return Text;
+    }
 
-		public string StringRepresentation { get; set; }
+    public void setText(String Text) {
+        this.Text = Text;
+    }
 
-	}
+    public BarCodeType getBarcodeType() {
+        return BarcodeType;
+    }
+
+    public void setBarcodeType(BarCodeType BarcodeType) {
+        this.BarcodeType = BarcodeType;
+    }
+
+    public QRType getQRType() {
+        return QRType;
+    }
+
+    public void setQRType(QRType QRType) {
+        this.QRType = QRType;
+    }  
+    
+
+    public MediaQRContent ()
+    {
+            Text = "";
+            BarcodeType = BarCodeType.QR_CODE;
+            QRType = QRType.TEXT;
+    }
+    public MediaQRContent (String text, BarCodeType barcodeType, QRType qrType)
+    {
+            Text = text;
+            BarcodeType=barcodeType;
+            QRType = qrType;
+    }
 }
-
