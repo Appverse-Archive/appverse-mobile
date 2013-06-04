@@ -3572,7 +3572,7 @@ Media.prototype.TakeSnapshot = function()
 /**
  * Fires the camera to detected and process a QRCode image.
  * <br> @version 3.9
- * @param {Boolean} True value to indicates that the detected QRCode should be handled by the platform (if possible) automatically, or False to just be get data returned.
+ * @param {Boolean} autoHandleQR True value to indicates that the detected QRCode should be handled by the platform (if possible) automatically, or False to just be get data returned.
  * QRCode data is provided via the proper event handled by the "Unity.Media.onQRCodeDetected" method; please, override to handle the event.
  * Returned value is "null" on synchronous call.
  * @method
@@ -3589,7 +3589,7 @@ Media.prototype.DetectQRCode = function(autoHandleQR)
  * <br> {@link Unity.Media#QRTYPE_EMAIL_ADDRESS}, {@link Unity.Media#QRTYPE_URI} and {@link Unity.Media#QRTYPE_TEL}.
  * <br> Other types couldn't be processed without pre-parsing, so they are returned to be handled by the application.
  * <br> @version 3.9
- * @param {Unity.Media.MediaQRContent} The QRCode data scanned that needs to be handle.
+ * @param {Unity.Media.MediaQRContent} mediaQRContent The QRCode data scanned that needs to be handle.
  * @return {int} The current QRCode content type.
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
