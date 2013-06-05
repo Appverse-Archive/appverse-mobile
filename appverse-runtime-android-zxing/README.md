@@ -3,6 +3,9 @@
 This module contains the Android Java implementation of the ZXing module to read QR Codes.
 It is a Library project and should be referenced as Library in *appverse-runtime-android* project
 
+It is important to edit the **local.properties** file and type there the path to the **Android SDK folder**
+or follow the instructions * **Updating a Project** * from <http://developer.android.com/tools/projects/projects-cmdline.html#UpdatingAProject>
+
 For more information, please refer to <http://appverse.github.com>.
 This software is licensed under APL 2.0 <http://appverse.org/legal/appverse-license/>.
 
