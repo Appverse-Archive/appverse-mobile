@@ -101,6 +101,12 @@
     <Reference Include="Webtrekk">
       <HintPath>lib\Webtrekk.dll</HintPath>
     </Reference>
+    <Reference Include="ZXing.Net.Mobile">
+      <HintPath>lib\ZXing.Net.Mobile.dll</HintPath>
+    </Reference>
+    <Reference Include="zxing.monotouch">
+      <HintPath>lib\zxing.monotouch.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
