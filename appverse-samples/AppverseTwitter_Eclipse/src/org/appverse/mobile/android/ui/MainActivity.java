@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (ÒAPL v2.0Ó).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  ("APL v2.0").  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -32,11 +32,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.AssetManager;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.KeyEvent;
-import android.view.Surface;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
@@ -47,10 +46,9 @@ import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebSettings;
-import android.widget.ImageView;
-import android.widget.Toast;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.app.NotificationManager;
 
 import com.gft.unity.android.AndroidServiceLocator;
 import com.gft.unity.android.AndroidSystem;
@@ -58,7 +56,12 @@ import com.gft.unity.android.activity.AndroidActivityManager;
 import com.gft.unity.android.log.AndroidLoggerDelegate;
 import com.gft.unity.android.server.HttpServer;
 import com.gft.unity.android.server.ProxySettings;
+import com.gft.unity.android.notification.LocalNotificationReceiver;
+import com.gft.unity.android.notification.NotificationUtils;
+import com.gft.unity.android.notification.RemoteNotificationIntentService;
 import com.gft.unity.android.server.AndroidNetworkReceiver;
+import com.gft.unity.android.util.json.JSONSerializer;
+import com.gft.unity.core.notification.NotificationData;
 import com.gft.unity.core.system.DisplayOrientation;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
@@ -87,6 +90,8 @@ public class MainActivity extends Activity {
 	private int serverPort;
 
 	private static final int APPVIEW_ID = 10;
+
+	private Bundle lastIntentExtras = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -131,6 +136,7 @@ public class MainActivity extends Activity {
 		appView.getSettings().setGeolocationEnabled(true);
 		appView.getSettings().setLightTouchEnabled(true);
 		appView.getSettings().setRenderPriority(RenderPriority.HIGH);
+		appView.getSettings().setDomStorageEnabled(true); // [MOBPLAT-129] enable HTML5 local storage
 
 		appView.setVerticalScrollBarEnabled(false);
 
@@ -141,14 +147,6 @@ public class MainActivity extends Activity {
 		appView.getSettings().setDatabasePath(databasePath);
 
 		webChromeClient = new WebChromeClient() {
-
-			@Override
-			public boolean onJsAlert(WebView view, String url, String message,
-					android.webkit.JsResult result) {
-				Toast.makeText(getApplicationContext(), message,
-						Toast.LENGTH_SHORT);
-				return super.onJsAlert(view, url, message, result);
-			};
 
 			// Required settings to enable HTML5 database storage
 			@Override
@@ -226,6 +224,9 @@ public class MainActivity extends Activity {
 		
 		holdSplashScreenOnStartup =  checkUnityProperty("Unity_HoldSplashScreenOnStartup");
 		hasSplash = activityManager.showSplashScreen(appView);
+		RemoteNotificationIntentService.loadNotificationOptions(getResources(), appView, this);
+		LocalNotificationReceiver.initialize(appView, this);
+				
 	}
 	
 	private boolean checkUnityProperty(String propertyName) {
@@ -258,6 +259,10 @@ public class MainActivity extends Activity {
 		if(hasFocus) {
 			LOG.Log(Module.GUI, "application has focus; calling foreground listener");
 			appView.loadUrl("javascript:try{Unity._toForeground()}catch(e){}");
+			
+			// check for notification details
+			this.checkLaunchedFromNotification();
+			
 		} else {
 			LOG.Log(Module.GUI, "application lost focus; calling background listener");
 			appView.loadUrl("javascript:try{Unity._toBackground()}catch(e){}");
@@ -295,7 +300,8 @@ public class MainActivity extends Activity {
 
 		// Save the context for further access
 		AndroidServiceLocator.setContext(this);
-
+		NotificationManager nMngr = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+		nMngr.cancelAll();
 		LOG.Log(Module.GUI, "onResume");
 		
 		/*
@@ -309,6 +315,13 @@ public class MainActivity extends Activity {
 		startServer();
 
 		appView.loadUrl("javascript:try{Unity._toForeground()}catch(e){}");
+		
+		// storing last intent extras
+		if(this.getIntent()!=null) {
+			this.lastIntentExtras = this.getIntent().getExtras();
+			Bundle nullExtras =  null;
+			this.getIntent().replaceExtras(nullExtras);
+		}
 	}
 	
 	@Override
@@ -378,6 +391,34 @@ public class MainActivity extends Activity {
 				LOG.Log(Module.GUI, ex.toString());
 			}
 			LOG.Log(Module.GUI, "Server started.");
+		}
+	}
+
+	/**
+	 * Check if this activity was launched from a local notification, and send details to application
+	 */
+	private void checkLaunchedFromNotification() {
+		if(this.lastIntentExtras != null) {
+			LOG.Log(Module.GUI, "Activity was launched from Notification Manager... "); 
+			final String message = lastIntentExtras.getString(NotificationUtils.EXTRA_MESSAGE);
+			final String notificationSound = this.lastIntentExtras.getString(NotificationUtils.EXTRA_SOUND);
+			final String customJSONString = this.lastIntentExtras.getString(NotificationUtils.EXTRA_CUSTOM_JSON);
+			final String notificationId = lastIntentExtras.getString(NotificationUtils.EXTRA_NOTIFICATION_ID);
+			final String notificationType = lastIntentExtras.getString(NotificationUtils.EXTRA_TYPE);
+			LOG.Log(Module.GUI, notificationType + " Notification ID = " + notificationId);
+			
+			NotificationData notif = new NotificationData();
+			notif.setAlertMessage(message);
+			notif.setSound(notificationSound);
+			notif.setCustomDataJsonString(customJSONString);
+			
+			if(notificationType!= null && notificationType.equals(NotificationUtils.NOTIFICATION_TYPE_LOCAL)) {
+				appView.loadUrl("javascript:try{Unity.OnLocalNotificationReceived(" + JSONSerializer.serialize(notif) +")}catch(e){}");
+			} else if(notificationType!= null && notificationType.equals(NotificationUtils.NOTIFICATION_TYPE_REMOTE)) {
+				appView.loadUrl("javascript:try{Unity.OnRemoteNotificationReceived(" + JSONSerializer.serialize(notif) +")}catch(e){}");
+			}
+			
+			this.lastIntentExtras = null;
 		}
 	}
 
@@ -459,12 +500,12 @@ public class MainActivity extends Activity {
 			DisplayOrientation lockedOrientation = system
 					.GetLockedOrientation();
 			if (DisplayOrientation.Portrait.equals(lockedOrientation)) {
-				configOrientation = Configuration.ORIENTATION_PORTRAIT;
+				configOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 			} else if (DisplayOrientation.Landscape.equals(lockedOrientation)) {
-				configOrientation = Configuration.ORIENTATION_LANDSCAPE;
+				configOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 			} else {
 				// Portrait as default orientation
-				configOrientation = Configuration.ORIENTATION_PORTRAIT;
+				configOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 			}
 			if (newConfig.orientation != configOrientation) {
 				LOG.Log(Module.GUI, "Main Activity onConfigurationChanged setting requested orientation: " + configOrientation);
