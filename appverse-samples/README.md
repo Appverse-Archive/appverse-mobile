@@ -11,10 +11,10 @@ You will find here a bunch of application projects ready to be compiled and exec
 For more information, please refer to <http://appverse.github.com>.
 This software is licensed under APL 2.0 <http://appverse.org/legal/appverse-license/>.
 
-* "Monotouch C# iOS Application":#monotouch_application
+* [Monotouch C# iOS Application](#monotouch_application)
 * "Eclipse Android Application":#eclipse_application
 * "NetBeans Android Application":#netbeans_application
-* "Android Known Issues":#android_known_issues
+* "Android Known Issues":<#android_known_issues>
 
 ## What you need to configure per application?
 
