@@ -34,10 +34,12 @@ But when you create your own application project, you should check and reconfigu
 * You should compile and copy the **Appverse** libraries, from Core C# (**appverse-modile/appverse-core**) and Platform iOS (**appverse-mobile/appverse-platfrom-ios**) projects to the _"libs"_ project folder.
 	* AppverseCoreIOS.dll
 	* AppversePlatformIOS.dll
-* Other *third-party* needed libraries You could find them at the **appverse-mobile/appverse-runtime-ios** project):
+* Other *third-party* needed libraries You could find them at the **appverse-mobile/appverse-platform-ios/lib** project):
 	* GoogleAnalytics.dll (analytics)
+	* Webtrekk.dll (analytics)
 	* SharpZipLib.dll  (security)
 	* BouncyCastle.Crypto.dll  (security)
+	* ZXing.Net.Mobile.dll and zxing.monotouch.dll (QR)
 
 **General Settings**
 * **Bundle Name**: the short display name of the bundle (the name of the final binary application).
@@ -151,6 +153,7 @@ You will need to install the following:
 	* AppversePlatformAndroid.jar
 * Other *third-party* needed libraries You could find them at the **appverse-mobile/appverse-runtime-android** project):
 	* libGoogleAnalytics.jar (analytics)
+	* WebtrekkAndroidTrackingLibrary.jar (analytics)
 	* SpongyCastle_147.jar  (security)
 	* gcm.jar (notifications)
 	* zxingCore2_2.jar (QR)
