@@ -116,6 +116,8 @@ You will need to install the following:
 2. Install the ADT Plugin for Eclipse. See instructions here: [http://developer.android.com/tools/sdk/eclipse-adt.html] and [http://developer.android.com/sdk/installing/installing-adt.html]
 3. Download the latest SDK Tools and platforms using the SDK Manager.
 	* API level 11 is required as it is the Appverse Android default target.
+	
+* **Note**: Once the project as been loaded into Eclipse, go to the project's **Java Build Path --> Order and Export**, select (checkbox should be checked) Android Private Libraries and modify the order by sending it up, then down. This is made to prevent and error in which Eclipse does not reload the libraries.
 
 **System requirements**:
 
@@ -144,12 +146,16 @@ You will need to install the following:
 
 **Appverse and Third-party Libraries**:
 * The **Android dependencies** in an Eclipse project are automatically included if you place the corresponding JAR libraries in the  _"libs"_ Eclipse project folder.
-* You should compile and copy the **Appverse** libraries, from Core Java (**appverse-modile/appverse-core**) and Platform Android (**appverse-mobile/appverse-platfrom-android**) projects to the _"libs"_ project folder.
+* You should compile and copy the **Appverse** libraries, from Core Java (**appverse-mobile/appverse-core**) and Platform Android (**appverse-mobile/appverse-platfrom-android**) projects to the _"libs"_ project folder.
 	* AppverseCoreJava.jar
 	* AppversePlatformAndroid.jar
 * Other *third-party* needed libraries You could find them at the **appverse-mobile/appverse-runtime-android** project):
 	* libGoogleAnalytics.jar (analytics)
 	* SpongyCastle_147.jar  (security)
+	* gcm.jar (notifications)
+	* zxingCore2_2.jar (QR)
+
+* To use QR Code functionality you should add the **appverse-mobile/appverse-runtime-android-zxing** project as library.
 
 **General Settings**
 
@@ -198,9 +204,10 @@ Before you start with your first Android app as a NetBeans project, you will nee
 You will need to install the following:
 
 1. Download the Android SDK: [http://developer.android.com/sdk/index.html]
-2. Install the NBAndroid Plugin for NetBeans (optional). See instructions here: [http://kenai.com/projects/nbandroid/pages/Install]
+2. Download and install **NetBeans IDE 7.2** or newer version [https://netbeans.org/downloads/index.html]
+3. Install the NBAndroid Plugin for NetBeans (optional). See instructions here: [http://www.nbandroid.org/p/installation.html]
 	* Configure the Android SDK Location and create your new project using the plugin. See instructions here: [http://kenai.com/projects/nbandroid/pages/Intro] 
-3. Download the latest SDK Tools and platforms using the SDK Manager.
+4. Download the latest SDK Tools and platforms using the SDK Manager.
 	* API level 11 is required as it is the Appverse Android default target.
 
 **System requirements**:
@@ -214,6 +221,7 @@ You will need to install the following:
 	* 64-bit distributions must be capable of running 32-bit applications.
 
 *NetBeans IDE*
+* Recommended to install NetBeans IDE 7.2 or newer
 * JDK 6 (JRE alone is not sufficient)
 * Apache Ant 1.8 or later
 * Not compatible with Gnu Compiler for Java (gcj)
