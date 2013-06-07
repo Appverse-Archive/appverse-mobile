@@ -12,9 +12,9 @@ For more information, please refer to <http://appverse.github.com>.
 This software is licensed under APL 2.0 <http://appverse.org/legal/appverse-license/>.
 
 * [Monotouch C# iOS Application](#monotouch_application)
-* "Eclipse Android Application":#eclipse_application
-* "NetBeans Android Application":#netbeans_application
-* "Android Known Issues":<#android_known_issues>
+* [Eclipse Android Application](#eclipse_application)
+* [NetBeans Android Application](#netbeans_application)
+* [Android Known Issues](#android_known_issues)
 
 ## What you need to configure per application?
 
@@ -22,7 +22,8 @@ Each mobile application needs to configure some parameters and build properties.
 Appverse provides you with some application project samples with all these properties already configured.
 But when you create your own application project, you should check and reconfigure them in order to attend your own application requirements.
 
-### Monotouch C# iOS Application <a name="monotouch_application"/>
+<a name="monotouch_application"/>
+### Monotouch C# iOS Application 
 
 **How to embed your Web resources**
 * In order to add the web resources for an application, you first need to add them to the project in MonoDevelop. To accomplish this perform the following steps:
@@ -113,7 +114,8 @@ In order to properly sign the application for device deployment, you should prov
 * **Provisioning profile** (optional): the provisioning profile file to be embedded inside the application bundle. This file usually contains information about the allowed devices that could install the application and which certificates could sign it. It is used for *Over the Air* device deployments.
 * Custom **entitlements** and **resource rules**.
 
-### Eclipse Android Application <a name="eclipse_application"/>
+<a name="eclipse_application"/>
+### Eclipse Android Application 
 
 Before you start with your first Android app as an Eclipse project, you will need to check that you have your development environment set up.
 You will need to install the following:
@@ -205,7 +207,8 @@ Place your proxy settings as the following command line option:
 
 <p>-http-proxy http://proxy_host>:proxy_port</p>
 
-### NetBeans Android Application <a name="netbeans_application"/>
+<a name="netbeans_application"/>
+### NetBeans Android Application 
 
 Before you start with your first Android app as a NetBeans project, you will need to check that you have your development environment set up.
 You will need to install the following:
@@ -255,7 +258,8 @@ Place your proxy settings as the following command line option:
 
 <p>-http-proxy http://proxy_host:proxy_port</p>
 
-### Android Known Issues <a name="android_known_issues"/>
+<a name="android_known_issues"/>
+### Android Known Issues 
 
 Due to a problem regarding the Android Simulator, Eclipse and NetBeans applications will launch in the Android Simulator but stuck in the first page.
 The APK file being loaded into the Simulator can be found inside the **bin** folder of each project and installed in Android Devices to be tested and debugged without problems.
