@@ -41,6 +41,8 @@ namespace Unity.Core.IO
 		private static int ABSOLUTE_INVOKE_TIMEOUT = 60000; // 60 seconds
 		private static int DEFAULT_READWRITE_TIMEOUT = 15000; // 15 seconds
 		private static int DEFAULT_RESPONSE_TIMEOUT = 100000; // 100 seconds
+		private static int MAX_BINARY_SIZE = 8*1024*1024;  // 8 MB
+		private static int DEFAULT_BUFFER_READ_SIZE = 4096;	// 4 KB
 		private IOServicesConfig servicesConfig = new IOServicesConfig ();  // empty list
 		private static IDictionary<ServiceType, string> contentTypes = new Dictionary<ServiceType, string> ();
 		private CookieContainer cookieContainer = null;
@@ -121,9 +123,12 @@ namespace Unity.Core.IO
 				}
 			} catch (Exception e) {
 				SystemLogger.Log (SystemLogger.Module .CORE, "Error when loading services configuration", e);
+                servicesConfig = new IOServicesConfig(); // reset services config mapping when the services could not be loaded for any reason
 			}
 		}
 
+
+		public abstract String GetDirectoryRoot ();
 
         #region Miembros de IIo
 
@@ -220,27 +225,8 @@ namespace Unity.Core.IO
 			}
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="request"></param>
-		/// <param name="service"></param>
-		/// <returns></returns>
-		public virtual IOResponse InvokeService (IORequest request, IOService service)
-		{
-			IOResponse response = new IOResponse ();
 
-			if (service != null) {
-				SystemLogger.Log (SystemLogger.Module .CORE, "Request content: " + request.Content);
-				byte[] requestData = request.GetRawContent ();
-                String reqMethod = service.RequestMethod.ToString(); // default is POST
-                if (request.Method != null && request.Method != String.Empty) reqMethod = request.Method.ToUpper();
-
-				
-				if (service.Endpoint == null) {
-					SystemLogger.Log (SystemLogger.Module .CORE, "No endpoint configured for this service name: " + service.Name);
-					return response;
-				}
+		private string FormatRequestUriString(IORequest request, IOService service, string reqMethod) {
 
 				string requestUriString = String.Format ("{0}:{1}{2}", service.Endpoint.Host, service.Endpoint.Port, service.Endpoint.Path);
 				if (service.Endpoint.Port == 0) {
@@ -254,170 +240,277 @@ namespace Unity.Core.IO
 				}
 				
 				SystemLogger.Log (SystemLogger.Module .CORE, "Requesting service: " + requestUriString);
-				Thread timeoutThread = null;
-
-				try {
+			return requestUriString;
+		}
 					
-					ServicePointManager.ServerCertificateValidationCallback = ValidateWebCertificates;
+		private HttpWebRequest BuildWebRequest(IORequest request, IOService service, string requestUriString, string reqMethod) {
 					
-					HttpWebRequest req = (HttpWebRequest)WebRequest.Create (requestUriString);
-                    req.Method = reqMethod; // default is POST
-					req.ContentType = contentTypes [service.Type];
+			HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create (requestUriString);
+			webReq.Method = reqMethod; // default is POST
+			webReq.ContentType = contentTypes [service.Type];
 
 					// check specific request ContentType defined, and override service type in that case
 					if (request.ContentType != null && request.ContentType.Length > 0) {
-						req.ContentType = request.ContentType;
+				webReq.ContentType = request.ContentType;
 					}
 
+			SystemLogger.Log (SystemLogger.Module.CORE, "Request content type: " + webReq.ContentType);
+			SystemLogger.Log (SystemLogger.Module.CORE, "Request method: " + webReq.Method);
                     
-					SystemLogger.Log (SystemLogger.Module.CORE, "Request content type: " + req.ContentType);
-					SystemLogger.Log (SystemLogger.Module.CORE, "Request method: " + req.Method);
-
-					req.Accept = req.ContentType; // setting "Accept" header with the same value as "Content Type" header, it is needed to be defined for some services.
-					req.ContentLength = request.GetContentLength ();
-					SystemLogger.Log (SystemLogger.Module.CORE, "Request content length: " + req.ContentLength);
-					req.Timeout = DEFAULT_RESPONSE_TIMEOUT; // in millisecods (default is 100 seconds)
-					req.ReadWriteTimeout = DEFAULT_READWRITE_TIMEOUT; // in milliseconds
-					req.KeepAlive = false;
-					req.ProtocolVersion = HttpVersion.Version10;
-                    if (request.ProtocolVersion == HTTPProtocolVersion.HTTP11) req.ProtocolVersion = HttpVersion.Version11;
+			webReq.Accept = webReq.ContentType; // setting "Accept" header with the same value as "Content Type" header, it is needed to be defined for some services.
+			webReq.ContentLength = request.GetContentLength ();
+			SystemLogger.Log (SystemLogger.Module.CORE, "Request content length: " + webReq.ContentLength);
+			webReq.Timeout = DEFAULT_RESPONSE_TIMEOUT; // in millisecods (default is 100 seconds)
+			webReq.ReadWriteTimeout = DEFAULT_READWRITE_TIMEOUT; // in milliseconds
+			webReq.KeepAlive = false;
+			webReq.ProtocolVersion = HttpVersion.Version10;
+			if (request.ProtocolVersion == HTTPProtocolVersion.HTTP11) webReq.ProtocolVersion = HttpVersion.Version11;
 					
 					// user agent needs to be informed - some servers check this parameter and send 500 errors when not informed.
-					req.UserAgent = this.IOUserAgent;
-					SystemLogger.Log (SystemLogger.Module.CORE, "Request UserAgent : " + req.UserAgent);
+			webReq.UserAgent = this.IOUserAgent;
+			SystemLogger.Log (SystemLogger.Module.CORE, "Request UserAgent : " + webReq.UserAgent);
+
+			/*************
+			 * HEADERS HANDLING
+			 *************/
 					
 					// add specific headers to the request
 					if (request.Headers != null && request.Headers.Length > 0) {
 						foreach (IOHeader header in request.Headers) {
-							req.Headers.Add (header.Name, header.Value);
-							SystemLogger.Log (SystemLogger.Module.CORE, "Added request header: " + header.Name + "=" + req.Headers.Get (header.Name));
+					webReq.Headers.Add (header.Name, header.Value);
+					SystemLogger.Log (SystemLogger.Module.CORE, "Added request header: " + header.Name + "=" + webReq.Headers.Get (header.Name));
 						}
 					}
 
+			/*************
+			 * COOKIES HANDLING
+			 *************/
+
 					// Assign the cookie container on the request to hold cookie objects that are sent on the response.
 					// Required even though you no cookies are send.
-					req.CookieContainer = this.cookieContainer;
+			webReq.CookieContainer = this.cookieContainer;
 
 					// add cookies to the request cookie container
 					if (request.Session != null && request.Session.Cookies != null && request.Session.Cookies.Length > 0) {
 						foreach (IOCookie cookie in request.Session.Cookies) {
-							req.CookieContainer.Add (req.RequestUri, new Cookie (cookie.Name, cookie.Value));
+					webReq.CookieContainer.Add (webReq.RequestUri, new Cookie (cookie.Name, cookie.Value));
 							SystemLogger.Log (SystemLogger.Module.CORE, "Added cookie [" + cookie.Name + "] to request.");
 						}
 					}
+			SystemLogger.Log (SystemLogger.Module.CORE, "HTTP Request cookies: " + webReq.CookieContainer.GetCookieHeader (webReq.RequestUri));
 
-					SystemLogger.Log (SystemLogger.Module.CORE, "HTTP Request cookies: " + req.CookieContainer.GetCookieHeader (req.RequestUri));
+			/*************
+			 * SETTING A PROXY (ENTERPRISE ENVIRONMENTS)
+			 *************/
 
 					if (service.Endpoint.ProxyUrl != null) {
 						WebProxy myProxy = new WebProxy ();
 						Uri proxyUri = new Uri (service.Endpoint.ProxyUrl);
 						myProxy.Address = proxyUri;
-						req.Proxy = myProxy;
+				webReq.Proxy = myProxy;
 					}
 
+			return webReq;
+					}
+	
+		private IOResponse ReadWebResponse(HttpWebRequest webRequest, HttpWebResponse webResponse, IOService service) {
+			IOResponse response = new IOResponse ();
 
+			// result types (string or byte array)
+					byte[] resultBinary = null;
+			string result = null;
+					
+			string responseMimeTypeOverride = webResponse.GetResponseHeader ("Content-Type");
+					
+			using (Stream stream = webResponse.GetResponseStream()) {
+							SystemLogger.Log (SystemLogger.Module.CORE, "getting response stream...");
+				if (ServiceType.OCTET_BINARY.Equals (service.Type)) {
+									
+					int lengthContent = -1;
+					if (webResponse.GetResponseHeader ("Content-Length") != null && webResponse.GetResponseHeader ("Content-Length") != "") {
+						lengthContent = Int32.Parse (webResponse.GetResponseHeader ("Content-Length"));
+					}
+					// testing log line
+					// SystemLogger.Log (SystemLogger.Module.CORE, "content-length header: " + lengthContent +", max file size: " + MAX_BINARY_SIZE);
+					int bufferReadSize = DEFAULT_BUFFER_READ_SIZE;
+					if (lengthContent >= 0 && lengthContent<=bufferReadSize) {
+						bufferReadSize = lengthContent;
+					}
+									
+					if(lengthContent>MAX_BINARY_SIZE) {
+						SystemLogger.Log (SystemLogger.Module.CORE, 
+						                  "WARNING! - file exceeds the maximum size defined in platform (" + MAX_BINARY_SIZE+ " bytes)");
+					} else {
+						// Read to end of stream in blocks
+						SystemLogger.Log (SystemLogger.Module.CORE, "buffer read: " + bufferReadSize + " bytes");
+						MemoryStream memBuffer = new MemoryStream ();
+						byte[] readBuffer = new byte[bufferReadSize];
+						int readLen = 0;
+						do {
+							readLen = stream.Read (readBuffer, 0, readBuffer.Length);
+							memBuffer.Write (readBuffer, 0, readLen);
+						} while (readLen >0);
+										
+						resultBinary = memBuffer.ToArray ();
+						memBuffer.Close ();
+						memBuffer = null;
+					}
+				} else {
+					SystemLogger.Log (SystemLogger.Module.CORE, "reading response content...");
+					using (StreamReader reader = new StreamReader(stream, Encoding.UTF8)) {
+						result = reader.ReadToEnd ();
+					}
+				}
+			}
+
+			/*************
+			 * CACHE
+			 *************/
+
+			// preserve cache-control header from remote server, if any
+			string cacheControlHeader = webResponse.GetResponseHeader ("Cache-Control");
+			if (cacheControlHeader != null && cacheControlHeader != "") {
+				SystemLogger.Log (SystemLogger.Module.CORE, "Found Cache-Control header on response: " + cacheControlHeader + ", using it on internal response...");
+				if(response.Headers == null) {
+					response.Headers = new IOHeader[1];
+				}
+				IOHeader cacheHeader = new IOHeader();
+				cacheHeader.Name = "Cache-Control";
+				cacheHeader.Value = cacheControlHeader;
+				response.Headers[0] = cacheHeader;
+			}
+
+			/*************
+			 * COOKIES HANDLING
+			 *************/
+
+			// get response cookies (stored on cookiecontainer)
+			if (response.Session == null) {
+				response.Session = new IOSessionContext ();             
+				
+			}
+			response.Session.Cookies = new IOCookie[this.cookieContainer.Count];
+			IEnumerator enumerator = this.cookieContainer.GetCookies (webRequest.RequestUri).GetEnumerator ();
+			int i = 0;
+			while (enumerator.MoveNext()) {
+				Cookie cookieFound = (Cookie)enumerator.Current;
+				SystemLogger.Log (SystemLogger.Module.CORE, "Found cookie on response: " + cookieFound.Name + "=" + cookieFound.Value);
+				IOCookie cookie = new IOCookie ();
+				cookie.Name = cookieFound.Name;
+				cookie.Value = cookieFound.Value;
+				response.Session.Cookies [i] = cookie;
+				i++;
+			}
+					
+			if (ServiceType.OCTET_BINARY.Equals (service.Type)) {
+				if (responseMimeTypeOverride != null && !responseMimeTypeOverride.Equals (contentTypes [service.Type])) {
+					response.ContentType = responseMimeTypeOverride;
+				} else {
+					response.ContentType = contentTypes [service.Type];
+				}
+				response.ContentBinary = resultBinary; // Assign binary content here
+			} else {
+				response.ContentType = contentTypes [service.Type];
+				response.Content = result;
+			}
+
+
+			return response;
+
+		}
+
+		private string ReadWebResponseAndStore(HttpWebRequest webRequest, HttpWebResponse webResponse, IOService service, string storePath) {
+
+			using (Stream stream = webResponse.GetResponseStream()) {
+				SystemLogger.Log (SystemLogger.Module.CORE, "getting response stream...");
+
+				int lengthContent = -1;
+				if (webResponse.GetResponseHeader ("Content-Length") != null && webResponse.GetResponseHeader ("Content-Length") != "") {
+					lengthContent = Int32.Parse (webResponse.GetResponseHeader ("Content-Length"));
+				}
+				// testing log line
+				// SystemLogger.Log (SystemLogger.Module.CORE, "content-length header: " + lengthContent +", max file size: " + MAX_BINARY_SIZE);
+				int bufferReadSize = DEFAULT_BUFFER_READ_SIZE;
+				if (lengthContent >= 0 && lengthContent<=bufferReadSize) {
+					bufferReadSize = lengthContent;
+				}
+				SystemLogger.Log (SystemLogger.Module.CORE, "buffer read: " + bufferReadSize + " bytes");
+				string fullStorePath = Path.Combine(this.GetDirectoryRoot (), storePath);
+				SystemLogger.Log (SystemLogger.Module.CORE, "storing file at: " + fullStorePath);
+				FileStream streamWriter = new FileStream (fullStorePath, FileMode.Create);
+
+				byte[] readBuffer = new byte[bufferReadSize];
+				int readLen = 0;
+				int totalRead = 0;
+				do {
+					readLen = stream.Read (readBuffer, 0, readBuffer.Length);
+					streamWriter.Write (readBuffer, 0, readLen);
+					totalRead = totalRead + readLen;
+				} while (readLen >0);
+
+
+				SystemLogger.Log (SystemLogger.Module.CORE, "total bytes: " + totalRead);
+				streamWriter.Close ();
+				streamWriter = null;
+
+				return storePath;
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="request"></param>
+		/// <param name="service"></param>
+		/// <returns></returns>
+		public virtual IOResponse InvokeService (IORequest request, IOService service)
+		{
+			IOResponse response = new IOResponse ();
+
+			if (service != null) {
+
+				if (service.Endpoint == null) {
+					SystemLogger.Log (SystemLogger.Module .CORE, "No endpoint configured for this service name: " + service.Name);
+					return response;
+				} 
+
+				SystemLogger.Log (SystemLogger.Module .CORE, "Request content: " + request.Content);
+				byte[] requestData = request.GetRawContent ();
+                
+				String reqMethod = service.RequestMethod.ToString(); // default is POST
+                if (request.Method != null && request.Method != String.Empty) reqMethod = request.Method.ToUpper();
+
+				String requestUriString = this.FormatRequestUriString(request, service, reqMethod);
+				Thread timeoutThread = null;
+
+				try {
+
+					// Security - VALIDATIONS
+					ServicePointManager.ServerCertificateValidationCallback = ValidateWebCertificates;
+
+					// Building Web Request to send
+					HttpWebRequest webReq = this.BuildWebRequest(request, service, requestUriString, reqMethod);
+					
 					// Throw a new Thread to check absolute timeout
 					timeoutThread = new Thread(CheckInvokeTimeout);
-					timeoutThread.Start(req);
-					
+					timeoutThread.Start(webReq);
+
+					// POSTING DATA using timeout
                     if (!reqMethod.Equals(RequestMethod.GET.ToString()) && requestData != null)
                     {
 						// send data only for POST method.
 						SystemLogger.Log (SystemLogger.Module.CORE, "Sending data on the request stream... (POST)");
 						SystemLogger.Log (SystemLogger.Module.CORE, "request data length: " + requestData.Length);
-						using (Stream requestStream = req.GetRequestStream()) {
+						using (Stream requestStream = webReq.GetRequestStream()) {
 							SystemLogger.Log (SystemLogger.Module.CORE, "request stream: " + requestStream);
 							requestStream.Write (requestData, 0, requestData.Length);
 						}
 					}
 	
-					string result = null;
-					byte[] resultBinary = null;
-					
-					string responseMimeTypeOverride = null;
-					
-					using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse()) {
+					using (HttpWebResponse webResp = (HttpWebResponse)webReq.GetResponse()) {
+
 						SystemLogger.Log (SystemLogger.Module.CORE, "getting response...");
-						using (Stream stream = resp.GetResponseStream()) {
-							SystemLogger.Log (SystemLogger.Module.CORE, "getting response stream...");
-							if (ServiceType.OCTET_BINARY.Equals (service.Type)) {
-								
-								// TODO workaround to avoid problems when serving binary content (corrupted content)
-								Thread.Sleep (500);
-								
-								int lengthContent = 0;
-								if (resp.GetResponseHeader ("Content-Length") != null && resp.GetResponseHeader ("Content-Length") != "") {
-									lengthContent = Int32.Parse (resp.GetResponseHeader ("Content-Length"));
-								}
-								if (lengthContent > 0) {
-									// Read in block
-									resultBinary = new byte[lengthContent];
-									stream.Read (resultBinary, 0, lengthContent);
-								} else {
-									// Read to end of stream
-									MemoryStream memBuffer = new MemoryStream ();
-									byte[] readBuffer = new byte[256];
-									int readLen = 0;
-									do {
-										readLen = stream.Read (readBuffer, 0, readBuffer.Length);
-										memBuffer.Write (readBuffer, 0, readLen);
-									} while (readLen >0);
-									
-									resultBinary = memBuffer.ToArray ();
-									memBuffer.Close ();
-									memBuffer = null;
-								}
-							} else {
-								SystemLogger.Log (SystemLogger.Module.CORE, "reading response content...");
-								using (StreamReader reader = new StreamReader(stream, Encoding.UTF8)) {
-									result = reader.ReadToEnd ();
-								}
-							}
-						}
-						responseMimeTypeOverride = resp.GetResponseHeader ("Content-Type");
-
-						// preserve cache-control header from remote server, if any
-						string cacheControlHeader = resp.GetResponseHeader ("Cache-Control");
-						if (cacheControlHeader != null && cacheControlHeader != "") {
-							SystemLogger.Log (SystemLogger.Module.CORE, "Found Cache-Control header on response: " + cacheControlHeader + ", using it on internal response...");
-							if(response.Headers == null) {
-								response.Headers = new IOHeader[1];
-							}
-							IOHeader cacheHeader = new IOHeader();
-							cacheHeader.Name = "Cache-Control";
-							cacheHeader.Value = cacheControlHeader;
-							response.Headers[0] = cacheHeader;
-						}
-
-						// get response cookies (stored on cookiecontainer)
-						if (response.Session == null) {
-							response.Session = new IOSessionContext ();
-                            
-						}
-						response.Session.Cookies = new IOCookie[this.cookieContainer.Count];
-						IEnumerator enumerator = this.cookieContainer.GetCookies (req.RequestUri).GetEnumerator ();
-						int i = 0;
-						while (enumerator.MoveNext()) {
-							Cookie cookieFound = (Cookie)enumerator.Current;
-							SystemLogger.Log (SystemLogger.Module.CORE, "Found cookie on response: " + cookieFound.Name + "=" + cookieFound.Value);
-							IOCookie cookie = new IOCookie ();
-							cookie.Name = cookieFound.Name;
-							cookie.Value = cookieFound.Value;
-							response.Session.Cookies [i] = cookie;
-							i++;
-						}
-					}
-					
-					if (ServiceType.OCTET_BINARY.Equals (service.Type)) {
-						if (responseMimeTypeOverride != null && !responseMimeTypeOverride.Equals (contentTypes [service.Type])) {
-							response.ContentType = responseMimeTypeOverride;
-						} else {
-							response.ContentType = contentTypes [service.Type];
-						}
-						response.ContentBinary = resultBinary; // Assign binary content here
-					} else {
-						response.ContentType = contentTypes [service.Type];
-						response.Content = result;
+						response = this.ReadWebResponse(webReq, webResp, service);
 					}
 
 				} catch (WebException ex) {
@@ -440,6 +533,84 @@ namespace Unity.Core.IO
 
 
 			return response;
+		}
+
+		/// <summary>
+		/// Invokes a service for getting a big binary, storing it into filesystem and returning the reference url.
+		/// Only OCTET_BINARY service types are allowed.
+		/// </summary>
+		/// <returns>The reference Url for the stored file (if success, null otherwise.</returns>
+		/// <param name="request">Request.</param>
+		/// <param name="service">Service.</param>
+		/// <param name="storePath">Store path.</param>
+		public virtual string InvokeServiceForBinary (IORequest request, IOService service, string storePath) {
+
+			if (service != null) {
+				
+				if (service.Endpoint == null) {
+					SystemLogger.Log (SystemLogger.Module .CORE, "No endpoint configured for this service name: " + service.Name);
+					return null;
+				} 
+
+				if (!ServiceType.OCTET_BINARY.Equals (service.Type)) {
+					SystemLogger.Log (SystemLogger.Module .CORE, "This method only admits OCTET_BINARY service types");
+					return null;
+				}
+				
+				SystemLogger.Log (SystemLogger.Module .CORE, "Request content: " + request.Content);
+				byte[] requestData = request.GetRawContent ();
+				
+				String reqMethod = service.RequestMethod.ToString(); // default is POST
+				if (request.Method != null && request.Method != String.Empty) reqMethod = request.Method.ToUpper();
+				
+				String requestUriString = this.FormatRequestUriString(request, service, reqMethod);
+				Thread timeoutThread = null;
+				
+				try {
+					
+					// Security - VALIDATIONS
+					ServicePointManager.ServerCertificateValidationCallback = ValidateWebCertificates;
+					
+					// Building Web Request to send
+					HttpWebRequest webReq = this.BuildWebRequest(request, service, requestUriString, reqMethod);
+					
+					// Throw a new Thread to check absolute timeout
+					timeoutThread = new Thread(CheckInvokeTimeout);
+					timeoutThread.Start(webReq);
+					
+					// POSTING DATA using timeout
+					if (!reqMethod.Equals(RequestMethod.GET.ToString()) && requestData != null)
+					{
+						// send data only for POST method.
+						SystemLogger.Log (SystemLogger.Module.CORE, "Sending data on the request stream... (POST)");
+						SystemLogger.Log (SystemLogger.Module.CORE, "request data length: " + requestData.Length);
+						using (Stream requestStream = webReq.GetRequestStream()) {
+							SystemLogger.Log (SystemLogger.Module.CORE, "request stream: " + requestStream);
+							requestStream.Write (requestData, 0, requestData.Length);
+						}
+					}
+					
+					using (HttpWebResponse webResp = (HttpWebResponse)webReq.GetResponse()) {
+						
+						SystemLogger.Log (SystemLogger.Module.CORE, "getting response...");
+						return this.ReadWebResponseAndStore(webReq, webResp, service, storePath);
+					}
+					
+				} catch (WebException ex) {
+					SystemLogger.Log (SystemLogger.Module .CORE, "WebException requesting service: " + requestUriString + ".", ex);
+				} catch (Exception ex) {
+					SystemLogger.Log (SystemLogger.Module .CORE, "Unnandled Exception requesting service: " + requestUriString + ".", ex);
+				} finally {
+					// abort any previous timeout checking thread
+					if(timeoutThread!=null && timeoutThread.IsAlive) {
+						timeoutThread.Abort();
+					}
+				}
+			} else {
+				SystemLogger.Log (SystemLogger.Module .CORE, "Null service received for invoking.");
+			}
+			
+			return null;
 		}
 
 		/// <summary>

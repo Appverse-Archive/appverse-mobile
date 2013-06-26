@@ -99,4 +99,15 @@ public interface IIo {
      * @return
      */
     public IOResponseHandle InvokeService(IORequest request, String serviceName, ServiceType type, IOResponseHandler handler);
+    
+    
+    /**
+     * Invokes a service for getting a big binary, storing it into filesystem and returning the reference url.
+     * Only OCTET_BINARY service types are allowed.
+     * @param request The request to be send.
+     * @param service The service endpoint to call.
+     * @param storePath The store path (realtive path under application Documents folder).
+     * @return The reference Url for the stored file (if success, null otherwise.
+     */
+    public String InvokeServiceForBinary (IORequest request, IOService service, String storePath);
 }
