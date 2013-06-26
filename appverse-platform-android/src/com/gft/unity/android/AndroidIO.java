@@ -23,19 +23,23 @@
  */
 package com.gft.unity.android;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.InvalidAlgorithmParameterException;
@@ -81,8 +85,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.conn.scheme.PlainSocketFactory;
@@ -164,6 +166,10 @@ public class AndroidIO extends AbstractIO {
 	
 	private static int DEFAULT_READWRITE_TIMEOUT = 15000; // 15 seconds timeout establishing connection
 	private static int DEFAULT_RESPONSE_TIMEOUT = 100000; // 100 seconds timeout reading response
+	
+	// reading response parameters
+	private static int DEFAULT_BUFFER_READ_SIZE = 4096;	// 4 KB
+	private static int MAX_BINARY_SIZE = 8*1024*1024;  // 8 MB
 	
 	private static DefaultHttpClient httpClient = new DefaultHttpClient();
 	private static final CookieStore cookieStore = httpClient.getCookieStore();
@@ -248,27 +254,7 @@ public class AndroidIO extends AbstractIO {
 				.toArray(new IOService[servicesList.size()]));
 	}
 
-	@Override
-	// TODO review IOResponse.InvokeService implementation
-	public IOResponse InvokeService(IORequest request, IOService service) {
-
-		IOServiceEndpoint endpoint = service.getEndpoint();
-		IOResponse response = new IOResponse();
-		response.setSession(new IOSessionContext());
-
-		if (service != null) {
-			LOG.Log(Module.PLATFORM, "Request content: " + request.getContent());
-
-			if (endpoint == null) {
-				LOG.Log(Module.PLATFORM,
-						"No endpoint configured for this service name: "
-								+ service.getName());
-				return response;
-			}
-
-			String requestMethod = service.getRequestMethod().toString();
-			if(request.getMethod() != null && request.getMethod().length()>0) requestMethod = request.getMethod().toUpperCase();
-			
+	private String formatRequestUriString(IORequest request, IOServiceEndpoint endpoint, String requestMethod) {
 			String requestUriString = endpoint.getHost() + ":"
 					+ endpoint.getPort() + endpoint.getPath();
 			if (endpoint.getPort() == 0) {
@@ -285,9 +271,21 @@ public class AndroidIO extends AbstractIO {
 			LOG.Log(Module.PLATFORM, "Requesting service: " + requestUriString);
 			LOG.Log(Module.PLATFORM, "Request method: " + requestMethod);
 			
-			Thread timeoutThread = null;
+		return requestUriString;
+	}
 			
-			try {
+	/**
+	 * 
+	 * @param requestUriString
+	 * @return
+	 * @throws KeyStoreException
+	 * @throws NoSuchAlgorithmException
+	 * @throws CertificateException
+	 * @throws IOException
+	 * @throws KeyManagementException
+	 * @throws UnrecoverableKeyException
+	 */
+	private boolean applySecurityValidations(String requestUriString) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, KeyManagementException, UnrecoverableKeyException {
 
 				if (requestUriString.startsWith(HTTPS_SCHEME)) {
 					HostnameVerifier hostnameVerifier = org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
@@ -355,7 +353,7 @@ public class AndroidIO extends AbstractIO {
 								{
 									trustStore = null;
 									LOG.Log(Module.PLATFORM, "A problem has been detecting while accessing the device keystore.",e);
-									return null;
+							return false;
 								}
 							}
 						}
@@ -372,6 +370,17 @@ public class AndroidIO extends AbstractIO {
 				} else {
 					httpClient = new DefaultHttpClient();
 				}
+		return true;
+	}
+	
+	/**
+	 * 
+	 * @param request
+	 * @param endpoint
+	 * @throws URISyntaxException
+	 */
+	private void addingHttpClientParms(IORequest request, IOServiceEndpoint endpoint) throws URISyntaxException {
+		
 				// preserving the cookies between requests
 				httpClient.setCookieStore(cookieStore);
 				
@@ -384,8 +393,6 @@ public class AndroidIO extends AbstractIO {
 				httpClient.getParams().setIntParameter("http.connection.timeout", DEFAULT_READWRITE_TIMEOUT);
 				httpClient.getParams().setIntParameter("http.socket.timeout", DEFAULT_RESPONSE_TIMEOUT);
 			
-				
-
 				if (endpoint.getProxyUrl() != null
 						&& !endpoint.getProxyUrl().equals("")
 						&& !endpoint.getProxyUrl().equals("null")) {
@@ -395,9 +402,18 @@ public class AndroidIO extends AbstractIO {
 					httpClient.getParams().setParameter(
 							ConnRoutePNames.DEFAULT_PROXY, proxyHost);
 				}
+	}
+	
+	
+	private HttpEntityEnclosingRequestBase buildWebRequest(IORequest request, IOService service, String requestUriString, String requestMethod ) 
+			throws UnsupportedEncodingException, URISyntaxException {
+		
 
 				HttpEntityEnclosingRequestBase httpRequest = new HttpAppverse(new URI(requestUriString), requestMethod);
 				
+		/*************
+		 * adding content as entity, for request methods != GET
+		 *************/
 				if(!requestMethod.equalsIgnoreCase(RequestMethod.GET.toString())){
 					if (request.getContent() != null
 							&& request.getContent().length() > 0) {
@@ -406,6 +422,9 @@ public class AndroidIO extends AbstractIO {
 					}
 				}
 
+		/*************
+		 * CONTENT TYPE
+		 *************/
 				if (request.getContentType() != null) {
 					httpRequest.setHeader("Content-Type",
 							request.getContentType());
@@ -413,6 +432,10 @@ public class AndroidIO extends AbstractIO {
 					httpRequest.setHeader("Content-Type",
 							contentTypes.get(service.getType()).toString());
 				}
+		
+		/*************
+		 * CUSTOM HEADERS HANDLING
+		 *************/
 				if (request.getHeaders() != null
 						&& request.getHeaders().length > 0) {
 					for (IOHeader header : request.getHeaders()) {
@@ -421,6 +444,9 @@ public class AndroidIO extends AbstractIO {
 					}
 				}
 
+		/*************
+		 * COOKIES HANDLING
+		 *************/
 				if (request.getSession() != null
 						&& request.getSession().getCookies() != null
 						&& request.getSession().getCookies().length > 0) {
@@ -438,55 +464,67 @@ public class AndroidIO extends AbstractIO {
 					httpRequest.setHeader("Cookie", buffer.toString());
 				}
 
-				httpRequest.setHeader("Accept",
-						contentTypes.get(service.getType()).toString());
+		/*************
+		 * DEFAULT HEADERS
+		 *************/
+		httpRequest.setHeader("Accept", contentTypes.get(service.getType()).toString());
 				// httpRequest.setHeader("content-length",
 				// String.valueOf(request.getContentLength()));
 				httpRequest.setHeader("keep-alive", String.valueOf(false));
-				// TODO: set conn timeout
-				LOG.Log(Module.PLATFORM, "Downloading service content");
 
+		// TODO: set conn timeout  À???
+		
+		/*************
+		 * setting user-agent
+		 *************/
 				IOperatingSystem system = (IOperatingSystem) AndroidServiceLocator
 						.GetInstance().GetService(
 								AndroidServiceLocator.SERVICE_TYPE_SYSTEM);
 				HttpProtocolParams.setUserAgent(httpClient.getParams(),
 						system.GetOSUserAgent());
 
-				// Throw a new Thread to check absolute timeout
-				timeoutThread = new Thread(new CheckTimeoutThread(httpRequest));
-				timeoutThread.start();
+		return httpRequest;
+	}
 				
-				long start = System.currentTimeMillis();
-				HttpResponse httpResponse = httpClient.execute(httpRequest);
-				LOG.Log(Module.PLATFORM,
-						"Content downloaded in "
-								+ (System.currentTimeMillis() - start) + "ms");
+	/**
+	 * 
+	 * @param httpResponse
+	 * @param service
+	 * @return
+	 * @throws IOException 
+	 * @throws IllegalStateException 
+	 */
+	private IOResponse readWebResponse(HttpResponse httpResponse, IOService service) throws IllegalStateException, IOException {
+		
+		IOResponse response = new IOResponse ();
+		response.setSession(new IOSessionContext());
 
 				byte[] resultBinary = null;
-				String responseMimeTypeOverride = null;
-				InputStream responseStream = httpResponse.getEntity()
-						.getContent();
-				int length = (int) httpResponse.getEntity().getContentLength();
 
-				if (length > Integer.MAX_VALUE) {
-					// TODO:responseStream is too large
-				}
+		String responseMimeTypeOverride = (httpResponse.getLastHeader("Content-Type")!=null? httpResponse.getLastHeader("Content-Type").getValue() : null);
+		LOG.Log(Module.PLATFORM, "response content type: " + responseMimeTypeOverride);
 
-				if (cookieStore.getCookies().size() > 0) {
+		// getting response input stream
+		InputStream responseStream = httpResponse.getEntity().getContent();
 
-					IOCookie[] cookies = new IOCookie[cookieStore.getCookies()
-							.size()];
-					for (int i = 0; i < cookieStore.getCookies().size(); i++) {
-						Cookie cookie = cookieStore.getCookies().get(i);
-						IOCookie ioCookie = new IOCookie();
-						ioCookie.setName(cookie.getName());
-						ioCookie.setValue(cookie.getValue());
-						cookies[i] = ioCookie;
+		int lengthContent = -1;
+		int bufferReadSize = DEFAULT_BUFFER_READ_SIZE;
+		
+		try {
+			lengthContent = (int) httpResponse.getEntity().getContentLength();
+			if (lengthContent >= 0 && lengthContent<=bufferReadSize) {
+				bufferReadSize = lengthContent;
 					}
-					response.getSession().setCookies(cookies);
+		} catch (Exception e) {
+			LOG.Log(Module.PLATFORM, "Error while getting Content-Length header from response: " + e.getMessage());
 				}
 
-				if (length > 0) {
+		if(lengthContent>MAX_BINARY_SIZE) {
+			LOG.Log(Module.PLATFORM, "WARNING! - file exceeds the maximum size defined in platform (" + MAX_BINARY_SIZE+ " bytes)");
+		} else {
+			LOG.Log(Module.PLATFORM, "reading response stream content length: " + lengthContent);
+			/* WE DON'T READ IN A FULL BLOCK ANYMORE
+			 * 
 					// Read in block, if content length provided.
 					// Create the byte array to hold the data
 					resultBinary = new byte[length];
@@ -500,24 +538,50 @@ public class AndroidIO extends AbstractIO {
 						offset += numRead;
 					}
 
-				} else {
-					// Read to end of stream, if content length is not provided.
+			*/
+			
+			// Read in buffer blocks till the end of stream.
 					ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();
 
-					byte[] readBuffer = new byte[256];
+			byte[] readBuffer = new byte[bufferReadSize];
 					int readLen = 0;
+			int totalReadLen = 0;
 					try {
 						while ((readLen = responseStream.read(readBuffer, 0,
 								readBuffer.length)) > 0) {
 							outBuffer.write(readBuffer, 0, readLen);
+					totalReadLen = totalReadLen + readLen;
 						}
 					} finally {
 						resultBinary = outBuffer.toByteArray();
 						outBuffer.close();
 						outBuffer = null;
 					}
+			LOG.Log(Module.PLATFORM, "total read length: " + totalReadLen);
 				}
 				
+		/*************
+		 * COOKIES HANDLING
+		 *************/
+		LOG.Log(Module.PLATFORM, "reading cookies.. ");
+		if (cookieStore.getCookies().size() > 0) {
+
+			IOCookie[] cookies = new IOCookie[cookieStore.getCookies()
+					.size()];
+			for (int i = 0; i < cookieStore.getCookies().size(); i++) {
+				Cookie cookie = cookieStore.getCookies().get(i);
+				IOCookie ioCookie = new IOCookie();
+				ioCookie.setName(cookie.getName());
+				ioCookie.setValue(cookie.getValue());
+				cookies[i] = ioCookie;
+			}
+			response.getSession().setCookies(cookies);
+		}
+
+		/*************
+		 * CACHE
+		 *************/
+		LOG.Log(Module.PLATFORM, "reading cache header.. ");
 				// preserve cache-control header from remote server, if any
 				String cacheControlHeader = (httpResponse.getLastHeader("Cache-Control")!=null? httpResponse.getLastHeader("Cache-Control").getValue() : null);
 				if (cacheControlHeader != null && !cacheControlHeader.isEmpty()) {
@@ -538,14 +602,12 @@ public class AndroidIO extends AbstractIO {
 				// Close the input stream and return bytes
 				responseStream.close();
 
+		LOG.Log(Module.PLATFORM, "checking binary service type... ");
 				if (ServiceType.OCTET_BINARY.equals(service.getType())) {
-					if (responseMimeTypeOverride != null
-							&& !responseMimeTypeOverride.equals(contentTypes
-									.get(service.getType()))) {
+			if (responseMimeTypeOverride != null && !responseMimeTypeOverride.equals(contentTypes.get(service.getType()))) {
 						response.setContentType(responseMimeTypeOverride);
 					} else {
-						response.setContentType(contentTypes.get(
-								service.getType()).toString());
+				response.setContentType(contentTypes.get(service.getType()).toString());
 					}
 					response.setContentBinary(resultBinary); // Assign binary
 					// content here
@@ -554,6 +616,128 @@ public class AndroidIO extends AbstractIO {
 							.toString());
 					response.setContent(new String(resultBinary));
 				}
+		LOG.Log(Module.PLATFORM, "END reading response.. ");
+		return response;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	private String GetDirectoryRoot () {
+		// should match the same directory root used by other platform APIs
+		
+		Context context = AndroidServiceLocator.getContext();
+		return context.getFilesDir().getAbsolutePath();
+	}
+	
+	/**
+	 * 
+	 * @param httpResponse
+	 * @param service
+	 * @param storePath
+	 * @return
+	 * @throws IllegalStateException
+	 * @throws IOException
+	 */
+	private String readWebResponseAndStore(HttpResponse httpResponse, IOService service, String storePath) throws IllegalStateException, IOException {
+		
+		// getting response input stream
+		InputStream responseStream = httpResponse.getEntity().getContent();
+		
+		int lengthContent = -1;
+		int bufferReadSize = DEFAULT_BUFFER_READ_SIZE;
+		
+		try {
+			lengthContent = (int) httpResponse.getEntity().getContentLength();
+			if (lengthContent >= 0 && lengthContent<=bufferReadSize) {
+				bufferReadSize = lengthContent;
+			}
+		} catch (Exception e) {
+			LOG.Log(Module.PLATFORM, "Error while getting Content-Length header from response: " + e.getMessage());
+		}
+		LOG.Log(Module.PLATFORM, "reading response stream content length: " + lengthContent);
+		BufferedInputStream bis = new BufferedInputStream(responseStream);
+		 
+        int size;
+        byte[] buffer = new byte[bufferReadSize];
+
+        File fullStorePath = new File(this.GetDirectoryRoot (), storePath);
+        LOG.Log(Module.PLATFORM, "Storing file at: " + fullStorePath.getAbsolutePath());
+		
+        FileOutputStream fos = new FileOutputStream(fullStorePath);
+        BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
+        int totalReadLen = 0;
+        while ((size = bis.read(buffer, 0, buffer.length)) != -1) {
+            bos.write(buffer, 0, size);
+            // just for testing // LOG.Log(Module.PLATFORM, "read length: " + size);
+            totalReadLen = totalReadLen + size;
+        }
+        
+        LOG.Log(Module.PLATFORM, "total read length: " + totalReadLen);
+
+        bos.flush();
+        bos.close();
+        fos.close();
+
+        bis.close();
+		
+		// Close the input stream and return bytes
+		responseStream.close();
+
+		return storePath;
+	}
+	
+	@Override
+	public IOResponse InvokeService(IORequest request, IOService service) {
+
+		IOServiceEndpoint endpoint = service.getEndpoint();
+		IOResponse response = new IOResponse();
+		
+		if (service != null) {
+			LOG.Log(Module.PLATFORM, "Request content: " + request.getContent());
+
+			if (endpoint == null) {
+				LOG.Log(Module.PLATFORM,
+						"No endpoint configured for this service name: "
+								+ service.getName());
+				return response;
+			}
+
+			String requestMethod = service.getRequestMethod().toString();
+			if(request.getMethod() != null && request.getMethod().length()>0) requestMethod = request.getMethod().toUpperCase();
+			
+			String requestUriString = formatRequestUriString(request, endpoint, requestMethod);
+			Thread timeoutThread = null;
+			
+			try {
+
+				// Security - VALIDATIONS
+				if(!this.applySecurityValidations(requestUriString)) {
+					return null;
+				}
+				
+				// Adding HTTP Client Parameters
+				this.addingHttpClientParms(request, endpoint);
+				
+				// Building Web Request to send
+				HttpEntityEnclosingRequestBase httpRequest = this.buildWebRequest(request, service, requestUriString, requestMethod);
+				
+				LOG.Log(Module.PLATFORM, "Downloading service content");
+
+				// Throw a new Thread to check absolute timeout
+				timeoutThread = new Thread(new CheckTimeoutThread(httpRequest));
+				timeoutThread.start();
+				
+				long start = System.currentTimeMillis();
+				HttpResponse httpResponse = httpClient.execute(httpRequest);
+				LOG.Log(Module.PLATFORM,
+						"Content downloaded in "
+								+ (System.currentTimeMillis() - start) + "ms");
+				
+				
+				// Read response
+				response = this.readWebResponse(httpResponse, service);
 				
 			} catch (Exception ex) {
 				LOG.Log(Module.PLATFORM,
@@ -573,6 +757,78 @@ public class AndroidIO extends AbstractIO {
 
 		LOG.Log(Module.PLATFORM, "invoke service finished");
 		return response;
+	}
+
+
+
+	@Override
+	public String InvokeServiceForBinary(IORequest request, IOService service, String storePath) {
+		
+		IOServiceEndpoint endpoint = service.getEndpoint();
+		
+		if (service != null) {
+			LOG.Log(Module.PLATFORM, "Request content (for binary): " + request.getContent());
+
+			if (endpoint == null) {
+				LOG.Log(Module.PLATFORM, "No endpoint configured for this service name: "
+								+ service.getName());
+				return null;
+			}
+			
+			if (!ServiceType.OCTET_BINARY.equals (service.getType())) {
+				LOG.Log(Module.PLATFORM, "This method only admits OCTET_BINARY service types");
+				return null;
+			}
+
+			String requestMethod = service.getRequestMethod().toString();
+			if(request.getMethod() != null && request.getMethod().length()>0) requestMethod = request.getMethod().toUpperCase();
+			
+			String requestUriString = formatRequestUriString(request, endpoint, requestMethod);
+			Thread timeoutThread = null;
+			
+			try {
+
+				// Security - VALIDATIONS
+				if(!this.applySecurityValidations(requestUriString)) {
+					return null;
+				}
+				
+				// Adding HTTP Client Parameters
+				this.addingHttpClientParms(request, endpoint);
+				
+				// Building Web Request to send
+				HttpEntityEnclosingRequestBase httpRequest = this.buildWebRequest(request, service, requestUriString, requestMethod);
+				
+				LOG.Log(Module.PLATFORM, "Downloading service content");
+
+				// Throw a new Thread to check absolute timeout
+				timeoutThread = new Thread(new CheckTimeoutThread(httpRequest));
+				timeoutThread.start();
+				
+				long start = System.currentTimeMillis();
+				HttpResponse httpResponse = httpClient.execute(httpRequest);
+				LOG.Log(Module.PLATFORM,
+						"Content downloaded in "
+								+ (System.currentTimeMillis() - start) + "ms");
+				
+				
+				// Read response and store to local filestystem
+				return this.readWebResponseAndStore(httpResponse, service, storePath);
+				
+			} catch (Exception ex) {
+				LOG.Log(Module.PLATFORM,
+						"Unnandled Exception requesting service: "
+								+ requestUriString + ".", ex);
+			} finally {
+				// abort any previous timeout checking thread
+				if(timeoutThread!=null && timeoutThread.isAlive()) {
+					timeoutThread.interrupt();
+				}
+			}
+		}
+
+		LOG.Log(Module.PLATFORM, "invoke service (for binary) finished");
+		return null;
 	}
 
 	@Override

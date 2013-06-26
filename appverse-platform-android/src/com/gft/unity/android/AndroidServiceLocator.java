@@ -92,5 +92,7 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
 				AndroidServiceLocator.SERVICE_TYPE_SECURITY);
 		this.RegisterService(new AndroidWebtrekk(),
 				AndroidServiceLocator.SERVICE_TYPE_WEBTREKK);
+		this.RegisterService(new AndroidAppLoader(),
+				AndroidServiceLocator.SERVICE_TYPE_APPLOADER);
 	}
 }

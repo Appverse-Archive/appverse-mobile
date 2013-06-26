@@ -43,6 +43,8 @@ public interface IActivityManager {
 
 	public void executeJS(String method, Object data);
 	
+	public void executeJS(String method, Object[] dataArray);
+	
 	public boolean startShowSplashScreen();
 	
 	public boolean startDismissSplashScreen();
@@ -50,4 +52,6 @@ public interface IActivityManager {
 	public void killBackgroundProcesses ();
 	
 	public void dismissApplication();
+	
+	public void loadUrlIntoWebView(String url);
 }
