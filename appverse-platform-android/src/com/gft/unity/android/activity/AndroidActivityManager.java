@@ -116,6 +116,29 @@ public class AndroidActivityManager implements IActivityManager {
 	}
 
 	@Override
+	public void loadUrlIntoWebView(String url) {
+		this.main.runOnUiThread(new AAMLoadUrlAction(this.view, url));
+	}
+	
+	private class AAMLoadUrlAction implements Runnable {
+
+		private String url;
+		private WebView view;
+		
+
+		public AAMLoadUrlAction(WebView view, String url) {
+			this.url = url;
+			this.view = view;
+		}
+
+		@Override
+		public void run() {
+			this.view.loadUrl(this.url);
+		}
+	}
+	
+	
+	@Override
 	public boolean startActivityForResult(Intent intent, int requestCode,
 			IActivityManagerListener listener) {
 
@@ -175,8 +198,6 @@ public class AndroidActivityManager implements IActivityManager {
 		return true;
 	}
 
-	// TODO extend for multiple parameters (when needed)
-	
 	@Override
 	public void executeJS(String method, Object data) {
 
@@ -184,7 +205,56 @@ public class AndroidActivityManager implements IActivityManager {
 			String jsCallbackFunction = "javascript:if(" + method + "){" + method + "("
 					+ JSONSerializer.serialize(data) + ");}";
 
-			view.loadUrl(jsCallbackFunction);
+			this.main.runOnUiThread(new AAMExecuteJS(this.view, jsCallbackFunction));
+		}
+	}
+	
+	@Override
+	public void executeJS(String method, Object[] dataArray) {
+		if (view != null) {
+			
+			StringBuilder builder = new StringBuilder();
+			int numObjects = 0;
+			for(Object data : dataArray) {
+				if(numObjects>0) {
+					builder.append(",");
+				}
+				if (data == null) {
+					builder.append("null");
+				}
+				if (data instanceof String) {
+					builder.append("'"+ (String)data +"'");
+				} else {
+					builder.append(JSONSerializer.serialize (data));
+				}
+				numObjects++;
+			}
+			String dataJSONString = builder.toString();
+			
+			
+			String jsCallbackFunction = "javascript:if(" + method + "){" + method + "("
+					+ dataJSONString + ");}";
+
+			this.main.runOnUiThread(new AAMExecuteJS(this.view, jsCallbackFunction));
+		}
+	}
+	
+	private class AAMExecuteJS implements Runnable {
+
+		private String javascript;
+		private WebView view;
+		
+
+		public AAMExecuteJS(WebView view, String javascript) {
+			this.javascript = javascript;
+			this.view = view;
+		}
+
+		@Override
+		public void run() {
+			if(this.view != null) {
+				this.view.loadUrl(this.javascript);
+			}
 		}
 	}
 	
