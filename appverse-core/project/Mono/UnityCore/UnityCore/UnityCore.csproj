@@ -213,6 +213,12 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\RegistrationError.cs" />
 	<Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\SchedulingData.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Media\MediaQRContent.cs" />
+	<Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\ILoader.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\Module.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\ModuleParam.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\ModuleVersion.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\AbstractLoader.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\ModuleContext.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

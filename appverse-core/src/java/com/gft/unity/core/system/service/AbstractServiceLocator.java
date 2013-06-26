@@ -47,6 +47,7 @@ public class AbstractServiceLocator implements IServiceLocator {
     public static final String SERVICE_TYPE_SYSTEM = "system";
     public static final String SERVICE_TYPE_TELEPHONY = "phone";
     public static final String SERVICE_TYPE_WEBTREKK = "webtrekk";
+    public static final String SERVICE_TYPE_APPLOADER = "loader";
     protected static IServiceLocator singletonServiceLocator = null;
     private Map<String, Object> services = new HashMap<String, Object>();
 
