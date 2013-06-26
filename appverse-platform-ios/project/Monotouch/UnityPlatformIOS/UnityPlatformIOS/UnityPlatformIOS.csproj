@@ -114,5 +114,6 @@
     <Compile Include="..\..\..\..\src\csharp\IPhoneWebtrekk.cs" />
     <Compile Include="..\..\..\..\src\csharp\SecurityUtils.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneServiceURIHandler.cs" />
+    <Compile Include="..\..\..\..\src\csharp\IPhoneAppLoader.cs" />
   </ItemGroup>
 </Project>

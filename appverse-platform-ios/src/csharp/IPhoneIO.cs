@@ -50,6 +50,11 @@ namespace Unity.Platform.IPhone
 				return IPhoneUtils.GetInstance().GetFileFullPath(base.ServicesConfigFile);
 			} 
 		}
+
+		public override string GetDirectoryRoot()
+		{
+			return Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+		}
 		
 		/// <summary>
 		/// Method overrided, to use NSData to get stream from file resource inside application. 

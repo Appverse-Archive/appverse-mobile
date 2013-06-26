@@ -234,7 +234,7 @@ namespace Unity.Platform.IPhone
 					//long et2 = stopwatch.ElapsedMilliseconds;
 
 					// entryStream is not seekable, it should be first readed
-					byte[] data = IPhoneUtils.ConvertNonSeekableStreamToByteArray(entryStream, entry.Size);
+					byte[] data = IPhoneUtils.ConvertNonSeekableStreamToByteArray(entryStream); //, entry.Size
 					//SystemLogger.Log(SystemLogger.Module.PLATFORM, "# entry found [" + entry.Name + "], data byte array size:" + data.Length);
 
 					//long et3 = stopwatch.ElapsedMilliseconds;
@@ -258,7 +258,7 @@ namespace Unity.Platform.IPhone
 			}
 		}
 
-		private static byte[] ConvertNonSeekableStreamToByteArray(Stream nonSeeakable, long streamSize) {
+		public static byte[] ConvertNonSeekableStreamToByteArray(Stream nonSeeakable) {
 			if(nonSeeakable is MemoryStream) {
 				return ((MemoryStream)nonSeeakable).ToArray();
 			} else {
@@ -519,6 +519,31 @@ namespace Unity.Platform.IPhone
 			}
 			string jsCallbackFunction = "if("+method+"){"+method+"("+dataJSONString+");}";
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript: " + method);
+			IPhoneServiceLocator.CurrentDelegate.MainUIWebView().EvaluateJavascript(jsCallbackFunction);
+		}
+
+		public void FireUnityJavascriptEvent (string method, object[] dataArray)
+		{
+			StringBuilder builder = new StringBuilder();
+			int numObjects = 0;
+			foreach(object data in dataArray) {
+				if(numObjects>0) {
+					builder.Append(",");
+				}
+				if (data == null) {
+					builder.Append("null");
+				}
+				if (data is String) {
+					builder.Append("'"+ (data as String) +"'");
+				} else {
+					builder.Append(Serialiser.Serialize (data));
+				}
+				numObjects++;
+			}
+			string dataJSONString = builder.ToString();
+
+			string jsCallbackFunction = "if("+method+"){"+method+"("+dataJSONString+");}";
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript: " + method); // + ",jsCallbackFunction="+ jsCallbackFunction 
 			IPhoneServiceLocator.CurrentDelegate.MainUIWebView().EvaluateJavascript(jsCallbackFunction);
 		}
 
