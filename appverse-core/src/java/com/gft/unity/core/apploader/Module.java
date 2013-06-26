@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (ìAPL v2.0î).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  (‚ÄúAPL v2.0‚Äù).  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -21,13 +21,37 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-package com.gft.unity.core.notification;
+package com.gft.unity.core.apploader;
 
-/**
- *
- * @author maps
- */
-public enum RepeatInterval {
+public class Module {
     
-    NO_REPEAT, HOURLY, DAILY, WEEKLY, MONTHLY, YEARLY
+    private String id;
+    private ModuleVersion version;
+    private String loadUrl;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getLoadUrl() {
+        return loadUrl;
+    }
+
+    public void setLoadUrl(String loadUrl) {
+        this.loadUrl = loadUrl;
+    }
+
+    public ModuleVersion getVersion() {
+        return version;
+    }
+
+    public void setVersion(ModuleVersion version) {
+        this.version = version;
+    }
+    
+    
 }

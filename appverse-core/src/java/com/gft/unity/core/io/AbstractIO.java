@@ -122,4 +122,7 @@ public abstract class AbstractIO implements IIo {
             String serviceName, ServiceType type, IOResponseHandler handler) {
         return InvokeService(request, GetService(serviceName, type), handler);
     }
+    
+    @Override
+    public abstract String InvokeServiceForBinary (IORequest request, IOService service, String storePath);
 }
