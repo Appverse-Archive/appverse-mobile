@@ -86,7 +86,13 @@ namespace Unity.Platform.IPhone
 			if (request.Url.StartsWith (DOCUMENTS_URI)) {
 				SystemLogger.Log (SystemLogger.Module.PLATFORM, " ############## " + this.GetType () + " -> " + request.Url);
 				
-				string escapedUrl = Uri.UnescapeDataString(request.Url);
+				string requestUrl = request.Url;
+				if(request.QueryString!=null && request.QueryString.Length>0) {
+					requestUrl = request.Page;
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, " ############## " + this.GetType () + " -> removing req params -> " + requestUrl);
+				}
+
+				string escapedUrl = Uri.UnescapeDataString(requestUrl);
 				// url should be escaped to reach the real filesystem path for the requested file.
 				string resourcePath = escapedUrl.Substring (DOCUMENTS_URI.Length);
 				

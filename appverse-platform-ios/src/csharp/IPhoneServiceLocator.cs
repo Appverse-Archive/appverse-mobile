@@ -61,6 +61,7 @@ namespace Unity.Platform.IPhone
 			typedServices["analytics"]  = new IPhoneAnalytics();
 			typedServices["security"]   = new IPhoneSecurity();
 			typedServices["webtrekk"]  	= new IPhoneWebtrekk();
+			typedServices["loader"]  	= new IPhoneAppLoader();
         }
 
         /// <summary>
