@@ -4899,7 +4899,7 @@ Webtrekk.prototype.SetRequestInterval = function (intervalInSeconds){
  * @class Unity.AppLoader 
  * Singleton class field to Load, List, Update and Remove remote application content. 
  * <br>This interface provides features to load, list, update and remove remote application modules, also called sub applications. This content could be loaded into a webview to present it to the user.<br>
- * <br> @version 1.0
+ * <br> @version 4.0
  * <pre>Usage: Unity.AppLoader.&lt;metodName&gt;([params]).<br>Example: Unity.AppLoader.ListInstalledModules().</pre>
  * @singleton
  * @constructor Constructs a new AppLoader interface.
@@ -4909,7 +4909,7 @@ AppLoader = function() {
 	/**
 	 * AppLoader service name (as configured on Platform Service Locator).
 	 * @type String
-	 * <br> @version 1.0
+	 * <br> @version 4.0
 	 */
 	this.serviceName = "loader";
 	
