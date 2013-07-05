@@ -37,11 +37,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Vibrator;
 
+import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.android.notification.LocalNotificationReceiver;
 import com.gft.unity.android.notification.NotificationUtils;
+import com.gft.unity.android.util.json.JSONSerializer;
 import com.gft.unity.core.notification.AbstractNotification;
 import com.gft.unity.core.notification.DateTime;
 import com.gft.unity.core.notification.NotificationData;
+import com.gft.unity.core.notification.RegistrationError;
+import com.gft.unity.core.notification.RegistrationToken;
 import com.gft.unity.core.notification.RemoteNotificationType;
 import com.gft.unity.core.notification.SchedulingData;
 import com.gft.unity.core.system.log.Logger;
@@ -361,16 +365,76 @@ public class AndroidNotification extends AbstractNotification {
 			RemoteNotificationType[] types) {
 		LOGGER.logOperationBegin("RegisterForRemoteNotifications", new String[]{"senderID","types"},
 				new Object[]{senderID,types});
+		
 		try{
 			Context ctx = AndroidServiceLocator.getContext();
 			GCMRegistrar.checkDevice(ctx);
 			GCMRegistrar.checkManifest(ctx);
 			if(GCMRegistrar.isRegistered(ctx)) LOGGER.logInfo("RegisterForRemoteNotifications", "REGISTERED");
 			String regId = GCMRegistrar.getRegistrationId(ctx);
-			if(regId.equals("")){ GCMRegistrar.register(ctx, "67240322760");
-			}else LOGGER.logInfo("RegisterForRemoteNotifications", "Device already registered with ID: " + regId); 
-		}catch(Exception ex){ LOGGER.logError("RegisterForRemoteNotifications", "Error", ex);
+			if(regId.equals("")){ 
+				LOGGER.logInfo("RegisterForRemoteNotifications", "Registering device for sender id: " + senderID);
+				GCMRegistrar.register(ctx, senderID);
+				if(NotificationUtils.storeRemoteNotificationsSharedPreference(ctx, NotificationUtils.RN_PREFERENCE_SENDER_ID, senderID))
+					LOGGER.logInfo("RegisterForRemoteNotifications", "Stored sender id on shared preferences");
+			
+			}else {
+				String storedSenderId = NotificationUtils.getRemoteNotificationsSharedPreference(ctx, NotificationUtils.RN_PREFERENCE_SENDER_ID);
+				LOGGER.logInfo("RegisterForRemoteNotifications", "Device already registered with ID: " + regId + ", and sender id: " + storedSenderId);
+				
+				if(storedSenderId!=null && senderID!=null && !storedSenderId.equalsIgnoreCase(senderID)) {
+					LOGGER.logInfo("RegisterForRemoteNotifications", "Requested sender id does not match with the previous registered.");
+					
+					this.SendRegistrationFailureMessage(""+NotificationUtils.RN_ALREADY_REGISTERED_WITH_ANOTHER_SENDER_ID_EXCEPTION, 
+							"Device already registered with a different sender Id. Please, unregister before register with another sender id");
+				} else {
+					// call the onSuccess listener if registration token is reused or a new token is obtained for the same sender id registration .
+					this.SendRegistrationSuccessMessage(regId);
+				}
+			}
+		}catch(Exception ex){ 
+			LOGGER.logError("RegisterForRemoteNotifications", "Error", ex);
+			this.SendRegistrationFailureMessage(""+NotificationUtils.RN_REGISTRATION_DEFAULT_EXCEPTION, ex.getMessage());
+			
 		}finally{LOGGER.logOperationEnd("RegisterForRemoteNotifications", null);}
+	}
+
+	/**
+	 * Executes the Success listener to advise the application about a successful registration.
+	 * @param registrationId
+	 */
+	private void SendRegistrationSuccessMessage(String registrationId) {
+		
+		IActivityManager am = (IActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+		
+		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Unity.OnRegisterForRemoteNotificationsSuccess...");
+		
+		RegistrationToken notificationToken = new RegistrationToken();
+		notificationToken.setStringRepresentation(registrationId);
+		notificationToken.setBinary(registrationId.getBytes());
+			
+		am.loadUrlIntoWebView("javascript:try{Unity.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
+	}
+	
+	
+	/**
+	 * Executes the Failure listener to advise the application about some registration failure.
+	 * @param exceptionCode The exception code
+	 * @param exceptionMessage The exception message
+	 */
+	private void SendRegistrationFailureMessage(String exceptionCode, String exceptionMessage) {
+		IActivityManager am = (IActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+		
+		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Unity.OnRegisterForRemoteNotificationsFailure...");
+		
+		RegistrationError notificationError = new RegistrationError();
+		notificationError.setCode(exceptionCode);
+		notificationError.setLocalizedDescription(exceptionMessage);
+		am.loadUrlIntoWebView("javascript:try{Unity.OnRegisterForRemoteNotificationsFailure(" + JSONSerializer.serialize(notificationError) +")}catch(e){}");
 	}
 
 	@Override
