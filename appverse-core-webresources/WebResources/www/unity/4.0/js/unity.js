@@ -2421,8 +2421,8 @@ Notification.prototype.RegisterForRemoteNotifications = function(senderId, types
 
 /**
  * Un-registers this application and device from receiving remote notifications.
- * <br> Returned data should be handled by overriding the corresponding Platform Listeners {@link Unity.xxxx xxxx}
- * <br> @version 3.9
+ * <br> Returned data should be handled by overriding the corresponding Platform Listeners Unity.OnUnRegisterForRemoteNotificationsSuccess
+ * <br> @version 3.9 (listener callback only available on 4.0)
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
  */
