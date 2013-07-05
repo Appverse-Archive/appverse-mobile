@@ -101,6 +101,29 @@ public abstract class AbstractLoader implements ILoader {
         return service;
     }
 
+    
+    protected IORequest GetRequestWithRequiredHeaders() {
+        IORequest request = new IORequest();
+
+        if (_context != null && _context.getCredentials() != null && _context.getCredentials().length() > 0) {
+            // Basic Authentication available
+            // Credentials should be a base64 encoding for the "username:password" concatenation string
+            // TODO  allow other authentication types in the future
+            IOHeader authHeader = new IOHeader();
+            authHeader.setName("Authorization");
+            authHeader.setValue("Basic " + _context.getCredentials());
+
+            request.setHeaders(new IOHeader[]{authHeader});
+
+        }
+        
+        // Accept header is needed to avoid "406 not acceptable" error, but should be set in the request final object
+        // I/O Services use the request content type to set this value on the final request object
+        request.setContentType("*/*");
+        
+        return request;
+    }
+
     /**
      * Parse a module version from the given string version (formatted as
      * major.minor.revision).
@@ -174,7 +197,7 @@ public abstract class AbstractLoader implements ILoader {
     protected boolean UpdateOrInstallModule(Module module) {
 
         IOService service = this.GetServiceFromUrl(module.getLoadUrl());
-        IORequest request = new IORequest(); // empty request, no additional data is required apart from the load url
+        IORequest request = this.GetRequestWithRequiredHeaders();
 
         String tempFile = this.GetIOService().InvokeServiceForBinary(request, service, "tmp.zip");
 

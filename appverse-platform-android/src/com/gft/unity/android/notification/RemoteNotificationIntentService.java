@@ -226,34 +226,60 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 	@Override
 	protected void onRegistered(Context context, String registrationId) {
 		try{
+			LOGGER.logInfo("onRegistered", "Device Successfully registered.");
 		notificationToken = new RegistrationToken();
 		notificationToken.setStringRepresentation(registrationId);
 		notificationToken.setBinary(registrationId.getBytes());
+			
 		if(appActivity != null && appView!=null){
 			Runnable rNotification = new Runnable() {
 				@Override
 				public void run() {
+						LOGGER.logInfo("onRegistered", "Calling Unity.OnRegisterForRemoteNotificationsSuccess...");
 					appView.loadUrl("javascript:try{Unity.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
 				}
 			};
 			appActivity.runOnUiThread(rNotification);
 		}
-		}catch(Exception ex){}
+		}catch(Exception ex){
+			LOGGER.logError("onRegistered",ex.getMessage());
+		}
 	}
 
 	@Override
 	protected void onUnregistered(Context context, String registrationId) {
-		//nothing to do
+		try{
+			LOGGER.logInfo("onUnregistered", "Device Successfully unregistered");
+			
+			// remove shared preference (sender id)
+			NotificationUtils.removeRemoteNotificationsSharedPreference(context, NotificationUtils.RN_PREFERENCE_SENDER_ID);
+			
+			// call platform listener to advise application
+			if(appActivity != null && appView!=null){
+				Runnable rNotification = new Runnable() {
+					@Override
+					public void run() {
+						LOGGER.logInfo("onUnregistered", "Calling Unity.OnUnRegisterForRemoteNotificationsSuccess...");
+						appView.loadUrl("javascript:try{Unity.OnUnRegisterForRemoteNotificationsSuccess()}catch(e){}");
+					}
+				};
+				appActivity.runOnUiThread(rNotification);
+			}
+		} catch(Exception ex){
+			LOGGER.logError("onUnregistered",ex.getMessage());
+		}
 	}
 	
 	@Override
 	protected void onError(Context context, String error) {
 		notificationError = new RegistrationError();
+		notificationError.setCode(""+NotificationUtils.RN_GCM_SERVER_EXCEPTION);
 		notificationError.setLocalizedDescription(error);
 		if(appActivity != null && appView!=null){
 			Runnable rNotification = new Runnable() {
 				@Override
 				public void run() {
+					LOGGER.logInfo("onError", "Calling Unity.OnRegisterForRemoteNotificationsFailure...");
 					appView.loadUrl("javascript:try{Unity.OnRegisterForRemoteNotificationsFailure(" + JSONSerializer.serialize(notificationError) +")}catch(e){}");
 				}
 			};
