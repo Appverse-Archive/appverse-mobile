@@ -425,13 +425,12 @@ public class AndroidIO extends AbstractIO {
 		/*************
 		 * CONTENT TYPE
 		 *************/
+		String contentType = contentTypes.get(service.getType()).toString();
 				if (request.getContentType() != null) {
-					httpRequest.setHeader("Content-Type",
-							request.getContentType());
-				} else {
-					httpRequest.setHeader("Content-Type",
-							contentTypes.get(service.getType()).toString());
+			contentType = request.getContentType();
+			
 				}
+		httpRequest.setHeader("Content-Type", contentType);
 		
 		/*************
 		 * CUSTOM HEADERS HANDLING
@@ -467,12 +466,12 @@ public class AndroidIO extends AbstractIO {
 		/*************
 		 * DEFAULT HEADERS
 		 *************/
-		httpRequest.setHeader("Accept", contentTypes.get(service.getType()).toString());
+		httpRequest.setHeader("Accept", contentType); // Accept header should be the same as the request content type used (could be override by the request, or use the service default)
 				// httpRequest.setHeader("content-length",
 				// String.valueOf(request.getContentLength()));
 				httpRequest.setHeader("keep-alive", String.valueOf(false));
 
-		// TODO: set conn timeout  À???
+		// TODO: set conn timeout ???
 		
 		/*************
 		 * setting user-agent

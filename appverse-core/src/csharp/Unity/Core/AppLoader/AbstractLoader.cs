@@ -105,6 +105,28 @@ namespace Unity.Core.AppLoader
 			return service;
 		}
 
+		public virtual IORequest GetRequestWithRequiredHeaders() {
+			IORequest request = new IORequest();
+
+			if(_context != null && _context.Credentials!=null && _context.Credentials.Length>0) {
+				// Basic Authentication available
+				// Credentials should be a base64 encoding for the "username:password" concatenation string
+				// TODO  allow other authentication types in the future
+				IOHeader authHeader = new IOHeader ();
+				authHeader.Name	= "Authorization";
+				authHeader.Value = "Basic " + _context.Credentials;
+
+				request.Headers = new IOHeader[] { authHeader };
+
+			}
+
+			// Accept header is needed to avoid "406 not acceptable" error, but should be set in the request final object
+			// I/O Services use the request content type to set this value on the final request object
+			request.ContentType = "*/*";
+
+			return request;
+		}
+
 		/// <summary>
 		/// Parse a module version from the given string version (formatted as major.minor.revision).
 		/// </summary>
@@ -172,7 +194,7 @@ namespace Unity.Core.AppLoader
 		public virtual bool UpdateOrInstallModule(Module module) {
 			
 			IOService service = this.GetServiceFromUrl(module.LoadUrl);
-			IORequest request = new IORequest(); // empty request, no additional data is required apart from the load url
+			IORequest request = this.GetRequestWithRequiredHeaders ();
 			
 			String tempFile = this.GetIOService().InvokeServiceForBinary(request, service, "tmp.zip");
 			

@@ -50,7 +50,14 @@ public class NotificationUtils {
 	public static final String APPLICATION_NAME = "$REPLACE_APPNAME_TOKEN$";
 	public static final String PACKAGE_NAME = "$REPLACE_PACKAGE_TOKEN$";
 	private static final String MAIN_ACTIVITY_CLASS_NAME = "$REPLACE_MAINACTIVITY_NAME_TOKEN$";
-	private static final String NOTIFICATIONS_SHARED_PREFERENCES = "NOTIFICATIONS_SHARED_PREFERENCES";
+	private static final String LOCAL_NOTIFICATIONS_SHARED_PREFERENCES = PACKAGE_NAME + ".LOCAL_NOTIFICATIONS_SHARED_PREFERENCES";
+	private static final String REMOTE_NOTIFICATIONS_SHARED_PREFERENCES = PACKAGE_NAME + ".REMOTE_NOTIFICATIONS_SHARED_PREFERENCES";
+	
+	public static final String RN_PREFERENCE_SENDER_ID = "RN_SENDER_ID";
+	
+	public static final int RN_REGISTRATION_DEFAULT_EXCEPTION = 99;
+	public static final int RN_ALREADY_REGISTERED_WITH_ANOTHER_SENDER_ID_EXCEPTION = 10;
+	public static final int RN_GCM_SERVER_EXCEPTION = 11;
 	
 	public static final String DRAWABLE_TYPE = "drawable";
 	public static final String DEFAULT_ICON_NAME = "icon";
@@ -215,13 +222,26 @@ public class NotificationUtils {
 	
 
 	/**
+	 * Returns remote notifications preference stored on Shared Preferences.
+	 * @param context The current application context.
+	 * @param preferenceName
+	 * @return The value of that preference stored on the Shared Preferences.
+	 */
+	public static String getRemoteNotificationsSharedPreference(Context context, String preferenceName) {
+		
+		final SharedPreferences preferences = context.getSharedPreferences(REMOTE_NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+		
+		return preferences.getString(preferenceName, null);
+	}
+
+	/**
 	 * Returns all local notifications stored on Shared Preferences.
 	 * @param context The current application context.
 	 * @return A hash map with all the local notifications stored on the Shared Preferences.
 	 */
 	public static Map<String, ?> getLocalNotificationsOnSharedPreferences(Context context) {
 		
-		final SharedPreferences preferences = context.getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+		final SharedPreferences preferences = context.getSharedPreferences(LOCAL_NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE);
 		
 		return preferences.getAll();
 	}
@@ -278,6 +298,22 @@ public class NotificationUtils {
 		return null;
 	}
 	
+	/***
+	 * Stores a preference (given the name and value) data (on the REMOTE_NOTIFICATIONS_SHARED_PREFERENCES) for this application (activity)
+	 * @param context The current application context.
+	 * @param preferenceName The preference key name.
+	 * @param preferenceValue The preference value.
+	 * @return
+	 */
+	public static boolean storeRemoteNotificationsSharedPreference(Context context, String preferenceName, String preferenceValue) {
+		final Editor settingsEditor = context.getSharedPreferences(REMOTE_NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE).edit();
+
+    	settingsEditor.putString(preferenceName, preferenceValue);
+
+    	return settingsEditor.commit();
+	}
+	
+	
 	/**
 	 * Stores the local notification information to the Android Shared Preferences.
      * This is needed to restore back all scheduled notifications upon device reboot.
@@ -290,11 +326,26 @@ public class NotificationUtils {
     public static boolean storeLocalNotificationOnSharedPreferences(Context context, String notificationId, 
     		NotificationData notificationData, SchedulingData schedule) {
 	
-    	final Editor settingsEditor = context.getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE).edit();
+    	final Editor settingsEditor = context.getSharedPreferences(LOCAL_NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE).edit();
 
     	String notificationDataSerialized = serializeNotificationData(notificationData, schedule);
     	
     	settingsEditor.putString(notificationId, notificationDataSerialized);
+
+    	return settingsEditor.commit();
+    }
+    
+    /**
+     * Remove a specific preference from the shared Preferences (on the REMOTE_NOTIFICATIONS_SHARED_PREFERENCES)
+     * 
+     * @param context The current application context.
+     * @param preferenceName The preference name that must be removed.
+     * @return true On success, otherwise false
+     */
+    public static boolean removeRemoteNotificationsSharedPreference(Context context, String preferenceName) {
+    	final Editor settingsEditor = context.getSharedPreferences(REMOTE_NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE).edit();
+
+    	settingsEditor.remove(preferenceName);
 
     	return settingsEditor.commit();
     }
@@ -307,7 +358,7 @@ public class NotificationUtils {
      * @return true On success, otherwise false
      */
     public static boolean removeLocalNotificationFromSharedPrefereces(Context context, String notificationId) {
-    	final Editor settingsEditor = context.getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE).edit();
+    	final Editor settingsEditor = context.getSharedPreferences(LOCAL_NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE).edit();
 
     	settingsEditor.remove(notificationId);
 
@@ -320,7 +371,7 @@ public class NotificationUtils {
      * @return true On success, otherwise false
      */
     public static boolean removeAllLocalNotificationsFromSharedPrefereces(Context context) {
-    	final Editor settingsEditor = context.getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE).edit();
+    	final Editor settingsEditor = context.getSharedPreferences(LOCAL_NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE).edit();
 
     	settingsEditor.clear();
 

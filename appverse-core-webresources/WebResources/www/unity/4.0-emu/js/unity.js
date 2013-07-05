@@ -188,6 +188,15 @@ Unity.OnRegisterForRemoteNotificationsSuccess = function(registrationToken) {};
 Unity.OnRegisterForRemoteNotificationsFailure = function(registrationError) {};
 
 /**
+ * Applications should override/implement this method to be aware of a successfully unregistration for remote notifications, and should perform the desired javascript code on this case.
+ * <br> @version 4.0
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * 
+ */
+Unity.OnUnRegisterForRemoteNotificationsSuccess = function() {};
+
+/**
  * @ignore
  * Unity Platform will call this method when application goes to background.
  * <br> @version 2.0
@@ -2159,6 +2168,27 @@ Notification = function() {
 	 * @type int
 	 */
 	this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_YEARLY = 5;
+	
+	/**
+	 * Default registration exception code for remote notifications.
+	 * <br> @version 4.0
+	 * @type String
+	 */
+	this.REMOTE_NOTIFICATION_REGISTRATION_FAILURE_DEFAULT = "99";
+	
+	/**
+	 * Registration exception code for remote notifications indicating unsuccessful registration due to a different sender id previous registration.
+	 * <br> @version 4.0
+	 * @type String
+	 */
+	this.REMOTE_NOTIFICATION_REGISTRATION_FAILURE_MISMATCH_SENDERID = "10";
+	
+	/**
+	 * Registration exception code send by the GCM Server for remote notifications (both registration and unregistration processes)
+	 * <br> @version 4.0
+	 * @type String
+	 */
+	this.REMOTE_NOTIFICATION_REGISTRATION_FAILURE_GCM_SERVER = "11";
 }
 
 Unity.Notification = new Notification();
@@ -2380,7 +2410,7 @@ Notification.prototype.StopNotifyVibrate = function()
  * <br> Returned data should be handled by overriding the corresponding Platform Listeners {@link Unity.OnRegisterForRemoteNotificationsSuccess OnRegisterForRemoteNotificationsSuccess} and {@link Unity.OnRegisterForRemoteNotificationsFailure OnRegisterForRemoteNotificationsFailure} 
  * <br> @version 3.9
  * @method
- * @param {String} senderId The sender identifier.
+ * @param {String} senderId The sender identifier. This parameter is required for some platforms (such as the Android platform), in iOS will be just ignored.
  * @param {Unity.Notification.RemoteNotificationType[]} types The remote notifications types accepted by this application. For further information see, {@link Unity.Notification#REMOTE_NOTIFICATION_TYPE_NONE REMOTE_NOTIFICATION_TYPE_NONE}, {@link Unity.Notification#REMOTE_NOTIFICATION_TYPE_BADGE REMOTE_NOTIFICATION_TYPE_BADGE}, {@link Unity.Notification#REMOTE_NOTIFICATION_TYPE_SOUND REMOTE_NOTIFICATION_TYPE_SOUND}, {@link Unity.Notification#REMOTE_NOTIFICATION_TYPE_ALERT REMOTE_NOTIFICATION_TYPE_ALERT} and {@link Unity.Notification#REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY}
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
  */
@@ -2391,8 +2421,8 @@ Notification.prototype.RegisterForRemoteNotifications = function(senderId, types
 
 /**
  * Un-registers this application and device from receiving remote notifications.
- * <br> Returned data should be handled by overriding the corresponding Platform Listeners {@link Unity.xxxx xxxx}
- * <br> @version 3.9
+ * <br> Returned data should be handled by overriding the corresponding Platform Listeners {@link Unity.OnUnRegisterForRemoteNotificationsSuccess OnUnRegisterForRemoteNotificationsSuccess}
+ * <br> @version 3.9 (listener callback only available on 4.0)
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
  */
@@ -3001,7 +3031,7 @@ InvokeService : function(requestObjt, service, serviceType, callbackFunctionName
  */
 InvokeServiceForBinary : function(requestObjt, service, storePath, callbackFunctionName, callbackId)
 {
-	return post_to_url(Unity.IO.serviceName, "InvokeServiceForBinary",get_params([requestObjt,service,storePath]), callbackFunctionName, callbackId);
+	return post_to_url_async(Unity.IO.serviceName, "InvokeServiceForBinary",get_params([requestObjt,service,storePath]), callbackFunctionName, callbackId);
 }
 
 };
