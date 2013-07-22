@@ -30,6 +30,7 @@ import com.gft.unity.core.system.log.Logger;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 public abstract class AbstractLoader implements ILoader {
     
@@ -37,7 +38,7 @@ public abstract class AbstractLoader implements ILoader {
     private static final Logger LOGGER = Logger.getInstance(Logger.LogCategory.CORE,
             LOGGER_MODULE);
 
-    private static char MODULES_VERSION_SEPARATOR = '.';
+    private static String MODULES_VERSION_SEPARATOR = ".";
     private ModuleContext _context = null;
     public static String MODULES_PATH = "apps";
     public static String DEFAULT_HOME_PAGE = "index.html";
@@ -134,16 +135,18 @@ public abstract class AbstractLoader implements ILoader {
     protected ModuleVersion ParseModuleVersion(String version) {
         ModuleVersion moduleVersion = new ModuleVersion();
         if (version != null) {
-            String[] versionDetails = version.split(new String(new char[]{MODULES_VERSION_SEPARATOR}));
-            if (versionDetails.length > 0) {
-                moduleVersion.setMajor(versionDetails[0]);
+            StringTokenizer versionDetails = new StringTokenizer(version,MODULES_VERSION_SEPARATOR);
+            int numTokens = versionDetails.countTokens();
+            if (numTokens > 0) {
+                moduleVersion.setMajor(versionDetails.nextToken());
             }
-            if (versionDetails.length > 1) {
-                moduleVersion.setMinor(versionDetails[1]);
+            if (numTokens > 1) {
+                moduleVersion.setMinor(versionDetails.nextToken());
             }
-            if (versionDetails.length > 2) {
-                moduleVersion.setRevision(versionDetails[2]);
+            if (numTokens > 2) {
+                moduleVersion.setRevision(versionDetails.nextToken());
             }
+            
         }
 
         return moduleVersion;
