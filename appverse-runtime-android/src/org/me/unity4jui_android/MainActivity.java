@@ -264,8 +264,12 @@ public class MainActivity extends Activity {
 			this.checkLaunchedFromNotification();
 			
 		} else {
+			if(!activityManager.isNotifyLoadingVisible()) {
 			LOG.Log(Module.GUI, "application lost focus; calling background listener");
 			appView.loadUrl("javascript:try{Unity._toBackground()}catch(e){}");
+			} else {
+				LOG.Log(Module.GUI, "application lost focus due to a showing dialog (StartNotifyLoading feature); application is NOT calling background listener to allow platform calls on the meantime.");
+			}
 			/*
 			if (server == null) {
 				// security reasons; the splash screen is shown when application enters in background (hiding sensitive data)
