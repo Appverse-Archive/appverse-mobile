@@ -37,6 +37,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Vibrator;
 
+import com.gft.unity.android.activity.AndroidActivityManager;
 import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.android.notification.LocalNotificationReceiver;
 import com.gft.unity.android.notification.NotificationUtils;
@@ -202,6 +203,7 @@ public class AndroidNotification extends AbstractNotification {
 				new String[] { "loadingText" }, new Object[] { loadingText });
 
 		try {
+			if(!runningLoading) {
 			final String textLoading = loadingText;
 			Runnable action = new Runnable() {
 
@@ -210,6 +212,12 @@ public class AndroidNotification extends AbstractNotification {
 					Context context = AndroidServiceLocator.getContext();
 					dialogLoading = ProgressDialog.show(context, null,
 							textLoading, false);
+						
+						AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+								.GetInstance()
+								.GetService(
+										AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+						if(aam!=null) aam.setNotifyLoadingVisible(true);
 				}
 			};
 
@@ -217,6 +225,9 @@ public class AndroidNotification extends AbstractNotification {
 			activity.runOnUiThread(action);
 			result = true;
 			runningLoading = true;
+			} else {
+				LOGGER.logWarning("StartNotifyLoading", "Notify Loading already started. Call 'StopNotifiyLoading' method before send a new 'StartNotifyLoading'");
+			}
 		} catch (Exception ex) {
 			LOGGER.logError("StartNotifyLoading", "Error", ex);
 		} finally {
@@ -314,6 +325,12 @@ public class AndroidNotification extends AbstractNotification {
 					if (dialogLoading != null && dialogLoading.isShowing()) {
 						dialogLoading.dismiss();
 						dialogLoading = null;
+						
+						AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+								.GetInstance()
+								.GetService(
+										AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+						if(aam!=null) aam.setNotifyLoadingVisible(false);
 					}
 				}
 			};
