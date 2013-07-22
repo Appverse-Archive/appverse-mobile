@@ -70,6 +70,16 @@ public class HttpServer {
 		SERVER_CONFIG.setProperty("mime.webm", "video/webm");
 		SERVER_CONFIG.setProperty("mime.ogg", "video/ogg");
 		SERVER_CONFIG.setProperty("mime.ogv", "video/ogg");
+        
+        
+        // Embedded @font-face Fonts
+        SERVER_CONFIG.setProperty("mime.ttf", "application/x-font-ttf");
+        SERVER_CONFIG.setProperty("mime.otf", "application/x-font-opentype");
+        SERVER_CONFIG.setProperty("mime.otf", "application/x-font-opentype");
+        SERVER_CONFIG.setProperty("mime.woff","application/x-font-woff");
+        SERVER_CONFIG.setProperty("mime.eof", "application/vnd.ms-fontobject");
+        SERVER_CONFIG.setProperty("mime.svg", "image/svg+xml");
+        
     }
     private Server server;
     private Properties serverProperties;
