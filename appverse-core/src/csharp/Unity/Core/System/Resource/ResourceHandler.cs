@@ -73,6 +73,14 @@ namespace Unity.Core.System.Resource
 			MimeTypes [".webm"] = "video/webm";
 			MimeTypes [".ogg"] = "video/ogg";
 			MimeTypes [".ogv"] = "video/ogg";
+
+			// Embedded @font-face Fonts
+			MimeTypes [".ttf"] 	= "application/x-font-ttf";
+			MimeTypes [".otf"] 	= "application/x-font-opentype";
+			MimeTypes [".otf"] 	= "application/x-font-opentype";
+			MimeTypes [".woff"]	= "application/x-font-woff";
+			MimeTypes [".eof"]	= "application/vnd.ms-fontobject";
+			MimeTypes [".svg"]  = "image/svg+xml";
 		}
 
 		/// <summary>
