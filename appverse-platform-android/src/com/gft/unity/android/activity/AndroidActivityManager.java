@@ -67,6 +67,8 @@ public class AndroidActivityManager implements IActivityManager {
 	private Map<Integer, IActivityManagerListener> listeners;
 	private Dialog splashDialog = null;
 	private ImageView splashImage = null;
+	
+	private boolean _notifyLoadingVisible = false;
 
 	public AndroidActivityManager(Activity main, WebView view) {
 		this.main = main;
@@ -74,6 +76,15 @@ public class AndroidActivityManager implements IActivityManager {
 		listeners = new HashMap<Integer, IActivityManagerListener>();
 	}
 	
+	
+	public boolean isNotifyLoadingVisible() {
+		return _notifyLoadingVisible;
+	}
+
+	public void setNotifyLoadingVisible(boolean notifyLoadingVisible) {
+		this._notifyLoadingVisible = notifyLoadingVisible;
+	}
+
 	@Override
 	public boolean resolveActivity(Intent intent) {
 
