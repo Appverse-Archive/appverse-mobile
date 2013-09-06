@@ -268,7 +268,6 @@ The settings you could configure in the NetBeans project are the same as in the 
 
 To test the app in the emulator from a NetBeans build you could follow this instruction:
 
-
  
 > 1. In NetBeans go to Tools -> AVD Manager
 > 2. Create a new AVD if you have not do this before.
