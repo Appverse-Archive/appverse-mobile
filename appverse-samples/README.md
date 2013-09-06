@@ -236,9 +236,25 @@ You will need to install the following:
 * Apache Ant 1.8 or later
 * Not compatible with Gnu Compiler for Java (gcj)
 
+
+**Building the app**:
+
+[Disclaimer] You will have to use the File -> Open Project option in order to load the sample folders.
+
+Set the ANDROID_HOME enviroment variable with the android sdk path.
+
+You will need to compile the appverse-runtime-android-zxing. 
+> 1. In order to do so, open the appverse-runtime-android-zxing folder.
+> 2. you will need to set the sdk.dir in the appverse-runtime-android-zxing/local.properties file pointing to android sdk folder. 
+3. Make sure the line 98 of the appverse-runtime-android-zxing/build.xml is uncommented.
+4. Now you can make a clean and build that would be necessary after this point.
+
+Now we are ready to open the appverse-samples\AppverseTwitter_NetBeans folder and make a 'clean and build' and a run after this.
+
+
 **How to embed your Web resources**:
 
-Embeded resources are included in the same way as in the Eclipse project. Please, check above the corresponding instructions.
+Embeded resources are included in the assets folder.
 
 **Appverse and Third-party Libraries**:
 
@@ -248,7 +264,20 @@ Required libraries are included in the same way as in the Eclipse project. Pleas
 
 The settings you could configure in the NetBeans project are the same as in the Eclipse project. Please, check above the corresponding instructions.
 
-**Android Emulator behind a Proxy**
+**Android Emulator**:
+
+To test the app in the emulator from a NetBeans build you could follow this instruction:
+
+ 
+> 1. In NetBeans go to Tools -> AVD Manager
+> 2. Create a new AVD if you have not do this before.
+> 3. Start the AVD and launch it, wait untill the emulator have finished loading. 
+> 4. Open Terminal console, in W7: Run -> cmd
+> 5. Type 'adb devices' to make sure the avd is working properly.
+> 6. Type 'adb pull *apkfile*' [this will be in the appverse-samples\AppverseTwitter_NetBeans\bin folder by default].
+
+
+**Android Emulator behind a Proxy**:
 
 If you need to execute an application that connects to remote servers and you are behind a coporate proxy, you should configure your proxy settings in your NetBeans IDE:
 
