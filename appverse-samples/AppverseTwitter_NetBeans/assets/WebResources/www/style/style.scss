@@ -1,48 +1,12 @@
-/**
-	Project custom style
-*/
-
-
-/*Appverse
-$toolbarColor:#b90000;
-$darkColor:#b90000;
-$lightColor:#e03636;
-$logo:'logo.gif';
-$logoSize: 149px 34px;*/
-/*Appverse*/
 $toolbarColor:#fff;
-$darkColor:#b90000;
+$darkColor:#0066cc;
 $lightColor:#e03636;
 $logo:'logo.png';
-$logoSize: 149px 34px;
+$logoSize: 114px 47px;
 
-.basePanel
-{
-    font-family: Arial;
-    div{
-    
-        &.x-panel-body{
-            /*padding:20px;*/
-        }
-        &.mid {
-            width: 100%;
-            height: 100%;
-            background: white;
-            border-radius: 20px;
-            border: 1px solid #000;
-            font-family: Arial;
-            text-align: center;
-            box-shadow: 5px 5px 5px #ccc;
-            -webkit-box-shadow: 5px 5px 5px #ccc;
-            text-shadow: 2px 2px 2px #CCC;
-            padding: 20px;
-        }
-    }
-}
 
 /************************************************/
 /* Changing style for all application toolbars */
-/* helping tool for making gradient toolbars colors: http://www.colorzilla.com/gradient-editor/*/
 /************************************************/
 .x-toolbar
 {
@@ -142,55 +106,15 @@ $logoSize: 149px 34px;
     
 }
 
-/************************************************/
-/* Changing style for tweets list */
-/************************************************/
-
-.tweetImage {
-        width:18%;
-        float:left;
+.logo{
+    background-image: url('../images/gnews.jpg');    
+    background-size: 100%;
+    background-repeat: no-repeat;
+    height: 100px;
+    width: 186px;
 }
 
-.tweetText {
-        width:74%;
-        float:left;
-        margin-left:4%;
-        font-size: 15px;
-        text-shadow: 0 -1px 0 #FFF;
-        div:first-child {
-            color: $darkColor;
-            font-weight: bold;
-        }
-        div:last-child {
-            color: lighten($darkColor, 30%);
-            margin-top: 8px;
-            font-size:12px;
-        }
-}
-
-.tweetList {
-    .x-list-item {
-        padding: 4%;
-        background-color:lighten($lightColor, 50%);
-        border-bottom: 1px solid lighten($lightColor, 40%);
-        border-top: 1px solid #FFF;
-      
-    
-        
-        &:first-child {
-            &.x-item-selected {
-                border-top: none;
-            }
-        }
-    
-        &.x-item-selected, &.x-item-pressed {
-            background-image:none;
-            background-color:lighten($lightColor, 40%);
-            border-bottom: 1px solid lighten($lightColor, 30%);
-            border-top: 1px solid #FFF;
-            .tweetText {
-                text-shadow: 0 -1px 0 #FFF;
-            }
-        }
-    }
+.title{
+    font-size: 18px;
+    text-align: center;
 }

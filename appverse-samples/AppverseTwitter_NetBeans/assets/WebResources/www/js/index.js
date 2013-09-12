@@ -1,74 +1,118 @@
-/**
- *  Project Name
- * 
- */
+var newsSearch = 'mobile html5',
+        query = '?hl=en&gl=us&q=@@query@@&um=1&ie=UTF-8&output=rss',
+        request = {Session: {}},
+        services = Unity.IO.GetService('googleRss');
 
-var PROJECTROOTOBJ = {}; 
-
-var i18nController =  {
-    currentLocale : null
-};
-
-i18nController.localizeText = function(key) {
-    return Unity.I18N.GetResourceLiteral(key, this.currentLocale);
-};
-
-new Ext.regModel('tweet',{
-	fields: ['text','from_user_name', 'profile_image_url','id_str','from_user_id_str']
+new Ext.regModel('news', {
+    fields: [{name: 'title'},
+        {name: 'link'}]
 });
 
-var tweetStore = new Ext.data.Store({
-	model: 'tweet',
-	data: []
+var newsStore = new Ext.data.Store({
+    model: 'news',
+    data: []
 });
 
-markerArg = 'marker.png';
+newsRefresh = function newsRefresh() {
 
-markerURL = markerArg;
+    request.Content = query.replace('@@query@@', escape(newsSearch));
+    response = Unity.IO.InvokeService(request, services);
+    if (!response.Content)
+        return;
+    data = xml2json.parser(response.Content);
 
-Ext.setup({	
+    newsStore.loadData(data.rss.channel.item);
+};
 
+
+Ext.setup({
     onReady: function() {
-    
-		PROJECTROOTOBJ.ui = new PROJECTROOTOBJ.UI();
-        PROJECTROOTOBJ.ct = new PROJECTROOTOBJ.Controller();
-        PROJECTROOTOBJ.ui.cacheElements();
-		
-		PROJECTROOTOBJ.ui.buildBasePanel({
-			id: 'basePanel',
-			cls: 'basePanel',
-			fullscreen: true,
-			dockedItems: [PROJECTROOTOBJ.ui.getView('toolbar'),PROJECTROOTOBJ.ui.getView('searchToolBar'), PROJECTROOTOBJ.ui.getView('botToolbar')],
-			listeners:{
-				afterlayout: function(){
-                                        PROJECTROOTOBJ.ct.tweetRefresh();
-				},
-                                afterrender: function(){
-                                        google.maps.event.addListener(PROJECTROOTOBJ.ui.getView('tweetMap').map, "mousedown", function(e) {
-                                            PROJECTROOTOBJ.config.tweetBubble.close();
-                                        });
-				}
-			},
-			items: [PROJECTROOTOBJ.ui.getView('tweetList'), PROJECTROOTOBJ.ui.getView('tweetMap')],
-			layout: 'card',
-                        cardSwitchAnimation : 'slide'
-		});
-		
-		Unity.System.DismissSplashScreen();
-	
-	// End onReady
-	}
-// End Ext.setup	
-});
+
+        newsTpl = new Ext.Template('<div class="title">{title}</div>');
+
+        newsList = new Ext.List({
+            //style: 'height:100%;',
+            itemTpl: newsTpl,
+            store: newsStore,
+            cls: 'newsList',
+            id: 'newsList',
+            layout: 'fit',
+            preventSelectionOnDisclose: true,
+            listeners: {
+                itemtap: function(dataView, index, item, e) {
+                    record = dataView.getStore().getAt(index);
+                    console.log(record.data.link);
+                    url = record.data.link.split('url=');
+                    if (url.length > 1) {
+                        url = url[1];
+                        Unity.Net.OpenBrowser(record.data.title, 'Volver', url);
+                    } else {
+                        Ext.Msg.alert('No hay enlace.');
+                    }
+                }
+            }
+        });
+
+        search = new Ext.form.Search({
+            cls: 'searchBar',
+            placeHolder: 'Search...',
+            useClearIcon: true,
+            value: newsSearch,
+            listeners: {
+                keyup: {
+                    element: 'el',
+                    fn: function(e) {
+                        // Happens when enter is pressed
+                        newsSearch = searchBar.getValue();
+                        if (e.browserEvent.keyCode == 13) {
+                            newsRefresh();
+                        }
+                    }
+                }
+            }
+        });
+
+        searchTopToolbar = new Ext.Toolbar({
+            dock: 'top',
+            cls: 'searchToolbar',
+            defaults: {iconMask: true},
+            layout: {pack: 'center'},
+            items: [search]
+        });
+
+        viewPort = new Ext.Panel({
+            id: 'viewPort',
+            cls: 'viewPort',
+            fullscreen: true,
+            dockedItems: [{
+                    xtype: 'toolbar',
+                    dock: 'top',
+                    id: 'titleBar',
+                    cls: 'titleBar',
+                    height: 100,
+                    layout: {pack: 'center'},
+                    items: [
+                        {xtype: 'spacer'},
+                        {xtype: 'container', html: '<div class="logo"></div>'},
+                        {xtype: 'spacer'}]
+                },
+                searchTopToolbar],
+            items: [newsList],
+            layout: 'fit'
+        });
+        newsRefresh();
+
+    }// End onReady
+});// End Ext.setup	
 
 
 /***** Unity Overrided Functions to provide Orientation Features ****/
-Unity.getCurrentOrientation = function() { 
-    
+Unity.getCurrentOrientation = function() {
+
 };
 
-Unity.setOrientationChange = function(orientation, width, height) { 	
-   
+Unity.setOrientationChange = function(orientation, width, height) {
+
 };
 
 /**
@@ -77,8 +121,8 @@ Unity.setOrientationChange = function(orientation, width, height) {
  * @version 2.0
  * 
  */
-Unity.backgroundApplicationListener= function() {
-	
+Unity.backgroundApplicationListener = function() {
+
 };
 
 
@@ -89,7 +133,7 @@ Unity.backgroundApplicationListener= function() {
  * 
  */
 Unity.foregroundApplicationListener = function() {
-	
+
 };
 
 
