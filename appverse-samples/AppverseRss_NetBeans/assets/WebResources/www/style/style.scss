@@ -1,0 +1,120 @@
+$toolbarColor:#fff;
+$darkColor:#0066cc;
+$lightColor:#e03636;
+$logo:'logo.png';
+$logoSize: 114px 47px;
+
+
+/************************************************/
+/* Changing style for all application toolbars */
+/************************************************/
+.x-toolbar
+{
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(3%,lighten($toolbarColor,20%)), color-stop(100%,$toolbarColor)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #ffffff 0%,lighten($toolbarColor,20%) 3%,$toolbarColor 100%);
+    border-bottom: 1px solid darken($toolbarColor,10%) !important;
+    
+    .x-toolbar-title {
+        background-image: url('../images/'+$logo);
+        background-size: $logoSize;
+		background-repeat: no-repeat;
+		background-position: center;
+        line-height: 44px;
+        
+    }
+    
+    .x-button {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(3%,lighten($darkColor,20%)), color-stop(100%,$darkColor)); /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(top, #ffffff 0%,lighten($darkColor,20%) 3%,$darkColor 100%);
+        border: 1px solid darken($darkColor, 20%);
+        
+        img {
+    
+            &.x-icon-mask {
+                width: 1.3em;
+                height: 1.3em;
+                
+                -webkit-mask-repeat:no-repeat;
+                -webkit-mask-position:center center;
+    
+                &.locate {
+                    -webkit-mask-image: url('../images/locator_map_icon.png');
+                    -webkit-mask-size: 12px 21px;
+                }
+        
+                &.home {
+                    -webkit-mask-image: url('../images/list_button.png');
+                    -webkit-mask-size: 18px 18px;
+                }
+            }
+        }
+        
+        &.x-button-pressed {
+             background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(3%,$darkColor), color-stop(100%,darken($darkColor, 20%))); /* Chrome,Safari4+ */
+			 background: -webkit-linear-gradient(top, #ffffff 0%, $darkColor 3%,darken($darkColor, 20%) 100%);
+        }
+    }
+}
+
+/************************************************/
+/* Changing style for search toolbar */
+/************************************************/
+
+.searchToolbar {
+     padding: 0px;
+     height:44px;
+     border-bottom:1px solid lighten($lightColor, 30%) !important;
+     .x-field{
+        margin: 0px;
+        padding: 0px;
+     }    
+    
+    .searchBar {
+      height: 44px  ;
+      width:100% !important;
+      -webkit-box-shadow: inset 0 1px 3px #565656;
+      background-color:#FFF;
+      border:none;
+      border-bottom:1px solid $lightColor !important;
+      
+      .x-input-search{
+            border-radius: 0px;
+            background-color:transparent;
+            height:44px;
+            font-size:14px;
+            color:#565656;
+            font-weight:normal;
+            padding-left:28px;
+            -webkit-box-shadow: none;
+            -webkit-background-size: 15px 15px;
+            background-image: url('../images/glass_icon.png');
+            &::-webkit-input-placeholder
+            {
+                    color:lighten(#565656, 20%);
+            }
+        
+      }
+        .x-field-clear-container {
+            background-color:transparent;
+            padding:0 .7em;
+            .x-field-clear{
+                    background-color:#565656  ;
+            }
+        }  
+        
+    }
+    
+}
+
+.logo{
+    background-image: url('../images/gnews.jpg');    
+    background-size: 100%;
+    background-repeat: no-repeat;
+    height: 100px;
+    width: 186px;
+}
+
+.title{
+    font-size: 18px;
+    text-align: center;
+}
