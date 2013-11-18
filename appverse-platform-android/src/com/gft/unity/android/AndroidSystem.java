@@ -26,13 +26,20 @@ package com.gft.unity.android;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Environment;
 import android.os.StatFs;
@@ -61,7 +68,11 @@ import com.gft.unity.core.system.MemoryUse;
 import com.gft.unity.core.system.OSInfo;
 import com.gft.unity.core.system.PowerInfo;
 import com.gft.unity.core.system.PowerStatus;
+import com.gft.unity.core.system.SystemLogger;
+import com.gft.unity.core.system.SystemLogger.Module;
 import com.gft.unity.core.system.UnityContext;
+import com.gft.unity.core.system.launch.AndroidApp;
+import com.gft.unity.core.system.launch.App;
 import com.gft.unity.core.system.server.net.UUID;
 
 // TODO difference between GetMemoryAvailableTypes and GetMemoryTypes
@@ -76,9 +87,161 @@ public class AndroidSystem extends AbstractSystem {
 
 	private static final long MIN_MEMORY_AVAILABLE = 1 * 1024 * 1024; // 1MiB
 
+	private static final SystemLogger LOG = SystemLogger.getInstance();
+	
+	/* parsing configuration file requirements */
+	private static final String DEFAULT_ENCODING = "UTF-8";
+	
+	private static final String APP_NODE_ATTRIBUTE = "APP";
+	private static final String APP_NAME_ATTRIBUTE = "name";
+	
+	private static final String APP_EXPLICIT_INTENT = "android-explicit-intent";
+	private static final String APP_IMPLICIT_INTENT = "android-implicit-intent";
+	
+	private static final String APP_ACTION_ATTRIBUTE = "action";
+	private static final String APP_CATEGORY_ATTRIBUTE = "category";
+	private static final String APP_TYPE_ATTRIBUTE = "mime-type";
+	private static final String APP_SCHEME_ATTRIBUTE = "uri-scheme";
+	private static final String APP_SLASHES_ATTRIBUTE = "uri-remove-double-slash";
+	private static final String APP_COMPONENTNAME_ATTRIBUTE = "component-name";
+	private static final String APP_PARSE_QUERY_INTENT_EXTRAS = "parse-query-as-intent-extras";
+
 	public AndroidSystem() {
+		loadLaunchConfig();
 	}
 	
+	private void loadLaunchConfig() {
+		Context context = AndroidServiceLocator.getContext();
+		ArrayList<App> appsList = new ArrayList<App>();
+		try {
+
+			XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+			factory.setNamespaceAware(true);
+			XmlPullParser xpp = factory.newPullParser();
+			xpp.setInput(AndroidUtils.getInstance().getAssetInputStream(context.getAssets(), LAUNCH_CONFIG_FILE),
+					DEFAULT_ENCODING);
+			int eventType = xpp.getEventType();
+			App app = null;
+			String appName = "";
+			String appUriScheme = null;
+			String appAction = null;
+			String appCategory = null;
+			String appMimeType = null;
+			boolean appRemoveUriDoubleSlash = false;
+			boolean parseQueryAsIntentExtras = false;
+			String appComponentName = null;
+			while (eventType != XmlPullParser.END_DOCUMENT) {
+				if (eventType == XmlPullParser.START_TAG) {
+					if (xpp.getName().toUpperCase()
+							.equals(APP_NODE_ATTRIBUTE)) {
+						app = new App();
+						
+						// set default values
+						appUriScheme = null;
+						appAction = null;
+						appCategory = null;
+						appMimeType = null;
+						appRemoveUriDoubleSlash = false;
+						parseQueryAsIntentExtras = false;
+						appComponentName = null;
+						
+						appName = xpp.getAttributeValue(null,
+								APP_NAME_ATTRIBUTE);
+						
+					} else if(xpp.getName().equals(APP_EXPLICIT_INTENT)){
+						
+						appComponentName = xpp.getAttributeValue(null,
+								APP_COMPONENTNAME_ATTRIBUTE);
+						
+						String booleanString = xpp.getAttributeValue(null,
+								APP_PARSE_QUERY_INTENT_EXTRAS);
+						
+						if(booleanString!=null && !booleanString.isEmpty() && !booleanString.equalsIgnoreCase("null")) {
+							try {
+								parseQueryAsIntentExtras = Boolean.parseBoolean(booleanString);
+							} catch (Exception e) {
+								LOG.Log(Module.PLATFORM, 
+									"Wrong value configured for '"+APP_PARSE_QUERY_INTENT_EXTRAS+"' attribute in the app with name[" + appName +"] : " 
+									+ booleanString + ". Possible values are 'true' or 'false'");
+							}
+						} else {
+							parseQueryAsIntentExtras = false;
+						}
+						
+					} else if (xpp.getName().equals(APP_IMPLICIT_INTENT)){
+						
+						appAction = xpp.getAttributeValue(null,
+								APP_ACTION_ATTRIBUTE);
+						
+						appCategory = xpp.getAttributeValue(null,
+								APP_CATEGORY_ATTRIBUTE);
+						
+						appMimeType = xpp.getAttributeValue(null,
+								APP_TYPE_ATTRIBUTE);
+						
+						appUriScheme = xpp.getAttributeValue(null,
+								APP_SCHEME_ATTRIBUTE);
+						
+						String booleanString = xpp.getAttributeValue(null,
+								APP_SLASHES_ATTRIBUTE);
+						
+						if(booleanString!=null && !booleanString.isEmpty() && !booleanString.equalsIgnoreCase("null")) {
+							try {
+								appRemoveUriDoubleSlash = Boolean.parseBoolean(booleanString);
+							} catch (Exception e) {
+								LOG.Log(Module.PLATFORM, 
+									"Wrong value configured for '"+ APP_SLASHES_ATTRIBUTE+"' attribute in the app with name[" + appName +"] : " 
+									+ booleanString + ". Possible values are 'true' or 'false'");
+							}
+						} else {
+							appRemoveUriDoubleSlash = false;
+						}
+						
+						booleanString = xpp.getAttributeValue(null,
+								APP_PARSE_QUERY_INTENT_EXTRAS);
+						
+						if(booleanString!=null && !booleanString.isEmpty() && !booleanString.equalsIgnoreCase("null")) {
+							try {
+								parseQueryAsIntentExtras = Boolean.parseBoolean(booleanString);
+							} catch (Exception e) {
+								LOG.Log(Module.PLATFORM, 
+									"Wrong value configured for '"+APP_PARSE_QUERY_INTENT_EXTRAS+"' attribute in the app with name[" + appName +"] : " 
+									+ booleanString + ". Possible values are 'true' or 'false'");
+							}
+						} else {
+							parseQueryAsIntentExtras = false;
+						}
+						
+					}
+				} else if (eventType == XmlPullParser.END_TAG) {
+					if (xpp.getName().toUpperCase()
+							.equals(APP_NODE_ATTRIBUTE)) {
+						app.setName(appName);
+						
+						// specific data for Android implementation
+						AndroidApp aapp = new AndroidApp();
+						aapp.setUriScheme(appUriScheme);
+						aapp.setRemoveUriDoubleSlash(appRemoveUriDoubleSlash);
+						aapp.setParseQueryAsIntentExtras(parseQueryAsIntentExtras);
+						aapp.setComponentName(appComponentName);
+						aapp.setAction(appAction);
+						aapp.setMimeType(appMimeType);
+						aapp.setCategory(appCategory);
+						
+						app.setAndroidApp(aapp);
+						LOG.Log(Module.PLATFORM, "*************** Loaded app to launch: " + app.toString());
+						appsList.add(app);
+					}
+				}
+				eventType = xpp.next();
+			}
+		} catch (Exception ex) {
+			LOG.Log(Module.PLATFORM, "LoadConfig error ["
+					+ LAUNCH_CONFIG_FILE + "]: " + ex.getMessage());
+		}
+		launchConfig.setApps(appsList
+				.toArray(new App[appsList.size()]));
+	}
 
 
 	@Override
@@ -472,4 +635,93 @@ public class AndroidSystem extends AbstractSystem {
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
 		aam.dismissApplication();
 	}
+	
+	
+	@Override
+	public void LaunchApplication(App app, String query) {
+		try {
+			if(app!=null && app.getAndroidApp()!=null) {
+				
+				LOG.Log(Module.PLATFORM, "Launching " + app.toString());
+				
+				AndroidApp androidApp = app.getAndroidApp();
+				Intent intent = new Intent(); // default intent value
+				
+				// setting a specific Intent Action
+				if(androidApp.getAction()!=null) {
+					intent = new Intent(androidApp.getAction());
+					
+					// defining URI to be launched
+					if(androidApp.getUriScheme()!=null) {
+						
+						String dataUriQuery = (query!=null) ? query : "";
+						String doubleSlash = ":";
+						if(!androidApp.getRemoveUriDoubleSlash()) {
+							doubleSlash = "://";
+						}
+						Uri dataUri = Uri.parse(androidApp.getUriScheme()+ doubleSlash + dataUriQuery);
+						LOG.Log(Module.PLATFORM, "Provided URI: " + dataUri.toString());
+						
+						intent = new Intent(androidApp.getAction(), dataUri);
+					}
+				} 
+				
+				// Adding component for launching an Explicit Intent
+				if(androidApp.getComponentName() !=null) {
+					intent.setComponent(ComponentName.unflattenFromString(androidApp.getComponentName()));
+				}
+				
+				// Adding category for this intent
+				if(androidApp.getCategory() !=null) {
+					intent.addCategory(androidApp.getCategory());
+				}
+				
+				// Adding mime type
+				if(androidApp.getMimeType() !=null) {
+					intent.setType(androidApp.getMimeType());
+				}
+				
+				// Adding intent extras parsing query when no scheme URI is used
+				if(androidApp.getParseQueryAsIntentExtras()) {
+					LOG.Log(Module.PLATFORM, "Adding extras to the Intent...");
+					Map<String, String> urlParams = AndroidUtils.getUrlParameters(query, true, "context_path");
+					int numIntentExtras = 0;
+					for (Entry<String, String> e1 : urlParams.entrySet()) {
+					    String sKey = e1.getKey();
+					    String sValue = e1.getValue();
+					    LOG.Log(Module.PLATFORM, "adding entry key: " + sKey + ", value: " + sValue);
+					    if(sValue.startsWith("[") && sValue.endsWith("]")) {
+					    	// passed object is an array of strings
+					    	int sValueLength = sValue.length();
+					    	String[] sValues = sValue.substring(1,sValueLength-1).split(",");
+					    	intent.putExtra(sKey, sValues);
+					    } else {
+					    	intent.putExtra(sKey, sValue);
+					    }
+					    
+					}
+					LOG.Log(Module.PLATFORM, "Added #"+numIntentExtras+" extras to the Intent.");
+					
+				}
+				
+				IActivityManager aam = (IActivityManager) AndroidServiceLocator
+						.GetInstance()
+						.GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+				boolean result = aam.startActivity(intent);
+				
+				if(!result) {
+					LOG.Log(Module.PLATFORM, "The system could not open the given url. Please check syntax.");
+				}
+				
+			} else {
+				LOG.Log(Module.PLATFORM, "No application provided to launch, please check your first argument on API method invocation");
+			}
+		} catch(Exception e) {
+			LOG.Log(Module.PLATFORM, "An exception has been raised while launching the application.", e);
+		}
+	}
+
+	
 }

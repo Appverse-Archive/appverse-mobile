@@ -27,12 +27,35 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 
+import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.security.AbstractSecurity;
+import com.gft.unity.core.security.KeyPair;
+import com.gft.unity.core.system.log.Logger;
+import com.gft.unity.core.system.log.Logger.LogCategory;
 
 public class AndroidSecurity extends AbstractSecurity {
+	private static final String LOGGER_MODULE = "ISecurity";
+	private static final Logger LOGGER = Logger.getInstance(
+			LogCategory.PLATFORM, LOGGER_MODULE);	
+	
+	private String SHARED_PACKAGE_NAME = null;
+	private String PREFERENCES_FILE_NAME = "AppverseSettings"; // default value
+	
+	
+	public AndroidSecurity() {
+		super();
+		
+		SHARED_PACKAGE_NAME = this.checkProperty("Appverse_Shared_PackageName");
+		PREFERENCES_FILE_NAME = this.checkProperty("Appverse_Shared_Preferences_Filename");
+	}
 
 	@Override
 	public boolean IsDeviceModified() {
@@ -125,4 +148,179 @@ public class AndroidSecurity extends AbstractSecurity {
 			 return fullResponse;		 
 		 }
 	 }
+
+	@Override
+	public void GetStoredKeyValuePair(String keyname) {
+		List<KeyPair> foundKeyPairs = new ArrayList<KeyPair>();
+		try {
+			SharedPreferences settings = GetOtherAppSharedPreferences();
+			if(settings!=null){
+				if(settings.contains(keyname)){
+					foundKeyPairs.add(new KeyPair(keyname,settings.getString(keyname, null)));
+				}
+			}else LOGGER.logError("GetStoredKeyValuePair", "Storage Unit is null.");
+				
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+		}
+		
+		LOGGER.logInfo("GetStoredKeyValuePair", "Keys found in storage: " + foundKeyPairs.size());
+		IActivityManager am = (IActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+		am.executeJS("Unity.OnKeyValuePairsFound",new Object[]{ foundKeyPairs.toArray()});
+	}
+	
+	@Override
+	public void GetStoredKeyValuePairs(String[] keynames) {
+		List<KeyPair> foundKeyPairs = new ArrayList<KeyPair>();
+		try {
+			SharedPreferences settings = GetOtherAppSharedPreferences();
+			if(settings != null){
+				for(String keyname: keynames){
+					if(settings != null && settings.contains(keyname)){
+						foundKeyPairs.add(new KeyPair(keyname,settings.getString(keyname, null)));
+					}
+				}
+			}else{
+				LOGGER.logError("GetStoredKeyValuePairs", "Storage Unit is null.");
+			}
+		} catch (Exception ex) {
+			
+		}
+		LOGGER.logInfo("GetStoredKeyValuePairs", "Keys found in storage unit: " + foundKeyPairs.size());
+		IActivityManager am = (IActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+		am.executeJS("Unity.OnKeyValuePairsFound", new Object[]{foundKeyPairs.toArray()});
+		
+	}
+	@Override
+	public void RemoveStoredKeyValuePair(String keyname) {
+		// TODO Auto-generated method stub
+		List<String> successfullKeyPairs = new ArrayList<String>();
+		List<String> failedKeyPairs = new ArrayList<String>(); 
+		SharedPreferences settings = GetOtherAppSharedPreferences();
+		if(settings!=null){
+			if(settings.contains(keyname)){
+				Editor ed = settings.edit();
+				ed.remove(keyname);
+				ed.commit();
+				successfullKeyPairs.add(keyname);
+			}else
+				failedKeyPairs.add(keyname);
+		}else{
+			LOGGER.logError("RemoveStoredKeyValuePair", "Storage Unit is null.");
+		}
+		LOGGER.logInfo("RemoveStoredKeyValuePair", "Key removed from storage unit: " + successfullKeyPairs.size() + "; Keys Not removed from storage unit: " + failedKeyPairs.size());
+		IActivityManager am = (IActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+		am.executeJS("Unity.OnKeyValuePairsRemoveCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		
+	}
+	@Override
+	public void RemoveStoredKeyValuePairs(String[] keynames) {
+		List<String> successfullKeyPairs = new ArrayList<String>();
+		List<String> failedKeyPairs = new ArrayList<String>(); 
+		SharedPreferences settings = GetOtherAppSharedPreferences();
+		if(settings!=null){
+			for(String keyname:keynames){
+				if(settings.contains(keyname)){
+					Editor ed = settings.edit();
+					ed.remove(keyname);
+					ed.commit();
+					successfullKeyPairs.add(keyname);
+				}else
+					failedKeyPairs.add(keyname);
+			}
+		}else{
+			LOGGER.logError("RemoveStoredKeyValuePairs", "Storage Unit is null.");
+		}
+		
+		LOGGER.logInfo("RemoveStoredKeyValuePairs", "Keys removed from storage unit: " + successfullKeyPairs.size() + "; Keys Not removed from storage unit: " + failedKeyPairs.size());
+		IActivityManager am = (IActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+		am.executeJS("Unity.OnKeyValuePairsRemoveCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		
+	}
+	@Override
+	public void StoreKeyValuePair(KeyPair keypair) {
+		List<String> successfullKeyPairs = new ArrayList<String>();
+		List<String> failedKeyPairs = new ArrayList<String>();
+		SharedPreferences settings = GetOtherAppSharedPreferences();
+		if(settings!=null){
+			try{
+				Editor ed = settings.edit();
+				ed.putString(keypair.getKey(), keypair.getValue());
+				ed.commit();
+				successfullKeyPairs.add(keypair.getKey());
+			}catch(Exception ex){
+				failedKeyPairs.add(keypair.getKey());
+			}
+		}else{
+			LOGGER.logError("StoreKeyValuePair", "Storage Unit is null.");
+		}
+		
+		LOGGER.logInfo("RemoveStoredKeyValuePairs", "Key stored in storage unit: " + successfullKeyPairs.size() + "; Keys Not stored in storage unit: " + failedKeyPairs.size());
+		IActivityManager am = (IActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+		am.executeJS("Unity.OnKeyValuePairsStoreCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		
+	}
+	@Override
+	public void StoreKeyValuePairs(KeyPair[] keypairs) {
+		List<String> successfullKeyPairs = new ArrayList<String>();
+		List<String> failedKeyPairs = new ArrayList<String>(); 
+		SharedPreferences settings = GetOtherAppSharedPreferences();
+		if(settings!=null){
+			for(int i=0; i<keypairs.length; i++){
+				try{
+					String keyname = keypairs[i].getKey();
+					String keyvalue = keypairs[i].getValue();
+					Editor ed = settings.edit();
+					ed.putString(keyname, keyvalue);
+					ed.commit();
+					successfullKeyPairs.add(keyname);
+				}catch(Exception ex){ failedKeyPairs.add(keypairs[i].getKey());}
+			}
+		}else{
+			LOGGER.logError("StoreKeyValuePairs", "Storage Unit is null.");
+		}
+		LOGGER.logInfo("StoredKeyValuePairs", "Key stored in storage unit: " + successfullKeyPairs.size() + "; Keys Not stored in storage unit: " + failedKeyPairs.size());
+		IActivityManager am = (IActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+		am.executeJS("Unity.OnKeyValuePairsStoreCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+	}
+	
+	
+	private SharedPreferences GetOtherAppSharedPreferences(){
+		SharedPreferences settings = null; 
+		try {
+			Context otherAppCtx = AndroidServiceLocator.getContext().createPackageContext(SHARED_PACKAGE_NAME, Context.CONTEXT_IGNORE_SECURITY);
+			settings = otherAppCtx.getSharedPreferences(PREFERENCES_FILE_NAME, Context.MODE_MULTI_PROCESS + Context.MODE_PRIVATE);
+		} catch (NameNotFoundException e) {
+			LOGGER.logError("Opening Storage Unit", "The storage unit could not be accessed.");
+		} catch (Exception e) {
+			LOGGER.logError("Opening Storage Unit", "The storage unit could not be accessed. Unhanlded error.");
+		}
+		return settings;
+	}
+	
+	private String checkProperty(String propertyName) {
+		try {
+			int resourceIdentifier = AndroidServiceLocator.getContext().getResources().getIdentifier(propertyName, "string", 
+					AndroidServiceLocator.getContext().getPackageName()); 
+			String propertyValue = AndroidServiceLocator.getContext().getResources().getString(resourceIdentifier);
+			LOGGER.logInfo("Checking Shared Package Name", propertyName + "? " + propertyValue);
+			return propertyValue; 
+				
+		} catch (Exception ex) {
+			LOGGER.logError("Checking Shared Package Name", "Exception getting value for " + propertyName + ": " + ex.getMessage());
+			return null;
+		}
+	}
 }
