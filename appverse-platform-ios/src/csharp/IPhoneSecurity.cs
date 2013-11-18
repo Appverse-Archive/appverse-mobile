@@ -25,6 +25,11 @@ using System;
 using System.IO;
 using System.Collections.Specialized;
 using Unity.Core.Security;
+using MonoTouch.Security;
+using MonoTouch.Foundation;
+using Unity.Core.System;
+using System.Collections.Generic;
+using MonoTouch.UIKit;
 
 
 namespace Unity.Platform.IPhone
@@ -37,6 +42,22 @@ namespace Unity.Platform.IPhone
 
 		private StringCollection scPathsToCheck = null;
 		private StringCollection scPermissionPaths = null;
+
+		private const string KEYCHAIN_ACCESS_GROUP = "$KEYCHAIN_ACCESS_GROUP$";
+
+
+		private string KeyChainAccessGroup {
+			get{ 
+				if(KEYCHAIN_ACCESS_GROUP == null || 
+				   KEYCHAIN_ACCESS_GROUP.Trim().Equals("") || 
+				   KEYCHAIN_ACCESS_GROUP.Trim().Length==0 ||
+				   KEYCHAIN_ACCESS_GROUP.Trim().ToLower().Equals("undefined"))
+				{
+					return null;
+				}
+				else return KEYCHAIN_ACCESS_GROUP;
+			}
+		}
 
 		public IPhoneSecurity () : base()
 		{
@@ -112,6 +133,132 @@ namespace Unity.Platform.IPhone
 			}
 			return true;
 		}
+
+		#region implemented abstract members of AbstractSecurity
+
+		public override void StoreKeyValuePair (KeyPair keypair)
+		{
+			StoreKeyValuePairs (new KeyPair[] { keypair });
+		}
+
+		public override void StoreKeyValuePairs (KeyPair[] keypairs)
+		{
+			string sAccessGroup = KeyChainAccessGroup;
+			List<KeyPair> successfullKeyPairs = new List<KeyPair>();
+			List<KeyPair> failedKeyPairs = new List<KeyPair>();
+			foreach (KeyPair kp in keypairs) {
+				SecRecord srNewEntry = new SecRecord (SecKind.GenericPassword){
+					Account = kp.Key,
+					ValueData = NSData.FromString(kp.Value),
+					Accessible = SecAccessible.Always
+				};
+				if (sAccessGroup != null)
+					srNewEntry.AccessGroup = sAccessGroup;
+				SecStatusCode code = SecKeyChain.Add (srNewEntry);
+				if (code == SecStatusCode.DuplicateItem) {
+					SecRecord srDeleteExistingEntry = new SecRecord (SecKind.GenericPassword){
+						Account = kp.Key
+					};
+
+					if (sAccessGroup != null)
+						srDeleteExistingEntry.AccessGroup = sAccessGroup;
+
+					code = SecKeyChain.Remove (srDeleteExistingEntry);
+					if (code == SecStatusCode.Success)
+						SecKeyChain.Add (srNewEntry);
+				}
+				if (code == SecStatusCode.Success){
+					successfullKeyPairs.Add (kp);
+				} else {
+					failedKeyPairs.Add(kp);
+				}
+			}
+
+			SystemLogger.Log(SystemLogger.Module.PLATFORM,"StoreKeyValuePairs - Success: " + successfullKeyPairs.Count + ", Failed: " + failedKeyPairs.Count);
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {		
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnKeyValuePairsStoreCompleted", new object[]{successfullKeyPairs, failedKeyPairs});
+			});
+		}
+
+
+		public override void GetStoredKeyValuePair (string keyname)
+		{
+			GetStoredKeyValuePairs (new string[] { keyname });
+		}
+
+		public override void GetStoredKeyValuePairs (string[] keynames)
+		{
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				string sAccessGroup = KeyChainAccessGroup;
+				List<KeyPair> foundKeyPairs = new List<KeyPair>();
+				foreach(string key in keynames){
+					SecRecord srSearchCriteria = new SecRecord (SecKind.GenericPassword){
+						Account = key
+					};
+
+					if (sAccessGroup != null)
+						srSearchCriteria.AccessGroup = sAccessGroup;
+
+					SecStatusCode keyResult;
+					SecRecord srFoundKey = SecKeyChain.QueryAsRecord (srSearchCriteria, out keyResult);
+					if (keyResult == SecStatusCode.Success) {
+						if(srFoundKey!=null) foundKeyPairs.Add(SecRecordToKeyPair(srFoundKey));
+					}
+				}
+
+				SystemLogger.Log(SystemLogger.Module.PLATFORM,"GetStoredKeyValuePairs - Found: " + foundKeyPairs.Count);
+
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnKeyValuePairsFound", foundKeyPairs);
+			});
+		}
+
+		public override void RemoveStoredKeyValuePair (string keyname)
+		{
+			RemoveStoredKeyValuePairs (new string[] { keyname });
+		}
+
+		public override void RemoveStoredKeyValuePairs (string[] keynames)
+		{
+			string sAccessGroup = KeyChainAccessGroup;
+			List<string> successfullKeyPairs = new List<string>();
+			List<string> failedKeyPairs = new List<string>();
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				foreach (string keyname in keynames) {
+					SecRecord srDeleteEntry = new SecRecord (SecKind.GenericPassword) {
+						Account = keyname
+					};
+
+					if (sAccessGroup != null)
+						srDeleteEntry.AccessGroup = sAccessGroup;
+
+					SecStatusCode code = SecKeyChain.Remove(srDeleteEntry);
+					if (code == SecStatusCode.Success) {
+						successfullKeyPairs.Add(keyname);
+					}else{
+						failedKeyPairs.Add(keyname);
+					}
+				}
+				SystemLogger.Log(SystemLogger.Module.PLATFORM,"RemoveStoredKeyValuePair - Success: " + successfullKeyPairs.Count + ", Failed: " + failedKeyPairs.Count);
+					
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnKeyValuePairsRemoveCompleted", new object[]{successfullKeyPairs, failedKeyPairs});
+			});	
+		}
+
+		#endregion
+
+		#region KEYCHAIN PRIVATE METHODS
+
+		private KeyPair SecRecordToKeyPair (SecRecord entry)
+		{
+			if (entry != null) {
+				KeyPair returnKeyPair = new KeyPair ();
+				returnKeyPair.Key = entry.Account;
+				returnKeyPair.Value = (string)NSString.FromData(entry.ValueData, NSStringEncoding.UTF8);
+				return returnKeyPair;
+			}
+			return null;
+		}
+		#endregion
 	}
 }
 
