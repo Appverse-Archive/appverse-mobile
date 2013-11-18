@@ -24,6 +24,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Serialization;
+using Unity.Core.System.Launch;
+using System.IO;
 
 namespace Unity.Core.System
 {
@@ -34,9 +37,66 @@ namespace Unity.Core.System
 		protected bool locked = false;
 		protected DisplayOrientation lockedOrientation = DisplayOrientation.Portrait;
 
+		private static string LAUNCH_CONFIG_FILE = "app/config/launch-config.xml";
+		private LaunchConfig launchConfig = new LaunchConfig ();  // empty apps list
+		private string _launchConfigFile = LAUNCH_CONFIG_FILE;
+
+		public virtual string LaunchConfigFile { 
+			get {
+				return this._launchConfigFile;
+			} 
+			set { 
+				this._launchConfigFile = value; 
+			}
+		}
+
         #region Internal Unity Methods
 
+		/// <summary>
+		/// 
+		/// </summary>
+		public AbstractSystem ()
+		{
+			LoadLaunchConfig ();
+		}
+
 		public abstract UnityContext GetUnityContext ();
+
+
+		/// <summary>
+		/// Load launch config file
+		/// </summary>
+		protected void LoadLaunchConfig ()
+		{
+			try {   // FileStream to read the XML document.
+				byte[] configFileRawData = GetConfigFileBinaryData ();
+				if (configFileRawData != null) {
+					XmlSerializer serializer = new XmlSerializer (typeof(LaunchConfig));
+					launchConfig = (LaunchConfig)serializer.Deserialize (new MemoryStream(configFileRawData));
+				}
+			} catch (Exception e) {
+				SystemLogger.Log (SystemLogger.Module .CORE, "Error when loading launch configuration", e);
+				launchConfig = new LaunchConfig(); // reset launch config mapping when the services could not be loaded for any reason
+			}
+		}
+
+		/// <summary>
+		/// Default method, to be overrided by platform implementation. 
+		/// </summary>
+		/// <returns>
+		/// A <see cref="Stream"/>
+		/// </returns>
+		public virtual byte[] GetConfigFileBinaryData ()
+		{
+			SystemLogger.Log (SystemLogger.Module .CORE, "# Loading Launch Apps Configuration from file: " + LaunchConfigFile);
+
+			Stream fs = new FileStream (LaunchConfigFile, FileMode.Open);
+			if(fs != null) {
+				return ((MemoryStream)fs).GetBuffer ();
+			} else {
+				return null;
+			}
+		}
 
         #endregion
 
@@ -237,6 +297,59 @@ namespace Unity.Core.System
 		public string GetOSUserAgent ()
 		{
 			return "Unity " + UNITY_VERSION + "/" + GetOSInfo ().ToString ();
+		}
+
+		/// <summary>
+		/// Launches the given application with the needed launch data paramaters as a query string ().
+		/// </summary>
+		/// <param name="application">Application to be launched.</param>
+		/// <param name="query">Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.</param>
+		public abstract void LaunchApplication (App application, string query);
+
+
+		/// <summary>
+		/// Launches the application given its name (matching it on the "app/config/launch-config.xml" configuration file).
+		/// </summary>
+		/// <param name="appName">App name for the application to be launched.</param>
+		/// <param name="query">Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.</param>
+		public void LaunchApplication (string appName, string query)
+		{
+			App app = this.GetApplication (appName);
+			if (app != null) {
+				this.LaunchApplication (app, query);
+			} else {
+				// TODO - check if an alert notification is required
+				SystemLogger.Log (SystemLogger.Module .CORE, "Application with name [" + appName + "] couldn't be found in the configuration file");
+			}
+		}
+
+		/// <summary>
+		/// Gets the application object given its name, matching it on the "app/config/launch-config.xml" configuration file.
+		/// </summary>
+		/// <returns>The application.</returns>
+		/// <param name="appName">App name.</param>
+		public App GetApplication (string appName)
+		{
+			App app = null;
+			App[] apps = GetApplications ();
+			if (apps != null) {
+				foreach (App _app in apps) {
+					if (_app.Name == appName) {
+						app = _app;
+						break;
+					}
+				}
+			}
+			return app;
+		}
+
+		/// <summary>
+		/// Gets the application objects array configured on the "app/config/launch-config.xml" configuration file, if any.
+		/// </summary>
+		/// <returns>The applications.</returns>
+		public virtual App[] GetApplications ()
+		{
+			return launchConfig.Apps.ToArray ();
 		}
 
         #endregion

@@ -27,6 +27,18 @@ namespace Unity.Core.Security
 	{
 		#region ISecurity implementation
 		public abstract bool IsDeviceModified ();
+
+        public abstract void StoreKeyValuePair(KeyPair keypair);
+
+        public abstract void StoreKeyValuePairs(KeyPair[] keypairs);
+
+        public abstract void GetStoredKeyValuePair(string KeyName);
+
+        public abstract void GetStoredKeyValuePairs(string[] KeyNames);
+
+        public abstract void RemoveStoredKeyValuePair(string KeyName);
+
+        public abstract void RemoveStoredKeyValuePairs(string[] KeyNames);
 		#endregion
 	}
 }
