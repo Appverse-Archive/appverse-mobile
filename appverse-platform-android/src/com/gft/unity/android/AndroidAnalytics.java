@@ -26,16 +26,22 @@ package com.gft.unity.android;
 import com.gft.unity.core.analytics.AbstractAnalytics;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
-import com.google.android.apps.analytics.GoogleAnalyticsTracker;
+
+import com.google.analytics.tracking.android.Fields;
+import com.google.analytics.tracking.android.GAServiceManager;
+import com.google.analytics.tracking.android.GoogleAnalytics;
+import com.google.analytics.tracking.android.MapBuilder;
+import com.google.analytics.tracking.android.Tracker;
+
 
 public class AndroidAnalytics extends AbstractAnalytics {
 
+	//Using Google Analytics SDK v3.01 Implemented 13-Nov-2013
+	
 	private static final String LOGGER_MODULE = "IAnalytics";
 	private static final Logger LOGGER = Logger.getInstance(
 			LogCategory.PLATFORM, LOGGER_MODULE);
-
-	private GoogleAnalyticsTracker tracker = GoogleAnalyticsTracker
-			.getInstance();
+	private Tracker v3Tracker = null;
 
 	@Override
 	public boolean StartTracking(String webPropertyId) {
@@ -46,10 +52,12 @@ public class AndroidAnalytics extends AbstractAnalytics {
 				new Object[] { webPropertyId });
 
 		try {
-			if (tracker != null) {
-				tracker.startNewSession(webPropertyId,
-						AndroidServiceLocator.getContext());
-				tracker.dispatch();
+			if(v3Tracker == null){
+				v3Tracker = GoogleAnalytics.getInstance(AndroidServiceLocator.getContext()).getTracker(webPropertyId);
+			}
+			
+			if (v3Tracker != null) {
+				v3Tracker.set(Fields.SESSION_CONTROL, "start");
 				result = true;
 			}
 		} catch (Exception ex) {
@@ -61,6 +69,7 @@ public class AndroidAnalytics extends AbstractAnalytics {
 		return result;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean StopTracking() {
 		boolean result = false;
@@ -69,9 +78,11 @@ public class AndroidAnalytics extends AbstractAnalytics {
 				Logger.EMPTY_VALUES);
 
 		try {
-			if (tracker != null) {
-				tracker.dispatch();
-				tracker.stopSession();
+			if (v3Tracker != null) {
+				
+				v3Tracker.set(Fields.SESSION_CONTROL, "end");
+				GAServiceManager.getInstance().dispatchLocalHits();
+				v3Tracker = null;
 				result = true;
 			}
 		} catch (Exception ex) {
@@ -91,9 +102,9 @@ public class AndroidAnalytics extends AbstractAnalytics {
 				new Object[] { url });
 
 		try {
-			if (tracker != null) {
-				tracker.trackPageView(url);
-				tracker.dispatch();
+			if (v3Tracker != null) {
+				v3Tracker.set(Fields.SCREEN_NAME, url);
+				v3Tracker.send(MapBuilder.createAppView().build());
 				result = true;
 			}
 		} catch (Exception ex) {
@@ -115,9 +126,11 @@ public class AndroidAnalytics extends AbstractAnalytics {
 				label, value });
 
 		try {
-			if (tracker != null) {
-				tracker.trackEvent(group, action, label, value);
-				tracker.dispatch();
+			if (v3Tracker != null) {
+				v3Tracker.send(MapBuilder
+						.createEvent(group, action, label, (long) value)
+						.build()
+				);
 				result = true;
 			}
 		} catch (Exception ex) {
