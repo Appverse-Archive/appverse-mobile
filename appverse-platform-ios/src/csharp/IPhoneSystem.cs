@@ -28,12 +28,58 @@ using Unity.Core.System;
 using MonoTouch.UIKit;
 using MonoTouch.Foundation;
 using System.Runtime.InteropServices;
+using Unity.Core.System.Launch;
 
 namespace Unity.Platform.IPhone
 {
     public class IPhoneSystem : AbstractSystem
     {
 		
+		public override string LaunchConfigFile { 
+			get {
+				return IPhoneUtils.GetInstance().GetFileFullPath(base.LaunchConfigFile);
+			} 
+		}
+
+		/// <summary>
+		/// Method overrided, to use NSData to get stream from file resource inside application. 
+		/// </summary>
+		/// <returns>
+		/// A <see cref="Stream"/>
+		/// </returns>
+		public override byte[] GetConfigFileBinaryData ()
+		{
+			return IPhoneUtils.GetInstance().GetResourceAsBinary(this.LaunchConfigFile, true);
+		}
+
+
+		/// <summary>
+		/// Launches the given application with the needed launch data paramaters as a query string ().
+		/// </summary>
+		/// <param name="application">Application to be launched.</param>
+		/// <param name="query">Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.</param>
+		public override void LaunchApplication (App application, string query)
+		{
+			if (application != null && application.IOSApp != null) {
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+					string doubleSlash = "";
+					if(!application.IOSApp.RemoveUriDoubleSlash) {
+						doubleSlash = "//";
+					}
+					NSUrl urlParam = new NSUrl (application.IOSApp.UriScheme + ":" + doubleSlash + query);
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "Launching application by URL: " + urlParam.AbsoluteString);
+					bool result = UIApplication.SharedApplication.OpenUrl (urlParam);
+					if(!result) {
+						SystemLogger.Log (SystemLogger.Module.PLATFORM, 
+						                  "The system could not open the given url. Please check syntax.");
+					}
+				});
+			} else {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, 
+				                  "No application provided to launch, please check your first argument on API method invocation");
+			}
+		}
+
 		public override UnityContext GetUnityContext()
         {
             UnityContext unityContext = new UnityContext();
