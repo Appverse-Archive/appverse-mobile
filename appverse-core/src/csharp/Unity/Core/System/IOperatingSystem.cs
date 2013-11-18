@@ -21,6 +21,9 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+using Unity.Core.System.Launch;
+
+
 namespace Unity.Core.System
 {
 	public interface IOperatingSystem
@@ -49,6 +52,32 @@ namespace Unity.Core.System
 		/// </summary>
 		void DismissApplication ();
 
+		/// <summary>
+		/// Launches the given application with the needed launch data paramaters as a query string ().
+		/// </summary>
+		/// <param name="application">Application to be launched.</param>
+		/// <param name="query">Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.</param>
+		void LaunchApplication (App application, string query);
+
+		/// <summary>
+		/// Launches the application given its name (matching it on the "app/config/launch-config.xml" configuration file).
+		/// </summary>
+		/// <param name="appName">App name for the application to be launched.</param>
+		/// <param name="query">Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.</param>
+		void LaunchApplication (string appName, string query);
+
+		/// <summary>
+		/// Gets the application object given its name, matching it on the "app/config/launch-config.xml" configuration file.
+		/// </summary>
+		/// <returns>The application.</returns>
+		/// <param name="appName">App name.</param>
+		App GetApplication (string appName);
+
+		/// <summary>
+		/// Gets the application objects array configured on the "app/config/launch-config.xml" configuration file, if any.
+		/// </summary>
+		/// <returns>The applications.</returns>
+		App[] GetApplications ();
 
 
 	}//end IOperatingSystem

@@ -30,4 +30,54 @@ public abstract class AbstractSecurity implements ISecurity {
 
     @Override
     public abstract boolean IsDeviceModified();
+    
+    /**
+     * Adds or updates  - if already exists - a key/value pair
+     *
+     * @param keypair KeyPair object to store
+     */
+    @Override
+    public abstract void StoreKeyValuePair(KeyPair keypair);
+
+    
+    /**
+     *  Adds or updates  - if already exists - a given list of key/value pairs
+     *
+     * @param keypairs Array of KeyPair objects to store
+     */
+    @Override
+    public abstract void StoreKeyValuePairs(KeyPair[] keypairs);
+
+    
+    /**
+     * Returns a previously stored key/value pair. Null if not found
+     *
+     * @param keyName A string with the Key to retrieve
+     */
+    @Override
+    public abstract void GetStoredKeyValuePair(String keyName);
+
+    /**
+     * Returns a list of previously stored key/value pair. Null if not found
+     *
+     * @param keyNames Array of string containing the Keys to retrieve
+     */
+    @Override
+    public abstract void GetStoredKeyValuePairs(String[] keyNames);
+
+    /**
+     * Removes - if already exists - a given key/value pair
+     *
+     * @param keyName A string with the Key to remove
+     */
+    @Override
+    public abstract void RemoveStoredKeyValuePair(String keyName);
+
+    /**
+     * Removes - if already exists - a given list of key/value pairs
+     *
+     * @param keyNames Array of string containing the Keys to remove
+     */
+    @Override
+    public abstract void RemoveStoredKeyValuePairs(String[] keyNames);
 }
