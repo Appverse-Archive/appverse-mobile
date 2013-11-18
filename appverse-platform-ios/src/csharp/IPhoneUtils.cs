@@ -375,13 +375,18 @@ namespace Unity.Platform.IPhone
 				//stopwatch.Start();
 
 				NSData data = NSData.FromFile(resourcePath);
+
+				if(data == null) {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "File not available at path: " + resourcePath);
+				} else {
 				byte[] buffer = new byte[data.Length];
 				Marshal.Copy(data.Bytes, buffer,0,buffer.Length);
 
+					return buffer;
+				}
+
 				//stopwatch.Stop();
 				//SystemLogger.Log(SystemLogger.Module.PLATFORM, "CSV not-zipped," + resourcePath + ","+ stopwatch.ElapsedMilliseconds);
-
-				return buffer;
 
 			} catch (Exception ex) {
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error trying to get file binary data [" + resourcePath +"]", ex);
