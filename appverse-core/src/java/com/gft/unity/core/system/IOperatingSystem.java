@@ -23,6 +23,8 @@
  */
 package com.gft.unity.core.system;
 
+import com.gft.unity.core.system.launch.App;
+
 public interface IOperatingSystem {
 
     /**
@@ -50,4 +52,31 @@ public interface IOperatingSystem {
      * Dismisses or finishes the application programmatically.
      */
     public void DismissApplication();
+    
+    /**
+     * Launches the given application with the needed launch data paramaters as a query string ().
+     * @param application Application to be launched
+     * @param query Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.
+     */
+    public void LaunchApplication (App application, String query);
+
+    /**
+     * Launches the application given its name (matching it on the "app/config/launch-config.xml" configuration file).
+     * @param appName Name of the application to be launched.
+     * @param query Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.
+     */
+    void LaunchApplication (String appName, String query);
+
+    /**
+     * Gets the application object given its name, matching it on the "app/config/launch-config.xml" configuration file.
+     * @param appName The application name to be found
+     * @return App object that matches the given application name.
+     */
+    public App GetApplication (String appName);
+
+    /**
+     * Gets the application objects array configured on the "app/config/launch-config.xml" configuration file, if any.
+     * @return The App objects array configured.
+     */
+    public App[] GetApplications ();
 }

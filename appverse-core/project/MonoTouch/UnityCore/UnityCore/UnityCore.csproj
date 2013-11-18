@@ -148,6 +148,7 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\PimEnumerations.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\AbstractSecurity.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\ISecurity.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\KeyPair.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Database\AbstractDatabase.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Database\Database.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Database\IDatabase.cs" />
@@ -237,10 +238,15 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\ModuleVersion.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\AbstractLoader.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\ModuleContext.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\LaunchConfig.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\App.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\LaunchData.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\IOSApp.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\Analytics\" />
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\" />
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\" />
+    <Folder Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\" />
   </ItemGroup>
 </Project>

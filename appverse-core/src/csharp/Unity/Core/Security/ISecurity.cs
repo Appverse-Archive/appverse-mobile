@@ -34,6 +34,42 @@ namespace Unity.Core.Security
 		/// </returns>
 		bool IsDeviceModified ();
 
+        /// <summary>
+        /// Adds or updates  - if already exists - a given key/value pair
+        /// </summary>
+        /// <param name="keypair">KeyPair object to store</param>
+        void StoreKeyValuePair(KeyPair keypair);
+
+        /// <summary>
+        /// Adds or updates  - if already exists - a given list of key/value pairs
+        /// </summary>
+        /// <param name="keypairs">Array of KeyPair objects to store</param>
+        void StoreKeyValuePairs(KeyPair[] keypairs);
+
+        /// <summary>
+        /// Returns a previously stored key/value pair. Null if not found
+        /// </summary>
+        /// <param name="KeyName">A string with the Key to retrieve</param>
+        void GetStoredKeyValuePair(string KeyName);
+
+        /// <summary>
+        /// Returns a list of previously stored key/value pair. Null if not found
+        /// </summary>
+        /// <param name="KeyNames">Array of string containing the Keys to retrieve</param>
+        void GetStoredKeyValuePairs(string[] KeyNames);
+
+        /// <summary>
+        /// Removes - if already exists - a given key/value pair
+        /// </summary>
+        /// <param name="KeyName">A string with the Key to remove</param>
+        void RemoveStoredKeyValuePair(string KeyName);
+
+        /// <summary>
+        /// Removes - if already exist - a given list of key/value pairs
+        /// </summary>
+        /// <param name="KeyNames">Array of string containing the Keys to remove</param>
+        void RemoveStoredKeyValuePairs(string[] KeyNames);
+
 	}//end ISecurity
 
 }//end namespace Security
