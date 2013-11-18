@@ -4,4 +4,6 @@
     <string name="toast_create_contact">Contact created successfully!</string>
 	<string name="Unity_HoldSplashScreenOnStartup">HOLD_SPLASHSCREEN_ON_STARTUP</string>
 	<string name="Unity_DisableThumbnails">DISABLE_THUMBNAILS</string>
+	<string name="Appverse_Shared_PackageName">SHARED_PACKAGE_NAME</string>
+	<string name="Appverse_Shared_Preferences_Filename">SHARED_PREFERENCES_FILENAME</string>
 </resources>
