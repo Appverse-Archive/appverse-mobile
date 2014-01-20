@@ -26,18 +26,25 @@ namespace Unity.Core.Pim
 	public interface IContacts
 	{
 
+		
+		/// <summary>
+		/// Get all the available data for a Contact
+		/// </summary>
+		/// <returns>the Contact Object</returns>
+		Contact GetContact (string id);
+
 		/// <summary>
 		/// List of stored phone contacts.
 		/// </summary>
 		/// <returns>List of contacts.</returns>
-		Contact[] ListContacts ();
+		void ListContacts ();
 
 		/// <summary>
 		/// List of stored phone contacts that match given query.
 		/// </summary>
-		/// <param name="queryText">Search query.</param>
+		/// <param name="query">Search query.</param>
 		/// <returns>List of contacts.</returns>
-		Contact[] ListContacts (string queryText);
+		void ListContacts (ContactQuery query);
 
 		/// <summary>
 		/// Creates a Contact based on given contact data.

@@ -242,6 +242,8 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\App.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\LaunchData.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\IOSApp.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\ContactLite.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\ContactQuery.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\Analytics\" />
