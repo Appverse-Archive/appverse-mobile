@@ -149,8 +149,8 @@ namespace Unity.Platform.IPhone
 			foreach (KeyPair kp in keypairs) {
 				SecRecord srNewEntry = new SecRecord (SecKind.GenericPassword){
 					Account = kp.Key,
-					ValueData = NSData.FromString(kp.Value),
-					Accessible = SecAccessible.Always
+					Generic = NSData.FromString(kp.Key),
+					ValueData = NSData.FromString(kp.Value)
 				};
 				if (sAccessGroup != null)
 					srNewEntry.AccessGroup = sAccessGroup;
