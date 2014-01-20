@@ -149,6 +149,8 @@ public class AndroidSystem extends AbstractSystem {
 								APP_NAME_ATTRIBUTE);
 						
 					} else if(xpp.getName().equals(APP_EXPLICIT_INTENT)){
+						appAction = xpp.getAttributeValue(null,
+								APP_ACTION_ATTRIBUTE);
 						
 						appComponentName = xpp.getAttributeValue(null,
 								APP_COMPONENTNAME_ATTRIBUTE);
@@ -653,7 +655,6 @@ public class AndroidSystem extends AbstractSystem {
 					
 					// defining URI to be launched
 					if(androidApp.getUriScheme()!=null) {
-						
 						String dataUriQuery = (query!=null) ? query : "";
 						String doubleSlash = ":";
 						if(!androidApp.getRemoveUriDoubleSlash()) {
@@ -661,7 +662,6 @@ public class AndroidSystem extends AbstractSystem {
 						}
 						Uri dataUri = Uri.parse(androidApp.getUriScheme()+ doubleSlash + dataUriQuery);
 						LOG.Log(Module.PLATFORM, "Provided URI: " + dataUri.toString());
-						
 						intent = new Intent(androidApp.getAction(), dataUri);
 					}
 				} 
@@ -695,7 +695,9 @@ public class AndroidSystem extends AbstractSystem {
 					    	int sValueLength = sValue.length();
 					    	String[] sValues = sValue.substring(1,sValueLength-1).split(",");
 					    	intent.putExtra(sKey, sValues);
+							numIntentExtras = numIntentExtras+1;
 					    } else {
+							numIntentExtras = numIntentExtras+1;
 					    	intent.putExtra(sKey, sValue);
 					    }
 					    

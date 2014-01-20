@@ -295,7 +295,7 @@ public class AndroidInvocationManager extends AbstractInvocationManager {
 								&& !parameterType
 										.isAssignableFrom(String.class)) {
 							LOGGER.logDebug("FindMethods",
-									"Matching error -> JSONObject but target is not a bean");
+									"Matching error -> primitive type [" + parameterType.getName() +  "] but target is not a primitive");
 							match = false;
 							break;
 						}

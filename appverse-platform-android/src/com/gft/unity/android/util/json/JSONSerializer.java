@@ -180,10 +180,16 @@ public class JSONSerializer {
 
 		if (classType.isArray()) {
 			element = deserializeArray(classType, (JSONArray) object);
-		} else if (classType.isPrimitive() || object instanceof String) {
-			element = deserializeSimple(classType, object);
 		} else if (classType.isEnum()) {
 			element = deserializeEnum(classType, object);
+		} else if (classType.isPrimitive() 
+				|| object instanceof String
+				|| object instanceof Integer
+				|| object instanceof Long
+				|| object instanceof Short
+				|| object instanceof Double
+				|| object instanceof Float) {
+			element = deserializeSimple(classType, object);
 		} else {
 			if (JSONObject.NULL.equals(object)) {
 				element = null;
@@ -287,7 +293,7 @@ public class JSONSerializer {
 			simple = Float.valueOf(object.toString());
 		} else if (classType.equals(double.class)) {
 			simple = Double.valueOf(object.toString());
-		} else if (classType.equals(String.class)) {
+		} else {
 			simple = object.toString();
 		}
 

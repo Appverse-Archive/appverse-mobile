@@ -37,6 +37,8 @@ import android.telephony.PhoneNumberUtils;
 import com.gft.unity.core.messaging.AbstractMessaging;
 import com.gft.unity.core.messaging.AttachmentData;
 import com.gft.unity.core.messaging.EmailData;
+import com.gft.unity.core.storage.filesystem.FileData;
+import com.gft.unity.core.storage.filesystem.IFileSystem;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
 
@@ -105,12 +107,13 @@ public class AndroidMessaging extends AbstractMessaging {
 	private File createFileFromAttachment(AttachmentData attData)
 			throws IOException {
 		File tempFile = null;
+		Context context = AndroidServiceLocator.getContext();
+		SystemLogger.getInstance().Log(Module.PLATFORM,"createFileFromAttachment");
 
 		if (Environment.MEDIA_MOUNTED.equals(Environment
 				.getExternalStorageState())) {
 			FileOutputStream fos = null;
 			try {
-				Context context = AndroidServiceLocator.getContext();
 				File externalDir = context.getExternalCacheDir();
 				externalDir.mkdirs();
 				tempFile = new File(externalDir, attData.getFileName());
@@ -118,7 +121,21 @@ public class AndroidMessaging extends AbstractMessaging {
 				tempFile.createNewFile();
 
 				fos = new FileOutputStream(tempFile);
+				
+				if(attData.getData() == null){		
+					File localFile = new File(context.getFilesDir().getAbsolutePath(),  attData.getReferenceUrl()); //new File(FileUri);
+					SystemLogger.getInstance().Log(Module.PLATFORM,"no data binary available, searching as referenced url: "+localFile.getAbsolutePath());
+					IFileSystem fileService = (IFileSystem) AndroidServiceLocator
+							.GetInstance().GetService(
+									AndroidServiceLocator.SERVICE_TYPE_FILESYSTEM);
+					FileData fileData = new FileData();
+					fileData.setFullName(localFile.getAbsolutePath());
+					byte[] buffer = fileService.ReadFile(fileData);
+					SystemLogger.getInstance().Log(Module.PLATFORM,"Referenced file length: " + buffer.length);
+					fos.write(buffer);
+				}else{
 				fos.write(attData.getData());
+				}
 				fos.flush();
 			} finally {
 				if (fos != null) {
