@@ -239,6 +239,16 @@ namespace UnityUI.iOS
 			}
 		
 			log("ShouldAutorotate? " + shouldAutorotate);
+			if (shouldAutorotate) {
+				if(this.splashscreenShownOnStartupTime) {
+					UIInterfaceOrientation currentOrientation = UIApplication.SharedApplication.StatusBarOrientation;
+					if (this.splashView != null) {
+						log ("Adjusting splashscreen to current orientation: " + currentOrientation);
+						this.splashView.SetSplashViewForOrientation (currentOrientation);
+					}
+				}
+			}
+
 			return shouldAutorotate;
 		}
 		
