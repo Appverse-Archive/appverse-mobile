@@ -44,18 +44,28 @@ public interface IContacts {
 
     /**
      * List of stored phone contacts.
+     * Only a lite information of the contact is returned: id, name, firstname, lastname, group, display, emails and phone lists.
      *
      * @return List of contacts.
      */
-    public Contact[] ListContacts();
+    public void ListContacts();
 
     /**
      * List of stored phone contacts that match given query.
-     *
-     * @param queryText Search query.
+     * Only a lite information of the contact is returned: id, name, firstname, lastname, group, display, emails and phone lists.
+     * @param query Search Object.
      * @return List of contacts.
      */
-    public Contact[] ListContacts(String queryText);
+    public void ListContacts(ContactQuery query);
+    
+    
+    /**
+     * Gets the full contact information for the given contact id.
+     * @param id The contact identifier
+     * @return The contact data.
+     */
+    public Contact GetContact(String id);
+    
 
     /**
      * Updates contact data (given its ID) with the given contact data.
