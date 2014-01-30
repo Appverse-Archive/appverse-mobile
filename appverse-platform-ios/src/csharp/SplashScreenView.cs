@@ -84,7 +84,13 @@ namespace Unity.Platform.IPhone
 
 			string splashScreenImage = "";
 			
-			if(IPhoneUtils.GetInstance().IsIPad()) {
+			short os_major_version = Int16.Parse(UIDevice.CurrentDevice.SystemVersion .Split ('.') [0]);
+
+			// Fix : avoid blank space at the bottom when holding splashscreen on view till view loads in iOS 7 devices
+			// Fix : avoid splashscreen position re-allocation in iPad versions < ios7  + apps compiled with iOS7.
+			// On those iPad devices the app splashscreen should be placed -20px when the app is compiled with ios7 and run in a < ios7 
+			//if(IPhoneUtils.GetInstance().IsIPad() || os_major_version>=7) {
+			if(os_major_version>=7) {
 				statusBarHeight = 0;
 			}
 			

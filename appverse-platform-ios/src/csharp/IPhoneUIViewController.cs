@@ -25,6 +25,7 @@ using System;
 using MonoTouch.UIKit;
 using System.Drawing;
 using MonoTouch.Foundation;
+using Unity.Core.System;
 
 namespace Unity.Platform.IPhone
 {
@@ -61,7 +62,7 @@ namespace Unity.Platform.IPhone
 			navItem.LeftBarButtonItem = backButton;
 			
 			UINavigationBar toolBar = new UINavigationBar();
-			toolBar.Frame = new RectangleF(new PointF(0,0), new SizeF(this.View.Frame.Size.Width, 44));
+			toolBar.Frame = new RectangleF(new PointF(0,0), new SizeF(this.View.Frame.Size.Width, this.GetNavigationBarHeight()));
 			toolBar.PushNavigationItem(navItem, false);
 			toolBar.AutoresizingMask = UIViewAutoresizing.FlexibleWidth;
 			contentView.AddSubview(toolBar);     
@@ -81,7 +82,8 @@ namespace Unity.Platform.IPhone
 		/// </param>
 		public void AddInnerView(UIView view) {
 			view.BackgroundColor = UIColor.White;
-			view.Frame = new RectangleF(new PointF(0,44), new SizeF(this.View.Bounds.Width, this.View.Bounds.Height-44));
+			float navigationBarHeight = this.GetNavigationBarHeight ();
+			view.Frame = new RectangleF(new PointF(0,navigationBarHeight), new SizeF(this.View.Bounds.Width, this.View.Bounds.Height-navigationBarHeight));
 			view.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 			this.View.AddSubview(view);
 		}
@@ -95,6 +97,39 @@ namespace Unity.Platform.IPhone
 		public override void DidRotate (UIInterfaceOrientation fromInterfaceOrientation)
 		{
 			base.DidRotate (fromInterfaceOrientation);
+
+		}
+
+		/// <summary>
+		/// Gets the height of the navigation bar to be applied.
+		/// </summary>
+		/// <returns>The navigation bar height.</returns>
+		private float GetNavigationBarHeight() {
+			float statusBarHeight = 0;
+			float navigationBarHeight = 44;  // default navigation bar height
+
+			try 
+			{
+				short os_major_version = Int16.Parse(UIDevice.CurrentDevice.SystemVersion .Split ('.') [0]);
+				//this.log ("os_major_version: " + os_major_version);
+				if(os_major_version>=7) {
+					// when using landscape the width should be used, for portrait the height value
+					statusBarHeight = Math.Min(UIApplication.SharedApplication.StatusBarFrame.Height, UIApplication.SharedApplication.StatusBarFrame.Width);
+					//this.log ("statusBarHeight: " + statusBarHeight);
+				} 
+			} 
+			catch (Exception ex) {
+				this.log ("Exception detecting status bar height for current iOS SDK... Error message: " + ex.Message);
+			}
+
+			return navigationBarHeight + statusBarHeight;
+		}
+
+		private void log (string message)
+		{
+			#if DEBUG
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "IPhoneUIViewController : " + message);
+			#endif
 
 		}
 	}

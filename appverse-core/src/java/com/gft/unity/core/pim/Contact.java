@@ -25,21 +25,13 @@ package com.gft.unity.core.pim;
 
 import java.util.Arrays;
 
-public class Contact {
+public class Contact extends ContactLite {
 
     private ContactAddress[] addresses;
     private String company;
     private String department;
-    private String displayName;
-    private ContactEmail[] emails;
-    private String firstname;
-    private String group;
-    private String ID;
     private String jobTitle;
-    private String lastname;
-    private String name;
     private String notes;
-    private ContactPhone[] phones;
     private byte[] photo;
     private String photoBase64Encoded;
     private RelationshipType relationship;
@@ -72,46 +64,6 @@ public class Contact {
         this.department = department;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public ContactEmail[] getEmails() {
-        return emails;
-    }
-
-    public void setEmails(ContactEmail[] emails) {
-        this.emails = emails;
-    }
-
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    public String getID() {
-        return ID;
-    }
-
-    public void setID(String id) {
-        this.ID = id;
-    }
-
     public String getJobTitle() {
         return jobTitle;
     }
@@ -120,36 +72,12 @@ public class Contact {
         this.jobTitle = jobTitle;
     }
 
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getNotes() {
         return notes;
     }
 
     public void setNotes(String notes) {
         this.notes = notes;
-    }
-
-    public ContactPhone[] getPhones() {
-        return phones;
-    }
-
-    public void setPhones(ContactPhone[] phones) {
-        this.phones = phones;
     }
 
     public byte[] getPhoto() {
@@ -194,25 +122,25 @@ public class Contact {
         builder.append(", department=");
         builder.append(department);
         builder.append(", displayName=");
-        builder.append(displayName);
+        builder.append(this.getDisplayName());
         builder.append(", emails=");
-        builder.append(Arrays.toString(emails));
+        builder.append(Arrays.toString(this.getEmails()));
         builder.append(", firstname=");
-        builder.append(firstname);
+        builder.append(this.getFirstname());
         builder.append(", group=");
-        builder.append(group);
+        builder.append(this.getGroup());
         builder.append(", ID=");
-        builder.append(ID);
+        builder.append(this.getID());
         builder.append(", jobTitle=");
         builder.append(jobTitle);
         builder.append(", lastname=");
-        builder.append(lastname);
+        builder.append(this.getLastname());
         builder.append(", name=");
-        builder.append(name);
+        builder.append(this.getName());
         builder.append(", notes=");
         builder.append(notes);
         builder.append(", phones=");
-        builder.append(Arrays.toString(phones));
+        builder.append(Arrays.toString(this.getPhones()));
         builder.append(", photo=");
         builder.append(Arrays.toString(photo));
         builder.append(", photoBase64Encoded=");

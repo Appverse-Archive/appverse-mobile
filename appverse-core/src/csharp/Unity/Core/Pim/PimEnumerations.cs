@@ -93,4 +93,18 @@ namespace Unity.Core.Pim
 		Montly,
 		Yearly
 	}
+
+	public enum ContactQueryColumn
+	{
+		ID,
+		Name
+	}
+
+	public enum ContactQueryCondition
+	{
+		Equals,
+		StartsWith,
+		EndsWith,
+		Contains
+	}
 }
