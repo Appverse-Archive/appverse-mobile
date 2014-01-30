@@ -51,7 +51,7 @@
   <ItemGroup>
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\FormatUtils.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOHeader.cs" />
-    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\NetworkData.cs"/>
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\NetworkData.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Telephony\AbstractTelephony.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Telephony\ICallControl.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Telephony\ITelephony.cs" />
@@ -117,6 +117,7 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Storage\Database\ResultSetRow.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\AbstractSecurity.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\ISecurity.cs" />
+	<Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\KeyPair.cs"/>
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\AbstractPim.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\CalendarAlarm.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\CalendarAttendee.cs" />
@@ -219,6 +220,12 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\ModuleVersion.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\AbstractLoader.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\ModuleContext.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\LaunchConfig.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\App.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\LaunchData.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\IOSApp.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\ContactLite.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\ContactQuery.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

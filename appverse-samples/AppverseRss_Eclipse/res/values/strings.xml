@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">AppverseRss</string>
+    <string name="app_main_name">AppverseRss</string>
 	
     <string name="toast_create_contact">Contact created successfully!</string>
 	<string name="Unity_HoldSplashScreenOnStartup">true</string>

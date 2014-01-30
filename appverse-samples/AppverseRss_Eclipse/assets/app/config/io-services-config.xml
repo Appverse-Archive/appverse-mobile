@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <io-services-config>
-    <services>
-       
-        <service name="googleRss" type="XMLRPC_XML" req-method="GET"> 
-            <end-point host="http://news.google.com"
-                path="/news"/>
-        </service>
+   <services>      
 
-    </services>
-    <!-- include here any other service your application might require -->
+    <service name="googleRss" type="XMLRPC_XML" req-method="GET"> 
+		<end-point host="http://news.google.com"
+			path="/news"/>
+	</service>
+   
+      
+   </services>
+   <!-- include here any other service your application might require -->
 </io-services-config>

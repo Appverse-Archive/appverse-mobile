@@ -25,12 +25,14 @@ package com.gft.unity.android;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -55,12 +57,15 @@ import android.provider.ContactsContract.Intents.Insert;
 import android.provider.ContactsContract.RawContactsEntity;
 import android.util.Base64;
 
+import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.pim.AbstractPim;
 import com.gft.unity.core.pim.CalendarEntry;
 import com.gft.unity.core.pim.Contact;
 import com.gft.unity.core.pim.ContactAddress;
 import com.gft.unity.core.pim.ContactEmail;
+import com.gft.unity.core.pim.ContactLite;
 import com.gft.unity.core.pim.ContactPhone;
+import com.gft.unity.core.pim.ContactQuery;
 import com.gft.unity.core.pim.DateTime;
 import com.gft.unity.core.pim.DispositionType;
 import com.gft.unity.core.pim.NumberType;
@@ -399,31 +404,13 @@ public class AndroidPim extends AbstractPim {
 	}
 
 	@Override
-	// TODO this services returns all contacts -> use parameter queryText!
-	public Contact[] ListContacts(String queryText) {
-
-		LOGGER_CONTACTS.logInfo("ListContacts", "Start listing contacts...");
-		Uri uri = ContactsContract.Contacts.CONTENT_URI;
-		Context context = AndroidServiceLocator.getContext();
-		ContentResolver cr = context.getContentResolver();
-		Cursor contactsCursor = null;
-		
-		try {
-			// querying the content resolver for all contacts
-			contactsCursor = cr.query(uri, new String[] {
-					ContactsContract.Contacts._ID,
-					ContactsContract.Contacts.DISPLAY_NAME }, null, null,
-					ContactsContract.Contacts.DISPLAY_NAME
-							+ " COLLATE LOCALIZED ASC");
-			List<Contact> contactList = new ArrayList<Contact>();
-			contactsCursor.moveToFirst();
-			while (!contactsCursor.isAfterLast()) {
+	public Contact GetContact(String id) {
 				Contact contact = new Contact();
-				Long id = contactsCursor.getLong(0);
 				contact.setID(id.toString());
-				contact.setDisplayName(contactsCursor.getString(1));
 
-				String company = null, department = null, firstname = null, group = null, jobTitle = null, lastname = null, name = null, notes = null, photoBase64Encoded = null;
+		LOGGER_CONTACTS.logInfo("GetContactDetailsById", "Getting contact data for id: " + id);
+		
+		String company = null, department = null, firstname = null, group = null, jobTitle = null, lastname = null, name = null, notes = null, photoBase64Encoded = null, displayName = null;
 				List<ContactAddress> addressList = new ArrayList<ContactAddress>();
 				List<ContactEmail> emailList = new ArrayList<ContactEmail>();
 				List<ContactPhone> phoneList = new ArrayList<ContactPhone>();
@@ -431,8 +418,12 @@ public class AndroidPim extends AbstractPim {
 				byte[] photo = new byte[0]; // TODO gets the default contacts
 				// photo
 				RelationshipType relationship = RelationshipType.None;
+		
+		Context context = AndroidServiceLocator.getContext();
+		ContentResolver cr = context.getContentResolver();
+		String selectionSingle = RawContactsEntity.CONTACT_ID + " = " + id;
 				Cursor raws = cr.query(RawContactsEntity.CONTENT_URI, null,
-						RawContactsEntity.CONTACT_ID + " = " + id, null, null);
+				selectionSingle, null, null);
 				try {
 					raws.moveToFirst();
 					while (!raws.isAfterLast()) {
@@ -441,6 +432,11 @@ public class AndroidPim extends AbstractPim {
 										.getColumnIndex(ContactsContract.Data.MIMETYPE));
 						if (StructuredName.CONTENT_ITEM_TYPE.equals(type)) {
 							// structured name
+					
+					displayName = raws.getString(raws.getColumnIndex(StructuredName.DISPLAY_NAME));
+					
+					LOGGER_CONTACTS.logInfo("GetContactDetailsById", "display name: " + displayName);
+					
 						} else if (Phone.CONTENT_ITEM_TYPE.equals(type)) {
 							// it's a phone, gets all properties and add in
 							// the phone list
@@ -481,10 +477,10 @@ public class AndroidPim extends AbstractPim {
 							address.setCity(city);
 							address.setCountry(country);
 							address.setPostCode(postcode);
-							/*
-							 * TODO: how to get the number?
-							 * address.setAddressNumber(number);
-							 */
+					//
+					 //TODO: how to get the number?
+					 // address.setAddressNumber(number);
+					 //
 							addressList.add(address);
 						} else if (Email.CONTENT_ITEM_TYPE.equals(type)) {
 							// it's an Email address, gets all properties
@@ -512,7 +508,9 @@ public class AndroidPim extends AbstractPim {
 							}
 						} else if (GroupMembership.CONTENT_ITEM_TYPE
 								.equals(type)) {
-							// TODO get the group
+					group = raws
+							.getString(raws
+									.getColumnIndex(CommonDataKinds.GroupMembership.DATA1));
 						} else if (Relation.CONTENT_ITEM_TYPE.equals(type)) {
 							if (raws.getInt(raws
 									.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
@@ -533,6 +531,11 @@ public class AndroidPim extends AbstractPim {
 									.getColumnIndex(Website.URL)));
 						} else if (Nickname.CONTENT_ITEM_TYPE.equals(type)) {
 							// No need for nickname 
+					
+					String nickName = raws.getString(raws.getColumnIndex(Nickname.NAME));
+					
+					LOGGER_CONTACTS.logInfo("GetContactDetailsById", "nickName: " + nickName);
+					
 						} else if (Note.CONTENT_ITEM_TYPE.equals(type)) {
 							if (raws.getInt(raws
 									.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
@@ -551,35 +554,193 @@ public class AndroidPim extends AbstractPim {
 				}
 				
 				// filling the bean
-				contact.setPhones(phoneList.toArray(new ContactPhone[phoneList
-						.size()]));
+		
 				contact.setAddresses(addressList
 						.toArray(new ContactAddress[addressList.size()]));
-				contact.setEmails(emailList.toArray(new ContactEmail[emailList
-						.size()]));
 				contact.setWebSites(webSiteList.toArray(new String[webSiteList
 						.size()]));
 				contact.setCompany(company);
 				contact.setDepartment(department);
+		contact.setPhoto(photo);
+		contact.setPhotoBase64Encoded(photoBase64Encoded);
+		contact.setRelationship(relationship);
+		contact.setGroup(group);
+		contact.setJobTitle(jobTitle);
+		contact.setNotes(notes);
+		
+		contact.setEmails(emailList.toArray(new ContactEmail[emailList.size()]));
+		contact.setPhones(phoneList.toArray(new ContactPhone[phoneList.size()]));
+		contact.setFirstname(firstname);
+		contact.setLastname(lastname);		
+		contact.setName(name);
+		
+		contact.setDisplayName(displayName);
+		
+		return contact;
+	}
+	
+
+	@Override
+	public void ListContacts(ContactQuery query) {
+		
+		LOGGER_CONTACTS.logInfo("ListContacts", "Start listing contacts...");
+		Uri uri = null;
+		String selectionSingle;
+		Context context = AndroidServiceLocator.getContext();
+		ContentResolver cr = context.getContentResolver();
+		Cursor contactsCursor = null;
+		if(query != null && query.getValue() != null && !query.getValue().trim().equals("")){
+			LOGGER_CONTACTS.logInfo("ListContacts", "Start listing contacts... queryText " + query.toString());
+			String selection = null;
+			String[] selectionValues = null;
+		
+			String value = query.getValue()!=null?query.getValue():"";
+			LOGGER_CONTACTS.logInfo("Value", value);
+			
+			switch(query.getColumn()){
+				case ID:
+					selection = ContactsContract.Contacts._ID + "= ?";
+					selectionValues = new String[]{ value };
+					break;
+				case Name:
+					selection = ContactsContract.Contacts.DISPLAY_NAME + " LIKE ?";			
+					switch(query.getCondition()){
+						case Equals:
+							selectionValues = new String[]{ value };
+							break;
+						case StartsWith:
+							selectionValues = new String[]{ value + "%"};
+							break;		
+						case EndsWith:
+							selectionValues = new String[]{ "%" + value};
+							break;
+						case Contains:
+							selectionValues = new String[]{ "%" + value + "%"};
+							break;
+					}
+					break;				
+			}
+			
+			uri = ContactsContract.Contacts.CONTENT_URI;			
+			LOGGER_CONTACTS.logInfo("Contacts selection", selection + ", selection values: " + selectionValues.toString());
+			
+			Date start = new Date();			
+			contactsCursor = cr.query(uri, new String[] {
+					ContactsContract.Contacts._ID,
+					ContactsContract.Contacts.DISPLAY_NAME }, selection,
+				    selectionValues, null);
+			LOGGER_CONTACTS.logInfo("Time lapsed",(new Date().getTime()-start.getTime())+" ms");
+			
+		}else{
+			Date start = new Date();			
+			uri = ContactsContract.Contacts.CONTENT_URI;
+			contactsCursor = cr.query(uri, new String[] {
+					ContactsContract.Contacts._ID,
+					ContactsContract.Contacts.DISPLAY_NAME }, null, null,
+					ContactsContract.Contacts.DISPLAY_NAME
+							+ " COLLATE LOCALIZED ASC");
+			LOGGER_CONTACTS.logInfo("Time lapsed",(new Date().getTime()-start.getTime())+" ms");
+			
+		}
+		
+		List<ContactLite> contactList = new ArrayList<ContactLite>();
+		
+		try {
+			// querying the content resolver for all contacts
+			
+			contactsCursor.moveToFirst();
+			while (!contactsCursor.isAfterLast()) {
+				
+				Long id = contactsCursor.getLong(0);
+				
+				ContactLite contact = new ContactLite();
+				contact.setID(id.toString());
+				contact.setDisplayName(contactsCursor.getString(1));
+				
+				String firstname = null, group = null, lastname = null, name = null;
+				List<ContactEmail> emailList = new ArrayList<ContactEmail>();
+				List<ContactPhone> phoneList = new ArrayList<ContactPhone>();
+								
+				selectionSingle = RawContactsEntity.CONTACT_ID + " = " + id;
+				Cursor raws = cr.query(RawContactsEntity.CONTENT_URI, null,
+						selectionSingle, null, null);
+				try {
+					raws.moveToFirst();
+					while (!raws.isAfterLast()) {
+						String type = raws
+								.getString(raws
+										.getColumnIndex(ContactsContract.Data.MIMETYPE));
+						if (StructuredName.CONTENT_ITEM_TYPE.equals(type)) {
+							// structured name
+						} else if (Phone.CONTENT_ITEM_TYPE.equals(type)) {
+							// it's a phone, gets all properties and add in
+							// the phone list
+							ContactPhone phone = new ContactPhone();
+							String number = raws.getString(raws
+									.getColumnIndex(Phone.NUMBER));
+							phone.setNumber(number);
+							int primary = raws.getInt(raws
+									.getColumnIndex(Phone.IS_PRIMARY));
+							phone.setIsPrimary(primary != 0);
+							int phonetype = raws.getInt(raws
+									.getColumnIndex(Phone.TYPE));
+							phone.setType(getNumberType(phonetype));
+							phoneList.add(phone);
+						} else if (Email.CONTENT_ITEM_TYPE.equals(type)) {
+							// it's an Email address, gets all properties
+							// and add in the email list
+							ContactEmail email = new ContactEmail();
+							String emailaddress = raws
+									.getString(raws
+											.getColumnIndex(CommonDataKinds.Email.DATA1));
+							email.setAddress(emailaddress);
+							email.setCommonName(raws.getString(raws
+									.getColumnIndex(Email.DISPLAY_NAME)));
+							// TODO set first name and last name
+							emailList.add(email);
+						} else if (GroupMembership.CONTENT_ITEM_TYPE
+								.equals(type)) {
+							group = raws
+							.getString(raws
+									.getColumnIndex(CommonDataKinds.GroupMembership.DATA1));
+						} 
+						raws.moveToNext();
+					}
+
+				} finally {
+					if (raws != null) {
+						raws.close();
+					}
+				}
+				
+				// filling the bean
+				contact.setEmails(emailList.toArray(new ContactEmail[emailList.size()]));
+				contact.setPhones(phoneList.toArray(new ContactPhone[phoneList.size()]));
 				contact.setFirstname(firstname);
 				contact.setGroup(group);
-				contact.setJobTitle(jobTitle);
 				contact.setLastname(lastname);
 				contact.setName(name);
-				contact.setNotes(notes);
-				contact.setPhoto(photo);
-				contact.setPhotoBase64Encoded(photoBase64Encoded);
-				contact.setRelationship(relationship);
+				
+				
 				contactList.add(contact);
 				contactsCursor.moveToNext();
 			}
-			LOGGER_CONTACTS.logInfo("ListContacts", "Contacts list size: " + contactList.size());
-			return contactList.toArray(new Contact[contactList.size()]);
+			
+			
 		} finally {
 			if (contactsCursor != null) {
 				contactsCursor.close();
 			}
 		}
+		LOGGER_CONTACTS.logInfo("ListContacts", "Contacts list size: " + contactList.size());
+		//return contactList.toArray(new ContactLite[contactList.size()]);
+		
+		IActivityManager am = (IActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);	
+        am.executeJS("Appverse.Pim.onListContactsEnd", new Object[]{ contactList.toArray()});
+        
+        
 	}
 
 	@Override

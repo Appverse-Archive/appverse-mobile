@@ -28,7 +28,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -286,6 +288,39 @@ public class AndroidUtils {
             
 			return is;
 		}
+    }
+	
+    public static Map<String, String> getUrlParameters(String url, boolean includeContextPath, String contextPathKey)
+            throws UnsupportedEncodingException {
+        //Map<String, List<String>> params = new HashMap<String, List<String>>();
+    	Map<String, String> params = new HashMap<String, String>();
+        String[] urlParts = url.split("\\?");
+        if (urlParts.length > 1) {
+            String query = urlParts[1];
+            for (String param : query.split("&")) {
+                String pair[] = param.split("=");
+                String key = URLDecoder.decode(pair[0], "UTF-8");
+                String value = "";
+                if (pair.length > 1) {
+                    value = URLDecoder.decode(pair[1], "UTF-8");
+                }
+                //List<String> values = params.get(key);
+                //if (values == null) {
+                if (value == null) {
+                    //values = new ArrayList<String>();
+                	value = new String();
+                    //params.put(key, values);
+                }
+                //values.add(value);
+                
+                params.put(key, value);
+            }
+            
+            if(includeContextPath) {
+            	params.put((contextPathKey!=null?contextPathKey:"context_path"), urlParts[0]);
+            }
+        }
+        return params;
     }
 	
 }

@@ -61,7 +61,6 @@
 			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Data.dll" />
 			<arg value="/nologo" />
 			<arg value="/warn:4" />
-			<arg value="/debug:+" if="${mode == 'Debug_Simulator' or mode == 'Debug_Device'}"/>
 			<arg value="/debug:full" if="${mode == 'Debug_Simulator' or mode == 'Debug_Device'}"/>
 			<arg value="/optimize-" />
 			<arg value="/codepage:utf8" />

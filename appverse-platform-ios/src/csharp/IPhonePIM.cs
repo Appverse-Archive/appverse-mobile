@@ -35,6 +35,7 @@ using MonoTouch.UIKit;
 using MonoTouch.EventKit;
 using MonoTouch.EventKitUI;
 using System.Text;
+using System.Linq;
 using Unity.Core.Notification;
 
 namespace Unity.Platform.IPhone
@@ -219,44 +220,25 @@ namespace Unity.Platform.IPhone
 			});
 		}
 
+
+		
+
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="queryText">
+		/// <param name="id">
 		/// A <see cref="System.String"/>
 		/// </param>
 		/// <returns>
-		/// A <see cref="Contact[]"/>
+		/// A <see cref="Contact"/>
 		/// </returns>
-		public override Contact[] ListContacts (string queryText)
+		public override Contact GetContact (string id)
 		{
-			List<Contact> contactList = new List<Contact>();
 			
 			ABAddressBook addressBook = IPhoneServiceLocator.CurrentDelegate.AddressBook;
-			ABPerson[] people = null;
-			
-			if(queryText == null) {
 				// Gets all people in the address book
-				people = addressBook.GetPeople();
-			} else {
-				Hashtable queryParams = this.ParseQueryString(queryText);
-				if(queryParams[QUERY_PARAM_GROUP]!=null) {
-					// Gets all people in address book that belong to the requested group
-					string requestedGroupName = queryParams[QUERY_PARAM_GROUP].ToString();
-					people = this.GetContactsByGroup(addressBook, requestedGroupName);
-				}
+			ABPerson[] people = addressBook.GetPeople();
 				
-				if(queryParams[QUERY_PARAM_NAME]!=null) {
-					string requestedName = queryParams[QUERY_PARAM_NAME].ToString();
-					if(people==null) {
-						// Gets all people in address book with a matching name
-						people = addressBook.GetPeopleWithName(requestedName);
-					} else {
-						// from people in a group, get only the ones that match requested name.
-						people = this.FilterContactsByName(people, requestedName);
-					}
-				}
-			}
 			
 			if(people != null) {
 				// sort list by FirstName (default)
@@ -264,7 +246,9 @@ namespace Unity.Platform.IPhone
                     return person1.CompareTo(person2, DEFAULT_CONTACTS_LIST_SORT);
                   });
 				 
-				foreach(ABPerson person in people) {
+				ABPerson person = people.First (x => x.Id.ToString() == id);
+			
+				if(person!=null){
 					Contact contact = new Contact();
 					
 					// Basic Info
@@ -276,7 +260,7 @@ namespace Unity.Platform.IPhone
 					contact.Notes = person.Note;
 					
 					// TODO how to get the group(s) this person belongs to
-					//contact.Group = person.
+					contact.Group = person.Organization;
 					
 					// Work info
 					contact.Company = person.Organization;
@@ -303,13 +287,164 @@ namespace Unity.Platform.IPhone
 					// Relationship
 					// TODO contact.Relationship =
 					
-					contactList.Add(contact);
+					return contact;
 				}
 			}
 			
-			return contactList.ToArray();
+			return null;
+		}
+
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="query">
+		/// A <see cref="ContactQuery"/>
+		/// </param>
+		public override void ListContacts (ContactQuery query)
+		{
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "Listing ALL contacts before permission request...");
+			if (UIDevice.CurrentDevice.CheckSystemVersion (6, 0)) {
+				RequestAccessToContacts(() => { LaunchListContacts (query); } );
+			} else {
+				LaunchListContacts (query);
+			};
+
+
+		}
+
+		/// <summary>
+		/// Launchs the create new contact.
+		/// </summary>
+		/// <param name='contact'>
+		/// Contact.
+		/// </param>
+		/// 
+		protected void LaunchListContacts (ContactQuery query){
+
+			List<ContactLite> contactList = new List<ContactLite>();
+
+			ABAddressBook addressBook = IPhoneServiceLocator.CurrentDelegate.AddressBook;
+
+			// Gets all people in the address book
+			ABPerson[] people = addressBook.GetPeople();
+
+			if(people != null) {
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "People found: " + people.Length);
+
+				// sort list by FirstName (default)
+				Array.Sort(people, delegate(ABPerson person1, ABPerson person2) {
+					return person1.CompareTo(person2, DEFAULT_CONTACTS_LIST_SORT);
+				});
+
+			List<ABPerson> contacts = null;
+
+			if(query == null || query.Value == null || query.Value.Trim().Equals("")) {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Listing ALL contacts...");
+					foreach (ABPerson person in people) {
+						contactList.Add (ABPersonToContactLite(person));
 		}
 		
+
+				} else {
+
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Listing contacts by query: " + query.ToString());
+					string value = query.Value;
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Listing contacts by query with value: " + value);
+					
+					switch(query.Column){
+						case ContactQueryColumn.ID:
+							SystemLogger.Log (SystemLogger.Module.PLATFORM, "by ID ");
+							contacts = people.ToList ().FindAll (p => p.Id.ToString () == value.ToString());
+							break;
+
+						case ContactQueryColumn.Name:
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "by NAME in a list of " + people.Length + " people");
+							switch(query.Condition){
+								case ContactQueryCondition.Equals:
+									SystemLogger.Log (SystemLogger.Module.PLATFORM, "EQUALS ");
+									contacts = people.ToList ().FindAll (p => ((p.Nickname != null && p.Nickname.Equals (value))
+										|| (p.LastName != null && p.LastName.Equals (value))
+										|| (p.FirstName != null && p.FirstName.Equals (value))
+										|| (p.MiddleName != null && p.MiddleName.Equals (value))));
+									break;
+								case ContactQueryCondition.StartsWith:
+									SystemLogger.Log(SystemLogger.Module.PLATFORM, "STARTSWITH ");
+									contacts = people.ToList ().FindAll (p => ((p.Nickname != null && p.Nickname.StartsWith (value))
+										|| (p.LastName != null && p.LastName.StartsWith (value))
+										|| (p.FirstName != null && p.FirstName.StartsWith (value))
+										|| (p.MiddleName != null && p.MiddleName.StartsWith (value))));
+									break;		
+								case ContactQueryCondition.EndsWith:
+									SystemLogger.Log(SystemLogger.Module.PLATFORM, "ENDSWITH ");
+									contacts = people.ToList ().FindAll (p => ((p.Nickname != null && p.Nickname.EndsWith (value))
+										|| (p.LastName != null && p.LastName.EndsWith (value))
+										|| (p.FirstName != null && p.FirstName.EndsWith (value))
+										|| (p.MiddleName != null && p.MiddleName.EndsWith (value))));
+									break;
+								case ContactQueryCondition.Contains:
+									SystemLogger.Log (SystemLogger.Module.PLATFORM, "CONTAINS ");
+									contacts = people.ToList ().FindAll (p => ((p.Nickname != null && p.Nickname.Contains (value))
+										|| (p.LastName != null && p.LastName.Contains (value))
+										|| (p.FirstName != null && p.FirstName.Contains (value))
+										|| (p.MiddleName != null && p.MiddleName.Contains (value))));
+									break;
+							}
+							break;				
+					}
+					if (contacts != null) 
+					{
+						foreach (ABPerson person in contacts) {
+
+							contactList.Add (ABPersonToContactLite (person));
+
+						}
+					}
+					
+				}
+			}
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "contactList: " + contactList.Count);
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Pim.onListContactsEnd", contactList);
+			});
+			//return contactList.ToArray();
+		
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="ABPerson">
+		/// A <see cref="ABPerson"/>
+		/// </param>
+		/// <returns>
+		/// A <see cref="ContactLite"/>
+		/// </returns>
+		protected ContactLite ABPersonToContactLite(ABPerson person)
+		{
+			ContactLite contact = new ContactLite ();
+
+			// Basic Info
+			contact.ID = "" + person.Id;
+			contact.Name = person.FirstName;
+			contact.Firstname = person.MiddleName;
+			contact.Lastname = person.LastName;
+			contact.DisplayName = person.Nickname;
+
+
+			// TODO how to get the group(s) this person belongs to
+			contact.Group = person.Organization;
+
+			// Phones
+			contact.Phones = this.GetContactPhones (person);
+
+			// Emails
+			contact.Emails = this.GetContactEmails (person);
+			
+			return contact;
+		}
+
+
 		/// <summary>
 		/// 
 		/// </summary>

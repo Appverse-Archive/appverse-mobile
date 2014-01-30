@@ -27,7 +27,7 @@ using System.Text;
 
 namespace Unity.Core.Pim
 {
-	public class Contact
+	public class Contact : ContactLite
 	{
 		/// <summary>
 		/// Parameterless constructor is needed when parsing jsonstring to object.
@@ -36,18 +36,6 @@ namespace Unity.Core.Pim
 		{
 		}
 		
-		public string ID { get; set; }
-
-		public string Name { get; set; }
-
-		public string Firstname { get; set; }
-
-		public string Lastname { get; set; }
-
-		public string DisplayName { get; set; }
-
-		public string Group { get; set; }
-
 		public string Company { get; set; }
 
 		public string JobTitle { get; set; }
@@ -59,10 +47,6 @@ namespace Unity.Core.Pim
 		public string Notes { get; set; }
 
 		public RelationshipType Relationship { get; set; }
-
-		public ContactPhone[] Phones { get; set; }
-
-		public ContactEmail[] Emails { get; set; }
 
 		public ContactAddress[] Addresses { get; set; }
 

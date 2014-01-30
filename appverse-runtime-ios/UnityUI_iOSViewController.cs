@@ -183,7 +183,11 @@ namespace UnityUI.iOS
 		public void loadWebView (string urlPath)
 		{
 			NSUrl url = new NSUrl (urlPath);
-			NSUrlRequest request = new NSUrlRequest (url, NSUrlRequestCachePolicy.ReturnCacheDataElseLoad, 3600.0);
+			//NSUrlRequest request = new NSUrlRequest(url, NSUrlRequestCachePolicy.ReturnCacheDataElseLoad, 3600.0);
+			// FIX (16-09-2013) - testing iOS 7 apps; resources are not refreshed when installing a new app version on the top of a previous one
+			// We need to remove the cache data loaded
+			NSUrlRequest request = new NSUrlRequest(url		, NSUrlRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData, 3600.0);
+
 			if (webView != null) {
 				this.webView.LoadRequest (request);
 			} else {
@@ -235,6 +239,16 @@ namespace UnityUI.iOS
 			}
 		
 			log("ShouldAutorotate? " + shouldAutorotate);
+			if (shouldAutorotate) {
+				if(this.splashscreenShownOnStartupTime) {
+					UIInterfaceOrientation currentOrientation = UIApplication.SharedApplication.StatusBarOrientation;
+					if (this.splashView != null) {
+						log ("Adjusting splashscreen to current orientation: " + currentOrientation);
+						this.splashView.SetSplashViewForOrientation (currentOrientation);
+					}
+				}
+			}
+
 			return shouldAutorotate;
 		}
 		

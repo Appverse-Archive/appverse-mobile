@@ -24,6 +24,8 @@
 package org.me.unity4jui_android;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import android.os.Build;
@@ -65,6 +67,7 @@ import com.gft.unity.core.notification.NotificationData;
 import com.gft.unity.core.system.DisplayOrientation;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
+import com.gft.unity.core.system.launch.LaunchData;
 import com.gft.unity.core.system.log.LogManager;
 
 public class MainActivity extends Activity {
@@ -260,8 +263,8 @@ public class MainActivity extends Activity {
 			LOG.Log(Module.GUI, "application has focus; calling foreground listener");
 			appView.loadUrl("javascript:try{Unity._toForeground()}catch(e){}");
 			
-			// check for notification details
-			this.checkLaunchedFromNotification();
+			// check for notification details or other extra data
+			this.checkLaunchedFromNotificationOrExternaly();
 			
 		} else {
 			if(!activityManager.isNotifyLoadingVisible()) {
@@ -401,13 +404,16 @@ public class MainActivity extends Activity {
 	/**
 	 * Check if this activity was launched from a local notification, and send details to application
 	 */
-	private void checkLaunchedFromNotification() {
+	private void checkLaunchedFromNotificationOrExternaly() {
 		if(this.lastIntentExtras != null) {
+			
+			final String notificationId = lastIntentExtras.getString(NotificationUtils.EXTRA_NOTIFICATION_ID);
+			if(notificationId!=null && notificationId.length()>0) {
+			
 			LOG.Log(Module.GUI, "Activity was launched from Notification Manager... "); 
 			final String message = lastIntentExtras.getString(NotificationUtils.EXTRA_MESSAGE);
 			final String notificationSound = this.lastIntentExtras.getString(NotificationUtils.EXTRA_SOUND);
 			final String customJSONString = this.lastIntentExtras.getString(NotificationUtils.EXTRA_CUSTOM_JSON);
-			final String notificationId = lastIntentExtras.getString(NotificationUtils.EXTRA_NOTIFICATION_ID);
 			final String notificationType = lastIntentExtras.getString(NotificationUtils.EXTRA_TYPE);
 			LOG.Log(Module.GUI, notificationType + " Notification ID = " + notificationId);
 			
@@ -421,6 +427,28 @@ public class MainActivity extends Activity {
 			} else if(notificationType!= null && notificationType.equals(NotificationUtils.NOTIFICATION_TYPE_REMOTE)) {
 				appView.loadUrl("javascript:try{Unity.OnRemoteNotificationReceived(" + JSONSerializer.serialize(notif) +")}catch(e){}");
 			}
+			} else {
+				LOG.Log(Module.GUI, "Activity was launched from an external app with extras... "); 
+				
+				List<LaunchData> launchDataList = new ArrayList<LaunchData>();
+				
+				for (String key : this.lastIntentExtras.keySet()) {
+				    Object value = this.lastIntentExtras.get(key);
+				    /* debugging
+				     * LOG.Log(Module.GUI, String.format("%s %s (%s)", key,  
+				     * 		value.toString(), value.getClass().getName()));
+				     */
+				    LaunchData launchData = new LaunchData();
+				    launchData.setName(key);
+				    launchData.setValue(value.toString());
+				    
+				    launchDataList.add(launchData);
+				}
+				LOG.Log(Module.GUI, "#num extras: " + launchDataList.size()); 
+				
+				appView.loadUrl("javascript:try{Unity.OnExternallyLaunched (" + JSONSerializer.serialize(launchDataList.toArray(new LaunchData[launchDataList.size()])) +")}catch(e){}");
+			}
+			
 			
 			this.lastIntentExtras = null;
 		}
