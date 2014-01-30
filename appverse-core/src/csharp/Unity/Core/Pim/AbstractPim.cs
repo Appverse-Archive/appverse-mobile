@@ -31,8 +31,7 @@ namespace Unity.Core.Pim
 {
 	public abstract class AbstractPim : ICalendar, IContacts
 	{
-		public static string QUERY_PARAM_GROUP = "group";
-		public static string QUERY_PARAM_NAME = "name";
+
 		
         #region Miembros de ICalendar
 
@@ -50,12 +49,14 @@ namespace Unity.Core.Pim
 
         #region Miembros de IContacts
 
-		public Contact[] ListContacts ()
+		public void ListContacts ()
 		{
-			return ListContacts (null);
+			ListContacts (null);
 		}
 
-		public abstract Contact[] ListContacts (string queryText);
+		public abstract Contact GetContact(String id);
+
+		public abstract void ListContacts (ContactQuery query);
 		
 		/// <summary>
 		/// 

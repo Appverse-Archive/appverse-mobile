@@ -23,9 +23,20 @@
  */
 package com.gft.unity.core.system;
 
+import com.gft.unity.core.system.launch.App;
+import com.gft.unity.core.system.launch.LaunchConfig;
+import com.gft.unity.core.system.log.Logger;
+
 public abstract class AbstractSystem implements IDisplay, IHumanInteraction,
         IMemory, IOperatingSystem, IPower, IProcessor {
 
+    private static final String LOGGER_MODULE = "Appverse AbstractSystem";
+    private static final Logger LOGGER = Logger.getInstance(Logger.LogCategory.CORE,
+            LOGGER_MODULE);
+    
+    protected static final String LAUNCH_CONFIG_FILE = "app/config/launch-config.xml";
+    protected LaunchConfig launchConfig = new LaunchConfig();
+    
     // TODO hardcoded: OS_AGENT property
     protected static final String OS_AGENT = "Appverse 1.0";
     protected static final int PRIMARY_DISPLAY_NUMBER = 1;
@@ -187,4 +198,63 @@ public abstract class AbstractSystem implements IDisplay, IHumanInteraction,
      */
     @Override
     public abstract void DismissApplication();
+    
+    /**
+     * Gets the application object given its name, matching it on the "app/config/launch-config.xml" configuration file.
+     * @param appName The application name to be found
+     * @return App object that matches the given application name.
+     */
+    @Override
+    public App GetApplication(String appName) {
+        App app = null;
+
+        App[] apps = GetApplications();
+        if (apps != null) {
+            for (App currentapp : apps) {
+                if (currentapp.getName() != null
+                        && currentapp.getName().equals(appName)) {
+                    app = currentapp;
+                    break;
+                }
+            }
+        }
+
+        return app;
+    }
+
+    
+    /**
+     * Gets the application objects array configured on the "app/config/launch-config.xml" configuration file, if any.
+     * @return The App objects array configured.
+     */
+    @Override
+    public App[] GetApplications() {
+        return this.launchConfig.getApps();
+    }
+
+    
+    /**
+     * Launches the application given its name (matching it on the "app/config/launch-config.xml" configuration file).
+     * @param appName Name of the application to be launched.
+     * @param query Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.
+     */
+    @Override
+    public void LaunchApplication(String appName, String query) {
+        App app = this.GetApplication (appName);
+        if (app != null) {
+            this.LaunchApplication (app, query);
+        } else {
+            LOGGER.logWarning("LaunchApplication", "Application with name [" + appName + "] couldn't be found in the configuration file");
+        }
+    }
+
+    /**
+     * Launches the given application with the needed launch data paramaters as a query string ().
+     * @param application Application to be launched
+     * @param query Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.
+     */
+    @Override
+    public abstract void LaunchApplication(App application, String query);
+
+    
 }

@@ -31,4 +31,48 @@ public interface ISecurity {
      * @return TRUE if the device is modified, otherwise FALSE
      */
     public boolean IsDeviceModified();
+    
+    /**
+     * Adds or updates  - if already exists - a key/value pair
+     *
+     * @param keypair KeyPair object to store
+     */
+    public void StoreKeyValuePair(KeyPair keypair);
+
+    
+    /**
+     *  Adds or updates  - if already exists - a given list of key/value pairs
+     *
+     * @param keypairs Array of KeyPair objects to store
+     */
+    public void StoreKeyValuePairs(KeyPair[] keypairs);
+
+    
+    /**
+     * Returns a previously stored key/value pair. Null if not found
+     *
+     * @param keyName A string with the Key to retrieve
+     */
+    public void GetStoredKeyValuePair(String keyName);
+
+    /**
+     * Returns a list of previously stored key/value pair. Null if not found
+     *
+     * @param keyNames Array of string containing the Keys to retrieve
+     */
+    public void GetStoredKeyValuePairs(String[] keyNames);
+
+    /**
+     * Removes - if already exists - a given key/value pair
+     *
+     * @param keyName A string with the Key to remove
+     */
+    public void RemoveStoredKeyValuePair(String keyName);
+
+    /**
+     * Removes - if already exists - a given list of key/value pairs
+     *
+     * @param keyNames Array of string containing the Keys to remove
+     */
+    public void RemoveStoredKeyValuePairs(String[] keyNames);
 }

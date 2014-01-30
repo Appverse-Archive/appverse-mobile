@@ -31,12 +31,21 @@ public class AttachmentData {
     private long dataSize;
     private String fileName;
     private String mimeType;
+    private String referenceUrl;
 
     public AttachmentData() {
     }
 
     public byte[] getData() {
         return data;
+    }
+
+    public String getReferenceUrl() {
+        return referenceUrl;
+    }
+
+    public void setReferenceUrl(String referenceUrl) {
+        this.referenceUrl = referenceUrl;
     }
 
     public void setData(byte[] data) {
@@ -67,7 +76,7 @@ public class AttachmentData {
         this.mimeType = mimeType;
     }
 
-    @Override
+    /*@Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("AttachmentData [data=");
@@ -80,5 +89,11 @@ public class AttachmentData {
         builder.append(mimeType);
         builder.append("]");
         return builder.toString();
+    }*/
+    @Override
+    public String toString() {
+        return "AttachmentData{" + "data=" + data + ", dataSize=" + dataSize + ", fileName=" + fileName + ", mimeType=" + mimeType + ", referenceUrl=" + referenceUrl + '}';
     }
+
+    
 }
