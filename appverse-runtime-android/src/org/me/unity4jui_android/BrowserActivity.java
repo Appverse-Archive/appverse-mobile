@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (“APL v2.0”).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  ("APL v2.0").  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -122,7 +122,10 @@ public class BrowserActivity extends Activity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		if ((keyCode == KeyEvent.KEYCODE_BACK) && mWebView.canGoBack()) {
-			mWebView.goBack();
+			if(mWebView.canGoBack())
+				mWebView.goBack();
+			else
+				this.finish();
 			return true;
 		}
 
