@@ -63,8 +63,8 @@ namespace Unity.Platform.IPhone
         public override MediaState GetState()
         {
             return this.State;
-        }
-
+        }		
+		
 		public override void DetectQRCode (bool autoHandleQR)
 		{
 			String returnValue = String.Empty;

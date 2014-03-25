@@ -85,7 +85,7 @@ namespace Unity.Platform.IPhone
 		{
 			if (request.Url.StartsWith (DOCUMENTS_URI)) {
 				SystemLogger.Log (SystemLogger.Module.PLATFORM, " ############## " + this.GetType () + " -> " + request.Url);
-
+				
 				string requestUrl = request.Url;
 				if(request.QueryString!=null && request.QueryString.Length>0) {
 					requestUrl = request.Page;
