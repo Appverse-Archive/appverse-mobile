@@ -58,20 +58,34 @@ namespace Unity.Core.System.Service
 			string JSON = null;
 
 			// querystring format: callbackFunction$$$ID$$$json=****** 
+			// [MOBPLAT-185], the "json" latest query parameter could not be present (for API methods without parameters)
 			if (query!= null) {
 				string token0 = "&";
 				string token1 = "callback=";
 				string token2 = "callbackid=";
+				int nextParamToken = 0;
 
 				if(query.IndexOf(token1)==0) {
 					query = query.Substring(token1.Length);
-					callback = query.Substring(0, query.IndexOf(token0));
-					query = query.Substring(query.IndexOf(token0)+1);
+					nextParamToken = query.IndexOf(token0);
+					if(nextParamToken==-1) nextParamToken = query.Length;
+					if(query.Length>=nextParamToken)
+						callback = query.Substring(0, nextParamToken);
+					if (query != null && query.Length > (nextParamToken + 1))
+						query = query.Substring (nextParamToken + 1);
+					else
+						query = null;
 				}
-				if(query.IndexOf(token2)==0) {
+				if(query!= null && query.IndexOf(token2)==0) {
 					query = query.Substring(token2.Length);
-					ID = query.Substring(0, query.IndexOf(token0));
-					query = query.Substring(query.IndexOf(token0)+1);
+					nextParamToken = query.IndexOf(token0);
+					if(nextParamToken==-1) nextParamToken = query.Length;
+					if(query.Length>=nextParamToken)
+						ID = query.Substring(0, nextParamToken);
+					if (query != null && query.Length > (nextParamToken + 1))
+						query = query.Substring(nextParamToken+1);
+					else
+						query = null;
 				}
 
 				JSON = query;

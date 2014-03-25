@@ -352,7 +352,7 @@ namespace Unity.Core.System
 			return launchConfig.Apps.ToArray ();
 		}
 
-        #endregion
+		#endregion
 
         #region Miembros de IPower
 		/// <summary>
@@ -378,5 +378,5 @@ namespace Unity.Core.System
 		public abstract CPUInfo GetCPUInfo ();
 
         #endregion
-	}
+    }
 }

@@ -67,14 +67,14 @@ namespace Unity.Core.Net
 		/// A <see cref="System.Boolean"/>
 		/// </returns>
 		bool DownloadFile (string url);
-		
+
 		/// <summary>
 		/// Returns active network connection data.
 		/// </summary>
 		/// A <see cref="Unity.Core.Net.NetworkData"/>
 		NetworkData GetNetworkData();
 		
-		
+
 	}//end INet
 
 }//end namespace Net

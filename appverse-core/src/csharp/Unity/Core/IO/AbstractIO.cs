@@ -114,8 +114,8 @@ namespace Unity.Core.IO
 		/// 
 		/// </summary>
 		protected void LoadServicesConfig ()
-		{
-			try {   // FileStream to read the XML document.
+        {
+            try {   // FileStream to read the XML document.
 				byte[] configFileRawData = GetConfigFileBinaryData ();
 				if (configFileRawData != null) {
 					XmlSerializer serializer = new XmlSerializer (typeof(IOServicesConfig));
@@ -228,35 +228,35 @@ namespace Unity.Core.IO
 
 		private string FormatRequestUriString(IORequest request, IOService service, string reqMethod) {
 
-				string requestUriString = String.Format ("{0}:{1}{2}", service.Endpoint.Host, service.Endpoint.Port, service.Endpoint.Path);
-				if (service.Endpoint.Port == 0) {
-					requestUriString = String.Format ("{0}{1}", service.Endpoint.Host, service.Endpoint.Path);
-				}
-				
-                if (reqMethod.Equals(RequestMethod.GET.ToString()) && request.Content != null)
-                {
-					// add request content to the URI string when NOT POST method (GET, PUT, DELETE).
-					requestUriString += request.Content;
-				}
-				
-				SystemLogger.Log (SystemLogger.Module .CORE, "Requesting service: " + requestUriString);
+			string requestUriString = String.Format ("{0}:{1}{2}", service.Endpoint.Host, service.Endpoint.Port, service.Endpoint.Path);
+			if (service.Endpoint.Port == 0) {
+				requestUriString = String.Format ("{0}{1}", service.Endpoint.Host, service.Endpoint.Path);
+			}
+			
+			if (reqMethod.Equals(RequestMethod.GET.ToString()) && request.Content != null)
+			{
+				// add request content to the URI string when NOT POST method (GET, PUT, DELETE).
+				requestUriString += request.Content;
+			}
+			
+			SystemLogger.Log (SystemLogger.Module .CORE, "Requesting service: " + requestUriString);
 			return requestUriString;
 		}
-					
+
 		private HttpWebRequest BuildWebRequest(IORequest request, IOService service, string requestUriString, string reqMethod) {
-					
+
 			HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create (requestUriString);
 			webReq.Method = reqMethod; // default is POST
 			webReq.ContentType = contentTypes [service.Type];
-
-					// check specific request ContentType defined, and override service type in that case
-					if (request.ContentType != null && request.ContentType.Length > 0) {
+			
+			// check specific request ContentType defined, and override service type in that case
+			if (request.ContentType != null && request.ContentType.Length > 0) {
 				webReq.ContentType = request.ContentType;
-					}
-
+			}
+			
 			SystemLogger.Log (SystemLogger.Module.CORE, "Request content type: " + webReq.ContentType);
 			SystemLogger.Log (SystemLogger.Module.CORE, "Request method: " + webReq.Method);
-                    
+			
 			webReq.Accept = webReq.ContentType; // setting "Accept" header with the same value as "Content Type" header, it is needed to be defined for some services.
 			webReq.ContentLength = request.GetContentLength ();
 			SystemLogger.Log (SystemLogger.Module.CORE, "Request content length: " + webReq.ContentLength);
@@ -265,67 +265,69 @@ namespace Unity.Core.IO
 			webReq.KeepAlive = false;
 			webReq.ProtocolVersion = HttpVersion.Version10;
 			if (request.ProtocolVersion == HTTPProtocolVersion.HTTP11) webReq.ProtocolVersion = HttpVersion.Version11;
-					
-					// user agent needs to be informed - some servers check this parameter and send 500 errors when not informed.
+			
+			// user agent needs to be informed - some servers check this parameter and send 500 errors when not informed.
 			webReq.UserAgent = this.IOUserAgent;
 			SystemLogger.Log (SystemLogger.Module.CORE, "Request UserAgent : " + webReq.UserAgent);
 
 			/*************
 			 * HEADERS HANDLING
 			 *************/
-					
-					// add specific headers to the request
-					if (request.Headers != null && request.Headers.Length > 0) {
-						foreach (IOHeader header in request.Headers) {
+
+			// add specific headers to the request
+			if (request.Headers != null && request.Headers.Length > 0) {
+				foreach (IOHeader header in request.Headers) {
 					webReq.Headers.Add (header.Name, header.Value);
 					SystemLogger.Log (SystemLogger.Module.CORE, "Added request header: " + header.Name + "=" + webReq.Headers.Get (header.Name));
-						}
-					}
+				}
+			}
 
 			/*************
 			 * COOKIES HANDLING
 			 *************/
 
-					// Assign the cookie container on the request to hold cookie objects that are sent on the response.
-					// Required even though you no cookies are send.
+			// Assign the cookie container on the request to hold cookie objects that are sent on the response.
+			// Required even though you no cookies are send.
 			webReq.CookieContainer = this.cookieContainer;
-
-					// add cookies to the request cookie container
-					if (request.Session != null && request.Session.Cookies != null && request.Session.Cookies.Length > 0) {
-						foreach (IOCookie cookie in request.Session.Cookies) {
-					webReq.CookieContainer.Add (webReq.RequestUri, new Cookie (cookie.Name, cookie.Value));
-							SystemLogger.Log (SystemLogger.Module.CORE, "Added cookie [" + cookie.Name + "] to request.");
-						}
+			
+			// add cookies to the request cookie container
+			if (request.Session != null && request.Session.Cookies != null && request.Session.Cookies.Length > 0) {
+				foreach (IOCookie cookie in request.Session.Cookies) {
+					if (cookie != null && cookie.Name != null) {
+						webReq.CookieContainer.Add (webReq.RequestUri, new Cookie (cookie.Name, cookie.Value));
+						SystemLogger.Log (SystemLogger.Module.CORE, "Added cookie [" + cookie.Name + "] to request.");
 					}
+				}
+			}
 			SystemLogger.Log (SystemLogger.Module.CORE, "HTTP Request cookies: " + webReq.CookieContainer.GetCookieHeader (webReq.RequestUri));
-
+			
 			/*************
 			 * SETTING A PROXY (ENTERPRISE ENVIRONMENTS)
 			 *************/
 
-					if (service.Endpoint.ProxyUrl != null) {
-						WebProxy myProxy = new WebProxy ();
-						Uri proxyUri = new Uri (service.Endpoint.ProxyUrl);
-						myProxy.Address = proxyUri;
+			if (service.Endpoint.ProxyUrl != null) {
+				WebProxy myProxy = new WebProxy ();
+				Uri proxyUri = new Uri (service.Endpoint.ProxyUrl);
+				myProxy.Address = proxyUri;
 				webReq.Proxy = myProxy;
-					}
+			}
 
 			return webReq;
-					}
-	
+		}
+
 		private IOResponse ReadWebResponse(HttpWebRequest webRequest, HttpWebResponse webResponse, IOService service) {
 			IOResponse response = new IOResponse ();
 
 			// result types (string or byte array)
-					byte[] resultBinary = null;
+			byte[] resultBinary = null;
 			string result = null;
-					
+
 			string responseMimeTypeOverride = webResponse.GetResponseHeader ("Content-Type");
-					
+
 			using (Stream stream = webResponse.GetResponseStream()) {
-							SystemLogger.Log (SystemLogger.Module.CORE, "getting response stream...");
+				SystemLogger.Log (SystemLogger.Module.CORE, "getting response stream...");
 				if (ServiceType.OCTET_BINARY.Equals (service.Type)) {
-									
+					
 					int lengthContent = -1;
 					if (webResponse.GetResponseHeader ("Content-Length") != null && webResponse.GetResponseHeader ("Content-Length") != "") {
 						lengthContent = Int32.Parse (webResponse.GetResponseHeader ("Content-Length"));
@@ -336,7 +338,7 @@ namespace Unity.Core.IO
 					if (lengthContent >= 0 && lengthContent<=bufferReadSize) {
 						bufferReadSize = lengthContent;
 					}
-									
+					
 					if(lengthContent>MAX_BINARY_SIZE) {
 						SystemLogger.Log (SystemLogger.Module.CORE, 
 						                  "WARNING! - file exceeds the maximum size defined in platform (" + MAX_BINARY_SIZE+ " bytes)");
@@ -350,7 +352,7 @@ namespace Unity.Core.IO
 							readLen = stream.Read (readBuffer, 0, readBuffer.Length);
 							memBuffer.Write (readBuffer, 0, readLen);
 						} while (readLen >0);
-										
+						
 						resultBinary = memBuffer.ToArray ();
 						memBuffer.Close ();
 						memBuffer = null;
@@ -386,7 +388,7 @@ namespace Unity.Core.IO
 
 			// get response cookies (stored on cookiecontainer)
 			if (response.Session == null) {
-				response.Session = new IOSessionContext ();             
+				response.Session = new IOSessionContext ();
 				
 			}
 			response.Session.Cookies = new IOCookie[this.cookieContainer.Count];
@@ -401,7 +403,7 @@ namespace Unity.Core.IO
 				response.Session.Cookies [i] = cookie;
 				i++;
 			}
-					
+
 			if (ServiceType.OCTET_BINARY.Equals (service.Type)) {
 				if (responseMimeTypeOverride != null && !responseMimeTypeOverride.Equals (contentTypes [service.Type])) {
 					response.ContentType = responseMimeTypeOverride;
@@ -530,7 +532,6 @@ namespace Unity.Core.IO
 			} else {
 				SystemLogger.Log (SystemLogger.Module .CORE, "Null service received for invoking.");
 			}
-
 
 			return response;
 		}
