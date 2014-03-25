@@ -43,7 +43,7 @@ public interface IContacts {
     public boolean DeleteContact(Contact contact);
 
     /**
-     * List of stored phone contacts.
+     * List of stored phone contacts. 
      * Only a lite information of the contact is returned: id, name, firstname, lastname, group, display, emails and phone lists.
      *
      * @return List of contacts.

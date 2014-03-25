@@ -60,16 +60,16 @@ public class HttpServer {
         SERVER_CONFIG.setProperty("mime.js", "text/javascript");
         SERVER_CONFIG.setProperty("mime.css", "text/css");
         SERVER_CONFIG.setProperty("mime.json", "application/javascript");
-		SERVER_CONFIG.setProperty("mime.xml", "application/xml");
-		SERVER_CONFIG.setProperty("mime.pdf", "application/pdf");
-		
-		// needed for displaying internal resources in an HTML5 <video> tag
-		// http://www.w3schools.com/tags/tag_video.asp
-		SERVER_CONFIG.setProperty("mime.mp4", "video/mp4");
-		SERVER_CONFIG.setProperty("mime.m4v", "video/m4v");
-		SERVER_CONFIG.setProperty("mime.webm", "video/webm");
-		SERVER_CONFIG.setProperty("mime.ogg", "video/ogg");
-		SERVER_CONFIG.setProperty("mime.ogv", "video/ogg");
+        SERVER_CONFIG.setProperty("mime.xml", "application/xml");
+        SERVER_CONFIG.setProperty("mime.pdf", "application/pdf");
+
+        // needed for displaying internal resources in an HTML5 <video> tag
+        // http://www.w3schools.com/tags/tag_video.asp
+        SERVER_CONFIG.setProperty("mime.mp4", "video/mp4");
+        SERVER_CONFIG.setProperty("mime.m4v", "video/m4v");
+        SERVER_CONFIG.setProperty("mime.webm", "video/webm");
+        SERVER_CONFIG.setProperty("mime.ogg", "video/ogg");
+        SERVER_CONFIG.setProperty("mime.ogv", "video/ogg");
         
         
         // Embedded @font-face Fonts
