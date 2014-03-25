@@ -255,25 +255,25 @@ public class AndroidIO extends AbstractIO {
 	}
 
 	private String formatRequestUriString(IORequest request, IOServiceEndpoint endpoint, String requestMethod) {
-			String requestUriString = endpoint.getHost() + ":"
-					+ endpoint.getPort() + endpoint.getPath();
-			if (endpoint.getPort() == 0) {
-				requestUriString = endpoint.getHost() + endpoint.getPath();
-			}
+		String requestUriString = endpoint.getHost() + ":"
+				+ endpoint.getPort() + endpoint.getPath();
+		if (endpoint.getPort() == 0) {
+			requestUriString = endpoint.getHost() + endpoint.getPath();
+		}
 
-			if (requestMethod.equalsIgnoreCase(RequestMethod.GET.toString())) {
-				// add request content to the URI string when GET method.
-				if (request.getContent() != null) {
-					requestUriString += request.getContent();
-				}
+		if (requestMethod.equalsIgnoreCase(RequestMethod.GET.toString())) {
+			// add request content to the URI string when GET method.
+			if (request.getContent() != null) {
+				requestUriString += request.getContent();
 			}
-			
-			LOG.Log(Module.PLATFORM, "Requesting service: " + requestUriString);
-			LOG.Log(Module.PLATFORM, "Request method: " + requestMethod);
-			
+		}
+		
+		LOG.Log(Module.PLATFORM, "Requesting service: " + requestUriString);
+		LOG.Log(Module.PLATFORM, "Request method: " + requestMethod);
+		
 		return requestUriString;
 	}
-			
+	
 	/**
 	 * 
 	 * @param requestUriString
@@ -286,90 +286,90 @@ public class AndroidIO extends AbstractIO {
 	 * @throws UnrecoverableKeyException
 	 */
 	private boolean applySecurityValidations(String requestUriString) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, KeyManagementException, UnrecoverableKeyException {
-
-				if (requestUriString.startsWith(HTTPS_SCHEME)) {
-					HostnameVerifier hostnameVerifier = org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
-					// Set verifier
-					HttpsURLConnection
-							.setDefaultHostnameVerifier(hostnameVerifier);
-					SchemeRegistry registry = new SchemeRegistry();
-					
-					/******************************** 
-					 * USING DEFAULT ANDROID DEVICE SSLSocketFactory
-					 * the default factory was throwing errors verifying ssl certificates chains for some specific CA Authorities
-					 * (for example, Verisign root ceritificate G5 is not available on android devices <=2.3)
-					 * See more details on jira ticket [MOBPLAT-63]
-					 ******************************** 
-					SSLSocketFactory socketFactory = SSLSocketFactory
-							.getSocketFactory();
-					socketFactory
-							.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
-					*/
-					
-					/******************************** 
-					 * USING CUSTOM SSLSocketFactory - accept all certificates
-					 * See more details on jira ticket [MOBPLAT-63]
-					 ********************************
-					*/ 
-					SSLSocketFactory socketFactory;
-					if(!Validatecertificates())
+		
+		if (requestUriString.startsWith(HTTPS_SCHEME)) {
+			HostnameVerifier hostnameVerifier = org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+			// Set verifier
+			HttpsURLConnection
+					.setDefaultHostnameVerifier(hostnameVerifier);
+			SchemeRegistry registry = new SchemeRegistry();
+			
+			/******************************** 
+			 * USING DEFAULT ANDROID DEVICE SSLSocketFactory
+			 * the default factory was throwing errors verifying ssl certificates chains for some specific CA Authorities
+			 * (for example, Verisign root ceritificate G5 is not available on android devices <=2.3)
+			 * See more details on jira ticket [MOBPLAT-63]
+			 ******************************** 
+			SSLSocketFactory socketFactory = SSLSocketFactory
+					.getSocketFactory();
+			socketFactory
+					.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
+			*/
+			
+			/******************************** 
+			 * USING CUSTOM SSLSocketFactory - accept all certificates
+			 * See more details on jira ticket [MOBPLAT-63]
+			 ********************************
+			*/ 
+			SSLSocketFactory socketFactory;
+			if(!Validatecertificates())
+			{
+				KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+				trustStore.load(null, null);
+				socketFactory =  new MySSLSocketFactory(trustStore);
+			}else{
+		        /*
+		        /******************************** 
+				 * USING VALIDATING SSLSocketFactory - Validating all certificates
+				 * See more details on jira ticket [MOBPLAT-63]
+				 ********************************
+				 */
+				KeyStore trustStore;
+				if(Build.VERSION.SDK_INT>=14){
+					trustStore = KeyStore.getInstance("AndroidCAStore");
+					trustStore.load(null,null);					
+				}else{
+					try{
+						trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+						String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);
+						FileInputStream is = new FileInputStream(filename);
+						trustStore.load(is,"changeit".toCharArray());
+				        is.close();
+					}catch(Exception ex)
 					{
-						KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-						trustStore.load(null, null);
-						socketFactory =  new MySSLSocketFactory(trustStore);
-					}else{
-				        /*
-				        /******************************** 
-						 * USING VALIDATING SSLSocketFactory - Validating all certificates
-						 * See more details on jira ticket [MOBPLAT-63]
-						 ********************************
-						 */
-						KeyStore trustStore;
-						if(Build.VERSION.SDK_INT>=14){
-							trustStore = KeyStore.getInstance("AndroidCAStore");
-							trustStore.load(null,null);					
-						}else{
-							try{
-								trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-								String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);
-								FileInputStream is = new FileInputStream(filename);
-								trustStore.load(is,"changeit".toCharArray());
-						        is.close();
-							}catch(Exception ex)
-							{
-								try{
-									/*
-							        /******************************** 
-									 * HTC 2.3.5 Access Keystore problem
-									 * See more details on jira ticket [MOBPLAT-91]
-									 ********************************
-									 */
-									trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-									String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);
-									FileInputStream is = new FileInputStream(filename);
-									trustStore.load(is,null);
-							        is.close();
-								}catch(Exception e)
-								{
-									trustStore = null;
-									LOG.Log(Module.PLATFORM, "A problem has been detecting while accessing the device keystore.",e);
+						try{
+							/*
+					        /******************************** 
+							 * HTC 2.3.5 Access Keystore problem
+							 * See more details on jira ticket [MOBPLAT-91]
+							 ********************************
+							 */
+							trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+							String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);
+							FileInputStream is = new FileInputStream(filename);
+							trustStore.load(is,null);
+					        is.close();
+						}catch(Exception e)
+						{
+							trustStore = null;
+							LOG.Log(Module.PLATFORM, "A problem has been detecting while accessing the device keystore.",e);
 							return false;
-								}
-							}
 						}
-						socketFactory =  ValidatingSSLSocketFactory.GetInstance(trustStore);
-				        socketFactory.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
 					}
-					LOG.Log(Module.PLATFORM, "Certificate Validation Enabled = " + this.Validatecertificates());
-					registry.register(new Scheme("https", socketFactory, 443));
-					registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-					ThreadSafeClientConnManager mgr = new ThreadSafeClientConnManager(
-							httpClient.getParams(), registry);
-					httpClient = new DefaultHttpClient(mgr,
-							new DefaultHttpClient().getParams());
-				} else {
-					httpClient = new DefaultHttpClient();
 				}
+				socketFactory =  ValidatingSSLSocketFactory.GetInstance(trustStore);
+		        socketFactory.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
+			}
+			LOG.Log(Module.PLATFORM, "Certificate Validation Enabled = " + this.Validatecertificates());
+			registry.register(new Scheme("https", socketFactory, 443));
+			registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+			ThreadSafeClientConnManager mgr = new ThreadSafeClientConnManager(
+					httpClient.getParams(), registry);
+			httpClient = new DefaultHttpClient(mgr,
+					new DefaultHttpClient().getParams());
+		} else {
+			httpClient = new DefaultHttpClient();
+		}
 		return true;
 	}
 	
@@ -381,110 +381,110 @@ public class AndroidIO extends AbstractIO {
 	 */
 	private void addingHttpClientParms(IORequest request, IOServiceEndpoint endpoint) throws URISyntaxException {
 		
-				// preserving the cookies between requests
-				httpClient.setCookieStore(cookieStore);
-				
-				if(request.getProtocolVersion() == HTTPProtocolVersion.HTTP11) {
-					httpClient.getParams().setParameter("http.protocol.version", HttpVersion.HTTP_1_1);
-				} else {
-					httpClient.getParams().setParameter("http.protocol.version", HttpVersion.HTTP_1_0);  // not chunked requests
-				}
-				
-				httpClient.getParams().setIntParameter("http.connection.timeout", DEFAULT_READWRITE_TIMEOUT);
-				httpClient.getParams().setIntParameter("http.socket.timeout", DEFAULT_RESPONSE_TIMEOUT);
-			
-				if (endpoint.getProxyUrl() != null
-						&& !endpoint.getProxyUrl().equals("")
-						&& !endpoint.getProxyUrl().equals("null")) {
-					URI proxyUrl = new URI(endpoint.getProxyUrl());
-					HttpHost proxyHost = new HttpHost(proxyUrl.getHost(),
-							proxyUrl.getPort(), proxyUrl.getScheme());
-					httpClient.getParams().setParameter(
-							ConnRoutePNames.DEFAULT_PROXY, proxyHost);
-				}
+		// preserving the cookies between requests
+		httpClient.setCookieStore(cookieStore);
+		
+		if(request.getProtocolVersion() == HTTPProtocolVersion.HTTP11) {
+			httpClient.getParams().setParameter("http.protocol.version", HttpVersion.HTTP_1_1);
+		} else {
+			httpClient.getParams().setParameter("http.protocol.version", HttpVersion.HTTP_1_0);  // not chunked requests
+		}
+		
+		httpClient.getParams().setIntParameter("http.connection.timeout", DEFAULT_READWRITE_TIMEOUT);
+		httpClient.getParams().setIntParameter("http.socket.timeout", DEFAULT_RESPONSE_TIMEOUT);
+	
+		if (endpoint.getProxyUrl() != null
+				&& !endpoint.getProxyUrl().equals("")
+				&& !endpoint.getProxyUrl().equals("null")) {
+			URI proxyUrl = new URI(endpoint.getProxyUrl());
+			HttpHost proxyHost = new HttpHost(proxyUrl.getHost(),
+					proxyUrl.getPort(), proxyUrl.getScheme());
+			httpClient.getParams().setParameter(
+					ConnRoutePNames.DEFAULT_PROXY, proxyHost);
+		}
 	}
 	
 	
 	private HttpEntityEnclosingRequestBase buildWebRequest(IORequest request, IOService service, String requestUriString, String requestMethod ) 
 			throws UnsupportedEncodingException, URISyntaxException {
 		
-
-				HttpEntityEnclosingRequestBase httpRequest = new HttpAppverse(new URI(requestUriString), requestMethod);
-				
+		
+		HttpEntityEnclosingRequestBase httpRequest = new HttpAppverse(new URI(requestUriString), requestMethod);
+		
 		/*************
 		 * adding content as entity, for request methods != GET
 		 *************/
-				if(!requestMethod.equalsIgnoreCase(RequestMethod.GET.toString())){
-					if (request.getContent() != null
-							&& request.getContent().length() > 0) {
-						httpRequest.setEntity(new StringEntity(
-								request.getContent(), HTTP.UTF_8));
-					}
-				}
-
+		if(!requestMethod.equalsIgnoreCase(RequestMethod.GET.toString())){
+			if (request.getContent() != null
+					&& request.getContent().length() > 0) {
+				httpRequest.setEntity(new StringEntity(
+						request.getContent(), HTTP.UTF_8));
+			}
+		}
+		
 		/*************
 		 * CONTENT TYPE
 		 *************/
 		String contentType = contentTypes.get(service.getType()).toString();
-				if (request.getContentType() != null) {
+		if (request.getContentType() != null) {
 			contentType = request.getContentType();
 			
-				}
+		} 
 		httpRequest.setHeader("Content-Type", contentType);
 		
 		/*************
 		 * CUSTOM HEADERS HANDLING
 		 *************/
-				if (request.getHeaders() != null
-						&& request.getHeaders().length > 0) {
-					for (IOHeader header : request.getHeaders()) {
-						httpRequest.setHeader(header.getName(),
-								header.getValue());
-					}
-				}
-
+		if (request.getHeaders() != null
+				&& request.getHeaders().length > 0) {
+			for (IOHeader header : request.getHeaders()) {
+				httpRequest.setHeader(header.getName(),
+						header.getValue());
+			}
+		}
+		
 		/*************
 		 * COOKIES HANDLING
 		 *************/
-				if (request.getSession() != null
-						&& request.getSession().getCookies() != null
-						&& request.getSession().getCookies().length > 0) {
-					StringBuffer buffer = new StringBuffer();
-					IOCookie[] cookies = request.getSession().getCookies();
-					for (int i = 0; i < cookies.length; i++) {
-						IOCookie cookie = cookies[i];
-						buffer.append(cookie.getName());
-						buffer.append("=");
-						buffer.append(cookie.getValue());
-						if (i + 1 < cookies.length) {
-							buffer.append(" ");
-						}
-					}
-					httpRequest.setHeader("Cookie", buffer.toString());
+		if (request.getSession() != null
+				&& request.getSession().getCookies() != null
+				&& request.getSession().getCookies().length > 0) {
+			StringBuffer buffer = new StringBuffer();
+			IOCookie[] cookies = request.getSession().getCookies();
+			for (int i = 0; i < cookies.length; i++) {
+				IOCookie cookie = cookies[i];
+				buffer.append(cookie.getName());
+				buffer.append("=");
+				buffer.append(cookie.getValue());
+				if (i + 1 < cookies.length) {
+					buffer.append(" ");
 				}
-
+			}
+			httpRequest.setHeader("Cookie", buffer.toString());
+		}
+		
 		/*************
 		 * DEFAULT HEADERS
 		 *************/
 		httpRequest.setHeader("Accept", contentType); // Accept header should be the same as the request content type used (could be override by the request, or use the service default)
-				// httpRequest.setHeader("content-length",
-				// String.valueOf(request.getContentLength()));
-				httpRequest.setHeader("keep-alive", String.valueOf(false));
-
+		// httpRequest.setHeader("content-length",
+		// String.valueOf(request.getContentLength()));
+		httpRequest.setHeader("keep-alive", String.valueOf(false));
+		
 		// TODO: set conn timeout ???
 		
 		/*************
 		 * setting user-agent
 		 *************/
-				IOperatingSystem system = (IOperatingSystem) AndroidServiceLocator
-						.GetInstance().GetService(
-								AndroidServiceLocator.SERVICE_TYPE_SYSTEM);
-				HttpProtocolParams.setUserAgent(httpClient.getParams(),
-						system.GetOSUserAgent());
-
+		IOperatingSystem system = (IOperatingSystem) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_TYPE_SYSTEM);
+		HttpProtocolParams.setUserAgent(httpClient.getParams(),
+				system.GetOSUserAgent());
+		
 		return httpRequest;
 	}
-				
+	
 	/**
 	 * 
 	 * @param httpResponse
@@ -498,14 +498,14 @@ public class AndroidIO extends AbstractIO {
 		IOResponse response = new IOResponse ();
 		response.setSession(new IOSessionContext());
 
-				byte[] resultBinary = null;
-
+		byte[] resultBinary = null;
+		
 		String responseMimeTypeOverride = (httpResponse.getLastHeader("Content-Type")!=null? httpResponse.getLastHeader("Content-Type").getValue() : null);
 		LOG.Log(Module.PLATFORM, "response content type: " + responseMimeTypeOverride);
-
+		
 		// getting response input stream
 		InputStream responseStream = httpResponse.getEntity().getContent();
-
+		
 		int lengthContent = -1;
 		int bufferReadSize = DEFAULT_BUFFER_READ_SIZE;
 		
@@ -513,52 +513,52 @@ public class AndroidIO extends AbstractIO {
 			lengthContent = (int) httpResponse.getEntity().getContentLength();
 			if (lengthContent >= 0 && lengthContent<=bufferReadSize) {
 				bufferReadSize = lengthContent;
-					}
+			}
 		} catch (Exception e) {
 			LOG.Log(Module.PLATFORM, "Error while getting Content-Length header from response: " + e.getMessage());
-				}
-
+		}
+		
 		if(lengthContent>MAX_BINARY_SIZE) {
 			LOG.Log(Module.PLATFORM, "WARNING! - file exceeds the maximum size defined in platform (" + MAX_BINARY_SIZE+ " bytes)");
 		} else {
 			LOG.Log(Module.PLATFORM, "reading response stream content length: " + lengthContent);
 			/* WE DON'T READ IN A FULL BLOCK ANYMORE
 			 * 
-					// Read in block, if content length provided.
-					// Create the byte array to hold the data
-					resultBinary = new byte[length];
-
-					// Read in the bytes
-					int offset = 0;
-					int numRead = 0;
-					while (offset < resultBinary.length
-							&& (numRead = responseStream.read(resultBinary,
-									offset, resultBinary.length - offset)) >= 0) {
-						offset += numRead;
-					}
-
+			// Read in block, if content length provided.
+			// Create the byte array to hold the data
+			resultBinary = new byte[length];
+	
+			// Read in the bytes
+			int offset = 0;
+			int numRead = 0;
+			while (offset < resultBinary.length
+					&& (numRead = responseStream.read(resultBinary,
+							offset, resultBinary.length - offset)) >= 0) {
+				offset += numRead;
+			}
+			
 			*/
 			
 			// Read in buffer blocks till the end of stream.
-					ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();
+			ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();
 
 			byte[] readBuffer = new byte[bufferReadSize];
-					int readLen = 0;
+			int readLen = 0;
 			int totalReadLen = 0;
-					try {
-						while ((readLen = responseStream.read(readBuffer, 0,
-								readBuffer.length)) > 0) {
-							outBuffer.write(readBuffer, 0, readLen);
+			try {
+				while ((readLen = responseStream.read(readBuffer, 0,
+						readBuffer.length)) > 0) {
+					outBuffer.write(readBuffer, 0, readLen);
 					totalReadLen = totalReadLen + readLen;
-						}
-					} finally {
-						resultBinary = outBuffer.toByteArray();
-						outBuffer.close();
-						outBuffer = null;
-					}
-			LOG.Log(Module.PLATFORM, "total read length: " + totalReadLen);
 				}
-				
+			} finally {
+				resultBinary = outBuffer.toByteArray();
+				outBuffer.close();
+				outBuffer = null;
+			}
+			LOG.Log(Module.PLATFORM, "total read length: " + totalReadLen);
+		}
+		
 		/*************
 		 * COOKIES HANDLING
 		 *************/
@@ -581,40 +581,40 @@ public class AndroidIO extends AbstractIO {
 		 * CACHE
 		 *************/
 		LOG.Log(Module.PLATFORM, "reading cache header.. ");
-				// preserve cache-control header from remote server, if any
-				String cacheControlHeader = (httpResponse.getLastHeader("Cache-Control")!=null? httpResponse.getLastHeader("Cache-Control").getValue() : null);
-				if (cacheControlHeader != null && !cacheControlHeader.isEmpty()) {
-					LOG.Log(Module.PLATFORM, "Found Cache-Control header on response: " + cacheControlHeader + ", using it on internal response...");
-					
-					IOHeader cacheHeader = new IOHeader();
-					cacheHeader.setName("Cache-Control");
-					cacheHeader.setValue(cacheControlHeader);
-					
-					List<IOHeader> headers = new ArrayList<IOHeader>();
-					if(response.getHeaders() != null) {
-						headers = Arrays.asList(response.getHeaders());
-					}
-					headers.add(cacheHeader);
-					response.setHeaders((IOHeader[])headers.toArray(new IOHeader[0]));
-				}
-				
-				// Close the input stream and return bytes
-				responseStream.close();
+		// preserve cache-control header from remote server, if any
+		String cacheControlHeader = (httpResponse.getLastHeader("Cache-Control")!=null? httpResponse.getLastHeader("Cache-Control").getValue() : null);
+		if (cacheControlHeader != null && !cacheControlHeader.isEmpty()) {
+			LOG.Log(Module.PLATFORM, "Found Cache-Control header on response: " + cacheControlHeader + ", using it on internal response...");
+			
+			IOHeader cacheHeader = new IOHeader();
+			cacheHeader.setName("Cache-Control");
+			cacheHeader.setValue(cacheControlHeader);
+			
+			List<IOHeader> headers = new ArrayList<IOHeader>();
+			if(response.getHeaders() != null) {
+				headers = Arrays.asList(response.getHeaders());
+			}
+			headers.add(cacheHeader);
+			response.setHeaders((IOHeader[])headers.toArray(new IOHeader[0]));
+		}
+		
+		// Close the input stream and return bytes
+		responseStream.close();
 
 		LOG.Log(Module.PLATFORM, "checking binary service type... ");
-				if (ServiceType.OCTET_BINARY.equals(service.getType())) {
+		if (ServiceType.OCTET_BINARY.equals(service.getType())) {
 			if (responseMimeTypeOverride != null && !responseMimeTypeOverride.equals(contentTypes.get(service.getType()))) {
-						response.setContentType(responseMimeTypeOverride);
-					} else {
+				response.setContentType(responseMimeTypeOverride);
+			} else {
 				response.setContentType(contentTypes.get(service.getType()).toString());
-					}
-					response.setContentBinary(resultBinary); // Assign binary
-					// content here
-				} else {
-					response.setContentType(contentTypes.get(service.getType())
-							.toString());
-					response.setContent(new String(resultBinary));
-				}
+			}
+			response.setContentBinary(resultBinary); // Assign binary
+			// content here
+		} else {
+			response.setContentType(contentTypes.get(service.getType())
+					.toString());
+			response.setContent(new String(resultBinary));
+		}
 		LOG.Log(Module.PLATFORM, "END reading response.. ");
 		return response;
 	}
@@ -757,7 +757,7 @@ public class AndroidIO extends AbstractIO {
 		LOG.Log(Module.PLATFORM, "invoke service finished");
 		return response;
 	}
-
+	
 
 
 	@Override
@@ -865,7 +865,7 @@ public class AndroidIO extends AbstractIO {
 	}
 	
 	public class HttpAppverse extends HttpEntityEnclosingRequestBase {
-		
+
 		private String method = null;
 		
 		public HttpAppverse(final URI uri, String method) {

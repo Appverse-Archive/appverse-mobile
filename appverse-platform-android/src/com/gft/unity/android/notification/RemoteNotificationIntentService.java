@@ -227,20 +227,20 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 	protected void onRegistered(Context context, String registrationId) {
 		try{
 			LOGGER.logInfo("onRegistered", "Device Successfully registered.");
-		notificationToken = new RegistrationToken();
-		notificationToken.setStringRepresentation(registrationId);
-		notificationToken.setBinary(registrationId.getBytes());
+			notificationToken = new RegistrationToken();
+			notificationToken.setStringRepresentation(registrationId);
+			notificationToken.setBinary(registrationId.getBytes());
 			
-		if(appActivity != null && appView!=null){
-			Runnable rNotification = new Runnable() {
-				@Override
-				public void run() {
+			if(appActivity != null && appView!=null){
+				Runnable rNotification = new Runnable() {
+					@Override
+					public void run() {
 						LOGGER.logInfo("onRegistered", "Calling Unity.OnRegisterForRemoteNotificationsSuccess...");
-					appView.loadUrl("javascript:try{Unity.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
-				}
-			};
-			appActivity.runOnUiThread(rNotification);
-		}
+						appView.loadUrl("javascript:try{Unity.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
+					}
+				};
+				appActivity.runOnUiThread(rNotification);
+			}
 		}catch(Exception ex){
 			LOGGER.logError("onRegistered",ex.getMessage());
 		}

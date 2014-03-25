@@ -75,7 +75,7 @@ public class AndroidMedia extends AbstractMedia {
 
 	private static final String LOGGER_MODULE = "IMedia";
 	private static final Logger LOGGER = Logger.getInstance(
-			LogCategory.PLATFORM, LOGGER_MODULE);
+			LogCategory.PLATFORM, LOGGER_MODULE);	
 	private static final String PHONE_PREFIX = "tel://";
 
 	private MediaPlayer mp;

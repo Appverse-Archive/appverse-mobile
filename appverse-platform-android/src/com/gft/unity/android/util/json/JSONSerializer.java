@@ -181,7 +181,7 @@ public class JSONSerializer {
 		if (classType.isArray()) {
 			element = deserializeArray(classType, (JSONArray) object);
 		} else if (classType.isEnum()) {
-			element = deserializeEnum(classType, object);
+				element = deserializeEnum(classType, object);
 		} else if (classType.isPrimitive() 
 				|| object instanceof String
 				|| object instanceof Integer
@@ -231,7 +231,12 @@ public class JSONSerializer {
 			} else if (elementClassType.equals(byte.class)) {
 				byte[] bytes = new byte[jsonArray.length()];
 				for (int i = 0; i < bytes.length; i++) {
-					bytes[i] = Byte.valueOf(jsonArray.getString(i));
+					String jsonStringByte = jsonArray.getString(i);
+					// [MOBPLAT-184] - special characters such as accented, were overfloading the Byte.valueOf() method 
+					// that only accepts -128 to 127 integers.
+					// To avoid this, we should first parse the string to Integer, and then cast to byte
+					// UTF-8 compatible
+					bytes[i] = (byte) Integer.parseInt(jsonStringByte);
 				}
 				array = bytes;
 			} else if (elementClassType.equals(short.class)) {

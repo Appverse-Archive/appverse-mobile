@@ -119,11 +119,12 @@ public class AndroidDatabase extends AbstractDatabase {
 			columns = columns.replace("\"", "");
 
 			sqlDB = openDatabase(db);
-			String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " ("
-					+ columns + ")";
-			sqlDB.execSQL(sql);
-
-			result = true;
+			if(sqlDB!=null) {
+				String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " ("
+						+ columns + ")";
+				sqlDB.execSQL(sql);
+				result = true;
+			} 			
 		} catch (Exception ex) {
 			LOGGER.logError("CreateTable", "Error", ex);
 		} finally {
@@ -144,9 +145,10 @@ public class AndroidDatabase extends AbstractDatabase {
 		SQLiteDatabase sqlDB = null;
 		try {
 			sqlDB = openDatabase(db);
-			sqlDB.execSQL("DROP TABLE " + tableName);
-
-			result = true;
+			if(sqlDB!=null) {
+				sqlDB.execSQL("DROP TABLE " + tableName);
+				result = true;
+			}
 		} catch (Exception ex) {
 			LOGGER.logError("DeleteTable", "Error", ex);
 		} finally {
@@ -172,8 +174,10 @@ public class AndroidDatabase extends AbstractDatabase {
 		Cursor cursor = null;
 		try {
 			sqlDB = openDatabase(db);
-			cursor = sqlDB.rawQuery(sql, null);
-			result = new AndroidResultSet(cursor);
+			if(sqlDB!=null) {
+				cursor = sqlDB.rawQuery(sql, null);
+				result = new AndroidResultSet(cursor);
+			}
 		} catch (Exception ex) {
 			LOGGER.logError("ExecuteSQLQuery", "Error", ex);
 			return null;
@@ -205,12 +209,13 @@ public class AndroidDatabase extends AbstractDatabase {
 		SQLiteDatabase sqlDB = null;
 		try {
 			sqlDB = openDatabase(db);
-			if ((statementParams != null) && (statementParams.length > 0)) {
-				statement = getFormattedSQL(statement, statementParams);
+			if(sqlDB != null) {
+				if ((statementParams != null) && (statementParams.length > 0)) {
+					statement = getFormattedSQL(statement, statementParams);
+				}
+				sqlDB.execSQL(statement);
+				result = true;
 			}
-			sqlDB.execSQL(statement);
-
-			result = true;
 		} catch (Exception ex) {
 			LOGGER.logError("ExecuteSQLStatement", "Error", ex);
 		} finally {
@@ -239,25 +244,27 @@ public class AndroidDatabase extends AbstractDatabase {
 		SQLiteDatabase sqlDB = null;
 		try {
 			sqlDB = openDatabase(db);
-			sqlDB.beginTransaction();
-			for (String statement : statements) {
-				try {
-					sqlDB.execSQL(statement);
-				} catch (Exception ex) {
-					LOGGER.logWarning("ExecuteSQLTransaction",
-							"ExecuteSQLTransaction error executing sql statement ["
-									+ statement + "]", ex);
-					if (rollbackFlag) {
-						LOGGER.logInfo("ExecuteSQLTransaction",
-								"Transaction rolled back");
-						rollback = true;
-						break;
+			if(sqlDB != null) {
+				sqlDB.beginTransaction();
+				for (String statement : statements) {
+					try {
+						sqlDB.execSQL(statement);
+					} catch (Exception ex) {
+						LOGGER.logWarning("ExecuteSQLTransaction",
+								"ExecuteSQLTransaction error executing sql statement ["
+										+ statement + "]", ex);
+						if (rollbackFlag) {
+							LOGGER.logInfo("ExecuteSQLTransaction",
+									"Transaction rolled back");
+							rollback = true;
+							break;
+						}
 					}
 				}
-			}
-			if (!rollback) {
-				sqlDB.setTransactionSuccessful();
-				result = true;
+				if (!rollback) {
+					sqlDB.setTransactionSuccessful();
+					result = true;
+				}
 			}
 		} catch (Exception ex) {
 			LOGGER.logError("ExecuteSQLTransaction", "Error", ex);
@@ -412,9 +419,14 @@ public class AndroidDatabase extends AbstractDatabase {
 
 	private SQLiteDatabase openDatabase(Database db) throws SQLiteException {
 		Context context = AndroidServiceLocator.getContext();
-		return SQLiteDatabase.openDatabase(context
-				.getDatabasePath(db.getName()).getAbsolutePath(), null,
-				SQLiteDatabase.OPEN_READWRITE);
+		if(db!=null) {
+			return SQLiteDatabase.openDatabase(context
+					.getDatabasePath(db.getName()).getAbsolutePath(), null,
+					SQLiteDatabase.OPEN_READWRITE);
+		}
+		
+		LOGGER.logError("openDatabase()", "Given database object is null. Please, check code to provide appropiated database object.");
+		return null;
 	}
 
 	private void closeDatabase(SQLiteDatabase sqlDB) throws SQLiteException {

@@ -76,7 +76,7 @@ public class AndroidAnalytics extends AbstractAnalytics {
 
 		LOGGER.logOperationBegin("StopTracking", Logger.EMPTY_PARAMS,
 				Logger.EMPTY_VALUES);
-
+		
 		try {
 			if (v3Tracker != null) {
 				

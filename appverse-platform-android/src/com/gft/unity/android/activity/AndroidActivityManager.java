@@ -460,7 +460,15 @@ public class AndroidActivityManager implements IActivityManager {
 	@Override
 	public void dismissApplication() {
 		LOG.Log(Module.PLATFORM, "dismissing application programmaticallly");
-		this.main.finish();
+		//this.main.finish();
+		/*
+		 * MainActivity is now singleInstant and the app can be loaded through intents so when you finalize the app and reopen from history
+		 * it remember the calling intent and try to process again the same parameters leading to errors, now the app is just sent to background.
+		 */
+		Intent i = new Intent();
+		i.setAction(Intent.ACTION_MAIN);
+		i.addCategory(Intent.CATEGORY_HOME);
+		this.startActivity(i);
 	}
 	
 }

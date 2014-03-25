@@ -402,165 +402,166 @@ public class AndroidPim extends AbstractPim {
 	public boolean DeleteContact(Contact contact) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
+	
 
 	@Override
 	public Contact GetContact(String id) {
-				Contact contact = new Contact();
-				contact.setID(id.toString());
-
+		Contact contact = new Contact();
+		contact.setID(id.toString());
+		
 		LOGGER_CONTACTS.logInfo("GetContactDetailsById", "Getting contact data for id: " + id);
 		
 		String company = null, department = null, firstname = null, group = null, jobTitle = null, lastname = null, name = null, notes = null, photoBase64Encoded = null, displayName = null;
-				List<ContactAddress> addressList = new ArrayList<ContactAddress>();
-				List<ContactEmail> emailList = new ArrayList<ContactEmail>();
-				List<ContactPhone> phoneList = new ArrayList<ContactPhone>();
-				List<String> webSiteList = new ArrayList<String>();
-				byte[] photo = new byte[0]; // TODO gets the default contacts
-				// photo
-				RelationshipType relationship = RelationshipType.None;
+		List<ContactAddress> addressList = new ArrayList<ContactAddress>();
+		List<ContactEmail> emailList = new ArrayList<ContactEmail>();
+		List<ContactPhone> phoneList = new ArrayList<ContactPhone>();
+		List<String> webSiteList = new ArrayList<String>();
+		byte[] photo = new byte[0]; // TODO gets the default contacts
+		// photo				
+		RelationshipType relationship = RelationshipType.None;
 		
 		Context context = AndroidServiceLocator.getContext();
 		ContentResolver cr = context.getContentResolver();
 		String selectionSingle = RawContactsEntity.CONTACT_ID + " = " + id;
-				Cursor raws = cr.query(RawContactsEntity.CONTENT_URI, null,
+		Cursor raws = cr.query(RawContactsEntity.CONTENT_URI, null,
 				selectionSingle, null, null);
-				try {
-					raws.moveToFirst();
-					while (!raws.isAfterLast()) {
-						String type = raws
-								.getString(raws
-										.getColumnIndex(ContactsContract.Data.MIMETYPE));
-						if (StructuredName.CONTENT_ITEM_TYPE.equals(type)) {
-							// structured name
+		try {
+			raws.moveToFirst();
+			while (!raws.isAfterLast()) {
+				String type = raws
+						.getString(raws
+								.getColumnIndex(ContactsContract.Data.MIMETYPE));
+				if (StructuredName.CONTENT_ITEM_TYPE.equals(type)) {
+					// structured name
 					
 					displayName = raws.getString(raws.getColumnIndex(StructuredName.DISPLAY_NAME));
 					
 					LOGGER_CONTACTS.logInfo("GetContactDetailsById", "display name: " + displayName);
 					
-						} else if (Phone.CONTENT_ITEM_TYPE.equals(type)) {
-							// it's a phone, gets all properties and add in
-							// the phone list
-							ContactPhone phone = new ContactPhone();
-							String number = raws.getString(raws
-									.getColumnIndex(Phone.NUMBER));
-							phone.setNumber(number);
-							int primary = raws.getInt(raws
-									.getColumnIndex(Phone.IS_PRIMARY));
-							phone.setIsPrimary(primary != 0);
-							int phonetype = raws.getInt(raws
-									.getColumnIndex(Phone.TYPE));
-							phone.setType(getNumberType(phonetype));
-							phoneList.add(phone);
-						} else if (StructuredPostal.CONTENT_ITEM_TYPE
-								.equals(type)) {
-							// it's an Address, gets all properties and add
-							// in
-							// the address list
-							ContactAddress address = new ContactAddress();
-							String city = raws.getString(raws
-									.getColumnIndex(StructuredPostal.CITY));
-							String country = raws.getString(raws
-									.getColumnIndex(StructuredPostal.COUNTRY));
-							String postcode = raws.getString(raws
-									.getColumnIndex(StructuredPostal.POSTCODE));
-							String street = raws.getString(raws
-									.getColumnIndex(StructuredPostal.STREET));
-							// TODO Check about Number, as Android doesn't store
-							// number in a different column. (Is in the street)
-							// (linked with the way contacts are stored by this
-							// class)
-							int typeInt = raws.getInt(raws
-									.getColumnIndex(StructuredPostal.TYPE));
-							DispositionType dType = getAddressType(typeInt);
-							address.setType(dType);
-							address.setAddress(street);
-							address.setCity(city);
-							address.setCountry(country);
-							address.setPostCode(postcode);
+				} else if (Phone.CONTENT_ITEM_TYPE.equals(type)) {
+					// it's a phone, gets all properties and add in
+					// the phone list
+					ContactPhone phone = new ContactPhone();
+					String number = raws.getString(raws
+							.getColumnIndex(Phone.NUMBER));
+					phone.setNumber(number);
+					int primary = raws.getInt(raws
+							.getColumnIndex(Phone.IS_PRIMARY));
+					phone.setIsPrimary(primary != 0);
+					int phonetype = raws.getInt(raws
+							.getColumnIndex(Phone.TYPE));
+					phone.setType(getNumberType(phonetype));
+					phoneList.add(phone);
+				} else if (StructuredPostal.CONTENT_ITEM_TYPE
+						.equals(type)) {
+					// it's an Address, gets all properties and add
+					// in
+					// the address list
+					ContactAddress address = new ContactAddress();
+					String city = raws.getString(raws
+							.getColumnIndex(StructuredPostal.CITY));
+					String country = raws.getString(raws
+							.getColumnIndex(StructuredPostal.COUNTRY));
+					String postcode = raws.getString(raws
+							.getColumnIndex(StructuredPostal.POSTCODE));
+					String street = raws.getString(raws
+							.getColumnIndex(StructuredPostal.STREET));
+					// TODO Check about Number, as Android doesn't store
+					// number in a different column. (Is in the street)
+					// (linked with the way contacts are stored by this
+					// class)
+					int typeInt = raws.getInt(raws
+							.getColumnIndex(StructuredPostal.TYPE));
+					DispositionType dType = getAddressType(typeInt);
+					address.setType(dType);
+					address.setAddress(street);
+					address.setCity(city);
+					address.setCountry(country);
+					address.setPostCode(postcode);
 					//
 					 //TODO: how to get the number?
 					 // address.setAddressNumber(number);
 					 //
-							addressList.add(address);
-						} else if (Email.CONTENT_ITEM_TYPE.equals(type)) {
-							// it's an Email address, gets all properties
-							// and add in the email list
-							ContactEmail email = new ContactEmail();
-							String emailaddress = raws
-									.getString(raws
-											.getColumnIndex(CommonDataKinds.Email.DATA1));
-							email.setAddress(emailaddress);
-							email.setCommonName(raws.getString(raws
-									.getColumnIndex(Email.DISPLAY_NAME)));
-							// TODO set first name and last name
-							emailList.add(email);
-						} else if (Organization.CONTENT_ITEM_TYPE.equals(type)) {
-							if (raws.getInt(raws
-									.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
-									|| company == null || company.equals("")) {
-								company = raws.getString(raws
-										.getColumnIndex(Organization.COMPANY));
-								department = raws
-										.getString(raws
-												.getColumnIndex(Organization.DEPARTMENT));
-								jobTitle = raws.getString(raws
-										.getColumnIndex(Organization.TITLE));
-							}
-						} else if (GroupMembership.CONTENT_ITEM_TYPE
-								.equals(type)) {
+					addressList.add(address);
+				} else if (Email.CONTENT_ITEM_TYPE.equals(type)) {
+					// it's an Email address, gets all properties
+					// and add in the email list
+					ContactEmail email = new ContactEmail();
+					String emailaddress = raws
+							.getString(raws
+									.getColumnIndex(CommonDataKinds.Email.DATA1));
+					email.setAddress(emailaddress);
+					email.setCommonName(raws.getString(raws
+							.getColumnIndex(Email.DISPLAY_NAME)));
+					// TODO set first name and last name
+					emailList.add(email);
+				} else if (Organization.CONTENT_ITEM_TYPE.equals(type)) {
+					if (raws.getInt(raws
+							.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
+							|| company == null || company.equals("")) {
+						company = raws.getString(raws
+								.getColumnIndex(Organization.COMPANY));
+						department = raws
+								.getString(raws
+										.getColumnIndex(Organization.DEPARTMENT));
+						jobTitle = raws.getString(raws
+								.getColumnIndex(Organization.TITLE));
+					}
+				} else if (GroupMembership.CONTENT_ITEM_TYPE
+						.equals(type)) {
 					group = raws
 							.getString(raws
 									.getColumnIndex(CommonDataKinds.GroupMembership.DATA1));
-						} else if (Relation.CONTENT_ITEM_TYPE.equals(type)) {
-							if (raws.getInt(raws
-									.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
-									|| group == null || group.equals("")) {
-								relationship = getRelationShipType(raws
-										.getInt(raws
-												.getColumnIndex(Relation.TYPE)));
-							}
-						} else if (Photo.CONTENT_ITEM_TYPE.equals(type)) {
-							photo = raws.getBlob(raws
-									.getColumnIndex(Photo.PHOTO));
-							photoBase64Encoded = photo != null ? new String(
-									Base64.encode(photo, Base64.DEFAULT))
-									: null;
-						} else if (CommonDataKinds.Website.CONTENT_ITEM_TYPE
-								.equals(type)) {
-							webSiteList.add(raws.getString(raws
-									.getColumnIndex(Website.URL)));
-						} else if (Nickname.CONTENT_ITEM_TYPE.equals(type)) {
-							// No need for nickname 
+				} else if (Relation.CONTENT_ITEM_TYPE.equals(type)) {
+					if (raws.getInt(raws
+							.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
+							|| group == null || group.equals("")) {
+						relationship = getRelationShipType(raws
+								.getInt(raws
+										.getColumnIndex(Relation.TYPE)));
+					}
+				} else if (Photo.CONTENT_ITEM_TYPE.equals(type)) {
+					photo = raws.getBlob(raws
+							.getColumnIndex(Photo.PHOTO));
+					photoBase64Encoded = photo != null ? new String(
+							Base64.encode(photo, Base64.DEFAULT))
+							: null;
+				} else if (CommonDataKinds.Website.CONTENT_ITEM_TYPE
+						.equals(type)) {
+					webSiteList.add(raws.getString(raws
+							.getColumnIndex(Website.URL)));
+				} else if (Nickname.CONTENT_ITEM_TYPE.equals(type)) {
+					// No need for nickname 
 					
 					String nickName = raws.getString(raws.getColumnIndex(Nickname.NAME));
 					
 					LOGGER_CONTACTS.logInfo("GetContactDetailsById", "nickName: " + nickName);
 					
-						} else if (Note.CONTENT_ITEM_TYPE.equals(type)) {
-							if (raws.getInt(raws
-									.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
-									|| notes == null || notes.equals("")) {
-								notes = raws.getString(raws
-										.getColumnIndex(Note.NOTE));
-							}
-						}
-						raws.moveToNext();
-					}
-
-				} finally {
-					if (raws != null) {
-						raws.close();
+				} else if (Note.CONTENT_ITEM_TYPE.equals(type)) {
+					if (raws.getInt(raws
+							.getColumnIndex(RawContactsEntity.IS_PRIMARY)) == 1
+							|| notes == null || notes.equals("")) {
+						notes = raws.getString(raws
+								.getColumnIndex(Note.NOTE));
 					}
 				}
-				
-				// filling the bean
+				raws.moveToNext();
+			}
+
+		} finally {
+			if (raws != null) {
+				raws.close();
+			}
+		}
 		
-				contact.setAddresses(addressList
-						.toArray(new ContactAddress[addressList.size()]));
-				contact.setWebSites(webSiteList.toArray(new String[webSiteList
-						.size()]));
-				contact.setCompany(company);
-				contact.setDepartment(department);
+		// filling the bean
+		
+		contact.setAddresses(addressList
+					.toArray(new ContactAddress[addressList.size()]));					
+		contact.setWebSites(webSiteList.toArray(new String[webSiteList
+				.size()]));
+		contact.setCompany(company);
+		contact.setDepartment(department);
 		contact.setPhoto(photo);
 		contact.setPhotoBase64Encoded(photoBase64Encoded);
 		contact.setRelationship(relationship);
@@ -785,4 +786,5 @@ public class AndroidPim extends AbstractPim {
 		return RELATION_TYPES_MAP.get(relationType) == null ? RelationshipType.None
 				: RELATION_TYPES_MAP.get(relationType);
 	}
+
 }
