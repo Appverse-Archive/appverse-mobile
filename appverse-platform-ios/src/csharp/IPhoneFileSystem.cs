@@ -73,23 +73,23 @@ namespace Unity.Platform.IPhone
 				NSData data = NSData.FromUrl(nsurl);
 				if(data != null) {
 					// remove previous existing file
-					if(File.Exists(path)) {
-						this.DeleteFile(new FileData(path));
-					}
-					// create an empty file
-					FileData toFile = this.CreateFile(toPath);
-
-					byte[] buffer = new byte[data.Length];
-					Marshal.Copy(data.Bytes, buffer,0,buffer.Length);
+				if(File.Exists(path)) {
+					this.DeleteFile(new FileData(path));
+				}
+				// create an empty file
+				FileData toFile = this.CreateFile(toPath);
+				
+				byte[] buffer = new byte[data.Length];
+				Marshal.Copy(data.Bytes, buffer,0,buffer.Length);
 					// write contents and return result
-					return this.WriteFile(toFile, buffer, false);
+				return this.WriteFile(toFile, buffer, false);
 				} 
 				// don't create/replace any file if NSData couldn't be obtained from remote path
 			} catch (Exception ex) {
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error copying from [" + url + "] to file [" + toPath + "]", ex);
 
 			}
-			return false;
+				return false;
 		}
     }
 }

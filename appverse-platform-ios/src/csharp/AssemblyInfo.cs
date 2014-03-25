@@ -24,22 +24,13 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-// Information about this assembly is defined by the following attributes. 
-// Change them to the values specific to your project.
-
-[assembly: AssemblyTitle("UnityPlatformIOS")]
-[assembly: AssemblyDescription("Unity Platform Implementation for iOS")]
-
+[assembly: AssemblyTitle("AppversePlatformIOD")]
+[assembly: AssemblyDescription("Appverse Platform iOS")]
 [assembly: AssemblyConfiguration("")]
-
-[assembly: AssemblyCompany("GFT IT Consulting SLU")]
-
-[assembly: AssemblyProduct("Unity Mobile Platform")]
-
-[assembly: AssemblyCopyright("Copyright (c)2010, GFT IT Consulting SLU")]
-
-[assembly: AssemblyTrademark("Unity Mobile Platform")]
-
+[assembly: AssemblyCompany(" Appverse, S.L., Sociedad Unipersonal")]
+[assembly: AssemblyProduct("Appverse Mobile Platform")]
+[assembly: AssemblyCopyright("Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal")]
+[assembly: AssemblyTrademark("Appverse Mobile Platform")]
 [assembly: AssemblyCulture("")]
 [assembly: AssemblyVersion("3.8.*")]
 // The following attributes are used to specify the signing key for the assembly, 
