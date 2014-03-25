@@ -39,6 +39,7 @@ namespace Unity.Platform.IPhone
 		/// <summary>
 		/// Paths that usually are found in modified devices
 		/// </summary>
+
 		private StringCollection scPathsToCheck = null;
 		private StringCollection scPermissionPaths = null;
 
@@ -151,21 +152,20 @@ namespace Unity.Platform.IPhone
 					Generic = NSData.FromString(kp.Key),
 					ValueData = NSData.FromString(kp.Value)
 				};
-
 				if (sAccessGroup != null)
 					srNewEntry.AccessGroup = sAccessGroup;
-
 				SecStatusCode code = SecKeyChain.Add (srNewEntry);
 				if (code == SecStatusCode.DuplicateItem) {
 					SecRecord srDeleteExistingEntry = new SecRecord (SecKind.GenericPassword){
 						Account = kp.Key
 					};
-						if (sAccessGroup != null)
-							srDeleteExistingEntry.AccessGroup = sAccessGroup;
-						code = SecKeyChain.Remove (srDeleteExistingEntry);
+
+					if (sAccessGroup != null)
+						srDeleteExistingEntry.AccessGroup = sAccessGroup;
+
+					code = SecKeyChain.Remove (srDeleteExistingEntry);
 					if (code == SecStatusCode.Success)
 						SecKeyChain.Add (srNewEntry);
-						
 				}
 				if (code == SecStatusCode.Success){
 					successfullKeyPairs.Add (kp);

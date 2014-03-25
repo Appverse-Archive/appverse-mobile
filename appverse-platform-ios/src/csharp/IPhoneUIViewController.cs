@@ -100,46 +100,6 @@ namespace Unity.Platform.IPhone
 
 		}
 
-		/**
-		 * Status Bar style should be kept as Dark (default) in this view controller, 
-		 * no matter main ViewController configuration, because
-		 * this "IPhoneUIViewController" - used for (OpenBrowser, GetMap, etc..) - is displayed with default navigation bar style
-		 * 
-		public override UIStatusBarStyle PreferredStatusBarStyle ()
-		{
-			return UIStatusBarStyle.LightContent; // if we need to change to light mode
-		}
-		*
-		*/
-
-
-		/**
-		* On the contrary, the PrefersStatusBarHidden should take into account and apply the main view controller configuration,
-		* because otherwise the UIApplication.SharedApplication.StatusBarFrame.Height value is not correct, 
-		* and the navigation bar is overlaping the status bar space.
-		*/
-		public override bool PrefersStatusBarHidden ()
-		{
-
-			bool hideStatusBar = false;
-			try {
-				var myStatusBarHidden = NSBundle.MainBundle.ObjectForInfoDictionary("Appverse_StatusBarHidden");
-				if(myStatusBarHidden!=null) {
-					hideStatusBar = Convert.ToBoolean(Convert.ToInt32(""+myStatusBarHidden));
-				}
-			} catch(Exception ex) {
-				#if DEBUG
-				this.log ("Exception getting 'Appverse_StatusBarHidden' from application preferences: " + ex.Message);
-				#endif
-			}
-
-			#if DEBUG
-			this.log ("Preferred StatusBar Hidden: " + hideStatusBar);
-			#endif
-
-			return hideStatusBar;
-		}
-
 		/// <summary>
 		/// Gets the height of the navigation bar to be applied.
 		/// </summary>

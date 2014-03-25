@@ -62,11 +62,11 @@ namespace Unity.Platform.IPhone
 				if (UIDevice.CurrentDevice.CheckSystemVersion (6, 0)) {
 					RequestAccessToContacts(() => { LaunchCreateNewContact (contactData); } );
 				} else {
-					using (var pool = new NSAutoreleasePool ()) {
-						var thread = new Thread (ShowCreateContactView);
-						thread.Start (contactData);
-					};
-				}
+				using (var pool = new NSAutoreleasePool ()) {
+					var thread = new Thread (ShowCreateContactView);
+					thread.Start (contactData);
+				};
+			}
 
 			}
 			// TODO return Contact object should return the inserted ID.
@@ -120,60 +120,60 @@ namespace Unity.Platform.IPhone
 		/// </param>
 		/// 
 		protected void LaunchCreateNewContact(Contact contact) {
-
-			ABPerson person = new ABPerson();
-			// Basic Info
-			person.FirstName = contact.Name;
-			person.MiddleName = contact.Firstname;
-			person.LastName = contact.Lastname;
-			person.Nickname = contact.DisplayName;
-			person.Note = contact.Notes;
-			
-			// Work info
-			person.Organization = contact.Company;
-			person.JobTitle = contact.JobTitle;
-			person.Department =	contact.Department;
-			
-			// Addresses
-			person.SetAddresses(this.ConvertContactAddressesToNative(contact.Addresses));
-			
-			// Phones
-			person.SetPhones(this.ConvertContactPhonesToNative(contact.Phones));
-			
-			// Emails
-			person.SetEmails(this.ConvertContactEmailsToNative(contact.Emails));
-			
-			// Websites
-			person.SetUrls(this.ConvertContactWebsitesToNative(contact.WebSites));
-			
-			// Photo
-			if(contact.Photo==null && contact.PhotoBase64Encoded!=null) {
-				contact.Photo = Convert.FromBase64String(contact.PhotoBase64Encoded);
-			}
-			if(contact.Photo!=null) {
-				NSData imageData = this.ConvertContactBinaryDataToNative(contact.Photo);
-				if(imageData!=null && imageData.Length>0) {
-					person.Image = imageData;
+				
+				ABPerson person = new ABPerson();
+				// Basic Info
+				person.FirstName = contact.Name;
+				person.MiddleName = contact.Firstname;
+				person.LastName = contact.Lastname;
+				person.Nickname = contact.DisplayName;
+				person.Note = contact.Notes;
+				
+				// Work info
+				person.Organization = contact.Company;
+				person.JobTitle = contact.JobTitle;
+				person.Department =	contact.Department;
+				
+				// Addresses
+				person.SetAddresses(this.ConvertContactAddressesToNative(contact.Addresses));
+				
+				// Phones
+				person.SetPhones(this.ConvertContactPhonesToNative(contact.Phones));
+				
+				// Emails
+				person.SetEmails(this.ConvertContactEmailsToNative(contact.Emails));
+				
+				// Websites
+				person.SetUrls(this.ConvertContactWebsitesToNative(contact.WebSites));
+				
+				// Photo
+				if(contact.Photo==null && contact.PhotoBase64Encoded!=null) {
+					contact.Photo = Convert.FromBase64String(contact.PhotoBase64Encoded);
 				}
-			}
-			
-			ABUnknownPersonViewController unknownPersonViewController = new ABUnknownPersonViewController();
+				if(contact.Photo!=null) {
+					NSData imageData = this.ConvertContactBinaryDataToNative(contact.Photo);
+					if(imageData!=null && imageData.Length>0) {
+						person.Image = imageData;
+					}
+				}
+				
+				ABUnknownPersonViewController unknownPersonViewController = new ABUnknownPersonViewController();
 			unknownPersonViewController.AddressBook = IPhoneServiceLocator.CurrentDelegate.AddressBook;
-			unknownPersonViewController.AllowsActions = false;
-			unknownPersonViewController.AllowsAddingToAddressBook = true;
-			unknownPersonViewController.DisplayedPerson = person;
-			unknownPersonViewController.PerformDefaultAction += HandlePerformDefaultAction;
-			unknownPersonViewController.PersonCreated += HandleUnknownPersonCreated;
-			unknownPersonViewController.Delegate = new UnknownPersonViewControllerDelegate();
-			UIBarButtonItem backButtonItem = new UIBarButtonItem();
-			backButtonItem.Title = "Cancel";
-			backButtonItem.Clicked += HandleBackButtonItemClicked;
-			unknownPersonViewController.NavigationItem.SetLeftBarButtonItem(backButtonItem,false);
-			
-			UINavigationController contactNavController = new UINavigationController();
-			contactNavController.PushViewController(unknownPersonViewController,false);
-			
-			IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (contactNavController, true);
+				unknownPersonViewController.AllowsActions = false;
+				unknownPersonViewController.AllowsAddingToAddressBook = true;
+				unknownPersonViewController.DisplayedPerson = person;
+				unknownPersonViewController.PerformDefaultAction += HandlePerformDefaultAction;
+				unknownPersonViewController.PersonCreated += HandleUnknownPersonCreated;
+				unknownPersonViewController.Delegate = new UnknownPersonViewControllerDelegate();
+				UIBarButtonItem backButtonItem = new UIBarButtonItem();
+				backButtonItem.Title = "Cancel";
+				backButtonItem.Clicked += HandleBackButtonItemClicked;
+				unknownPersonViewController.NavigationItem.SetLeftBarButtonItem(backButtonItem,false);
+				
+				UINavigationController contactNavController = new UINavigationController();
+				contactNavController.PushViewController(unknownPersonViewController,false);
+				
+				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (contactNavController, true);
 			IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
 		}
 
@@ -234,23 +234,23 @@ namespace Unity.Platform.IPhone
 		/// </returns>
 		public override Contact GetContact (string id)
 		{
-
+			
 			ABAddressBook addressBook = IPhoneServiceLocator.CurrentDelegate.AddressBook;
-			// Gets all people in the address book
+				// Gets all people in the address book
 			ABPerson[] people = addressBook.GetPeople();
-
-
+				
+			
 			if(people != null) {
 				// sort list by FirstName (default)
 				Array.Sort(people, delegate(ABPerson person1, ABPerson person2) {
-					return person1.CompareTo(person2, DEFAULT_CONTACTS_LIST_SORT);
-				});
-
+                    return person1.CompareTo(person2, DEFAULT_CONTACTS_LIST_SORT);
+                  });
+				 
 				ABPerson person = people.First (x => x.Id.ToString() == id);
 			
 				if(person!=null){
 					Contact contact = new Contact();
-
+					
 					// Basic Info
 					contact.ID = "" + person.Id;
 					contact.Name = person.FirstName;
@@ -258,39 +258,39 @@ namespace Unity.Platform.IPhone
 					contact.Lastname = person.LastName;
 					contact.DisplayName = person.Nickname;
 					contact.Notes = person.Note;
-
+					
 					// TODO how to get the group(s) this person belongs to
 					contact.Group = person.Organization;
-
+					
 					// Work info
 					contact.Company = person.Organization;
 					contact.JobTitle = person.JobTitle;
 					contact.Department = person.Department;
-
+					
 					// Addresses
 					contact.Addresses = this.GetContactAdresses(person);
-
+					
 					// Phones
 					contact.Phones = this.GetContactPhones(person);
-
+					
 					// Emails
 					contact.Emails = this.GetContactEmails(person);
-
+					
 					// Websites
 					contact.WebSites = this.GetContactWebsites(person);
-
+					
 					// Photo
 					if(person.HasImage) {
 						contact.Photo = this.GetContactBinaryPhoto(person.Image);
 					}
-
+					
 					// Relationship
 					// TODO contact.Relationship =
-
+					
 					return contact;
 				}
 			}
-
+			
 			return null;
 		}
 
@@ -343,8 +343,8 @@ namespace Unity.Platform.IPhone
 					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Listing ALL contacts...");
 					foreach (ABPerson person in people) {
 						contactList.Add (ABPersonToContactLite(person));
-					}
-
+		}
+		
 
 				} else {
 
