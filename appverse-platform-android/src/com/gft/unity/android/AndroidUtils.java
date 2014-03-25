@@ -289,7 +289,7 @@ public class AndroidUtils {
 			return is;
 		}
     }
-	
+    
     public static Map<String, String> getUrlParameters(String url, boolean includeContextPath, String contextPathKey)
             throws UnsupportedEncodingException {
         //Map<String, List<String>> params = new HashMap<String, List<String>>();

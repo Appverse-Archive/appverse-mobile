@@ -149,26 +149,39 @@ public class ServiceHandler extends AndroidHandler {
 
 		String callback = null;
 		String ID = null;
-		String JSON = null;
+		String JSON = "";
 
 		// querystring format: callbackFunction$$$ID$$$json=****** 
+		// [MOBPLAT-185], the "json" latest query parameter could not be present (for API methods without parameters)
 		if (query!= null) {
 			String token0 = "&";
 			String token1 = "callback=";
 			String token2 = "callbackid=";
+			int nextParamToken = 0;
 
 			if(query.indexOf(token1)==0) {
 				query = query.substring(token1.length());
-				callback = query.substring(0, query.indexOf(token0));
-				query = query.substring(query.indexOf(token0)+1);
+				nextParamToken = query.indexOf(token0);
+				if(nextParamToken==-1) nextParamToken = query.length();
+				if(query.length()>=nextParamToken)
+					callback = query.substring(0, nextParamToken);
+				if(query!=null && query.length()>(nextParamToken+1))
+					query = query.substring(nextParamToken+1);
+				else
+					query = null;
 			}
-			if(query.indexOf(token2)==0) {
+			if(query!= null && query.indexOf(token2)==0) {
 				query = query.substring(token2.length());
-				ID = query.substring(0, query.indexOf(token0));
-				query = query.substring(query.indexOf(token0)+1);
+				nextParamToken = query.indexOf(token0);
+				if(nextParamToken==-1) nextParamToken = query.length();
+				if(query.length()>=nextParamToken)
+					ID = query.substring(0, nextParamToken);
+				if(query!=null && query.length()>(nextParamToken+1))
+					query = query.substring(nextParamToken+1);
+				else
+					query = null;
 			}
-
-			JSON = query;
+			if(query != null)  JSON = query;
 		}
 		Log("callback function: " + callback);
 		Log("callback ID: " + ID);
