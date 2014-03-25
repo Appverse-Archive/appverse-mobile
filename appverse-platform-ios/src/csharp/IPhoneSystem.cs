@@ -34,7 +34,7 @@ namespace Unity.Platform.IPhone
 {
     public class IPhoneSystem : AbstractSystem
     {
-		
+
 		public override string LaunchConfigFile { 
 			get {
 				return IPhoneUtils.GetInstance().GetFileFullPath(base.LaunchConfigFile);

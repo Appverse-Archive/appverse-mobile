@@ -379,8 +379,8 @@ namespace Unity.Platform.IPhone
 				if(data == null) {
 					SystemLogger.Log(SystemLogger.Module.PLATFORM, "File not available at path: " + resourcePath);
 				} else {
-				byte[] buffer = new byte[data.Length];
-				Marshal.Copy(data.Bytes, buffer,0,buffer.Length);
+					byte[] buffer = new byte[data.Length];
+					Marshal.Copy(data.Bytes, buffer,0,buffer.Length);
 
 					return buffer;
 				}
@@ -420,7 +420,7 @@ namespace Unity.Platform.IPhone
 			}
 			return true; // by default
 		}
-		
+
 		public Dictionary<String,Object> ConvertToDictionary(NSMutableDictionary dictionary) {
 			Dictionary<String,Object> prunedDictionary = new Dictionary<String,Object>();
 			foreach (NSString key in dictionary.Keys) { 
@@ -506,7 +506,7 @@ namespace Unity.Platform.IPhone
 			}
 			return null;
 		}
-		
+
 		public T JSONDeserialize<T> (string json) {
 			try {
 				return Serialiser.Deserialize<T>(json);
@@ -523,8 +523,9 @@ namespace Unity.Platform.IPhone
 				dataJSONString = "'"+ (data as String) +"'";
 			}
 			string jsCallbackFunction = "if("+method+"){"+method+"("+dataJSONString+");}";
-			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript: " + method);
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript (single object): " + method + ", dataJSONString: " + dataJSONString);
 			IPhoneServiceLocator.CurrentDelegate.MainUIWebView().EvaluateJavascript(jsCallbackFunction);
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "NotifyJavascript EVALUATED");
 		}
 
 		public void FireUnityJavascriptEvent (string method, object[] dataArray)
@@ -548,8 +549,9 @@ namespace Unity.Platform.IPhone
 			string dataJSONString = builder.ToString();
 
 			string jsCallbackFunction = "if("+method+"){"+method+"("+dataJSONString+");}";
-			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript: " + method); // + ",jsCallbackFunction="+ jsCallbackFunction 
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript (array object): " + method + ", dataJSONString: " + dataJSONString); // + ",jsCallbackFunction="+ jsCallbackFunction 
 			IPhoneServiceLocator.CurrentDelegate.MainUIWebView().EvaluateJavascript(jsCallbackFunction);
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "NotifyJavascript EVALUATED");
 		}
 
 		public void ExecuteJavascriptCallback(string callbackFunction, string id, string jsonResultString) {
