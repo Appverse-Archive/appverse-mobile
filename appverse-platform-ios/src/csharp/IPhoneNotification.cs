@@ -317,7 +317,7 @@ namespace Unity.Platform.IPhone
 		{
 			throw new System.NotImplementedException ();
 		}
-		
+
 
 
 		public override void RegisterForRemoteNotifications (string senderId, RemoteNotificationType[] types)
