@@ -35,7 +35,7 @@ namespace Unity.Core.Pim
 		public Contact ()
 		{
 		}
-		
+
 		public string Company { get; set; }
 
 		public string JobTitle { get; set; }
@@ -53,6 +53,8 @@ namespace Unity.Core.Pim
 		public byte[] Photo { get; set; }
 
 		public string PhotoBase64Encoded { get; set; }
+
+
 
 	}
 }

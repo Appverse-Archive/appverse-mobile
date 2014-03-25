@@ -17,7 +17,7 @@ Appverse = new function() {
 };
 
 Appverse={
-	version:"4.3",
+	version:"4.4",
 	
 	/**
 	 * Boolean to indicate if the next request send to the platform (using any Appverse.<API_serviceName>.<API_serviceMethod>() call) should unscape or not the data send.
@@ -137,6 +137,7 @@ Appverse.isBackground = function() {
 
 /**
  * Applications should override/implement this method to be aware of application being send to background, and should perform the desired javascript code on this case.
+ * @aside guide application_listeners
  * <br> @version 2.0
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
@@ -149,12 +150,13 @@ Appverse.backgroundApplicationListener= function() {};
  * <br> @version 2.0
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
- * 
+ * @aside guide application_listeners
  */
 Appverse.foregroundApplicationListener = function() {};
 
 /**
  * Applications should override/implement this method to be aware of device physical back button has been pressed, and should perform the desired javascript code on this case.
+ * @aside guide application_listeners
  * <br> @version 3.0
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
@@ -165,6 +167,7 @@ Appverse.backButtonListener = function() {};
 /**
  * Applications should override/implement this method to be aware of remote notification arrival, and should perform the desired javascript code on this case.
  * <br> For further information see, {@link Appverse.Notification.NotificationData NotificationData}.
+ * @aside guide application_listeners
  * <br> @version 3.9
  * @method
  * @param {Appverse.Notiticaton.NotificationData} notificationData The notification data received (visual data and custom provider data)
@@ -176,6 +179,7 @@ Appverse.OnRemoteNotificationReceived = function(notificationData) {};
 /**
  * Applications should override/implement this method to be aware of local notification reception, and should perform the desired javascript code on this case.
  * <br> For further information see, {@link Appverse.Notification.NotificationData NotificationData}.
+ * @aside guide application_listeners
  * <br> @version 3.9
  * @method
  * @param {Appverse.Notification.NotificationData} notificationData The notification data received (visual data and custom provider data)
@@ -187,6 +191,7 @@ Appverse.OnLocalNotificationReceived = function(notificationData) {};
 /**
  * Applications should override/implement this method to be aware of a successfully registration for remote notifications, and should perform the desired javascript code on this case.
  * <br> For further information see, {@link Appverse.Notification.RegistrationToken RegistrationToken}.
+ * @aside guide application_listeners
  * <br> @version 3.9
  * @method
  * @param {Appverse.Notification.RegistrationToken} registrationToken The registration token ("device token" for iOS or "registration ID" for Android) data received from the Notifications Service (APNs for iOS or GMC for Android).
@@ -198,6 +203,7 @@ Appverse.OnRegisterForRemoteNotificationsSuccess = function(registrationToken) {
 /**
  * Applications should override/implement this method to be aware of a successfully registration for remote notifications, and should perform the desired javascript code on this case.
  * <br> For further information see, {@link Appverse.Notification.RegistrationError RegistrationError}.
+ * @aside guide application_listeners
  * <br> @version 3.9
  * @method
  * @param {Appverse.Notification.RegistrationError} registrationError The registration error data received from the Notifications Service (APNs for iOS or GMC for Android).
@@ -208,6 +214,7 @@ Appverse.OnRegisterForRemoteNotificationsFailure = function(registrationError) {
 
 /**
  * Applications should override/implement this method to be aware of a successfully unregistration for remote notifications, and should perform the desired javascript code on this case.
+ * @aside guide application_listeners
  * <br> @version 4.0
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
@@ -218,6 +225,7 @@ Appverse.OnUnRegisterForRemoteNotificationsSuccess = function() {};
 /**
  * Applications should override/implement this method to be aware of storing of KeyPairs object into the local secure storage, and should perform the desired javascript code on this case.
  * <br> For further information see, {@link Appverse.Security.KeyPair KeyPair}.
+ * @aside guide application_listeners
  * <br> @version 4.2
  * @method
  * @param {Appverse.Security.KeyPair[]} storedKeyPairs An array of KeyPair objects successfully stored in the device local secure storage.
@@ -229,6 +237,7 @@ Appverse.OnKeyValuePairsStoreCompleted = function(storedKeyPairs, failedKeyPairs
 /**
  * Applications should override/implement this method to be aware of KeyPair objects found in the device local secure storage, and should perform the desired javascript code on this case.
  * <br> For further information see, {@link Appverse.Security.KeyPair KeyPair}.
+ * @aside guide application_listeners
  * <br> @version 4.2
  * @method
  * @param {Appverse.Security.KeyPair[]} foundKeyPairs An array of KeyPair objects found in the device local secure storage.
@@ -239,6 +248,7 @@ Appverse.OnKeyValuePairsFound = function(foundKeyPairs){};
 /**
  * Applications should override/implement this method to be aware of deletion of KeyPairs objects from the local secure storage, and should perform the desired javascript code on this case.
  * <br> For further information see, {@link Appverse.Security.KeyPair KeyPair}.
+ * @aside guide application_listeners
  * <br> @version 4.2
  * @method
  * @param {Appverse.Security.KeyPair[]} removedKeyPairs An array of KeyPair objects successfully removed from the device local secure storage.
@@ -252,6 +262,7 @@ Appverse.OnKeyValuePairsRemoveCompleted = function (removedKeyPairs, failedKeyPa
  * <br> For further information see, {@link Appverse.System.LaunchData LaunchData}.
  * <br> URI scheme protocols could contain any relative path information before parameter query string; 
  * in this case, that information will be received as a LaunchData object with the Name equals to {@link Appverse.System#LAUNCH_DATA_URI_SCHEME_PATH LAUNCH_DATA_URI_SCHEME_PATH}
+ * @aside guide application_listeners
  * <br> @version 4.2
  * @method
  * @param {Appverse.System.LaunchData[]} launchData The launch data received.
@@ -1414,7 +1425,7 @@ Database.prototype.CreateDatabase = function(dbName)
  * Gets database reference object by given name.<br/>For further information see, {@link Appverse.Database.Database Database}.
  * <br>Databases are located on the default database path: /<PersonalFolder>/sqlite/
  * <br> @version 1.0
- * @param {String} dbName The database file name (inlcuding .db extension).
+ * @param {String} dbName The database file name (including .db extension).
  * @return {Appverse.Database.Database} The created database reference object.
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
@@ -1610,6 +1621,7 @@ CreateDatabase : function(dbName, callbackFunctionName, callbackId)
  * Gets database reference object by given name, in ASYNC mode.
  * <br>Databases are located on the default database path: /<PersonalFolder>/sqlite/
  * <br> @version 2.0
+ * @param {String} dbName The database file name (including .db extension).
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
@@ -3615,6 +3627,7 @@ Media = function() {
      * @event onFinishedPickingImage Fired when an image have been picked, either from the Photos library (after calling the {@link Appverse.Media.GetSnapshot GetSnapshot}), 
 	 * or from the Camera (after calling the {@link Appverse.Media.TakeSnapshot TakeSnapshot})
 	 * <br>Method to be overrided by JS applications, to handle this event.
+	 * @aside guide application_listeners
      * <br> @version 3.1
 	 * @param {Appverse.Media.MediaMetadata} mediaMetadata The metadata for the image picked.
      */
@@ -3625,6 +3638,7 @@ Media = function() {
 	 * @event onQRCodeDetected Fired when a QR Code has been read, and its data is returned to the app in order to perform the desired javascript code on this case.
 	 * <br> For further information see, {@link Appverse.Media.MediaQRContent MediaQRContent}.
 	 * <br> Method to be overrided by JS applications, to handle this event.
+	 * @aside guide application_listeners
 	 * <br> @version 3.9
 	 * @method
 	 * @param {Appverse.Media.MediaQRContent} QRCodeContent The scanned QR Code data read
@@ -4708,7 +4722,7 @@ Log.prototype.Log = function(message, level)
 	if(level == null) {
 		return post_to_url(Appverse.Log.serviceName, "Log",  get_params([message]), "POST");
 	} else {
-		return post_to_url(Appverse.Log.serviceName, "Log",  get_params([message,key]), "POST");
+		return post_to_url(Appverse.Log.serviceName, "Log",  get_params([message,level]), "POST");
 	}
 };
 
@@ -5297,6 +5311,7 @@ AppLoader = function() {
      * @event onUpdateModulesFinished Fired when the applications loader has finished to download (update) modules 
 	 * (after calling either the {@link Appverse.AppLoader.UpdateModules UpdateModules} method or the {@link Appverse.AppLoader.UpdateModule UpdateModule} method), 
 	 * <br>Method to be overrided by JS applications, to handle this event.
+	 * @aside guide application_listeners
      * <br> @version 4.0
 	 * @param {Appverse.AppLoader.Module[]} successUpdates The list of successful updated modules.
      * @param {Appverse.AppLoader.Module[]} failedUpdates The list of failed updated modules.
@@ -5308,6 +5323,7 @@ AppLoader = function() {
      * @event onDeleteModulesFinished Fired when the applications loader has finished to delete modules 
 	 * (after calling the {@link Appverse.AppLoader.DeleteModules DeleteModules} method), 
 	 * <br>Method to be overrided by JS applications, to handle this event.
+	 * @aside guide application_listeners
      * <br> @version 4.0
 	 * @param {Appverse.AppLoader.Module[]} successDeletes The list of successful deleted modules.
      * @param {Appverse.AppLoader.Module[]} failedDeletes The list of failed deleted modules.

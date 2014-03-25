@@ -72,8 +72,8 @@ namespace Unity.Core.Media
 
 		public abstract QRType HandleQRCode (MediaQRContent mediaQRContent);
 
-        #endregion
-		
+		#endregion
+
         #region IAudio implementation
 		public abstract bool StartAudioRecording (string outputFilePath);
         

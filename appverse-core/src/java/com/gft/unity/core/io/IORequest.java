@@ -29,7 +29,7 @@ public class IORequest extends IOHeaders {
 
     public IORequest() {
     }
-
+    
     private String method;
     private HTTPProtocolVersion protocolVersion;
     

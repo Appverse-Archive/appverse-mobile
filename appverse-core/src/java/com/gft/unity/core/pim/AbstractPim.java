@@ -27,7 +27,7 @@ public abstract class AbstractPim implements ICalendar, IContacts {
 
     public AbstractPim() {
     }
-
+	
     @Override
     public abstract Contact CreateContact(Contact contactData);
 
@@ -44,7 +44,7 @@ public abstract class AbstractPim implements ICalendar, IContacts {
 
     @Override
     public abstract boolean UpdateContact(String ID, Contact newContactData);
-
+    
     @Override
     public abstract Contact GetContact(String id);
     
