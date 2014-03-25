@@ -27,9 +27,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Proxy;
 import android.os.Build;
+import android.os.Parcelable;
 import android.util.Log;
 import android.webkit.WebView;
 
@@ -146,10 +150,15 @@ public class ProxySettings {
 					Log.d(TAG, "Setting HC / ICS Proxy...");
 					ret = setHCICSProxy(view, host, port);
 					
-				} else {
-					
+				} else if (Build.VERSION.SDK_INT < 19) {
+
 					Log.d(TAG, "Setting JB Proxy...");
 					ret = setJBProxy(view, host, port);
+
+				} else {
+
+					Log.d(TAG, "Setting KK Proxy...");
+					ret = setKitKatWebViewProxy(view, host, port);
 				}
 			} catch (Exception e) {
 				Log.e(TAG, "error setting up webkit proxying", e);
@@ -288,6 +297,61 @@ public class ProxySettings {
 			return false;
 		}
 
+	}
+	
+	
+private static boolean setKitKatWebViewProxy(WebView webView, String host, int port) {
+		
+		Context appContext = webView.getContext().getApplicationContext();
+		
+	    System.setProperty("http.proxyHost", host);
+	    System.setProperty("http.proxyPort", port + "");
+	    System.setProperty("https.proxyHost", host);
+	    System.setProperty("https.proxyPort", port + "");
+	    
+	    boolean result = false;
+	    
+	    try {
+	    	
+	    	Class applicationCls = Class.forName("android.app.Application"); 
+	    	Field loadedApkField = applicationCls.getDeclaredField("mLoadedApk");
+	        loadedApkField.setAccessible(true);
+	        Object loadedApk = loadedApkField.get(appContext);
+	        
+	        Class loadedApkCls = Class.forName("android.app.LoadedApk");
+	        Field receiversField = loadedApkCls.getDeclaredField("mReceivers");
+	        receiversField.setAccessible(true);
+	        
+	        Map receivers = (Map) receiversField.get(loadedApk);
+	        
+	        for (Object receiverMap : receivers.values()) {
+	            for (Object rec : ((Map) receiverMap).keySet()) {
+	                Class clazz = rec.getClass();
+	                if (clazz.getName().contains("ProxyChangeListener")) {
+	                    Method onReceiveMethod = clazz.getDeclaredMethod("onReceive", Context.class, Intent.class);
+	                    Intent intent = new Intent(Proxy.PROXY_CHANGE_ACTION);
+
+	                    /*********** optional, may be need in future *************/
+	                    final String CLASS_NAME = "android.net.ProxyProperties";
+	                    Class cls = Class.forName(CLASS_NAME);
+	                    Constructor constructor = cls.getConstructor(String.class, Integer.TYPE, String.class);
+	                    constructor.setAccessible(true);
+	                    Object proxyProperties = constructor.newInstance(host, port, null);
+	                    intent.putExtra("proxy", (Parcelable) proxyProperties);
+	                    /*********** optional, may be need in future *************/
+
+	                    onReceiveMethod.invoke(rec, appContext, intent);
+	                    
+	                    // at least one receiver is settled
+	                    result = true;
+	                }
+	            }
+	        }
+	        return result;
+	    } catch (Exception ex) {
+	    	Log.d(TAG, "Exception setKitKatWebViewProxy", ex);
+	    	return false;
+	    }
 	}
 	
 	public static boolean checkSystemProxyProperties() {

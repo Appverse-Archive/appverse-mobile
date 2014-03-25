@@ -109,15 +109,15 @@ public class AndroidMessaging extends AbstractMessaging {
 		File tempFile = null;
 		Context context = AndroidServiceLocator.getContext();
 		SystemLogger.getInstance().Log(Module.PLATFORM,"createFileFromAttachment");
-
+					
 		if (Environment.MEDIA_MOUNTED.equals(Environment
 				.getExternalStorageState())) {
 			FileOutputStream fos = null;
-			try {
+			try {					
 				File externalDir = context.getExternalCacheDir();
 				externalDir.mkdirs();
 				tempFile = new File(externalDir, attData.getFileName());
-				tempFile.delete();
+				tempFile.delete();					
 				tempFile.createNewFile();
 
 				fos = new FileOutputStream(tempFile);
@@ -134,15 +134,19 @@ public class AndroidMessaging extends AbstractMessaging {
 					SystemLogger.getInstance().Log(Module.PLATFORM,"Referenced file length: " + buffer.length);
 					fos.write(buffer);
 				}else{
-				fos.write(attData.getData());
+					fos.write(attData.getData());
 				}
 				fos.flush();
-			} finally {
+			} catch(Exception ex) {
+				SystemLogger.getInstance().Log(Module.PLATFORM,"Exception while getting external cache directory to create a temporal file (attached email data). Check app permissions.");
+				
+			}finally {
 				if (fos != null) {
 					fos.close();
 				}
 			}
 		}
+		
 
 		return tempFile;
 	}

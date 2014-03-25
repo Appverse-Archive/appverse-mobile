@@ -220,7 +220,7 @@ public class NotificationUtils {
 		return null;
 	}
 	
-
+	
 	/**
 	 * Returns remote notifications preference stored on Shared Preferences.
 	 * @param context The current application context.

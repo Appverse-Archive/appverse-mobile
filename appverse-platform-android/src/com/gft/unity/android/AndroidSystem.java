@@ -721,7 +721,7 @@ public class AndroidSystem extends AbstractSystem {
 				LOG.Log(Module.PLATFORM, "No application provided to launch, please check your first argument on API method invocation");
 			}
 		} catch(Exception e) {
-			LOG.Log(Module.PLATFORM, "An exception has been raised while launching the application.", e);
+			LOG.Log(Module.PLATFORM, "An exception has been raised while launching the application.", e);			
 		}
 	}
 

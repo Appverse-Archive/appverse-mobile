@@ -54,7 +54,6 @@ import com.gft.unity.core.system.log.Logger.LogCategory;
 import com.google.android.gcm.GCMRegistrar;
 
 public class AndroidNotification extends AbstractNotification {
-
 	private static final String LOGGER_MODULE = "INotification";
 	private static final Logger LOGGER = Logger.getInstance(
 			LogCategory.PLATFORM, LOGGER_MODULE);
@@ -81,7 +80,7 @@ public class AndroidNotification extends AbstractNotification {
 		playingVibration = false;
 		runningLoading = false;
 	}
-
+	
 	
 
 	@Override
@@ -201,30 +200,30 @@ public class AndroidNotification extends AbstractNotification {
 
 		LOGGER.logOperationBegin("StartNotifyLoading",
 				new String[] { "loadingText" }, new Object[] { loadingText });
-
+		
 		try {
 			if(!runningLoading) {
-			final String textLoading = loadingText;
-			Runnable action = new Runnable() {
-
-				@Override
-				public void run() {
-					Context context = AndroidServiceLocator.getContext();
-					dialogLoading = ProgressDialog.show(context, null,
-							textLoading, false);
+				final String textLoading = loadingText;
+				Runnable action = new Runnable() {
+	
+					@Override
+					public void run() {
+						Context context = AndroidServiceLocator.getContext();
+						dialogLoading = ProgressDialog.show(context, null,
+								textLoading, false);
 						
 						AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
 								.GetInstance()
 								.GetService(
 										AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
 						if(aam!=null) aam.setNotifyLoadingVisible(true);
-				}
-			};
-
-			Activity activity = (Activity) AndroidServiceLocator.getContext();
-			activity.runOnUiThread(action);
-			result = true;
-			runningLoading = true;
+					}
+				};
+	
+				Activity activity = (Activity) AndroidServiceLocator.getContext();
+				activity.runOnUiThread(action);
+				result = true;
+				runningLoading = true;
 			} else {
 				LOGGER.logWarning("StartNotifyLoading", "Notify Loading already started. Call 'StopNotifiyLoading' method before send a new 'StartNotifyLoading'");
 			}
@@ -415,7 +414,7 @@ public class AndroidNotification extends AbstractNotification {
 			
 		}finally{LOGGER.logOperationEnd("RegisterForRemoteNotifications", null);}
 	}
-
+	
 	/**
 	 * Executes the Success listener to advise the application about a successful registration.
 	 * @param registrationId
