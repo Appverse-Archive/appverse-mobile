@@ -83,11 +83,11 @@ namespace Unity.Platform.IPhone
 			log("scale " + screenScale);
 
 			string splashScreenImage = "";
-			
+
 			short os_major_version = Int16.Parse(UIDevice.CurrentDevice.SystemVersion .Split ('.') [0]);
 
-			// Fix : avoid blank space at the bottom when holding splashscreen on view till view loads in iOS 7 devices
-			// Fix : avoid splashscreen position re-allocation in iPad versions < ios7  + apps compiled with iOS7.
+			// Fix [MOBPLAT-158] :: avoid blank space at the bottom when holding splashscreen on view till view loads in iOS 7 devices
+			// Fix [MOBPLAT-158] MAPS 15/11/2013 :: avoid splashscreen position re-allocation in iPad versions < ios7  + apps compiled with iOS7.
 			// On those iPad devices the app splashscreen should be placed -20px when the app is compiled with ios7 and run in a < ios7 
 			//if(IPhoneUtils.GetInstance().IsIPad() || os_major_version>=7) {
 			if(os_major_version>=7) {
