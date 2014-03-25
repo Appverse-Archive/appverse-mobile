@@ -36,7 +36,7 @@ namespace Unity.Platform.IPhone
 		private GAITracker _tracker = null;
 		
 		private GAITracker SharedTracker(string webPropertyID) {
-			
+
 			if(this._tracker == null) {
 				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 					this._tracker = GAI.SharedInstance.TrackerWithTrackingId(webPropertyID);
@@ -98,9 +98,9 @@ namespace Unity.Platform.IPhone
 						this._tracker.Set(GAIFields.SessionControl, "end");
 						this._tracker.Dispose();
 						this._tracker = null;
-					
+
 						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Tracking STOPPED");
-					
+
 					} catch (Exception e) {
 	                	SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error stopping tracker", e);
 	            	}
@@ -119,14 +119,14 @@ namespace Unity.Platform.IPhone
 						try {
 							/* deprecated - changes to compile with iOS 7 
 							NSError error;
-	                		this._tracker.TrackEvent(sGroup, action, label, iValue, out error);
+							this._tracker.TrackEvent(sGroup, action, label, iValue, out error);
 	                		this._tracker.Dispatch();
 	                		*/
 							this._tracker.Send(GAIDictionaryBuilder.CreateEventWithCategory(sGroup,action,label,iValue).Build());
 							GAI.SharedInstance.Dispatch();
 							/*bool success = SharedTracker().TrackEvent(sGroup,action, label, iValue);
 							if(success)  {
-							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Event TRACKED [" + sGroup + "-" + action + "-" + label + "-" + iValue);
+								SystemLogger.Log(SystemLogger.Module.PLATFORM, "Event TRACKED [" + sGroup + "-" + action + "-" + label + "-" + iValue);
 							} else {
 								SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error tracking event (without further error information)");
 							}*/
