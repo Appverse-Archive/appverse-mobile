@@ -681,7 +681,16 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
    * it to a value stored as a preference.
    */
   private boolean showHelpOnFirstLaunch() {
+	  /********************************
+	   * September 19th 2013 by APPVERSE TEAM
+	   * Commented the code below in order to avoid an error showing a URL not found the first time the application is launched
+	   * In order to return to the normal behavior just uncomment the code section below
+	   * Support Ticket 0078982
+	   * External Link: http://stackoverflow.com/questions/17816600/webpage-not-found-file-android-asset-html-nl-index-html-not-found-error-o
+	   ********************************/
+	  /*
     try {
+    	
       PackageInfo info = getPackageManager().getPackageInfo(PACKAGE_NAME, 0);
       int currentVersion = info.versionCode;
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -698,7 +707,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       }
     } catch (PackageManager.NameNotFoundException e) {
       Log.w(TAG, e);
-    }
+    }*/
     return false;
   }
 
