@@ -111,9 +111,7 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
 		this.RegisterService(new AndroidWebtrekk(),
 				AndroidServiceLocator.SERVICE_TYPE_WEBTREKK);
 		this.RegisterService(new AndroidAppLoader(),
-				AndroidServiceLocator.SERVICE_TYPE_APPLOADER);
-		this.RegisterService(new AndroidNFCPayment(),
-				AndroidServiceLocator.SERVICE_TYPE_NFCPAYMENT);
+				AndroidServiceLocator.SERVICE_TYPE_APPLOADER);		
 		if(Build.VERSION.SDK_INT>=18){
 			this.RegisterService(new AndroidBeacon(),
 				AndroidServiceLocator.SERVICE_TYPE_BEACON);
