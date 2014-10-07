@@ -29,6 +29,7 @@ using System.Threading;
 using System.Collections.Generic;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
+using Unity.Core.Security;
 using Unity.Core.Notification;
 using Unity.Core.System;
 using Unity.Core.System.Launch;
@@ -52,6 +53,10 @@ namespace UnityUI.iOS
                 
         private static string NOT_IMPORTANT_VARIABLE = "$replace_me$";
 		private bool disableThumbnails = false;
+		private bool blockRooted = false;
+		private bool securityChecksPerfomed = false;
+		private bool securityChecksPassed = false;
+		private static string DEFAULT_LOCKED_HTML = "app/config/error_rooted.html";
 
 		private List<LaunchData> launchData = null;
 		private bool handledOpenUrl = false;
@@ -132,12 +137,17 @@ namespace UnityUI.iOS
 			try {
 				var disableThumbnailskey = NSBundle.MainBundle.ObjectForInfoDictionary("Unity_DisableThumbnails");
 				disableThumbnails = Convert.ToBoolean(Convert.ToInt32(""+disableThumbnailskey));
+
+				var blockRootedkey = NSBundle.MainBundle.ObjectForInfoDictionary("Appverse_BlockRooted");
+				blockRooted = Convert.ToBoolean(Convert.ToInt32(""+blockRootedkey));
+
 #if DEBUG
 				log ("Disable Background Snapshot? " + disableThumbnails);
+				log ("Should block jailbroken device? " + blockRooted);
 #endif
 			} catch(Exception ex) {
 #if DEBUG
-				log ("Exception getting 'Unity_DisableThumbnails' from application preferences: " + ex.Message);
+				log ("Exception getting application preferences: " + ex.Message);
 #endif
 			}
 		
@@ -163,7 +173,7 @@ namespace UnityUI.iOS
 			InitializeUnity ();
 		}
 
-		public override bool FinishedLaunching (UIApplication application, NSDictionary launcOptions)
+		public override bool FinishedLaunching (UIApplication application, NSDictionary launchOptions)
 		{
 			#if DEBUG
 			log ("FinishedLaunching with NSDictionary");
@@ -194,7 +204,7 @@ namespace UnityUI.iOS
 				// The NSDictionary options variable would contain any notification data if the user clicked the 'view' button on the notification
 				// to launch the application. 
 				// This method processes these options from the FinishedLaunching, as well as the ReceivedRemoteNotification methods.
-				processNotification(launcOptions, true, applicationState);
+				processNotification(launchOptions, true, applicationState);
 			
 				// Processing extra data received when launched externally (using custom scheme url)
 				processLaunchData();
@@ -211,7 +221,7 @@ namespace UnityUI.iOS
 #if DEBUG
 			log ("************** processLaunchData... should handle open url? : " + handledOpenUrl + ", launchedData?: " + launchData);
 #endif
-			if(handledOpenUrl) {
+			if(handledOpenUrl && launchData != null && launchData.Count > 0) {
 				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnExternallyLaunched", launchData);
 				handledOpenUrl = false;
 				launchData = null;
@@ -565,12 +575,96 @@ namespace UnityUI.iOS
 		//[Export("InitializeUnity")]
 		private void InitializeUnity ()
 		{
-			using (var pool = new NSAutoreleasePool ()) {
-				Thread thread = new Thread (InitializeUnityServer as ThreadStart);
-				thread.Priority = ThreadPriority.AboveNormal;
-				thread.Start ();
+
+			if (performSecurityChecks ()) {
+
+				#if DEBUG
+				log ("Security checks passed... initializing Appverse...");
+				#endif
+
+				using (var pool = new NSAutoreleasePool ()) {
+					Thread thread = new Thread (InitializeUnityServer as ThreadStart);
+					thread.Priority = ThreadPriority.AboveNormal;
+					thread.Start ();
 				
+				}
 			}
+		}
+
+		private bool performSecurityChecks() {
+
+
+			if (securityChecksPerfomed) {
+				#if DEBUG
+				log ("security checks already performed");
+				#endif
+				return securityChecksPassed; // if security checks already performed, return
+			}
+
+			#if DEBUG
+			log ("performing security checks...");
+			#endif
+
+			//  initialize variable
+			securityChecksPassed = false;
+
+			if (blockRooted) {
+
+				#if DEBUG
+				log ("Checking device jailbroken (this app is not allowed to run in those devices)... ");
+				#endif
+
+				ISecurity securityService = (ISecurity)IPhoneServiceLocator.GetInstance ().GetService ("security");
+				bool IsDeviceModified = securityService.IsDeviceModified ();
+
+				if (IsDeviceModified) {
+
+					#if DEBUG
+					log ("Device is jailbroken. Application is blocked as per build configuration demand");
+					#endif
+
+					UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+
+						#if DEBUG
+						log ("Loading error page...");
+						#endif
+						try {
+
+							string htmlErrorPageFile = IPhoneUtils.GetInstance().GetFileFullPath(DEFAULT_LOCKED_HTML);
+							byte[] htmlErrorPageBytes = IPhoneUtils.GetInstance().GetResourceAsBinary(htmlErrorPageFile, true);
+
+							NSData htmlErrorPageData = NSData.FromArray(htmlErrorPageBytes);
+							string mimeType = "text/html";
+							string textEncodingName = "UTF-8";
+
+							MainViewController ().loadWebViewData(htmlErrorPageData, mimeType, textEncodingName, new NSUrl("/"));
+
+						} catch (Exception ex) {
+							#if DEBUG
+							log ("Unable to load error page on Appverse WebView. Exception message: " + ex.Message);
+							#endif
+						}
+
+					});
+
+					this.DismissSplashScreen();
+
+				} else {
+					securityChecksPassed = true;
+					#if DEBUG
+					log ("Device is NOT jailbroken.");
+					#endif
+				}
+
+			} else { 
+				securityChecksPassed = true;
+				#if DEBUG
+				log ("This app could be used in jailbroken devices");
+				#endif
+			}
+
+			securityChecksPerfomed = true;
+			return securityChecksPassed;
 		}
 
 		[Export("InitializeUnityServer")]
@@ -591,43 +685,47 @@ namespace UnityUI.iOS
 		[Export("NotifyEnterForeground")]
 		private void NotifyEnterForeground ()
 		{
-			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
-				string script = "try{Unity._toForeground()}catch(e){}";
-				#if DEBUG
-				log ("NotifyJavascript: " + script);
-				#endif
-				try {
-					MainViewController ().webView.EvaluateJavascript(script);
-				} catch (Exception ex) {
+			if (performSecurityChecks ()) { // do not execute javascript on foreground if security checks failed
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+					string script = "try{Unity._toForeground()}catch(e){}";
 					#if DEBUG
-					log ("NotifyEnterForeground: Unable to execute javascript code: " + ex.Message);
+				log ("NotifyJavascript: " + script);
 					#endif
-				}
+					try {
+						MainViewController ().webView.EvaluateJavascript (script);
+					} catch (Exception ex) {
+						#if DEBUG
+					log ("NotifyEnterForeground: Unable to execute javascript code: " + ex.Message);
+						#endif
+					}
 
-				// Processing extra data received when launched externally (using custom scheme url)
-				processLaunchData();
+					// Processing extra data received when launched externally (using custom scheme url)
+					processLaunchData ();
 				
-			});
+				});
+			}
 			
 		}
 		
 		[Export("NotifyEnterBackground")]
 		private void NotifyEnterBackground ()
 		{
-			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
-				string script = "try{Unity._toBackground()}catch(e){}";
-				#if DEBUG
-				log ("NotifyJavascript: " + script);
-				#endif
-				try {
-					MainViewController ().webView.EvaluateJavascript(script);
-				} catch (Exception ex) {
+			if (performSecurityChecks ()) { // do not execute javascript on background if security checks failed
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+					string script = "try{Unity._toBackground()}catch(e){}";
 					#if DEBUG
-					log ("NotifyEnterBackground: Unable to execute javascript code: " + ex.Message);
+				log ("NotifyJavascript: " + script);
 					#endif
-				}
+					try {
+						MainViewController ().webView.EvaluateJavascript (script);
+					} catch (Exception ex) {
+						#if DEBUG
+					log ("NotifyEnterBackground: Unable to execute javascript code: " + ex.Message);
+						#endif
+					}
 				
-			});
+				});
+			}
 			
 		}
 		
@@ -636,7 +734,7 @@ namespace UnityUI.iOS
 			#if DEBUG
 			log ("OnActivated");
 			#endif
-			if (httpServer == null) {
+			if (httpServer == null && performSecurityChecks()) {  // do not open socket listener on foreground if security checks failed
 				NSDictionary settings = loadSettings ();
 				openSocketListener (settings);
 			}

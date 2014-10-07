@@ -3,7 +3,7 @@
 	android:versionCode="1" android:versionName="1.0.0"
 	package="com.gft.UNITYAPPLICATIONID"
 	android:sharedUserId="com.gft.appverse.SHAREDUSERID">
-	<uses-sdk android:minSdkVersion="app.android.target.version" android:targetSdkVersion="11"/>
+	<uses-sdk android:minSdkVersion="app.android.target.version" android:targetSdkVersion="18"/>
 	
 	<!-- THIS PERMISSION NEEDS TO BE ENABLED FOR UNITY APPS -->
 	<uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
@@ -22,6 +22,15 @@
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 	$END_TOKEN_LOCAL_NOTIFICATIONS$-->
 
+	<!-- $START_TOKEN_BLE$
+	<uses-permission android:name="android.permission.BLUETOOTH" />
+	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />	
+	<uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+	
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+	
+	<uses-permission android:name="android.permission.GET_TASKS" />
+	$END_TOKEN_BLE$-->
 	
 	<!-- ANDROID PERMISSIONS WILL BE UNCOMMENTED - IF REQUIRED FOR ANY API - DURING THE APPLICATION BUILD --> 
 	<!--uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/--> <!-- Allows an application to access coarse (e.g., Cell-ID, WiFi) location -->
@@ -54,6 +63,11 @@
 	<!--uses-permission android:name="android.permission.RECEIVE_SMS"/-->
 	
 	
+	<!--The Builder will add here all the plugin permissions that should be included in the app for the plugin features -->
+	<!-- $START_TOKEN_PLUGIN_PERMISSIONS$
+	
+		$END_TOKEN_PLUGIN_PERMISSIONS$-->
+	
 	<!-- Audio Recording Permission - For recording audio with video capture, your application must request the audio capture permission.-->
 	<!-- NOT YET IMPLEMENTED ON UNITY ANDROID PLATFORM -->
 	<!--uses-permission android:name="android.permission.RECORD_AUDIO"/-->
@@ -65,10 +79,16 @@
 	<!--uses-feature android:name="android.hardware.location.network" android:required="false"/-->
 	<!--uses-feature android:name="android.hardware.location.gps" android:required="false"/-->
 	
-	<application android:icon="@drawable/icon" android:label="@string/app_name" android:hardwareAccelerated="true" android:debuggable="com.gft.UNITYAPP.debuggable">
+	<application android:name="org.me.unity4jui_android.AppverseApplication" 
+	    android:icon="@drawable/icon" 
+	    android:label="@string/app_name"
+	    android:hardwareAccelerated="true" 
+	    android:debuggable="com.gft.UNITYAPP.debuggable">
+		
+		
 		<activity android:name="org.me.unity4jui_android.MainActivity"
 			android:label="@string/app_name" android:configChanges="orientation|keyboardHidden"
-			android:screenOrientation="unspecified" android:hardwareAccelerated="true" android:launchMode="singleInstance">
+			android:screenOrientation="unspecified" android:hardwareAccelerated="true" > <!-- android:launchMode="singleInstance" -->
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -80,7 +100,8 @@
 				<data android:scheme="com.gft.appverse.URISCHEME" />
 			</intent-filter>			
 		</activity>				
-		<activity android:name="org.me.unity4jui_android.BrowserActivity" android:hardwareAccelerated="true">
+		<activity android:name="org.me.unity4jui_android.BrowserActivity" android:hardwareAccelerated="true"
+		    android:exported="false">
 			<intent-filter>
 				<action android:name="com.gft.UNITYAPPLICATIONID.SHOW_BROWSER" />
 				<category android:name="android.intent.category.DEFAULT" />
@@ -137,6 +158,12 @@
 		    </intent-filter>
 		</receiver>
 		$END_TOKEN_LOCAL_NOTIFICATIONS$-->
+		
+		<!--The Builder will add here all the plugin components that should be included in the application node-->
+		<!-- $START_TOKEN_PLUGIN_APPLICATION_COMPONENTS$
+			
+			$END_TOKEN_PLUGIN_APPLICATION_COMPONENTS$-->
+		
 		
 	</application>
 

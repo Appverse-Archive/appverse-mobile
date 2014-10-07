@@ -49,6 +49,10 @@ namespace Unity.Platform.IPhone
 	{
 		private static Dictionary<int, DateTime> myCertificateList = new Dictionary<int, DateTime>();
 
+
+		private static String _VALIDROOTAUTHORITIES = "VeriSign;";
+
+
 		/// <summary>
 		/// Validates the web certificates.
 		/// </summary>
@@ -69,19 +73,59 @@ namespace Unity.Platform.IPhone
 		/// </param>
 		public static bool ValidateWebCertificates (Object sender, System.Security.Cryptography.X509Certificates.X509Certificate endCert, System.Security.Cryptography.X509Certificates.X509Chain chain, SslPolicyErrors Errors)
 		{
+
+
+
 			SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation");
+			bool bErrorsFound = false;
 			try {
 				X509Certificate BCCert = Org.BouncyCastle.Security.DotNetUtilities.FromX509Certificate (endCert);
 				if (!CertificateIsTheSame (BCCert)) {
 					chain.Build (new System.Security.Cryptography.X509Certificates.X509Certificate2 (endCert.GetRawCertData ()));
 					if(Errors.Equals(SslPolicyErrors.None))
 					{
-						if(chain== null || chain.ChainElements== null || chain.ChainElements.Count==0) 
+						if(chain== null || chain.ChainElements== null || chain.ChainElements.Count == 0){
 							SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation. Chain is empty");
-						bool bCertIsOk = false;
-						if (CertIsValidNow (BCCert))
-							if (chain.ChainElements.Count > 1 && !VerifyCertificateOCSP(chain)) bCertIsOk = true;
-						if (bCertIsOk) {
+							bErrorsFound = true;
+						}else
+							SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation. Chain Element count: " + chain.ChainElements.Count);
+
+						foreach (System.Security.Cryptography.X509Certificates.X509ChainElement cert in chain.ChainElements) {
+							X509Certificate BCCerto = Org.BouncyCastle.Security.DotNetUtilities.FromX509Certificate (cert.Certificate);
+							if(CertIsSelfSigned(BCCerto)){
+								SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** SELF SIGNED Certificate: CERT NAME " + BCCerto.SubjectDN.ToString() + " ;ID = " + BCCerto.SerialNumber);
+								if(cert.Certificate.SerialNumber.Equals(chain.ChainElements[chain.ChainElements.Count-1].Certificate.SerialNumber)){
+									string[] stringSeparators = new string[] {";"};
+									string[] valids = _VALIDROOTAUTHORITIES.Split(stringSeparators, StringSplitOptions.RemoveEmptyEntries);
+									foreach(String validRoot in valids){
+										SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** SELF SIGNED Certificate check ["+validRoot+"]: "+cert.Certificate.SerialNumber+":"+chain.ChainElements[chain.ChainElements.Count-1].Certificate.SerialNumber);
+										if(BCCerto.SubjectDN.ToString().Contains(validRoot)){
+											bErrorsFound = false;
+										} else {
+											bErrorsFound = true;
+										}
+									}
+								}else {
+									bErrorsFound = true;
+								}
+
+								
+							}else{
+								SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** CERT NAME " + BCCerto.SubjectDN.ToString() + " ;ID = " + BCCerto.SerialNumber);
+							}
+
+							if(!CertIsValidNow(BCCerto)) bErrorsFound = true;
+						}
+							
+							//if (chain.ChainElements.Count > 1 && !VerifyCertificateOCSP(chain)) bCertIsOk = true;
+
+							//if (chain.ChainElements.Count > 1) bCertIsOk = true;
+							// DO NOT check OCSP revocation URLs. The time consuming this is expensive.
+							// TODO make this configurable and asynchronously in the case of enabled
+						    // !VerifyCertificateOCSP(chain)  ---> ASYNC
+							SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** OCSP Verification (certificate revocation check) is DISABLED for this build");
+
+						if (!bErrorsFound) {
 							myCertificateList.Add (BCCert.GetHashCode(), DateTime.Now);
 							SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation. Valid Certificate");
 							return true;
@@ -258,6 +302,7 @@ namespace Unity.Platform.IPhone
 				// Invalid key --> not self-signed
 				return false;
 			}
+
         }
 
 		/// <summary>

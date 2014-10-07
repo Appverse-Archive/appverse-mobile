@@ -54,7 +54,7 @@ import com.gft.unity.core.system.SystemLogger.Module;
 
 public class AndroidGeo extends AbstractGeo {
 
-	private static final SystemLogger LOG = SystemLogger.getInstance();
+	private static final SystemLogger LOG = AndroidSystemLogger.getInstance();
 
 	// TODO: review this value
 	private static final long MIN_TIME = 1000 * 60;

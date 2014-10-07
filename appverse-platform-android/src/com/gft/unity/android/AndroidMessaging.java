@@ -26,11 +26,13 @@ package com.gft.unity.android;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.telephony.PhoneNumberUtils;
 
@@ -39,7 +41,6 @@ import com.gft.unity.core.messaging.AttachmentData;
 import com.gft.unity.core.messaging.EmailData;
 import com.gft.unity.core.storage.filesystem.FileData;
 import com.gft.unity.core.storage.filesystem.IFileSystem;
-import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
 
 // TODO SendEmail and SendMessageSMS: feedback for user cancels, send errors
@@ -97,7 +98,7 @@ public class AndroidMessaging extends AbstractMessaging {
 			context.startActivity(Intent.createChooser(emailIntent, "Email"));
 			result = true;
 		} catch (Exception ex) {
-			SystemLogger.getInstance().Log(Module.PLATFORM, "SendEmail error",
+			AndroidSystemLogger.getInstance().Log(Module.PLATFORM, "SendEmail error",
 					ex);
 		}
 
@@ -108,7 +109,7 @@ public class AndroidMessaging extends AbstractMessaging {
 			throws IOException {
 		File tempFile = null;
 		Context context = AndroidServiceLocator.getContext();
-		SystemLogger.getInstance().Log(Module.PLATFORM,"createFileFromAttachment");
+		AndroidSystemLogger.getInstance().Log(Module.PLATFORM,"createFileFromAttachment");
 					
 		if (Environment.MEDIA_MOUNTED.equals(Environment
 				.getExternalStorageState())) {
@@ -124,21 +125,21 @@ public class AndroidMessaging extends AbstractMessaging {
 				
 				if(attData.getData() == null){		
 					File localFile = new File(context.getFilesDir().getAbsolutePath(),  attData.getReferenceUrl()); //new File(FileUri);
-					SystemLogger.getInstance().Log(Module.PLATFORM,"no data binary available, searching as referenced url: "+localFile.getAbsolutePath());
+					AndroidSystemLogger.getInstance().Log(Module.PLATFORM,"no data binary available, searching as referenced url: "+localFile.getAbsolutePath());
 					IFileSystem fileService = (IFileSystem) AndroidServiceLocator
 							.GetInstance().GetService(
 									AndroidServiceLocator.SERVICE_TYPE_FILESYSTEM);
 					FileData fileData = new FileData();
 					fileData.setFullName(localFile.getAbsolutePath());
 					byte[] buffer = fileService.ReadFile(fileData);
-					SystemLogger.getInstance().Log(Module.PLATFORM,"Referenced file length: " + buffer.length);
+					AndroidSystemLogger.getInstance().Log(Module.PLATFORM,"Referenced file length: " + buffer.length);
 					fos.write(buffer);
 				}else{
 					fos.write(attData.getData());
 				}
 				fos.flush();
 			} catch(Exception ex) {
-				SystemLogger.getInstance().Log(Module.PLATFORM,"Exception while getting external cache directory to create a temporal file (attached email data). Check app permissions.");
+				AndroidSystemLogger.getInstance().Log(Module.PLATFORM,"Exception while getting external cache directory to create a temporal file (attached email data). Check app permissions.");
 				
 			}finally {
 				if (fos != null) {
@@ -162,19 +163,33 @@ public class AndroidMessaging extends AbstractMessaging {
 		boolean result = false;
 
 		try {
-
 			if (PhoneNumberUtils.isWellFormedSmsAddress(phoneNumber)) {
-				Uri smsUri = Uri.fromParts("sms", phoneNumber, null);
-				Intent intent = new Intent(Intent.ACTION_VIEW, smsUri);
-				intent.putExtra("sms_body", text);
-				intent.putExtra("address", phoneNumber);
-				intent.setType("vnd.android-dir/mms-sms");
-				AndroidServiceLocator.getContext().startActivity(
-						Intent.createChooser(intent, "SMS"));
+				if(Build.VERSION.SDK_INT >= 19){
+					// [MOBPLAT-196] - allow other apps (such as Hangouts to sens sms if Messages native app is not available)
+					AndroidSystemLogger.getInstance().Log(Module.PLATFORM,"KitKat version, using uri scheme smsto://");
+					Uri smsUri = Uri.fromParts("smsto", phoneNumber, null);
+					Intent intent = new Intent(Intent.ACTION_VIEW, smsUri);
+					intent.putExtra("sms_body", text);
+					intent.putExtra("exit_on_sent", true);  // navigate back to the original activity after message sent [MOBPLAT-190], but it doe snot work for Hangouts app :-(
+					
+					AndroidServiceLocator.getContext().startActivity(intent);
+					
+				} else {
+					// the type is not valid for other sms apps, only for Messages native app.
+					Uri smsUri = Uri.fromParts("sms", phoneNumber, null);
+					Intent intent = new Intent(Intent.ACTION_VIEW, smsUri);
+					intent.setType("vnd.android-dir/mms-sms");
+					intent.putExtra("address", phoneNumber);
+					intent.putExtra("sms_body", text);
+					intent.putExtra("exit_on_sent", true);  // navigate back to the original activity after message sent [MOBPLAT-190]
+					AndroidServiceLocator.getContext().startActivity(
+							Intent.createChooser(intent, "SMS"));
+				}
+				
 				result = true;
 			}
 		} catch (Exception ex) {
-			SystemLogger.getInstance().Log(
+			AndroidSystemLogger.getInstance().Log(
 					Module.PLATFORM,
 					"SendMessageSMS error [" + text + "] to phone ["
 							+ phoneNumber + "]", ex);

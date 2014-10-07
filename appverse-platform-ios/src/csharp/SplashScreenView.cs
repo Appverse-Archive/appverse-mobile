@@ -50,14 +50,10 @@ namespace Unity.Platform.IPhone
 		
 		public SplashScreenView (UIInterfaceOrientation orientation)
 		{
-
 			splashview = new UIImageView();
-			
 			this.SetSplashViewImage(orientation);
-			
 			splashview.AutoresizingMask = UIViewAutoresizing.All;// UIViewAutoresizing.FlexibleLeftMargin | UIViewAutoresizing.FlexibleRightMargin;
 			splashview.ContentMode = UIViewContentMode.Top;
-			
 			this.AutosizesSubviews = false;
 			this.AutoresizingMask = UIViewAutoresizing.None;
 			this.AddSubview(splashview);
@@ -96,11 +92,20 @@ namespace Unity.Platform.IPhone
 			
 			if (orientation == UIInterfaceOrientation.LandscapeRight || orientation == UIInterfaceOrientation.LandscapeLeft)  
 		    {   
-				float boundsHeight = screen.Bounds.Height;
-				if(availableSplashScreens.ContainsKey(boundsHeight))
-					splashScreenImage = availableSplashScreens[boundsHeight];
-				splashview.Frame = new RectangleF(0, -statusBarHeight, screen.Bounds.Height, screen.Bounds.Width);
-				log("loading splashscreen on landscape [key=" + boundsHeight + "]");
+				if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+					float boundsHeight = screen.Bounds.Width;
+					if (availableSplashScreens.ContainsKey (boundsHeight))
+						splashScreenImage = availableSplashScreens [boundsHeight];
+					splashview.Frame = new RectangleF (0, -statusBarHeight, screen.Bounds.Width, screen.Bounds.Height);
+					log ("loading splashscreen on landscape [key=" + boundsHeight + "]");
+				} else {
+					float boundsHeight = screen.Bounds.Height;
+					if (availableSplashScreens.ContainsKey (boundsHeight))
+						splashScreenImage = availableSplashScreens [boundsHeight];
+					splashview.Frame = new RectangleF (0, -statusBarHeight, screen.Bounds.Height, screen.Bounds.Width);
+					log ("loading splashscreen on landscape [key=" + boundsHeight + "]");
+				}
+
 			} 
 			else if (orientation == UIInterfaceOrientation.Portrait || orientation == UIInterfaceOrientation.PortraitUpsideDown) 
 		    {

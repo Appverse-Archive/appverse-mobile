@@ -31,13 +31,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import com.gft.unity.android.AndroidSystemLogger;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
 
 // TODO add mechanism to skip properties
 public class JSONSerializer {
 
-	private static final SystemLogger LOG = SystemLogger.getInstance();
+	private static final SystemLogger LOG = AndroidSystemLogger.getInstance();
 
 	private static final String GETTER_PREFIX = "get";
 	private static final int GETTER_PREFIX_LENGTH = GETTER_PREFIX.length();

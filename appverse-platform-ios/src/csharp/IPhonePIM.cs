@@ -314,6 +314,24 @@ namespace Unity.Platform.IPhone
 		}
 
 		/// <summary>
+		/// Checks if the value of the query is not empty for the given column that requires it
+		/// </summary>
+		/// <returns><c>true</c>, if a value required (given by the column) is null or empty, <c>false</c> otherwise.</returns>
+		/// <param name="column">Column.</param>
+		/// <param name="value">Value.</param>
+		private bool QueryValueRequiredFailed(ContactQueryColumn column, String value) {
+
+			bool valueEmpty = (value == null || value.Trim().Equals(""));
+			switch (column) {
+				case ContactQueryColumn.ID:
+				case ContactQueryColumn.Name:
+					return valueEmpty;
+				default:
+					return false;
+			}
+		}
+
+		/// <summary>
 		/// Launchs the create new contact.
 		/// </summary>
 		/// <param name='contact'>
@@ -324,6 +342,7 @@ namespace Unity.Platform.IPhone
 
 			List<ContactLite> contactList = new List<ContactLite>();
 
+			IPhoneServiceLocator.CurrentDelegate.ReloadAddressBook ();  // getting an updated AddressBook instance
 			ABAddressBook addressBook = IPhoneServiceLocator.CurrentDelegate.AddressBook;
 
 			// Gets all people in the address book
@@ -339,23 +358,31 @@ namespace Unity.Platform.IPhone
 
 			List<ABPerson> contacts = null;
 
-			if(query == null || query.Value == null || query.Value.Trim().Equals("")) {
+				if(query == null || QueryValueRequiredFailed(query.Column, query.Value)) {
 					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Listing ALL contacts...");
 					foreach (ABPerson person in people) {
 						contactList.Add (ABPersonToContactLite(person));
 					}
 
-
 				} else {
 
 					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Listing contacts by query: " + query.ToString());
 					string value = query.Value;
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Listing contacts by query with value: " + value);
+					//SystemLogger.Log(SystemLogger.Module.PLATFORM, "Listing contacts by query with value: " + value);
 					
 					switch(query.Column){
 						case ContactQueryColumn.ID:
 							SystemLogger.Log (SystemLogger.Module.PLATFORM, "by ID ");
 							contacts = people.ToList ().FindAll (p => p.Id.ToString () == value.ToString());
+							break;
+
+					case ContactQueryColumn.Phone:
+							if(query.Condition.Equals(ContactQueryCondition.Available)) {
+								SystemLogger.Log (SystemLogger.Module.PLATFORM, "by Phone available ");
+								contacts = people.ToList ().FindAll (p => (p.GetPhones()!=null && p.GetPhones().Count>0));
+							} else {
+								SystemLogger.Log (SystemLogger.Module.PLATFORM, "** WARNING: When querying for the Phone query column, only the Available query condition is enabled");
+							}
 							break;
 
 						case ContactQueryColumn.Name:

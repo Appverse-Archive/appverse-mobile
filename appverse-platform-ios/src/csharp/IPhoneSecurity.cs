@@ -62,7 +62,8 @@ namespace Unity.Platform.IPhone
 		{
 			scPathsToCheck = new StringCollection();
 			scPathsToCheck.Add("/private/var/stash");
-			scPathsToCheck.Add("/Applications/Cydia.app/");
+			scPathsToCheck.Add("/Applications/Cydia.app");
+			scPathsToCheck.Add("/Applications/Snoop-it Config.app");
 			scPermissionPaths = new StringCollection();
 			scPermissionPaths.Add("/System/");
 			scPermissionPaths.Add("/private/");

@@ -87,7 +87,7 @@ public class AndroidSystem extends AbstractSystem {
 
 	private static final long MIN_MEMORY_AVAILABLE = 1 * 1024 * 1024; // 1MiB
 
-	private static final SystemLogger LOG = SystemLogger.getInstance();
+	private static final SystemLogger LOG = AndroidSystemLogger.getInstance();
 	
 	/* parsing configuration file requirements */
 	private static final String DEFAULT_ENCODING = "UTF-8";
@@ -682,7 +682,7 @@ public class AndroidSystem extends AbstractSystem {
 				}
 				
 				// Adding intent extras parsing query when no scheme URI is used
-				if(androidApp.getParseQueryAsIntentExtras()) {
+				if(androidApp.getParseQueryAsIntentExtras() && query!=null) { // MOBPLAT-201: query can be null
 					LOG.Log(Module.PLATFORM, "Adding extras to the Intent...");
 					Map<String, String> urlParams = AndroidUtils.getUrlParameters(query, true, "context_path");
 					int numIntentExtras = 0;
