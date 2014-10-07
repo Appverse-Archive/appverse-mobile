@@ -66,6 +66,7 @@ import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,6 +74,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -80,8 +82,12 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -93,11 +99,13 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.cookie.Cookie;
+import org.apache.http.entity.HttpEntityWrapper;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.protocol.HttpContext;
 import org.spongycastle.asn1.ASN1Primitive;
 import org.spongycastle.asn1.DEROctetString;
 import org.spongycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -136,16 +144,14 @@ import com.gft.unity.core.io.IOSessionContext;
 import com.gft.unity.core.io.RequestMethod;
 import com.gft.unity.core.io.ServiceType;
 import com.gft.unity.core.system.IOperatingSystem;
-import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
-// [MOBPLAT-63] - required for custom sslsocketfactory
-// [MOBPLAT-63] - end
 
-// TODO review implementation
-public class AndroidIO extends AbstractIO {
+public class AndroidIO extends AbstractIO implements Runnable{
 
-	private static final SystemLogger LOG = SystemLogger.getInstance();
+	private static final AndroidSystemLogger LOG = AndroidSystemLogger.getSuperClassInstance();
 	private static String _VALIDATECERTIFICATES = "$ValidateCertificates$";
+	private static String _VALIDROOTAUTHORITIES = "VeriSign;";
+	//private static String _VALIDROOTAUTHORITIES = "$ValidRoothAuthorities$";
 	
 	private static final String DEFAULT_SERVICE_TYPE = "XMLRPC_JSON";
 	private static final String DEFAULT_SERVICE_METHOD = "POST";
@@ -172,10 +178,14 @@ public class AndroidIO extends AbstractIO {
 	private static int MAX_BINARY_SIZE = 8*1024*1024;  // 8 MB
 	
 	private static DefaultHttpClient httpClient = new DefaultHttpClient();
+	private static DefaultHttpClient httpSSLClient = null;
 	private static final CookieStore cookieStore = httpClient.getCookieStore();
+	
+	private boolean addedGzipHttpResponseInterceptor = false;
 
 	public AndroidIO() {
 		loadServicesConfig();
+		(new Thread(this)).start();
 	}
 	
 	public boolean Validatecertificates() {
@@ -247,7 +257,7 @@ public class AndroidIO extends AbstractIO {
 				eventType = xpp.next();
 			}
 		} catch (Exception ex) {
-			LOG.Log(Module.PLATFORM, "LoadConfig error ["
+			LOG.LogDebug(Module.PLATFORM, "LoadConfig error ["
 					+ SERVICES_CONFIG_FILE + "]: " + ex.getMessage());
 		}
 		servicesConfig.setServices(servicesList
@@ -268,106 +278,23 @@ public class AndroidIO extends AbstractIO {
 			}
 		}
 		
-		LOG.Log(Module.PLATFORM, "Requesting service: " + requestUriString);
-		LOG.Log(Module.PLATFORM, "Request method: " + requestMethod);
+		// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+		// LOG.LogDebug(Module.PLATFORM, "Requesting service: " + requestUriString);
+		LOG.LogDebug(Module.PLATFORM, "Request method: " + requestMethod);
 		
 		return requestUriString;
 	}
 	
-	/**
-	 * 
-	 * @param requestUriString
-	 * @return
-	 * @throws KeyStoreException
-	 * @throws NoSuchAlgorithmException
-	 * @throws CertificateException
-	 * @throws IOException
-	 * @throws KeyManagementException
-	 * @throws UnrecoverableKeyException
-	 */
 	private boolean applySecurityValidations(String requestUriString) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, KeyManagementException, UnrecoverableKeyException {
-		
 		if (requestUriString.startsWith(HTTPS_SCHEME)) {
-			HostnameVerifier hostnameVerifier = org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
-			// Set verifier
-			HttpsURLConnection
-					.setDefaultHostnameVerifier(hostnameVerifier);
-			SchemeRegistry registry = new SchemeRegistry();
-			
-			/******************************** 
-			 * USING DEFAULT ANDROID DEVICE SSLSocketFactory
-			 * the default factory was throwing errors verifying ssl certificates chains for some specific CA Authorities
-			 * (for example, Verisign root ceritificate G5 is not available on android devices <=2.3)
-			 * See more details on jira ticket [MOBPLAT-63]
-			 ******************************** 
-			SSLSocketFactory socketFactory = SSLSocketFactory
-					.getSocketFactory();
-			socketFactory
-					.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
-			*/
-			
-			/******************************** 
-			 * USING CUSTOM SSLSocketFactory - accept all certificates
-			 * See more details on jira ticket [MOBPLAT-63]
-			 ********************************
-			*/ 
-			SSLSocketFactory socketFactory;
-			if(!Validatecertificates())
-			{
-				KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-				trustStore.load(null, null);
-				socketFactory =  new MySSLSocketFactory(trustStore);
-			}else{
-		        /*
-		        /******************************** 
-				 * USING VALIDATING SSLSocketFactory - Validating all certificates
-				 * See more details on jira ticket [MOBPLAT-63]
-				 ********************************
-				 */
-				KeyStore trustStore;
-				if(Build.VERSION.SDK_INT>=14){
-					trustStore = KeyStore.getInstance("AndroidCAStore");
-					trustStore.load(null,null);					
-				}else{
-					try{
-						trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-						String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);
-						FileInputStream is = new FileInputStream(filename);
-						trustStore.load(is,"changeit".toCharArray());
-				        is.close();
-					}catch(Exception ex)
-					{
-						try{
-							/*
-					        /******************************** 
-							 * HTC 2.3.5 Access Keystore problem
-							 * See more details on jira ticket [MOBPLAT-91]
-							 ********************************
-							 */
-							trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-							String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);
-							FileInputStream is = new FileInputStream(filename);
-							trustStore.load(is,null);
-					        is.close();
-						}catch(Exception e)
-						{
-							trustStore = null;
-							LOG.Log(Module.PLATFORM, "A problem has been detecting while accessing the device keystore.",e);
-							return false;
-						}
-					}
-				}
-				socketFactory =  ValidatingSSLSocketFactory.GetInstance(trustStore);
-		        socketFactory.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
+			LOG.LogDebug(Module.PLATFORM, "Applying Custom HTTPSClient (requested URI contains HTTPS protocol)");
+			if(httpSSLClient == null) {
+				LOG.LogDebug(Module.PLATFORM, "Custom HTTPSClient not yet intialized on first request, forcing creating it...");
+				createHttpClients();
 			}
-			LOG.Log(Module.PLATFORM, "Certificate Validation Enabled = " + this.Validatecertificates());
-			registry.register(new Scheme("https", socketFactory, 443));
-			registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-			ThreadSafeClientConnManager mgr = new ThreadSafeClientConnManager(
-					httpClient.getParams(), registry);
-			httpClient = new DefaultHttpClient(mgr,
-					new DefaultHttpClient().getParams());
-		} else {
+			httpClient = httpSSLClient;
+		}else{
+			LOG.LogDebug(Module.PLATFORM, "Applying DefaultHTTPClient");
 			httpClient = new DefaultHttpClient();
 		}
 		return true;
@@ -401,6 +328,12 @@ public class AndroidIO extends AbstractIO {
 					proxyUrl.getPort(), proxyUrl.getScheme());
 			httpClient.getParams().setParameter(
 					ConnRoutePNames.DEFAULT_PROXY, proxyHost);
+		}
+		
+		// [MOBPLAT-200] : allow gzip, deflate decompression modes
+		if(!addedGzipHttpResponseInterceptor) {
+			httpClient.addResponseInterceptor(new GzipHttpResponseInterceptor());
+			addedGzipHttpResponseInterceptor = true;
 		}
 	}
 	
@@ -501,7 +434,7 @@ public class AndroidIO extends AbstractIO {
 		byte[] resultBinary = null;
 		
 		String responseMimeTypeOverride = (httpResponse.getLastHeader("Content-Type")!=null? httpResponse.getLastHeader("Content-Type").getValue() : null);
-		LOG.Log(Module.PLATFORM, "response content type: " + responseMimeTypeOverride);
+		LOG.LogDebug(Module.PLATFORM, "response content type: " + responseMimeTypeOverride);
 		
 		// getting response input stream
 		InputStream responseStream = httpResponse.getEntity().getContent();
@@ -515,13 +448,13 @@ public class AndroidIO extends AbstractIO {
 				bufferReadSize = lengthContent;
 			}
 		} catch (Exception e) {
-			LOG.Log(Module.PLATFORM, "Error while getting Content-Length header from response: " + e.getMessage());
+			LOG.LogDebug(Module.PLATFORM, "Error while getting Content-Length header from response: " + e.getMessage());
 		}
 		
 		if(lengthContent>MAX_BINARY_SIZE) {
-			LOG.Log(Module.PLATFORM, "WARNING! - file exceeds the maximum size defined in platform (" + MAX_BINARY_SIZE+ " bytes)");
+			LOG.LogDebug(Module.PLATFORM, "WARNING! - file exceeds the maximum size defined in platform (" + MAX_BINARY_SIZE+ " bytes)");
 		} else {
-			LOG.Log(Module.PLATFORM, "reading response stream content length: " + lengthContent);
+			LOG.LogDebug(Module.PLATFORM, "reading response stream content length: " + lengthContent);
 			/* WE DON'T READ IN A FULL BLOCK ANYMORE
 			 * 
 			// Read in block, if content length provided.
@@ -556,13 +489,13 @@ public class AndroidIO extends AbstractIO {
 				outBuffer.close();
 				outBuffer = null;
 			}
-			LOG.Log(Module.PLATFORM, "total read length: " + totalReadLen);
+			LOG.LogDebug(Module.PLATFORM, "total read length: " + totalReadLen);
 		}
 		
 		/*************
 		 * COOKIES HANDLING
 		 *************/
-		LOG.Log(Module.PLATFORM, "reading cookies.. ");
+		LOG.LogDebug(Module.PLATFORM, "reading cookies.. ");
 		if (cookieStore.getCookies().size() > 0) {
 
 			IOCookie[] cookies = new IOCookie[cookieStore.getCookies()
@@ -580,11 +513,11 @@ public class AndroidIO extends AbstractIO {
 		/*************
 		 * CACHE
 		 *************/
-		LOG.Log(Module.PLATFORM, "reading cache header.. ");
+		LOG.LogDebug(Module.PLATFORM, "reading cache header.. ");
 		// preserve cache-control header from remote server, if any
 		String cacheControlHeader = (httpResponse.getLastHeader("Cache-Control")!=null? httpResponse.getLastHeader("Cache-Control").getValue() : null);
 		if (cacheControlHeader != null && !cacheControlHeader.isEmpty()) {
-			LOG.Log(Module.PLATFORM, "Found Cache-Control header on response: " + cacheControlHeader + ", using it on internal response...");
+			LOG.LogDebug(Module.PLATFORM, "Found Cache-Control header on response: " + cacheControlHeader + ", using it on internal response...");
 			
 			IOHeader cacheHeader = new IOHeader();
 			cacheHeader.setName("Cache-Control");
@@ -601,7 +534,7 @@ public class AndroidIO extends AbstractIO {
 		// Close the input stream and return bytes
 		responseStream.close();
 
-		LOG.Log(Module.PLATFORM, "checking binary service type... ");
+		LOG.LogDebug(Module.PLATFORM, "checking binary service type... ");
 		if (ServiceType.OCTET_BINARY.equals(service.getType())) {
 			if (responseMimeTypeOverride != null && !responseMimeTypeOverride.equals(contentTypes.get(service.getType()))) {
 				response.setContentType(responseMimeTypeOverride);
@@ -615,7 +548,7 @@ public class AndroidIO extends AbstractIO {
 					.toString());
 			response.setContent(new String(resultBinary));
 		}
-		LOG.Log(Module.PLATFORM, "END reading response.. ");
+		LOG.LogDebug(Module.PLATFORM, "END reading response.. ");
 		return response;
 	}
 	
@@ -653,27 +586,27 @@ public class AndroidIO extends AbstractIO {
 				bufferReadSize = lengthContent;
 			}
 		} catch (Exception e) {
-			LOG.Log(Module.PLATFORM, "Error while getting Content-Length header from response: " + e.getMessage());
+			LOG.LogDebug(Module.PLATFORM, "Error while getting Content-Length header from response: " + e.getMessage());
 		}
-		LOG.Log(Module.PLATFORM, "reading response stream content length: " + lengthContent);
+		LOG.LogDebug(Module.PLATFORM, "reading response stream content length: " + lengthContent);
 		BufferedInputStream bis = new BufferedInputStream(responseStream);
 		 
         int size;
         byte[] buffer = new byte[bufferReadSize];
 
         File fullStorePath = new File(this.GetDirectoryRoot (), storePath);
-        LOG.Log(Module.PLATFORM, "Storing file at: " + fullStorePath.getAbsolutePath());
+        LOG.LogDebug(Module.PLATFORM, "Storing file at: " + fullStorePath.getAbsolutePath());
 		
         FileOutputStream fos = new FileOutputStream(fullStorePath);
         BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
         int totalReadLen = 0;
         while ((size = bis.read(buffer, 0, buffer.length)) != -1) {
             bos.write(buffer, 0, size);
-            // just for testing // LOG.Log(Module.PLATFORM, "read length: " + size);
+            // just for testing // LOG.LogDebug(Module.PLATFORM, "read length: " + size);
             totalReadLen = totalReadLen + size;
         }
         
-        LOG.Log(Module.PLATFORM, "total read length: " + totalReadLen);
+        LOG.LogDebug(Module.PLATFORM, "total read length: " + totalReadLen);
 
         bos.flush();
         bos.close();
@@ -694,10 +627,11 @@ public class AndroidIO extends AbstractIO {
 		IOResponse response = new IOResponse();
 		
 		if (service != null) {
-			LOG.Log(Module.PLATFORM, "Request content: " + request.getContent());
+			// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+			// LOG.LogDebug(Module.PLATFORM, "Request content: " + request.getContent());
 
 			if (endpoint == null) {
-				LOG.Log(Module.PLATFORM,
+				LOG.LogDebug(Module.PLATFORM,
 						"No endpoint configured for this service name: "
 								+ service.getName());
 				return response;
@@ -722,7 +656,7 @@ public class AndroidIO extends AbstractIO {
 				// Building Web Request to send
 				HttpEntityEnclosingRequestBase httpRequest = this.buildWebRequest(request, service, requestUriString, requestMethod);
 				
-				LOG.Log(Module.PLATFORM, "Downloading service content");
+				LOG.LogDebug(Module.PLATFORM, "Downloading service content");
 
 				// Throw a new Thread to check absolute timeout
 				timeoutThread = new Thread(new CheckTimeoutThread(httpRequest));
@@ -730,7 +664,7 @@ public class AndroidIO extends AbstractIO {
 				
 				long start = System.currentTimeMillis();
 				HttpResponse httpResponse = httpClient.execute(httpRequest);
-				LOG.Log(Module.PLATFORM,
+				LOG.LogDebug(Module.PLATFORM,
 						"Content downloaded in "
 								+ (System.currentTimeMillis() - start) + "ms");
 				
@@ -740,12 +674,10 @@ public class AndroidIO extends AbstractIO {
 				
 			} catch (Exception ex) {
 				LOG.Log(Module.PLATFORM,
-						"Unnandled Exception requesting service: "
-								+ requestUriString + ".", ex);
+						"Unnandled Exception requesting service.", ex);
 				response.setContentType(contentTypes.get(ServiceType.REST_JSON)
 						.toString());
-				response.setContent("Unhandled Exception Requesting Service: "
-						+ requestUriString + ". Message: " + ex.getMessage());
+				response.setContent("Unhandled Exception Requesting Service. Message: " + ex.getMessage());
 			} finally {
 				// abort any previous timeout checking thread
 				if(timeoutThread!=null && timeoutThread.isAlive()) {
@@ -754,7 +686,7 @@ public class AndroidIO extends AbstractIO {
 			}
 		}
 
-		LOG.Log(Module.PLATFORM, "invoke service finished");
+		LOG.LogDebug(Module.PLATFORM, "invoke service finished");
 		return response;
 	}
 	
@@ -766,16 +698,17 @@ public class AndroidIO extends AbstractIO {
 		IOServiceEndpoint endpoint = service.getEndpoint();
 		
 		if (service != null) {
-			LOG.Log(Module.PLATFORM, "Request content (for binary): " + request.getContent());
+			// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+			// LOG.LogDebug(Module.PLATFORM, "Request content (for binary): " + request.getContent());
 
 			if (endpoint == null) {
-				LOG.Log(Module.PLATFORM, "No endpoint configured for this service name: "
+				LOG.LogDebug(Module.PLATFORM, "No endpoint configured for this service name: "
 								+ service.getName());
 				return null;
 			}
 			
 			if (!ServiceType.OCTET_BINARY.equals (service.getType())) {
-				LOG.Log(Module.PLATFORM, "This method only admits OCTET_BINARY service types");
+				LOG.LogDebug(Module.PLATFORM, "This method only admits OCTET_BINARY service types");
 				return null;
 			}
 
@@ -798,7 +731,7 @@ public class AndroidIO extends AbstractIO {
 				// Building Web Request to send
 				HttpEntityEnclosingRequestBase httpRequest = this.buildWebRequest(request, service, requestUriString, requestMethod);
 				
-				LOG.Log(Module.PLATFORM, "Downloading service content");
+				LOG.LogDebug(Module.PLATFORM, "Downloading service content");
 
 				// Throw a new Thread to check absolute timeout
 				timeoutThread = new Thread(new CheckTimeoutThread(httpRequest));
@@ -806,7 +739,7 @@ public class AndroidIO extends AbstractIO {
 				
 				long start = System.currentTimeMillis();
 				HttpResponse httpResponse = httpClient.execute(httpRequest);
-				LOG.Log(Module.PLATFORM,
+				LOG.LogDebug(Module.PLATFORM,
 						"Content downloaded in "
 								+ (System.currentTimeMillis() - start) + "ms");
 				
@@ -816,8 +749,7 @@ public class AndroidIO extends AbstractIO {
 				
 			} catch (Exception ex) {
 				LOG.Log(Module.PLATFORM,
-						"Unnandled Exception requesting service: "
-								+ requestUriString + ".", ex);
+						"Unnandled Exception requesting service.", ex);
 			} finally {
 				// abort any previous timeout checking thread
 				if(timeoutThread!=null && timeoutThread.isAlive()) {
@@ -826,7 +758,7 @@ public class AndroidIO extends AbstractIO {
 			}
 		}
 
-		LOG.Log(Module.PLATFORM, "invoke service (for binary) finished");
+		LOG.LogDebug(Module.PLATFORM, "invoke service (for binary) finished");
 		return null;
 	}
 
@@ -851,14 +783,14 @@ public class AndroidIO extends AbstractIO {
 			try {
 				Thread.sleep(ABSOLUTE_INVOKE_TIMEOUT);
 				
-				LOG.Log(Module.PLATFORM, "*** INVOKE SERVICE TIMEOUT *** Absolute timeout checking completed.");
+				LOG.LogDebug(Module.PLATFORM, "*** INVOKE SERVICE TIMEOUT *** Absolute timeout checking completed.");
 				if(httpRequest != null) {
-					LOG.Log(Module.PLATFORM, "*** INVOKE SERVICE TIMEOUT *** Aborting request...");
+					LOG.LogDebug(Module.PLATFORM, "*** INVOKE SERVICE TIMEOUT *** Aborting request...");
 					httpRequest.abort();
 				}
 				
 			} catch (InterruptedException e) {
-				LOG.Log(Module.PLATFORM, "*** INVOKE SERVICE TIMEOUT *** Absolute timeout checking interrupted.");
+				LOG.LogDebug(Module.PLATFORM, "*** INVOKE SERVICE TIMEOUT *** Absolute timeout checking interrupted.");
 			}
 			
 		}
@@ -890,7 +822,7 @@ public class AndroidIO extends AbstractIO {
 	            }
 
 	            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-					LOG.Log(Module.PLATFORM, "Certificate Validation: Accepting all certificates");
+					LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Accepting all certificates");
 	            }
 
 	            public X509Certificate[] getAcceptedIssuers() {
@@ -941,15 +873,30 @@ public class AndroidIO extends AbstractIO {
 
 	    private ValidatingSSLSocketFactory(final KeyStore truststore) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {
 	        super(truststore);
-	      
 	        sslContext = SSLContext.getInstance("TLS");
 	        myCertificateList = new HashMap<Integer, Long>();
+	        
 	        Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
 	        
 	        TrustManager tm = new X509TrustManager() {
-	        	
+	        	 
 	        	public X509Certificate[] getAcceptedIssuers() {
-	                return null;
+	        		try{
+	        		X509Certificate[] returnIssuers = new X509Certificate[truststore.size()];
+	                Enumeration aliases = truststore.aliases();
+	                
+	                int i=0;
+	                while(aliases.hasMoreElements()){
+	                	returnIssuers[i] = (X509Certificate) truststore.getCertificate((String)aliases.nextElement());
+	                	//LOG.LogDebug(Module.PLATFORM, "TRUSTED CERT " + i + ": NAME " + returnIssuers[i].getSubjectDN().getName() + " ;ISSUER NAME: " + returnIssuers[i].getIssuerDN().getName());
+	                	i++;
+	                }
+	                return returnIssuers;
+	        		}catch(Exception ex){
+	        			LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Couldnt retrieve Accepted Issuers");
+	        		}
+	        		return null;
+	        		
 	            }
 	            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
 	            }
@@ -957,28 +904,50 @@ public class AndroidIO extends AbstractIO {
 	            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
 	            	boolean bErrorsFound = false;
 	            	try {
-	    				LOG.Log(Module.PLATFORM, "Certificate Validation: Starting Certificate Validation process");
+	    				LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Starting Certificate Validation process");
+	    				if(chain!= null && chain.length>0) LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate chain elements: " + chain.length ); 
 	            		//check the certificate is in memory
 	            		if(!certificateIsTheSame(chain[0])){
-		            		X509CertParser parser = new X509CertParser();
-		            		ByteArrayInputStream bais = new ByteArrayInputStream(chain[0].getEncoded());
-		    	            parser.engineInit(bais);
-		    	            bais.close();
-		            		X509CertificateObject cert = (X509CertificateObject)parser.engineRead();
-		            		if(certIsValidNow(cert)){
-		            			if(!certIsSelfSigned(cert)){
-		            				if(certChainIsValid(cert, chain)){
-		            					//all checks went OK. Add certificate to memory with current date and time
-		            					myCertificateList.put(Integer.valueOf(chain[0].hashCode()), Long.valueOf(System.currentTimeMillis()));
-		            					LOG.Log(Module.PLATFORM, "Certificate Validation: Certificate is Valid");
-		            				}
+	            			if(certChainIsValid(chain[0], chain)){
+		            			for(int i=0; i< chain.length; i++){
+		            				X509Certificate chainCert = chain[i];
+		            				LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate Name: " + chainCert.getSubjectDN().getName() + " ;SN: " + chainCert.getSerialNumber().toString() );
+		            				
+				            		X509CertParser parser = new X509CertParser();
+				            		ByteArrayInputStream bais = new ByteArrayInputStream(chainCert.getEncoded());
+				    	            parser.engineInit(bais);
+				    	            bais.close();
+				    	            
+				            		X509CertificateObject cert = (X509CertificateObject)parser.engineRead();
+				            		if(certIsValidNow(cert)){
+				            			if(!certIsSelfSigned(cert)){
+				            				//if(certChainIsValid(cert, chain)){
+				            					//all checks went OK. Add certificate to memory with current date and time
+				            					//myCertificateList.put(Integer.valueOf(chain[0].hashCode()), Long.valueOf(System.currentTimeMillis()));
+				            					LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is Valid");
+				            				//}
+				            			}else{ 
+				            				bErrorsFound = true;
+				            				LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is Self Signed");
+				            			}
+					            	}else{ 
+					            		bErrorsFound = true;
+					            		LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is expired");
+					            	}
 		            			}
-			            	}
-	            		}else{LOG.Log(Module.PLATFORM, "Certificate Validation: Trusted Certificate");}
+		            			if(!bErrorsFound) myCertificateList.put(Integer.valueOf(chain[0].hashCode()), Long.valueOf(System.currentTimeMillis())); 
+	            			}else{ 
+            					bErrorsFound = true;
+            					LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate Chain is not valid");
+            				}
+	            		}else{LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Trusted Certificate");}
+	            		
 					} catch (StreamParsingException e) {
 						bErrorsFound = true;
+						LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate chain error");
 					} catch (IOException e) {
 						bErrorsFound = true;
+						LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Error in certificate chain");
 					}
 	            	if(bErrorsFound){ throw new CertificateException("Certificate Validation: Errors found in the Certificate Chain");}
 	            }
@@ -1027,8 +996,13 @@ public class AndroidIO extends AbstractIO {
 	             * @return
 	             * 				True if the Certificate chain is valid, otherwise False
 	             */
-	            private boolean certChainIsValid(X509CertificateObject cert, X509Certificate[] chain){
-	            	if(!verifyCertificateOCSP(chain)){
+	            private boolean certChainIsValid(X509Certificate cert, X509Certificate[] chain){
+	            	// DO NOT check OCSP revocation URLs. The time consuming this is expensive.
+					// TODO make this configurable and asynchronously in the case of enabled
+				    // !verifyCertificateOCSP(chain)  ---> ASYNC
+	            	//if(!verifyCertificateOCSP(chain)){
+	            	LOG.LogDebug(Module.PLATFORM, 
+	            			"*************** OCSP Verification (certificate revocation check) is DISABLED for this build");
 	            		try{
 	            			//Selector to point out the end certificate
 	            			X509CertSelector selector = new X509CertSelector();
@@ -1049,16 +1023,16 @@ public class AndroidIO extends AbstractIO {
 	            			//Create the cert path result, if no exception is thrown means all went OK
 	            			CertPathBuilder builder = CertPathBuilder.getInstance("PKIX");
 	            			PKIXCertPathBuilderResult result = (PKIXCertPathBuilderResult)builder.build(pParams); 
-					        LOG.Log(Module.PLATFORM, "Certificate Validation: Certificate Path is valid");
+					        LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate Path is valid");
 		            		return true;
 	            		}catch (CertPathBuilderException e) {
-							LOG.Log(Module.PLATFORM, "Certificate Validation: Errors found in the Certificate Path ");
+							LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Errors found in the Certificate Path ");
 						} catch (NoSuchAlgorithmException e) {
-							LOG.Log(Module.PLATFORM, "Certificate Validation: Errors found in the Certificate Path ");
+							LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Errors found in the Certificate Path ");
 						}catch (InvalidAlgorithmParameterException e) {
-							LOG.Log(Module.PLATFORM, "Certificate Validation: Errors found in the Certificate Path ");
+							LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Errors found in the Certificate Path ");
 						}
-	            	}else{return false;}
+	            	//}else{return false;}
 					return false;
 				}
 	            
@@ -1143,10 +1117,10 @@ public class AndroidIO extends AbstractIO {
 		            		}
 	            		}
 					} catch (IOException e) {
-						LOG.Log(Module.PLATFORM, "Certificate Validation: Errors found in the Certificate OCSP Validation ");
+						LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Errors found in the Certificate OCSP Validation ");
 						bCertificateIsRevoked = true;
 					} catch (OCSPException e) {
-						LOG.Log(Module.PLATFORM, "Certificate Validation: Errors found in the Certificate OCSP Validation");
+						LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Errors found in the Certificate OCSP Validation");
 						bCertificateIsRevoked = true;
 					}
 	            	return bCertificateIsRevoked;
@@ -1163,12 +1137,12 @@ public class AndroidIO extends AbstractIO {
 	            {
 	            	try {
 						cert.checkValidity();
-						LOG.Log(Module.PLATFORM, "Certificate Validation: Certificate is not expired");
+						LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is not expired");
 						return true;
 					} catch (CertificateExpiredException e) {
-						LOG.Log(Module.PLATFORM, "Certificate Validation: Certificate is expired");
+						LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is expired");
 					} catch (CertificateNotYetValidException e) {
-						LOG.Log(Module.PLATFORM, "Certificate Validation: Certificate is not yet valid");
+						LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is not yet valid");
 					}
 	            	return false;
 	            }
@@ -1184,14 +1158,71 @@ public class AndroidIO extends AbstractIO {
 	            {
 	            	try {
 						cert.verify(cert.getPublicKey());
-						LOG.Log(Module.PLATFORM, "Certificate Validation: Certificate is self-signed");
+						LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is self-signed");
+						
+						//ROOT TOKEN READ
+						List<String> rootAuth = null;
+						boolean bLookForRoots = false;
+						if(!_VALIDROOTAUTHORITIES.isEmpty() ){
+							LOG.LogDebug(Module.PLATFORM, "Certificate Validation: List of Root Authorities Found");
+							bLookForRoots = true;
+							if(_VALIDROOTAUTHORITIES.indexOf(';')!=-1){
+								rootAuth = Arrays.asList(_VALIDROOTAUTHORITIES.split("/\\;/g"));
+								LOG.LogDebug(Module.PLATFORM, "Certificate Validation: List of Root Authorities Found : " + rootAuth.get(0));
+							}else 
+							{
+								rootAuth = Arrays.asList(new String[]{_VALIDROOTAUTHORITIES});
+								LOG.LogDebug(Module.PLATFORM, "Certificate Validation: List of Root Authorities Found : " + rootAuth.get(0));
+							}
+						}
+						/////////////
+						
+						// LOOK FOR TRUSTED ROOT CERTS AND TRUSTED ROOT ISSUER MUST CONTAIN A VALID NAME
+						boolean bRootFound = false;
+						for(X509Certificate trustedCert : this.getAcceptedIssuers()){
+							//If trusted and cert have same name
+							if(trustedCert.getSubjectX500Principal().getName().equals(cert.getIssuerX500Principal().getName())){
+								//if we have a list of valid Root Authorities
+								if(bLookForRoots){
+									//If list is filled
+									if(rootAuth!= null){
+										LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Checking Valid Root Authorities");
+										for(String caRootName : rootAuth){
+											caRootName = caRootName.replace(';', ' ').trim().toLowerCase();
+											if(!caRootName.isEmpty() && trustedCert.getIssuerX500Principal().getName().toLowerCase().contains(caRootName)) {
+												bRootFound = true;
+												LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Valid Authority found");
+												//Found a match, do not look for more
+												break;
+											}
+										}
+									}else{
+										//SOMETHING WEIRD. CANNOT LOOK FOR AUTHORITIES AND NOT HAVING AUTHORITIES
+										bRootFound = false;
+										LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Inconsistency. Cannot look for Roots and not having a list");
+										//END THE LOOP AND GIVE IT AS A BAD ATTEMPT
+										break;
+									}
+								}else{
+									//NOT LOOKING FOR AUTHORITIES, WE FOUND A MATCH WITH NAMES
+									bRootFound = true;
+									LOG.LogDebug(Module.PLATFORM, "Certificate Validation: All authorities Valid");
+								}
+								
+								if(bRootFound){
+									LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Trusted Certificate found");
+									return false;
+								}
+							}
+						}
+						/////////////////
 						return true;
 					} catch (InvalidKeyException e) {
 					} catch (CertificateException e) {
 					} catch (NoSuchAlgorithmException e) {
 					} catch (NoSuchProviderException e) {
 					} catch (SignatureException e) {}
-	            	LOG.Log(Module.PLATFORM, "Certificate Validation: Certificate is not self signed");
+	            	LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is not self signed");
 	            	return false;
 	            }
 	            
@@ -1209,7 +1240,7 @@ public class AndroidIO extends AbstractIO {
 			                    X509CRL crl = downloadCRL(crlDP);
 			                    if (crl!= null && crl.isRevoked(cert)) {
 			                    	bContinueValidating = false;
-			                        LOG.Log(Module.PLATFORM, "Certificate " + cert.getSubjectX500Principal().getName() + " is revoked.");
+			                        LOG.LogDebug(Module.PLATFORM, "Certificate " + cert.getSubjectX500Principal().getName() + " is revoked.");
 			                    }
 			                }
 	            		}
@@ -1223,7 +1254,7 @@ public class AndroidIO extends AbstractIO {
 	            
 	            private X509CRL downloadCRL(String crlURL) throws IOException,CertificateException, CRLException, NamingException {
 	                if (crlURL.startsWith("http://") || crlURL.startsWith("https://") || crlURL.startsWith("ftp://")) {
-	                	LOG.Log(Module.PLATFORM, "Downloading CRL from : " + crlURL);
+	                	LOG.LogDebug(Module.PLATFORM, "Downloading CRL from : " + crlURL);
 	                    X509CRL crl = downloadCRLFromWeb(crlURL);
 	                    return crl;
 	                }
@@ -1289,4 +1320,178 @@ public class AndroidIO extends AbstractIO {
 	        return sslContext.getSocketFactory().createSocket();
 	    }
 	}
+	
+	/**
+	 * This response interceptor is used to inflate GZIp responses
+	 * @author maps
+	 * [MOBPLAT-200]: allow gzip, deflate decompression modes
+	 */
+	private class GzipHttpResponseInterceptor implements HttpResponseInterceptor {
+        
+    	@Override
+    	public void process(final HttpResponse response, final HttpContext context) {
+            final HttpEntity entity = response.getEntity();
+            final Header encoding = entity.getContentEncoding();
+            if (encoding != null) {
+            	LOG.LogDebug(Module.PLATFORM, "Response has content-enconding headers #" 
+            			+ ((encoding.getElements()!=null)?encoding.getElements().length: "NULL"));
+                inflateGzip(response, encoding);
+            }
+        }
+ 
+        private void inflateGzip(final HttpResponse response, final Header encoding) {
+            for (HeaderElement element : encoding.getElements()) {
+                if (element.getName().equalsIgnoreCase("gzip")) {
+                	LOG.LogDebug(Module.PLATFORM, "Response GZIP Encoding found. Inflating response content..."); 
+                    response.setEntity(new GzipInflatingEntity(response.getEntity()));
+                    break;
+                }
+            }
+        }
+    }
+	
+	/**
+	 * Inflated Response Entity
+	 * @author maps
+	 * [MOBPLAT-200]: allow gzip, deflate decompression modes
+	 */
+	private class GzipInflatingEntity extends HttpEntityWrapper {
+        public GzipInflatingEntity(final HttpEntity wrapped) {
+            super(wrapped);
+        }
+ 
+        @Override
+        public InputStream getContent() throws IOException {
+        	LOG.LogDebug(Module.PLATFORM, "Returning response entity as GZIPInputStream"); 
+            return new GZIPInputStream(wrappedEntity.getContent());
+        }
+ 
+        @Override
+        public long getContentLength() {
+            return -1;
+        }
+    }
+
+	@Override
+	public void run() {
+		if(this.Validatecertificates()){
+			try {
+				createHttpClients();
+			} catch (KeyManagementException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (UnrecoverableKeyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (CertificateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (KeyStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	public void createHttpClients() throws NoSuchAlgorithmException, CertificateException, IOException, KeyStoreException, KeyManagementException, UnrecoverableKeyException{
+		
+		SSLSocketFactory socketFactory;
+		SchemeRegistry registry = new SchemeRegistry();
+		
+		LOG.LogDebug(Module.PLATFORM, "Certificate Validation Enabled = " + this.Validatecertificates());
+		
+		if (this.Validatecertificates()) {
+			HostnameVerifier hostnameVerifier = org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+			// Set verifier
+			HttpsURLConnection
+					.setDefaultHostnameVerifier(hostnameVerifier);
+			
+			
+			/******************************** 
+			 * USING DEFAULT ANDROID DEVICE SSLSocketFactory
+			 * the default factory was throwing errors verifying ssl certificates chains for some specific CA Authorities
+			 * (for example, Verisign root ceritificate G5 is not available on android devices <=2.3)
+			 * See more details on jira ticket [MOBPLAT-63]
+			 ******************************** 
+			SSLSocketFactory socketFactory = SSLSocketFactory
+					.getSocketFactory();
+			socketFactory
+					.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
+			*/
+			
+			/*
+	        /******************************** 
+			 * USING VALIDATING SSLSocketFactory - Validating certificates per demand
+			 * See more details on jira ticket [MOBPLAT-63]
+			 ********************************
+			 */
+			KeyStore trustStore;
+			if(Build.VERSION.SDK_INT>=14){
+				trustStore = KeyStore.getInstance("AndroidCAStore");
+				trustStore.load(null,null);					
+			}else{
+				try{
+					trustStore = KeyStore.getInstance(KeyStore.getDefaultType());;
+					String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);						
+					FileInputStream is = new FileInputStream(filename);
+					trustStore.load(is,"changeit".toCharArray());
+			        is.close();
+				}catch(Exception ex)
+				{
+					try{
+						/*
+				        /******************************** 
+						 * HTC 2.3.5 Access Keystore problem
+						 * See more details on jira ticket [MOBPLAT-91]
+						 ********************************
+						 */
+						trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+						String filename = "/system/etc/security/cacerts.bks".replace('/', File.separatorChar);
+						FileInputStream is = new FileInputStream(filename);
+						trustStore.load(is,null);
+				        is.close();
+					}catch(Exception e)
+					{
+						trustStore = null;
+						LOG.Log(Module.PLATFORM, "A problem has been detected while accessing the device keystore.",e);
+					}
+				}
+			}
+			socketFactory =  ValidatingSSLSocketFactory.GetInstance(trustStore);
+	        socketFactory.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
+	        
+	        LOG.LogDebug(Module.PLATFORM, "Using ValidatingSSLSocketFactory (custom socket Factory)");
+
+		} else {
+			/*
+			 * ******************************* 
+			 * USING CUSTOM SSLSocketFactory - accept all certificates
+			 * See more details on jira ticket [MOBPLAT-63]
+			 ********************************
+			*/ 
+			KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+			trustStore.load(null, null);
+			socketFactory =  new MySSLSocketFactory(trustStore);
+			
+			LOG.LogDebug(Module.PLATFORM, "Using MySSLSocketFactory (custom socket factory - accepting all certificates)");
+		}
+		
+		registry.register(new Scheme("https", socketFactory, 443));
+		registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+		ThreadSafeClientConnManager mgr = new ThreadSafeClientConnManager(
+				new DefaultHttpClient().getParams(), registry);
+		httpSSLClient = new DefaultHttpClient(mgr,
+				new DefaultHttpClient().getParams());
+		
+		LOG.LogDebug(Module.PLATFORM, "httpSSLClient stored for next HTTPS access");
+		
+	}
+    
 }

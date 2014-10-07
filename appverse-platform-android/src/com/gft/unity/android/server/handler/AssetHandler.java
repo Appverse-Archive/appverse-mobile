@@ -80,7 +80,9 @@ public class AssetHandler extends AndroidHandler {
 				}
 			}
 		} else {
-			Log("Expecting HttpRequest, received " + aRequest);
+			// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+			// LogDebug("Expecting HttpRequest, received " + aRequest);
+			LogDebug("Not valid HttpRequest received");
 		}
 
 		return false;
@@ -95,9 +97,9 @@ public class AssetHandler extends AndroidHandler {
 		// get mime type
 		String type = getMimeType(requestPath);
 		if (type == null) {
-			Log("Mimetype for asset: " + requestPath
+			LogDebug("Mimetype for asset: " + requestPath
 					+ " could not be determined.");
-			Log("Request for asset: " + requestPath + " was refused.");
+			LogDebug("Request for asset: " + requestPath + " was refused.");
 			return false;
 		}
 
@@ -112,7 +114,7 @@ public class AssetHandler extends AndroidHandler {
 		}
 
 		if (data == null) {
-			Log("Request for asset/document: " + requestPath
+			LogDebug("Request for asset/document: " + requestPath
 					+ ". Asset not found.");
 			return false;
 		}
@@ -146,7 +148,7 @@ public class AssetHandler extends AndroidHandler {
 	private byte[] handleAsset(HttpRequest request) throws IOException {
 
 		String assetPath = normalizeAssetPath(request);
-		Log("Handling asset in path: " + assetPath);
+		LogDebug("Handling asset in path: " + assetPath);
 		
 		request.putProperty("file-path", assetPath);
 

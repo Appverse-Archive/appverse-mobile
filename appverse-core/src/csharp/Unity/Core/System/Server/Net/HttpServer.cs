@@ -35,6 +35,7 @@ namespace Unity.Core.System.Server.Net
 
 	public class HttpServer
 	{
+		private static HttpServer singletonServer;
 		Server s;
 		Hashtable hostmap = new Hashtable ();
 		ArrayList handlers = new ArrayList ();
@@ -42,6 +43,12 @@ namespace Unity.Core.System.Server.Net
 		static Hashtable Responses = new Hashtable ();
 		public static String CUSTOM_RESPONSE_HEADERS = "$custom_response_headers_replace_me$";
 		int sessionTimeout = 600;
+
+		public static HttpServer SingletonInstance {
+			get {
+				return HttpServer.singletonServer;
+			}
+		}
 
 		public Hashtable Hostmap {
 			get { return hostmap; }
@@ -94,6 +101,17 @@ namespace Unity.Core.System.Server.Net
 			this.s = s;
 			s.Connect += new ClientEvent (ClientConnect);
 			//handlers.Add (new FallbackHandler ());
+			HttpServer.singletonServer = this;
+		}
+
+		public bool IsListening {
+			get {
+				bool listening = false;
+				if (s != null) {
+					listening = s.IsListening;
+				}
+				return listening;
+			}
 		}
 
 		public bool Close ()

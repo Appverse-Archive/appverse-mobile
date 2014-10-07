@@ -41,7 +41,7 @@ import com.gft.unity.core.system.SystemLogger.Module;
 
 public class AndroidPOIDatabase extends SQLiteOpenHelper {
 
-	private static final SystemLogger LOG = SystemLogger.getInstance();
+	private static final SystemLogger LOG = AndroidSystemLogger.getInstance();
 
 	private static final int DATABASE_VERSION = 1;
 	private static final String DATABASE_NAME = "unitypoidb";

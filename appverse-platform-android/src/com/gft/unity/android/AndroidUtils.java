@@ -51,7 +51,7 @@ import com.gft.unity.core.system.SystemLogger.Module;
 
 public class AndroidUtils {
 
-	private static final SystemLogger LOG = SystemLogger.getInstance();
+	private static final SystemLogger LOG = AndroidSystemLogger.getInstance();
 	
 	private static String _ResourcesZipped = "$ResourcesZipped$";
 	private static String APP_RESOURCES_ZIP = "app-encrypted.zip";
@@ -294,33 +294,51 @@ public class AndroidUtils {
             throws UnsupportedEncodingException {
         //Map<String, List<String>> params = new HashMap<String, List<String>>();
     	Map<String, String> params = new HashMap<String, String>();
-        String[] urlParts = url.split("\\?");
-        if (urlParts.length > 1) {
-            String query = urlParts[1];
-            for (String param : query.split("&")) {
-                String pair[] = param.split("=");
-                String key = URLDecoder.decode(pair[0], "UTF-8");
-                String value = "";
-                if (pair.length > 1) {
-                    value = URLDecoder.decode(pair[1], "UTF-8");
-                }
-                //List<String> values = params.get(key);
-                //if (values == null) {
-                if (value == null) {
-                    //values = new ArrayList<String>();
-                	value = new String();
-                    //params.put(key, values);
-                }
-                //values.add(value);
-                
-                params.put(key, value);
-            }
-            
-            if(includeContextPath) {
-            	params.put((contextPathKey!=null?contextPathKey:"context_path"), urlParts[0]);
-            }
-        }
+    	if(url!=null){ // prevent errors if passing null url string
+	        String[] urlParts = url.split("\\?");
+	        if (urlParts.length > 1) {
+	            String query = urlParts[1];
+	            for (String param : query.split("&")) {
+	                String pair[] = param.split("=");
+	                String key = URLDecoder.decode(pair[0], "UTF-8");
+	                String value = "";
+	                if (pair.length > 1) {
+	                    value = URLDecoder.decode(pair[1], "UTF-8");
+	                }
+	                //List<String> values = params.get(key);
+	                //if (values == null) {
+	                if (value == null) {
+	                    //values = new ArrayList<String>();
+	                	value = new String();
+	                    //params.put(key, values);
+	                }
+	                //values.add(value);
+	                
+	                params.put(key, value);
+	            }
+	            
+	            if(includeContextPath) {
+	            	params.put((contextPathKey!=null?contextPathKey:"context_path"), urlParts[0]);
+	            }
+	        }
+    	} else {
+    		LOG.Log(Module.PLATFORM, "AndroidUtils could  not parse a NULL url (method: getUrlParameters())");
+    	}
         return params;
     }
+    
+	public static String checkStringsProperty(String propertyName) {
+		try {
+			int resourceIdentifier = AndroidServiceLocator.getContext().getResources().getIdentifier(propertyName, "string", 
+					AndroidServiceLocator.getContext().getPackageName()); 
+			String propertyValue = AndroidServiceLocator.getContext().getResources().getString(resourceIdentifier);
+			LOG.Log(Module.PLATFORM, "Checking Strings property: " + propertyName + "? " + propertyValue);
+			return propertyValue; 
+				
+		} catch (Exception ex) {
+			LOG.Log(Module.PLATFORM, "Checking Strings property. Exception getting value for " + propertyName + ": " + ex.getMessage());
+			return null;
+		}
+	}
 	
 }

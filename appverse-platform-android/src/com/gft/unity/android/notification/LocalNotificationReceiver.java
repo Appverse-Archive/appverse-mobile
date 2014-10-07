@@ -25,6 +25,8 @@ package com.gft.unity.android.notification;
 
 import com.gft.unity.android.util.json.JSONSerializer;
 import com.gft.unity.core.notification.NotificationData;
+import com.gft.unity.core.system.log.Logger;
+import com.gft.unity.core.system.log.Logger.LogCategory;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -37,7 +39,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.webkit.WebView;
 
 /**
@@ -61,8 +62,9 @@ public class LocalNotificationReceiver extends BroadcastReceiver {
 	private static WebView appView;
 	private static Activity appActivity;
 	
-	private static final String TAG = "Appverse.LocalNotificationReceiver";
-	
+	private static final String LOGGER_MODULE = "Appverse.LocalNotificationReceiver";
+	private static final Logger LOGGER = Logger.getInstance(
+			LogCategory.PLATFORM, LOGGER_MODULE);
 	
 	public static void initialize(WebView view, Activity context){
 		appView = view;
@@ -75,7 +77,7 @@ public class LocalNotificationReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		
-		Log.d(TAG, "******* Local Notification Received " + intent.getAction());
+		LOGGER.logDebug("onReceive", "******* Local Notification Received " + intent.getAction());
 		
 		// Getting notification manager
 		final NotificationManager notificationMgr = NotificationUtils.getNotificationManager(context);
@@ -92,7 +94,7 @@ public class LocalNotificationReceiver extends BroadcastReceiver {
 		try {
 			notificationId = Integer.parseInt(bundle.getString(NOTIFICATION_ID));
 		} catch (Exception e) {
-			Log.d(TAG, "Unable to process local notification with id: " + bundle.getString(NOTIFICATION_ID));
+			LOGGER.logError("onReceive", "Unable to process local notification with id: " + bundle.getString(NOTIFICATION_ID));
 		}
 		
 		int iIconId = context.getResources().getIdentifier(
@@ -172,7 +174,7 @@ public class LocalNotificationReceiver extends BroadcastReceiver {
 					appView.loadUrl("javascript:try{Unity.OnLocalNotificationReceived(" + JSONSerializer.serialize(notifData) +")}catch(e){}");
 				}
 			};
-			Log.d(TAG, "Invoking rNotification on UI thread... ");
+			LOGGER.logDebug("onReceive", "Invoking rNotification on UI thread... ");
 			appActivity.runOnUiThread(rNotification);
 		}
 		

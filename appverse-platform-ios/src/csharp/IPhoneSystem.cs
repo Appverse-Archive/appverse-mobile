@@ -66,7 +66,9 @@ namespace Unity.Platform.IPhone
 					if(!application.IOSApp.RemoveUriDoubleSlash) {
 						doubleSlash = "//";
 					}
-					NSUrl urlParam = new NSUrl (application.IOSApp.UriScheme + ":" + doubleSlash + query);
+					string urlString = application.IOSApp.UriScheme + ":" + doubleSlash + query;
+					urlString = Uri.EscapeUriString(urlString); // MOBPLAT-201: avoid crash when using blanck spaces in the URL query
+					NSUrl urlParam = new NSUrl (urlString);
 					SystemLogger.Log (SystemLogger.Module.PLATFORM, "Launching application by URL: " + urlParam.AbsoluteString);
 					bool result = UIApplication.SharedApplication.OpenUrl (urlParam);
 					if(!result) {

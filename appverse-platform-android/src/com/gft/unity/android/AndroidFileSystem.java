@@ -78,9 +78,10 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			if (!fromPath.startsWith(RESOURCES_PATH)) {
 				fromPath = RESOURCES_PATH + fromPath;
 			}
+						
 			bis = new BufferedInputStream(AndroidServiceLocator.getContext()
 					.getAssets().open(fromPath), BUFFER_SIZE);
-
+			
 			// write to internal storage file
 			write(bis, toPath);
 
@@ -121,7 +122,8 @@ public class AndroidFileSystem extends AbstractFileSystem {
 				connection = (HttpURLConnection) mUrl.openConnection();
 				bis = new BufferedInputStream(connection.getInputStream(), BUFFER_SIZE);
 			}
-
+			
+			
 			// write to internal storage file
 			write(bis, toPath);
 
@@ -157,21 +159,24 @@ public class AndroidFileSystem extends AbstractFileSystem {
 		try {
 			// open target internal storage file
 			File file = new File(normalizePath(toPath));
-			if (file.exists()) {
-				file.delete();
-			}
-			file.getParentFile().mkdirs();
-			file.createNewFile();
-			bos = new BufferedOutputStream(new FileOutputStream(file),
-					BUFFER_SIZE);
+			//TODO review
+			if(checkSecurePath(file)){
+				if (file.exists()) {
+					file.delete();
+				}
+				file.getParentFile().mkdirs();
+				file.createNewFile();
+				bos = new BufferedOutputStream(new FileOutputStream(file),
+						BUFFER_SIZE);
 
-			// read data from the source URL and write it to the target internal
-			// storage file
-			int length = 0;
-			byte[] buffer = new byte[1024];
-			while ((length = bis.read(buffer)) != -1) {
-				bos.write(buffer, 0, length);
-			}
+				// read data from the source URL and write it to the target internal
+				// storage file
+				int length = 0;
+				byte[] buffer = new byte[1024];
+				while ((length = bis.read(buffer)) != -1) {
+					bos.write(buffer, 0, length);
+				}
+			}			
 		} finally {
 			closeStream(bos);
 		}
@@ -195,11 +200,16 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			if (directory == null) {
 				directory = rootDirectory;
 			}
-
-			String path = new File(directory, directoryName).getAbsolutePath();
+			
+			File temp = new File(directory, directoryName);			
+			String path = temp.getAbsolutePath();
 			path = normalizePath(path);
 
 			File f = new File(path);
+			//TODO review
+			if(!checkSecurePath(f)){
+				return null;
+			}
 			if (!f.exists()) {
 				f.mkdirs();
 				result = new DirectoryData(f.getAbsolutePath());
@@ -217,7 +227,9 @@ public class AndroidFileSystem extends AbstractFileSystem {
 	public DirectoryData CreateDirectory(String directoryName) {
 		return CreateDirectory(directoryName, null);
 	}
-
+	
+	
+	
 	@Override
 	public FileData CreateFile(String fileName, DirectoryData baseDirectory) {
 		FileData result = null;
@@ -234,11 +246,17 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			if (directory == null) {
 				directory = rootDirectory;
 			}
-
-			String path = new File(directory, fileName).getAbsolutePath();
+			
+			File temp = new File(directory, fileName);			
+			String path = temp.getAbsolutePath();
+			
 			path = normalizePath(path);
 
 			File f = new File(path);
+			//TODO review
+			if(!checkSecurePath(f)){
+				return null;
+			}
 			if (!f.exists()) {
 				f.createNewFile();
 				result = new FileData(path, f.length());
@@ -267,9 +285,14 @@ public class AndroidFileSystem extends AbstractFileSystem {
 		try {
 
 			String path = directory.getFullName();
+			
 			if (path != null) {
 				path = normalizePath(path);
 				File f = new File(path);
+				//TODO review
+				if(!checkSecurePath(f)) {					
+					return false;				
+				}
 				if (f.exists() && f.isDirectory()) {
 					result = deleteR(f);
 				}
@@ -284,7 +307,7 @@ public class AndroidFileSystem extends AbstractFileSystem {
 	}
 
 	private boolean deleteR(File f) {
-
+		//TODO review
 		if (f.isDirectory()) {
 			File[] children = f.listFiles();
 			for (File child : children) {
@@ -307,6 +330,10 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			if (path != null) {
 				path = normalizePath(path);
 				File f = new File(path);
+				//TODO review
+				if(!checkSecurePath(f)){
+					return false;
+				}
 				if (f.exists() && f.isFile()) {
 					result = f.delete();
 				}
@@ -332,6 +359,10 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			if (path != null) {
 				path = normalizePath(path);
 				File f = new File(path);
+				//TODO review
+				if(!checkSecurePath(f)){
+					return false;
+				}
 				result = f.exists() && f.isDirectory();
 			}
 		} catch (Exception ex) {
@@ -355,6 +386,10 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			if (path != null) {
 				path = normalizePath(path);
 				File f = new File(path);
+				//TODO review
+				if(!checkSecurePath(f)){
+					return false;
+				}
 				result = f.exists() && f.isFile();
 			}
 		} catch (Exception ex) {
@@ -405,6 +440,10 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			List<DirectoryData> list = new ArrayList<DirectoryData>();
 			String path = normalizePath(directory);
 			File base = new File(path);
+			//TODO review
+			if(!checkSecurePath(base)){
+				return null;
+			}
 			if (base.isDirectory()) {
 				File[] directories = base.listFiles();
 				if (directories != null) {
@@ -451,6 +490,10 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			List<FileData> list = new ArrayList<FileData>();
 			String path = normalizePath(directory);
 			File base = new File(path);
+			//TODO review
+			if(!checkSecurePath(base)){
+				return null;
+			}
 			if (base.isDirectory()) {
 				File[] directories = base.listFiles();
 				if (directories != null) {
@@ -490,7 +533,10 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			}
 			path = normalizePath(path);
 			File f = new File(path);
-
+			//TODO review
+			if(!checkSecurePath(f)){
+				return null;
+			}
 			bis = new BufferedInputStream(new FileInputStream(f), BUFFER_SIZE);
 			baos = new ByteArrayOutputStream((int) f.length());
 
@@ -527,7 +573,11 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			}
 			path = normalizePath(path);
 			File f = new File(path);
-
+			//TODO review
+			if(!checkSecurePath(f)){
+				return false;
+			}
+			
 			bos = new BufferedOutputStream(new FileOutputStream(f, append),
 					BUFFER_SIZE);
 			bos.write(contents);
@@ -556,8 +606,14 @@ public class AndroidFileSystem extends AbstractFileSystem {
 			result = new File(directory, name).getAbsolutePath();
 			result = normalizePath(result);
 			File f = new File(result);
-
-			File dir = new File(directory);
+			
+			File dir = new File(normalizePath(directory)); // new File(directory)
+			
+			//TODO review
+			if(!checkSecurePath(f) || !checkSecurePath(dir)){
+				return "";
+			}
+			
 			dir.mkdirs();
 
 			bos = new BufferedOutputStream(new FileOutputStream(f, false),
@@ -597,12 +653,28 @@ public class AndroidFileSystem extends AbstractFileSystem {
 		}
 	}
 	
-	private String normalizePath(String path) {
+	private String normalizePath(String path) throws IOException {
 
 		if (!path.startsWith(rootDirectory)) {
-			path = new File(rootDirectory, path).getAbsolutePath();
+			path = new File(rootDirectory, path).getCanonicalPath();
 		}
 
 		return path;
+	}
+	
+	private boolean checkSecurePath(File file){
+		try {
+			String path = file.getCanonicalPath();
+			if (!path.startsWith(rootDirectory)) {
+				LOGGER.logError("CreateFile", "Error: Try to access forbidden path: "+path);
+				return false;
+			}
+		} catch (IOException e) {
+			LOGGER.logError("CreateFile", "Error: Try to access forbidden path. Exception!");			
+			e.printStackTrace();
+			return false;
+		}
+
+		return true;
 	}
 }

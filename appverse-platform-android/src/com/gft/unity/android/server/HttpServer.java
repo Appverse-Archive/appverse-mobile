@@ -23,24 +23,18 @@
  */
 package com.gft.unity.android.server;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
-import android.app.Activity;
 import android.content.Context;
-import android.net.LocalServerSocket;
-import android.net.LocalSocket;
-import android.os.Build;
 import android.webkit.WebView;
 
-import com.gft.unity.android.AndroidServiceLocator;
+import com.gft.unity.android.AndroidSystemLogger;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
 
 public class HttpServer extends com.gft.unity.core.system.server.HttpServer {
 	
-	private static final SystemLogger LOG = SystemLogger.getInstance();
+	private static final SystemLogger LOG = AndroidSystemLogger.getInstance();
 
 	private Properties serverProperties;
 	private Context context;

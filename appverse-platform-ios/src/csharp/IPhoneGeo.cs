@@ -451,6 +451,14 @@ namespace Unity.Platform.IPhone
 			if (CLLocationManager.LocationServicesEnabled) {
 				try {
 					LocationManagerSetup();
+
+					if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+						#if DEBUG
+						SystemLogger.Log (SystemLogger.Module.PLATFORM, "Using new iOS 8 Location Services Authorization");
+						#endif
+						locationManager.RequestWhenInUseAuthorization();  //only requests for authorization in app running (foreground)
+					}
+
 					locationManager.StartUpdatingLocation ();
 					isStartedOk = true;
 				} catch (Exception) {

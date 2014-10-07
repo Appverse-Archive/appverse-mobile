@@ -26,27 +26,28 @@ package com.gft.unity.android.notification;
 import java.util.Map;
 import java.util.Set;
 
-import com.gft.unity.core.notification.NotificationData;
-import com.gft.unity.core.notification.SchedulingData;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+
+import com.gft.unity.core.notification.NotificationData;
+import com.gft.unity.core.notification.SchedulingData;
 
 /**
  * Local Notification Receiver trigger on Android's BOOT_COMPLETED broadcast event
  * @author maps
  *
  */
-public class LocalNotificationOnBootReceiver extends BroadcastReceiver {
-
-	private static final String TAG = "Appverse.LocalNotificationOnBootReceiver";
+public class LocalNotificationOnBootReceiver extends BroadcastReceiver {	
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		
-		Log.d(TAG, "Boot completed... checking local notifications to restore");
+	
+		/**
+		 * DO NOT USE com.gft.unity.core.system.log.Logger since the MainActivity has not set the delegate yet and the object will be null
+		 */
+		Log.d("onReceive", "Boot completed... checking local notifications to restore");
 		
 		// Obtain all local notifications stored on Shared Preferences
 		Map<String, ?> allLocalNotifications = NotificationUtils.getLocalNotificationsOnSharedPreferences(context);
@@ -64,10 +65,10 @@ public class LocalNotificationOnBootReceiver extends BroadcastReceiver {
 				NotificationUtils.processLocalNotification(context, notificationData, schedule);
 
 		    } catch (Exception e) {
-		    	Log.d(TAG, "Error while restoring local notifications after reboot: " + e.toString());
+		    	Log.e("onReceive","Error while restoring local notifications after reboot: " + e.toString());
 		    }
 
-		    Log.d(TAG, "Successfully restored local notifications upon reboot");
+		    Log.d("onReceive", "Successfully restored local notifications upon reboot");
 		}
 		
 	}

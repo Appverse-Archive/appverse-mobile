@@ -49,8 +49,6 @@ public class AndroidInvocationManager extends AbstractInvocationManager {
 	private static final Logger LOGGER = Logger.getInstance(
 			LogCategory.PLATFORM, LOGGER_MODULE);
 
-	// private static final SystemLogger LOG = SystemLogger.getInstance();
-
 	private static final String PARAM_PREFIX = "param";
 	private static final String PACKAGE_PREFIX = "com.gft.unity.";
 
@@ -266,11 +264,11 @@ public class AndroidInvocationManager extends AbstractInvocationManager {
 
 					Class<?> parameterType = parameterTypes[index];
 
-					if (LOGGER.isLoggable(LogLevel.DEBUG)) {
-						LOGGER.logDebug("FindMethods", "  Types -> "
-								+ parameter.getClass().getName() + " <-> "
-								+ parameterType.getCanonicalName());
-					}
+					LOGGER.logDebug("FindMethods", " [" + index +"] Types -> "
+							+ parameter.getClass().getName() + " <-> "
+							+ parameterType.getCanonicalName());
+					
+					boolean isNullObject = (JSONObject.NULL.equals(parameter));
 
 					if (parameter instanceof JSONArray) { // array
 						if (!parameterType.isArray()) {
@@ -281,13 +279,20 @@ public class AndroidInvocationManager extends AbstractInvocationManager {
 							break;
 						}
 					} else if ((parameter instanceof JSONObject)
-							|| (JSONObject.NULL.equals(parameter))) { // bean
+							|| isNullObject) { // bean
 						if (!parameterType.getPackage().getName()
-								.startsWith(PACKAGE_PREFIX)) {
-							LOGGER.logDebug("FindMethods",
-									"Matching error -> JSONObject but target is not a bean");
-							match = false;
-							break;
+								.startsWith(PACKAGE_PREFIX) ){
+							if(parameterType
+								.isAssignableFrom(String.class) && isNullObject) { 
+								// MOBPLAT-201: null strings are allowed and shouldn't be confused with nullable model objects
+								LOGGER.logDebug("FindMethods",
+										"NO Matching error -> JSONObject is null and target is a String, could match method...");
+							} else {
+								LOGGER.logDebug("FindMethods",
+										"Matching error -> JSONObject but target is not a bean");
+								match = false;
+								break;
+							}
 						}
 					} else { // primitive
 						if (!parameterType.isEnum()
