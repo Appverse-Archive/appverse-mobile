@@ -42,13 +42,14 @@ import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
+import com.gft.unity.android.AndroidSystemLogger;
 import com.gft.unity.android.util.json.JSONSerializer;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
 
 public class AndroidActivityManager implements IActivityManager {
 
-	private static final SystemLogger LOG = SystemLogger.getInstance();
+	private static final SystemLogger LOG = AndroidSystemLogger.getInstance();
 
 	public static final int GET_SNAPSHOT_RC = 5000;
 	public static final int TAKE_SNAPSHOT_RC = 5001;
@@ -174,6 +175,9 @@ public class AndroidActivityManager implements IActivityManager {
 
 		@Override
 		public void run() {
+			// WARNING :: this "startActivityForResult" not working well with MainActivity as singleInstance
+			// (cancel resultCode always received on the onActivityResult() method)
+			// MOBPLAT-191 :: singleInstance launchMode is removed for this reason
 			main.startActivityForResult(intent, requestCode);
 		}
 	}
@@ -182,6 +186,7 @@ public class AndroidActivityManager implements IActivityManager {
 	public boolean publishActivityResult(int requestCode, int resultCode,
 			Intent data) {
 
+		LOG.Log(Module.PLATFORM, "Checking for listener for requestCode: " + requestCode + ", with resultCode:" + resultCode);
 		IActivityManagerListener listener = listeners.get(requestCode);
 
 		try {
@@ -198,10 +203,14 @@ public class AndroidActivityManager implements IActivityManager {
 					listener.onCustom(requestCode, resultCode, data);
 					break;
 				}
+			} else {
+				LOG.Log(Module.PLATFORM, "No listener found for requestCode: " + requestCode);
+				return false;
 			}
 		} catch (Exception ex) {
 			LOG.Log(Module.PLATFORM, "AndroidActivityManager listener error",
 					ex);
+			return false;
 		}
 
 		listeners.remove(requestCode);
@@ -213,8 +222,12 @@ public class AndroidActivityManager implements IActivityManager {
 	public void executeJS(String method, Object data) {
 
 		if (view != null) {
+			String jsonData = "null";
+			if(data != null) {
+				jsonData = JSONSerializer.serialize(data);
+			}
 			String jsCallbackFunction = "javascript:if(" + method + "){" + method + "("
-					+ JSONSerializer.serialize(data) + ");}";
+					+ jsonData + ");}";
 
 			this.main.runOnUiThread(new AAMExecuteJS(this.view, jsCallbackFunction));
 		}
@@ -223,24 +236,26 @@ public class AndroidActivityManager implements IActivityManager {
 	@Override
 	public void executeJS(String method, Object[] dataArray) {
 		if (view != null) {
-			
-			StringBuilder builder = new StringBuilder();
-			int numObjects = 0;
-			for(Object data : dataArray) {
-				if(numObjects>0) {
-					builder.append(",");
+			String dataJSONString = "null";
+			if(dataArray!=null) {
+				StringBuilder builder = new StringBuilder();
+				int numObjects = 0;
+				for(Object data : dataArray) {
+					if(numObjects>0) {
+						builder.append(",");
+					}
+					if (data == null) {
+						builder.append("null");
+					}
+					if (data instanceof String) {
+						builder.append("'"+ (String)data +"'");
+					} else {
+						builder.append(JSONSerializer.serialize (data));
+					}
+					numObjects++;
 				}
-				if (data == null) {
-					builder.append("null");
-				}
-				if (data instanceof String) {
-					builder.append("'"+ (String)data +"'");
-				} else {
-					builder.append(JSONSerializer.serialize (data));
-				}
-				numObjects++;
+				dataJSONString = builder.toString();
 			}
-			String dataJSONString = builder.toString();
 			
 			
 			String jsCallbackFunction = "javascript:if(" + method + "){" + method + "("
@@ -286,7 +301,7 @@ public class AndroidActivityManager implements IActivityManager {
 		@Override
 		public void run() {
 			if (this.view != null) {
-				String jsCallbackFunction = "javascript:try{if("+callbackFunction+"){"+callbackFunction+"("+jsonResultString+", '"+ id +"');}}catch(e) {console.log('error executing javascript callback: ' + e)}";
+				String jsCallbackFunction = "javascript:try{if("+callbackFunction+"){"+callbackFunction+"("+jsonResultString+", '"+ id +"');}}catch(e) {console.log('error executing javascript callback:[" + callbackFunction + "] ' + e)}";
 				this.view.loadUrl(jsCallbackFunction);
 			}
 		}
@@ -460,15 +475,18 @@ public class AndroidActivityManager implements IActivityManager {
 	@Override
 	public void dismissApplication() {
 		LOG.Log(Module.PLATFORM, "dismissing application programmaticallly");
-		//this.main.finish();
+		
+		// reverted to first behaviour, as we removed the "singleInstance" mode in the Manifest 
+		this.main.finish();
+		
 		/*
 		 * MainActivity is now singleInstant and the app can be loaded through intents so when you finalize the app and reopen from history
 		 * it remember the calling intent and try to process again the same parameters leading to errors, now the app is just sent to background.
-		 */
 		Intent i = new Intent();
 		i.setAction(Intent.ACTION_MAIN);
 		i.addCategory(Intent.CATEGORY_HOME);
 		this.startActivity(i);
+		*/
 	}
 	
 }

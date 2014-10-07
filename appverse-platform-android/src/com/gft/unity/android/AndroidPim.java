@@ -24,6 +24,7 @@
 package com.gft.unity.android;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,6 +67,8 @@ import com.gft.unity.core.pim.ContactEmail;
 import com.gft.unity.core.pim.ContactLite;
 import com.gft.unity.core.pim.ContactPhone;
 import com.gft.unity.core.pim.ContactQuery;
+import com.gft.unity.core.pim.ContactQueryColumn;
+import com.gft.unity.core.pim.ContactQueryCondition;
 import com.gft.unity.core.pim.DateTime;
 import com.gft.unity.core.pim.DispositionType;
 import com.gft.unity.core.pim.NumberType;
@@ -581,16 +584,30 @@ public class AndroidPim extends AbstractPim {
 	}
 	
 
+	private boolean queryValueRequiredFailed(ContactQueryColumn column, String value) {
+
+		boolean valueEmpty = (value == null || value.trim().equals(""));
+		switch (column) {
+			case ID:
+			case Name:
+				return valueEmpty;
+			default:
+				return false;
+		}
+	}
+	
 	@Override
 	public void ListContacts(ContactQuery query) {
 		
 		LOGGER_CONTACTS.logInfo("ListContacts", "Start listing contacts...");
+		Date startTotal = new Date();
 		Uri uri = null;
 		String selectionSingle;
 		Context context = AndroidServiceLocator.getContext();
 		ContentResolver cr = context.getContentResolver();
 		Cursor contactsCursor = null;
-		if(query != null && query.getValue() != null && !query.getValue().trim().equals("")){
+		String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
+		if(query != null && !queryValueRequiredFailed(query.getColumn(), query.getValue())){
 			LOGGER_CONTACTS.logInfo("ListContacts", "Start listing contacts... queryText " + query.toString());
 			String selection = null;
 			String[] selectionValues = null;
@@ -602,6 +619,10 @@ public class AndroidPim extends AbstractPim {
 				case ID:
 					selection = ContactsContract.Contacts._ID + "= ?";
 					selectionValues = new String[]{ value };
+					break;
+				case Phone: // Phone column should be filtered later against another table (RawContactsEntity)
+					selection = null;
+					selectionValues = null;
 					break;
 				case Name:
 					selection = ContactsContract.Contacts.DISPLAY_NAME + " LIKE ?";			
@@ -623,125 +644,174 @@ public class AndroidPim extends AbstractPim {
 			}
 			
 			uri = ContactsContract.Contacts.CONTENT_URI;			
-			LOGGER_CONTACTS.logInfo("Contacts selection", selection + ", selection values: " + selectionValues.toString());
+			LOGGER_CONTACTS.logDebug("Contacts selection", selection + ", selection values: " + (selectionValues!=null? selectionValues.toString() : "null"));
 			
 			Date start = new Date();			
 			contactsCursor = cr.query(uri, new String[] {
 					ContactsContract.Contacts._ID,
-					ContactsContract.Contacts.DISPLAY_NAME }, selection,
-				    selectionValues, null);
-			LOGGER_CONTACTS.logInfo("Time lapsed",(new Date().getTime()-start.getTime())+" ms");
+					ContactsContract.Contacts.DISPLAY_NAME }, selection, selectionValues, sortOrder);
+			LOGGER_CONTACTS.logDebug("Time lapsed (main query A)",(new Date().getTime()-start.getTime())+" ms");
 			
 		}else{
+			LOGGER_CONTACTS.logInfo("ListContacts", "Start listing contacts... without query");
 			Date start = new Date();			
 			uri = ContactsContract.Contacts.CONTENT_URI;
 			contactsCursor = cr.query(uri, new String[] {
 					ContactsContract.Contacts._ID,
-					ContactsContract.Contacts.DISPLAY_NAME }, null, null,
-					ContactsContract.Contacts.DISPLAY_NAME
-							+ " COLLATE LOCALIZED ASC");
-			LOGGER_CONTACTS.logInfo("Time lapsed",(new Date().getTime()-start.getTime())+" ms");
+					ContactsContract.Contacts.DISPLAY_NAME }, null, null, sortOrder);
+			LOGGER_CONTACTS.logDebug("Time lapsed (main query B)",(new Date().getTime()-start.getTime())+" ms");
 			
 		}
 		
 		List<ContactLite> contactList = new ArrayList<ContactLite>();
 		
 		try {
-			// querying the content resolver for all contacts
-			
+			// iterate cursor to 
 			contactsCursor.moveToFirst();
+			int excludedContacts = 0;
+			Date startLoop = new Date();
+			Map<String, ContactLite> contactsIDs = new HashMap<String, ContactLite>();
+			String contactsIDsString = "";
 			while (!contactsCursor.isAfterLast()) {
 				
 				Long id = contactsCursor.getLong(0);
+				String displayName = contactsCursor.getString(1);
 				
 				ContactLite contact = new ContactLite();
 				contact.setID(id.toString());
-				contact.setDisplayName(contactsCursor.getString(1));
+				contact.setDisplayName(displayName);
 				
-				String firstname = null, group = null, lastname = null, name = null;
-				List<ContactEmail> emailList = new ArrayList<ContactEmail>();
-				List<ContactPhone> phoneList = new ArrayList<ContactPhone>();
-								
-				selectionSingle = RawContactsEntity.CONTACT_ID + " = " + id;
-				Cursor raws = cr.query(RawContactsEntity.CONTENT_URI, null,
-						selectionSingle, null, null);
-				try {
-					raws.moveToFirst();
-					while (!raws.isAfterLast()) {
-						String type = raws
-								.getString(raws
-										.getColumnIndex(ContactsContract.Data.MIMETYPE));
-						if (StructuredName.CONTENT_ITEM_TYPE.equals(type)) {
-							// structured name
-						} else if (Phone.CONTENT_ITEM_TYPE.equals(type)) {
-							// it's a phone, gets all properties and add in
-							// the phone list
-							ContactPhone phone = new ContactPhone();
-							String number = raws.getString(raws
-									.getColumnIndex(Phone.NUMBER));
-							phone.setNumber(number);
-							int primary = raws.getInt(raws
-									.getColumnIndex(Phone.IS_PRIMARY));
-							phone.setIsPrimary(primary != 0);
-							int phonetype = raws.getInt(raws
-									.getColumnIndex(Phone.TYPE));
-							phone.setType(getNumberType(phonetype));
-							phoneList.add(phone);
-						} else if (Email.CONTENT_ITEM_TYPE.equals(type)) {
-							// it's an Email address, gets all properties
-							// and add in the email list
-							ContactEmail email = new ContactEmail();
-							String emailaddress = raws
-									.getString(raws
-											.getColumnIndex(CommonDataKinds.Email.DATA1));
-							email.setAddress(emailaddress);
-							email.setCommonName(raws.getString(raws
-									.getColumnIndex(Email.DISPLAY_NAME)));
-							// TODO set first name and last name
-							emailList.add(email);
-						} else if (GroupMembership.CONTENT_ITEM_TYPE
-								.equals(type)) {
-							group = raws
-							.getString(raws
-									.getColumnIndex(CommonDataKinds.GroupMembership.DATA1));
-						} 
-						raws.moveToNext();
-					}
-
-				} finally {
-					if (raws != null) {
-						raws.close();
-					}
-				}
-				
-				// filling the bean
-				contact.setEmails(emailList.toArray(new ContactEmail[emailList.size()]));
-				contact.setPhones(phoneList.toArray(new ContactPhone[phoneList.size()]));
-				contact.setFirstname(firstname);
-				contact.setGroup(group);
-				contact.setLastname(lastname);
-				contact.setName(name);
-				
-				
-				contactList.add(contact);
+				contactsIDs.put(""+id, contact);
+				contactsIDsString += (contactsIDsString.length()>0?",":"") + "'" + id + "'";
 				contactsCursor.moveToNext();
 			}
+			LOGGER_CONTACTS.logDebug("Time lapsed (looping contacts)",(new Date().getTime()-startLoop.getTime())+" ms");
 			
+			// querying the content resolver for all contacts
+			
+			String selectionMultiple = RawContactsEntity.CONTACT_ID + " IN (" + contactsIDsString +") ";
+			Date startRawQuery = new Date();
+			Cursor raws = cr.query(RawContactsEntity.CONTENT_URI, null,
+					selectionMultiple, null, null);
+			LOGGER_CONTACTS.logDebug("Time lapsed (query raw data for all contacts matched)",(new Date().getTime()-startRawQuery.getTime())+" ms");
+			
+			Date startLoopingRawData = new Date();
+			try {
+				raws.moveToFirst();
+				
+				// it seems that there is a time saving by querying the indexes before the cursor loop
+				int columnIndex_CONTACTID = raws.getColumnIndex(ContactsContract.RawContactsEntity.CONTACT_ID);
+				int columnIndex_MIMETYPE = raws.getColumnIndex(ContactsContract.Data.MIMETYPE);
+				int columnIndex_PHONE_NUMBER =  raws.getColumnIndex(Phone.NUMBER);
+				int columnIndex_IS_PRIMARY = raws.getColumnIndex(Phone.IS_PRIMARY);
+				int columnIndex_PHONE_TYPE = raws.getColumnIndex(Phone.TYPE);
+				int columnIndex_EMAIL_ADDRESS = raws.getColumnIndex(CommonDataKinds.Email.DATA1);
+				int columnIndex_DISPLAY_NAME = raws.getColumnIndex(Email.DISPLAY_NAME);
+				int columnIndex_GROUP_MEMBERSHIP = raws.getColumnIndex(CommonDataKinds.GroupMembership.DATA1);
+				
+				while (!raws.isAfterLast()) {
+					
+					String contactId = raws.getString(columnIndex_CONTACTID);
+					
+					String firstname = null, group = null, lastname = null, name = null;
+					List<ContactEmail> emailList = new ArrayList<ContactEmail>();
+					List<ContactPhone> phoneList = new ArrayList<ContactPhone>();
+					ContactLite contact = null;
+					
+					if(contactsIDs!=null && contactsIDs.containsKey(contactId)) {
+						contact = contactsIDs.get(contactId);
+						// asList returns unmodifiable lists, so we need to create new lists from them
+						if(contact.getEmails()!=null) emailList.addAll(Arrays.asList(contact.getEmails()));
+						if(contact.getPhones()!=null) phoneList.addAll(Arrays.asList(contact.getPhones()));
+					}
+					
+					String type = raws.getString(columnIndex_MIMETYPE);
+					if (StructuredName.CONTENT_ITEM_TYPE.equals(type)) {
+						// structured name
+					} else if (Phone.CONTENT_ITEM_TYPE.equals(type)) {
+						// it's a phone, gets all properties and add in
+						// the phone list
+						ContactPhone phone = new ContactPhone();
+						String number = raws.getString(columnIndex_PHONE_NUMBER);
+						phone.setNumber(number);
+						int primary = raws.getInt(columnIndex_IS_PRIMARY);
+						phone.setIsPrimary(primary != 0);
+						int phonetype = raws.getInt(columnIndex_PHONE_TYPE);
+						phone.setType(getNumberType(phonetype));
+						phoneList.add(phone);
+					} else if (Email.CONTENT_ITEM_TYPE.equals(type)) {
+						// it's an Email address, gets all properties
+						// and add in the email list
+						ContactEmail email = new ContactEmail();
+						String emailaddress = raws.getString(columnIndex_EMAIL_ADDRESS);
+						email.setAddress(emailaddress);
+						email.setCommonName(raws.getString(columnIndex_DISPLAY_NAME));
+						// TODO set first name and last name
+						emailList.add(email);
+					} else if (GroupMembership.CONTENT_ITEM_TYPE
+							.equals(type)) {
+						group = raws.getString(columnIndex_GROUP_MEMBERSHIP);
+					} 
+					raws.moveToNext();
+					
+					// filling the bean
+					if(contact!=null) {
+						if(emailList.size()>0) contact.setEmails(emailList.toArray(new ContactEmail[emailList.size()]));
+						if(phoneList.size()>0) contact.setPhones(phoneList.toArray(new ContactPhone[phoneList.size()]));
+						if(firstname!=null) contact.setFirstname(firstname);
+						if(group!=null) contact.setGroup(group);
+						if(lastname!=null) contact.setLastname(lastname);
+						if(name!=null) contact.setName(name);
+						
+						// replace contact in the hashmap
+						contactsIDs.put(contactId, contact);
+					}
+				}
+
+			} finally {
+				if (raws != null) {
+					raws.close();
+				}
+			}
+				
+			LOGGER_CONTACTS.logDebug("Time lapsed (end loop raw data)",(new Date().getTime()-startLoopingRawData.getTime())+" ms");
+			
+			if(query!=null 
+						&& query.getColumn().equals(ContactQueryColumn.Phone) 
+						&& query.getCondition().equals(ContactQueryCondition.Available)) {
+				LOGGER_CONTACTS.logDebug("ListContacts", "Checking contacts to exclude due to condition (phone available)...");
+				for(ContactLite contact : contactsIDs.values()) {
+					boolean addContactToFilteredList = true;
+					if(contact.getPhones() == null || contact.getPhones().length<=0) {
+						addContactToFilteredList = false; // do not include contacts without phones available
+						excludedContacts++;
+					}
+					
+					if(addContactToFilteredList) contactList.add(contact);
+				}
+			
+				if(excludedContacts>0)
+					LOGGER_CONTACTS.logDebug("ListContacts", "Excluded contacts due to condition (phone available): " + excludedContacts);
+			} else {
+				// convert hashmap to list directly
+				contactList = new ArrayList<ContactLite>(contactsIDs.values());
+			}
 			
 		} finally {
 			if (contactsCursor != null) {
 				contactsCursor.close();
 			}
 		}
+		
 		LOGGER_CONTACTS.logInfo("ListContacts", "Contacts list size: " + contactList.size());
-		//return contactList.toArray(new ContactLite[contactList.size()]);
 		
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);	
         am.executeJS("Appverse.Pim.onListContactsEnd", new Object[]{ contactList.toArray()});
         
-        
+        LOGGER_CONTACTS.logDebug("Time lapsed (TOTAL)",(new Date().getTime()-startTotal.getTime())+" ms");
+		
 	}
 
 	@Override

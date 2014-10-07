@@ -27,13 +27,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.Build;
 
 import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.security.AbstractSecurity;
@@ -49,27 +51,87 @@ public class AndroidSecurity extends AbstractSecurity {
 	private String SHARED_PACKAGE_NAME = null;
 	private String PREFERENCES_FILE_NAME = "AppverseSettings"; // default value
 	
+	private String[] foldersToCheckWriteAccess = {
+		"/data",
+		"/",
+		"/system",
+		"/system/bin",
+		"/system/sbin",
+		"/system/xbin",
+		"/vendor/bin",
+		"/sys",
+		"/sbin",
+		"/etc",
+		"/proc",
+		"/dev"
+	};
+	
+	private String[] foldersToCheckReadAccess = {
+		"/data"
+	};
+	
+	private String[] forbiddenInstalledPackages = {
+		"com.noshufou.android.su",
+		"com.thirdparty.superuser",
+		"eu.chainfire.supersu",
+		"com.koushikdutta.superuser",
+		"com.zachspong.temprootremovejb",
+		"com.ramdroid.appquarantine"
+	};
 	
 	public AndroidSecurity() {
 		super();
 		
-		SHARED_PACKAGE_NAME = this.checkProperty("Appverse_Shared_PackageName");
-		PREFERENCES_FILE_NAME = this.checkProperty("Appverse_Shared_Preferences_Filename");
+		SHARED_PACKAGE_NAME = AndroidUtils.checkStringsProperty("Appverse_Shared_PackageName");
+		PREFERENCES_FILE_NAME = AndroidUtils.checkStringsProperty("Appverse_Shared_Preferences_Filename");
 	}
+	
+	
 
 	@Override
-	public boolean IsDeviceModified() {
-		if (checkRootMethod1()){return true;}
-		if (checkRootMethod2()){return true;}
+	public boolean IsDeviceModified() {		
+		if (checkRootMethod1()){
+			//LOGGER.logInfo("IsDeviceModified: ", "Detected by checkRootMethod1");
+	    	return true;
+    	}
+		if (checkRootMethod2()){
+			//LOGGER.logInfo("IsDeviceModified: ", "Detected by checkRootMethod2");
+			return true;
+		}
 
-		// Tactical solution applied (16/01/2013) ::
+		/* Tactical solution applied (16/01/2013) ::
 		// ICS devices (levels 14 & 15) hang the application when the checkRootMethod3 is used. 
 		// Application processes are blocked in that case and the address port could not be used anymore by any app till the device is fully restarted.
 		if(Build.VERSION.SDK_INT < 14 || Build.VERSION.SDK_INT > 15) {
         	if (checkRootMethod3()){return true;}
 		}
+		try{
+			if (RootTools.isRootAvailable()){return true;}			
+			//SecurityManager.performSecurityChecks( AndroidServiceLocator.getContext());			
+		}catch(Exception ex){
+			
+			LOGGER.logError("*********************************** EXCEPTION", ex.getMessage());
+			
+		}*/
+		
+		//Added accondingly to this procedure:
+		//https://www.netspi.com/blog/entryid/209/android-root-detection-techniques		
+		//08/07/2014
+		if (checkRootMethod3_0()){
+			//LOGGER.logInfo("IsDeviceModified: ", "Detected by checkRootMethod3_0");
+			return true;
+		}		
+		if (checkRootMethod3_1()){
+			//LOGGER.logInfo("IsDeviceModified: ", "Detected by checkRootMethod3_1");
+			return true;
+		}
+		if (checkRootMethod3_2()){
+			//LOGGER.logInfo("IsDeviceModified: ", "Detected by checkRootMethod3_2");
+			return true;
+		}
 		
         return false;
+        
 	}
 	
 	 private boolean checkRootMethod1(){
@@ -88,7 +150,9 @@ public class AndroidSecurity extends AbstractSecurity {
 	         if (file.exists()) {
 	        	 return true;
 	         }
-	     } catch (Exception e) { }
+	     } catch (Exception e) {
+	    	 LOGGER.logError("GetStoredKeyValuePair", e.toString());
+	     }
 	     return false;
 	 }
 
@@ -147,6 +211,51 @@ public class AndroidSecurity extends AbstractSecurity {
 			 }
 			 return fullResponse;		 
 		 }
+	 }
+	 
+	 //CHECKS WRITE ACCESS IN FORBIDDEN FOLDERS
+	 private boolean checkRootMethod3_0(){
+		 try {
+			 for(String folder:foldersToCheckWriteAccess)
+			 {
+				 File file = new File(folder);
+		         if (file.canWrite()) {
+		        	 return true;
+		         }
+			 }
+	     } catch (Exception e) { }
+	     return false;
+	 }
+	 
+	 //CHECKS READ ACCESS IN FORBIDDEN FOLDERS
+	 private boolean checkRootMethod3_1(){
+		 try {
+			 for(String folder:foldersToCheckReadAccess)
+			 {
+				 File file = new File(folder);
+		         if (file.canRead()) {
+		        	 return true;
+		         }
+			 }
+	     } catch (Exception e) { }
+	     return false;
+	 }
+	 
+	 //CHECK IF TYPICAL ROOTED PACKAGES ARE INSTALLED
+	 private boolean checkRootMethod3_2(){
+		 try {
+			 List<String> apps = Arrays.asList(forbiddenInstalledPackages);
+			 
+			 List<ApplicationInfo> packages;
+		     PackageManager pm;
+		     pm = AndroidServiceLocator.getContext().getPackageManager();
+		     packages = pm.getInstalledApplications(0);
+		     for (ApplicationInfo packageInfo : packages) {
+		    	 //LOGGER.logInfo("PACKAGE NAME: ", packageInfo.packageName);		    	 
+		    	 if(apps.contains(packageInfo.packageName)) return true;
+		     }        
+	     } catch (Exception e) { }
+	     return false;
 	 }
 
 	@Override
@@ -308,19 +417,5 @@ public class AndroidSecurity extends AbstractSecurity {
 			LOGGER.logError("Opening Storage Unit", "The storage unit could not be accessed. Unhanlded error.");
 		}
 		return settings;
-	}
-	
-	private String checkProperty(String propertyName) {
-		try {
-			int resourceIdentifier = AndroidServiceLocator.getContext().getResources().getIdentifier(propertyName, "string", 
-					AndroidServiceLocator.getContext().getPackageName()); 
-			String propertyValue = AndroidServiceLocator.getContext().getResources().getString(resourceIdentifier);
-			LOGGER.logInfo("Checking Shared Package Name", propertyName + "? " + propertyValue);
-			return propertyValue; 
-				
-		} catch (Exception ex) {
-			LOGGER.logError("Checking Shared Package Name", "Exception getting value for " + propertyName + ": " + ex.getMessage());
-			return null;
-		}
 	}
 }

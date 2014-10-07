@@ -154,6 +154,10 @@ namespace Unity.Platform.IPhone
 				singleton.Serialiser = new JavaScriptSerializer ();
 
 				if(singleton.ResourcesZipped) {
+					// testing removing disk and memory cache capacity
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "# Removing cache disk and memory capacity");
+					NSUrlCache.SharedCache.DiskCapacity = 0;
+					NSUrlCache.SharedCache.MemoryCapacity = 0;
 					singleton.LoadZippedFile();
 				}
 			}

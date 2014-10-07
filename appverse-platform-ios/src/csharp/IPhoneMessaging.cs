@@ -119,8 +119,12 @@ namespace Unity.Platform.IPhone
 				}
 				
 				vcMail.Finished += HandleMailFinished;
-				
-				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (vcMail, true);
+
+				// method reviewed (15 April 2014).
+				vcMail.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
+				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentViewController(vcMail, true, null);
+
+				// deprecated --> IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController (vcMail, true);
 				
 			});
 		}
@@ -143,7 +147,11 @@ namespace Unity.Platform.IPhone
 						notificationService.StartNotifyAlert ("Mail Alert", "Mail saved to draft.", "OK");
 					}
 				}
-				e.Controller.DismissModalViewControllerAnimated (true);
+
+				// method reviewed (15 April 2014).
+				e.Controller.DismissViewController(true, null);
+
+				// deprecated --> e.Controller.DismissModalViewControllerAnimated (true);
 			});
 		}
 
@@ -156,6 +164,11 @@ namespace Unity.Platform.IPhone
 		public override bool SendMessageSMS (string phoneNumber, string text)
 		{
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+
+				/*********
+				 * Sending SMS using sms:// URI scheme
+				 *********	
+
 				StringBuilder filteredPhoneNumber = new StringBuilder ();
 				if (phoneNumber != null && phoneNumber.Length > 0) {
 					foreach (char c in phoneNumber) {
@@ -165,11 +178,12 @@ namespace Unity.Platform.IPhone
 					}
 				}
 				string textBody = "";
-				/* NOTE: sms scheme with body is not working well with current iOS versions... we are waiting for them to fix this on further versions
-				if(text!=null) {
-					textBody="?body=" + Uri.EscapeUriString(text);
-				}
-				*/
+				
+				// NOTE: sms scheme with body is not working well with current iOS versions... we are waiting for them to fix this on further versions
+				//if(text!=null) {
+				//	textBody="?body=" + Uri.EscapeUriString(text);
+				//}
+
 				NSUrl urlParam = new NSUrl ("sms:" + filteredPhoneNumber.ToString() + textBody);
 				if (UIApplication.SharedApplication.CanOpenUrl (urlParam)) {
 					using (var pool = new NSAutoreleasePool ()) {
@@ -183,10 +197,54 @@ namespace Unity.Platform.IPhone
 						notificationService.StartNotifyAlert ("Message Alert", "Sending of text messages is not enabled or supported on this device.", "OK");
 					}
 				}
+				*/
+
+				if(MFMessageComposeViewController.CanSendText) {
+
+					MFMessageComposeViewController vcMessage = new MFMessageComposeViewController();
+
+					vcMessage.Body = text;
+
+					// list of recipients
+					if(phoneNumber!= null && phoneNumber.Length > 0) {
+						String[] phoneNumbers = phoneNumber.Split(',', ';');
+						vcMessage.Recipients = phoneNumbers;
+					}
+					vcMessage.Finished += HandleSmsFinished;
+
+					// Present the modal view controller for sending messages
+					vcMessage.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
+					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentViewController(vcMessage, true, null);
+
+				} else {
+					INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
+					if (notificationService != null) {
+						notificationService.StartNotifyAlert ("Message Alert", "Sending of text messages is not enabled or supported on this device.", "OK");
+					}
+				}
 			});
 			return true;
 		}
 
+		void HandleSmsFinished (object sender, MFMessageComposeResultEventArgs e)
+		{
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				if (e.Result == MessageComposeResult.Sent) {
+					// No action required
+				} else if (e.Result == MessageComposeResult.Cancelled) {
+					// No action required
+				} else if (e.Result == MessageComposeResult.Failed) {
+					INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
+					if (notificationService != null) {
+						notificationService.StartNotifyAlert ("Send SMS Error", "Failed to send SMS.", "OK");
+					}
+				} 
+
+				e.Controller.DismissViewController(true, null);
+			});
+		}
+
+		// deprecated
 		[Export("ShowTextComposer")]
 		private void ShowTextComposer (object textURI)
 		{

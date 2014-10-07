@@ -59,7 +59,7 @@ namespace Unity.Core.Net
 				}
 				
 				lastUrl = url;
-				lastUrlExpiry = DateTime.Now.AddMilliseconds (LASTURL_TIMEOUT).Ticks;
+				lastUrlExpiry = DateTime.Now.AddTicks (LASTURL_TIMEOUT).Ticks;
 				lastUrlResponse = isReachable;
 				
 				return isReachable;
@@ -87,7 +87,11 @@ namespace Unity.Core.Net
 
 		public abstract bool OpenBrowser (string title, string buttonText, string url);
 
+		public abstract bool OpenBrowserWithOptions (SecondaryBrowserOptions browserOptions);
+
 		public abstract bool ShowHtml (string title, string buttonText, string html);
+
+		public abstract bool ShowHtmlWithOptions (SecondaryBrowserOptions browserOptions);
 
 		public abstract bool DownloadFile (string url);
 

@@ -44,13 +44,14 @@ import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.net.AbstractNet;
 import com.gft.unity.core.net.NetworkData;
 import com.gft.unity.core.net.NetworkType;
+import com.gft.unity.core.net.SecondaryBrowserOptions;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
 
 // TODO review implementation for HTTPs, proxies, ...
 public class AndroidNet extends AbstractNet {
 
-	private static final SystemLogger LOG = SystemLogger.getInstance();
+	private static final SystemLogger LOG = AndroidSystemLogger.getInstance();
 
 	private static final String HTTP_SCHEME = "http://";
 	private static final String HTTPS_SCHEME = "https://";
@@ -61,6 +62,7 @@ public class AndroidNet extends AbstractNet {
 	public static final String EXTRA_HTML = "extra_html";
 	public static final String EXTRA_BROWSER_TITLE = "extra_title";
 	public static final String EXTRA_BUTTON_TEXT = "extra_buttontext";
+	public static final String EXTRA_FILE_EXTENSIONS = "extra_fileextensions";
 
 	private static final String ACTION_SHOW_BROWSER = ".SHOW_BROWSER";
 
@@ -134,9 +136,12 @@ public class AndroidNet extends AbstractNet {
 			} else {
 				lastResult = checkHttpConnection(url);
 				lastChecked = System.currentTimeMillis();
+				LOG.Log(Module.PLATFORM,
+						"IsNetworkReachable: result checking url [" + url + "]: " + lastResult);
 			}
 		} else {
 			lastResult = false;
+			LOG.Log(Module.PLATFORM, "IsNetworkReachable: The Network Connectivity is not available.");
 			lastChecked = 0;
 		}
 		lastUrl = url;
@@ -187,8 +192,11 @@ public class AndroidNet extends AbstractNet {
 				result = tryConnection(urlObj);
 			}
 		} catch (MalformedURLException ex) {
-			LOG.Log(Module.PLATFORM, "checkHttpConnection warning", ex);
+			LOG.Log(Module.PLATFORM, "checkHttpConnection MalformedURLException [" + schemeUrl +"]: " + ex.getMessage());
 			// it's not a valid URL... it means it's not reachable
+			result = false;
+		} catch (Exception ex) {
+			LOG.Log(Module.PLATFORM, "checkHttpConnection unhandled exception [" + schemeUrl +"]", ex);
 			result = false;
 		}
 
@@ -199,10 +207,11 @@ public class AndroidNet extends AbstractNet {
 		boolean result = false;
 
 		try {
+			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection [" + url +"]...");
 			url.openConnection().connect();
 			result = true;
 		} catch (Exception ex) {
-			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection warning", ex);
+			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection warning [" + url +"]: " + ex.getMessage());
 		}
 
 		return result;
@@ -224,6 +233,30 @@ public class AndroidNet extends AbstractNet {
 			intent.putExtra(EXTRA_URL, url);
 			intent.putExtra(EXTRA_BROWSER_TITLE, title);
 			intent.putExtra(EXTRA_BUTTON_TEXT, buttonText);
+
+			result = aam.startActivity(intent);
+		} catch (Exception ex) {
+			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection error", ex);
+		}
+		return result;
+	}	
+	
+	@Override
+	public boolean OpenBrowserWithOptions(SecondaryBrowserOptions browserOptions) {
+		boolean result = false;
+
+		try {
+			IActivityManager aam = (IActivityManager) AndroidServiceLocator
+					.GetInstance()
+					.GetService(
+							AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			Intent intent = new Intent(AndroidServiceLocator.getContext()
+					.getPackageName() + ACTION_SHOW_BROWSER);
+			intent.putExtra(EXTRA_URL, browserOptions.getUrl());
+			intent.putExtra(EXTRA_BROWSER_TITLE, browserOptions.getTitle());
+			intent.putExtra(EXTRA_BUTTON_TEXT, browserOptions.getCloseButtonText());
+			intent.putExtra(EXTRA_HTML, browserOptions.getHtml());
+			intent.putExtra(EXTRA_FILE_EXTENSIONS, browserOptions.getBrowserFileExtensionsAsString());
 
 			result = aam.startActivity(intent);
 		} catch (Exception ex) {
@@ -257,6 +290,29 @@ public class AndroidNet extends AbstractNet {
 			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection error", ex);
 		}
 
+		return result;
+	}
+	
+	@Override
+	public boolean ShowHtmlWithOptions(SecondaryBrowserOptions browserOptions) {
+		boolean result = false;
+
+		try {
+			IActivityManager aam = (IActivityManager) AndroidServiceLocator
+					.GetInstance()
+					.GetService(
+							AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			Intent intent = new Intent(AndroidServiceLocator.getContext()
+					.getPackageName() + ACTION_SHOW_BROWSER);
+			intent.putExtra(EXTRA_BROWSER_TITLE, browserOptions.getTitle());
+			intent.putExtra(EXTRA_BUTTON_TEXT, browserOptions.getCloseButtonText());
+			intent.putExtra(EXTRA_HTML, browserOptions.getHtml());
+			intent.putExtra(EXTRA_FILE_EXTENSIONS, browserOptions.getBrowserFileExtensionsAsString());
+
+			result = aam.startActivity(intent);
+		} catch (Exception ex) {
+			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection error", ex);
+		}
 		return result;
 	}
 
