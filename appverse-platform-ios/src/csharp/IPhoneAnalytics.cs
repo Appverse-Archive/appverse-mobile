@@ -23,7 +23,7 @@
  */
 using System;
 using Unity.Core.Analytics;
-using GoogleAnalytics;
+using GoogleAnalytics.iOS;
 using Unity.Core.System;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
@@ -33,61 +33,69 @@ namespace Unity.Platform.IPhone
 	public class IPhoneAnalytics: AbstractAnalytics 
 	{
 		//Using Google Analytics SDK v3.01 Implemented 13-Nov-2013
-		private GAITracker _tracker = null;
-		
-		private GAITracker SharedTracker(string webPropertyID) {
+
+		// changes to use GoogleAnalytics.iOS.dll version 3_0_7
+		private IGAITracker _tracker = null;
+
+		private IGAITracker SharedTracker(string webPropertyID) {
 
 			if(this._tracker == null) {
 				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-					this._tracker = GAI.SharedInstance.TrackerWithTrackingId(webPropertyID);
+					// v2 this._tracker = GAI.SharedInstance.TrackerWithTrackingId(webPropertyID);
+					// v3
+					this._tracker = GAI.SharedInstance.GetTracker(webPropertyID);
 					SystemLogger.Log(SystemLogger.Module.PLATFORM, "*** GANTracker.SharedTracker instance");
 					if(this._tracker == null) {
 						SystemLogger.Log(SystemLogger.Module.PLATFORM, "*** Instance returned by GANTracker is NULL. Please check your assembly linking");
 					}
 				});
 			}
-		
+
 			return GAI.SharedInstance.DefaultTracker;
 		}
-		
+
 		#region implemented abstract members of Unity.Core.Analytics.AbstractAnalytics
 		public override bool StartTracking (string webPropertyID)
 		{
-			
+
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "Starting tracking for account: " + webPropertyID);
-			
+
 			if (SharedTracker(webPropertyID) != null) {
 				//int time=10;
-	            try {
+				try {
 					UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 						try {
-		                	/* deprecated - changes to compile with iOS 7 
+							/* deprecated - changes to compile with iOS 7 
 		                	SharedTracker().StartTracker(webPropertyID, 1, null);
 		                	SharedTracker().Dispatch();
 		                	*/
-							this._tracker.Set(GAIFields.SessionControl, "start");
+
+							// changes for ios 8 and new version 3.0.7
+							// v2 this._tracker.Set(GAIFields.SessionControl, "start");
+							//v3
+							this._tracker.Set(GAIConstants.SessionControl, "start");
 
 							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Tracking STARTED for account: " + webPropertyID);
 						} catch (Exception e) {
-	                		SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error starting tracker", e);
-	            		}
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error starting tracker", e);
+						}
 					});
 					return true;
-	              
-	            } catch (Exception e) {
-	                SystemLogger.Log(SystemLogger.Module.PLATFORM, "Couldn't start Analytics session", e);
-	                return false;
-	            }
-		    }else
-		    	return false;
-			
+
+				} catch (Exception e) {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Couldn't start Analytics session", e);
+					return false;
+				}
+			}else
+				return false;
+
 		}
 
 		public override bool StopTracking ()
 		{
-			
+
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "Stopping Tracking");
-			
+
 			if (this._tracker != null) {
 				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 					try {
@@ -95,18 +103,22 @@ namespace Unity.Platform.IPhone
             			this._tracker.StopTracker();
 						this._tracker.Dispatch();
 						*/
-						this._tracker.Set(GAIFields.SessionControl, "end");
+						// changes for ios 8 and new version 3.0.7
+						// v2 this._tracker.Set(GAIFields.SessionControl, "end");
+						// v3
+						this._tracker.Set(GAIConstants.SessionControl, "end");
+
 						this._tracker.Dispose();
 						this._tracker = null;
 
 						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Tracking STOPPED");
 
 					} catch (Exception e) {
-	                	SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error stopping tracker", e);
-	            	}
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error stopping tracker", e);
+					}
 				});
-            	return true;
-        	}else
+				return true;
+			}else
 				return false;
 		}
 
@@ -122,7 +134,11 @@ namespace Unity.Platform.IPhone
 							this._tracker.TrackEvent(sGroup, action, label, iValue, out error);
 	                		this._tracker.Dispatch();
 	                		*/
-							this._tracker.Send(GAIDictionaryBuilder.CreateEventWithCategory(sGroup,action,label,iValue).Build());
+							// changes for ios 8 and new version 3.0.7
+							// v2 this._tracker.Send(GAIDictionaryBuilder.CreateEventWithCategory(sGroup,action,label,iValue).Build());
+							//v3
+							this._tracker.Send(GAIDictionaryBuilder.CreateEvent(sGroup,action,label, iValue).Build());
+
 							GAI.SharedInstance.Dispatch();
 							/*bool success = SharedTracker().TrackEvent(sGroup,action, label, iValue);
 							if(success)  {
@@ -131,14 +147,14 @@ namespace Unity.Platform.IPhone
 								SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error tracking event (without further error information)");
 							}*/
 						} catch (Exception e) {
-	                		SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error tracking event", e);
-	            		}
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error tracking event", e);
+						}
 					});
-	                return true;
-	            } catch (Exception e) {
-	                SystemLogger.Log(SystemLogger.Module.PLATFORM, "Couldn't track analytics event", e);
-	                return false;
-	            }
+					return true;
+				} catch (Exception e) {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Couldn't track analytics event", e);
+					return false;
+				}
 			}else
 				return false;
 		}
@@ -147,8 +163,8 @@ namespace Unity.Platform.IPhone
 		{
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "Tracking Page View: " + relativeUrl);
 			if (this._tracker != null) {
-				
-	            try {
+
+				try {
 					UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 						try {
 							/* deprecated - changes to compile with iOS 7 
@@ -167,19 +183,23 @@ namespace Unity.Platform.IPhone
 							} else {
 								SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error tracking page view (without further error information)");
 							}*/
-							this._tracker.Set(GAIFields.ScreenName,relativeUrl);
+							// changes for ios 8 and new version 3.0.7
+							// v2 this._tracker.Set(GAIFields.ScreenName,relativeUrl);
+							//v3
+							this._tracker.Set(GAIConstants.ScreenName, relativeUrl);
+
 							this._tracker.Send(GAIDictionaryBuilder.CreateAppView().Build());
 						} catch (Exception e) {
-	                		SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error tracking page view", e);
-	            		}
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error tracking page view", e);
+						}
 					});
 					return true;
-	            } catch (Exception e) {
-	                SystemLogger.Log(SystemLogger.Module.PLATFORM, "Couldn't track analytics pageview [" + relativeUrl + "]", e);
-	                return false;
-	            }
-        	}else
-        		return false;
+				} catch (Exception e) {
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Couldn't track analytics pageview [" + relativeUrl + "]", e);
+					return false;
+				}
+			}else
+				return false;
 		}
 		#endregion
 	}

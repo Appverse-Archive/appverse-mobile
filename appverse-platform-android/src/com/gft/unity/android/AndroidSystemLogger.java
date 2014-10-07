@@ -24,6 +24,7 @@
 package com.gft.unity.android;
 
 import android.util.Log;
+
 import com.gft.unity.core.system.SystemLogger;
 
 public class AndroidSystemLogger extends SystemLogger {
@@ -34,6 +35,13 @@ public class AndroidSystemLogger extends SystemLogger {
     }
 
     public static SystemLogger getInstance() {
+        if (singletonLogger == null) {
+            singletonLogger = new AndroidSystemLogger();
+        }
+        return singletonLogger;
+    }
+    
+    public static AndroidSystemLogger getSuperClassInstance() {
         if (singletonLogger == null) {
             singletonLogger = new AndroidSystemLogger();
         }
@@ -58,5 +66,15 @@ public class AndroidSystemLogger extends SystemLogger {
     @Override
     public void Log(Module module, String message, Exception ex) {
         Log.e(module.toString(), message, ex);
+    }
+    
+    public void LogDebug(String message) {
+    	if(AndroidServiceLocator.isDebuggable())
+    		Log.d(Module.GENERAL.toString(), message);
+    }
+    
+    public void LogDebug(Module module, String message) {
+    	if(AndroidServiceLocator.isDebuggable())
+    		Log.d(module.toString(), message);
     }
 }

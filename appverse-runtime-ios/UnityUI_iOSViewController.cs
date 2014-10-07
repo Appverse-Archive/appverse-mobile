@@ -179,7 +179,7 @@ namespace UnityUI.iOS
 				SystemLogger.Log (SystemLogger.Module.GUI, "ViewController: " + message);
 			}
 		}
-		
+
 		public void loadWebView (string urlPath)
 		{
 			NSUrl url = new NSUrl (urlPath);
@@ -195,6 +195,15 @@ namespace UnityUI.iOS
 			}
 			
 		}
+
+		public void loadWebViewData(NSData data, string mimeType, string textEncodingName, NSUrl baseUrl) {
+			if (webView != null) {
+				this.webView.LoadData(data, mimeType, textEncodingName, baseUrl);
+			} else {
+				log ("WebView is null. Data could not be loaded");
+			}
+		}
+
 #endregion
 		
 		/// DEPRECATED for iOS 6 and later, but needed for iOS 5 and earlier to support additional orientations

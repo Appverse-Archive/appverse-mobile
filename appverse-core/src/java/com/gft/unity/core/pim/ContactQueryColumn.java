@@ -9,5 +9,5 @@ package com.gft.unity.core.pim;
  * @author FRMI
  */
 public enum ContactQueryColumn {
-    ID, Name 
+    ID, Name, Phone
 }

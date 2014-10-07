@@ -32,8 +32,8 @@ import com.gft.unity.core.system.service.IServiceLocator;
 
 public class AndroidHandler extends AbstractHandler implements Handler {
 
-	private final static SystemLogger LOG = AndroidSystemLogger
-			.getInstance();
+	private final static AndroidSystemLogger LOG = AndroidSystemLogger
+			.getSuperClassInstance();
 	private final static IServiceLocator LOCATOR = AndroidServiceLocator
 			.GetInstance();
 
@@ -46,6 +46,11 @@ public class AndroidHandler extends AbstractHandler implements Handler {
 
 	protected final void Log(String message) {
 		LOG.Log(SystemLogger.Module.PLATFORM, getClass().getSimpleName()
+				+ ": " + message);
+	}
+	
+	protected final void LogDebug(String message) {
+		LOG.LogDebug(SystemLogger.Module.PLATFORM, getClass().getSimpleName()
 				+ ": " + message);
 	}
 

@@ -23,18 +23,36 @@
  */
 package com.gft.unity.android;
 
-import android.content.Context;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Semaphore;
 
+import android.content.Context;
+import android.os.Build;
+
+import com.gft.unity.core.system.SystemLogger;
+import com.gft.unity.core.system.server.net.ServerSocketEndPoint;
 import com.gft.unity.core.system.service.AbstractServiceLocator;
 import com.gft.unity.core.system.service.IServiceLocator;
 
 public class AndroidServiceLocator extends AbstractServiceLocator {
 
+	private static final AndroidSystemLogger LOG = AndroidSystemLogger.getSuperClassInstance();
+	
+	public static final String INTERNAL_SERVER_HOST = "127.0.0.1";
+	public static final String INTERNAL_SERVER_PORT = "8080";
+	public static final String INTERNAL_SERVER_URL = "http://" + INTERNAL_SERVER_HOST + ":" + INTERNAL_SERVER_PORT;
+	
 	public static final String SERVICE_ANDROID_ASSET_MANAGER = "android.asset";
 	public static final String SERVICE_ANDROID_ACTIVITY_MANAGER = "android.activity";
 
 	private static Context context;
-
+	private static final Semaphore SEMAPHORE = new Semaphore(1);
+	
+	private static String IN_DEBUG_MODE = "$debuggable$";
+	
+	private static List<String> managedServices = new ArrayList<String>();
+			
 	private AndroidServiceLocator() {
 		super();
 		registerServices();
@@ -94,5 +112,108 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
 				AndroidServiceLocator.SERVICE_TYPE_WEBTREKK);
 		this.RegisterService(new AndroidAppLoader(),
 				AndroidServiceLocator.SERVICE_TYPE_APPLOADER);
+		this.RegisterService(new AndroidNFCPayment(),
+				AndroidServiceLocator.SERVICE_TYPE_NFCPAYMENT);
+		if(Build.VERSION.SDK_INT>=18){
+			this.RegisterService(new AndroidBeacon(),
+				AndroidServiceLocator.SERVICE_TYPE_BEACON);
+		}else {
+			this.RegisterService(new AndroidNotSupportedAPI(),
+					AndroidServiceLocator.SERVICE_TYPE_BEACON);
+			
+		}
 	}
+	
+    public static boolean isDebuggable() {
+    	
+    	boolean isDebuggable = false;
+    	try {
+    		isDebuggable = Boolean.parseBoolean(IN_DEBUG_MODE);
+    	} catch (Exception ex) {
+    		LOG.Log(SystemLogger.Module.PLATFORM, "Exception while checking is app is in debug mode. Message: " + ex.getMessage());	
+    	}
+    	
+    	return isDebuggable;
+    }
+    
+    public static void checkResourceIsManagedService(String url) {
+    	if(url!=null && url.indexOf(AndroidServiceLocator.INTERNAL_SERVER_URL)>-1 
+				&& (url.indexOf("/service/")>-1 || url.indexOf("/service-async/")>-1) ) {
+			//LOG.LogDebug(SystemLogger.Module.PLATFORM, "Handle managed service: " + url);
+			AndroidServiceLocator.registerManagedService(url, ""+System.currentTimeMillis());
+		}
+    }
+    
+    public static void registerManagedService(String service, String timestamp) {
+    	long uid = System.currentTimeMillis();
+    	LOG.LogDebug(SystemLogger.Module.PLATFORM, "[" +uid+ "] registerManagedService Acquiring semaphore "+ System.currentTimeMillis());	
+    	SEMAPHORE.acquireUninterruptibly();
+    	try {	    	
+    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "Registered managedServices Size b4:" + managedServices.size());
+        	managedServices.add(service + "_" + timestamp);
+        	LOG.LogDebug(SystemLogger.Module.PLATFORM, "Registered managedServices Size after:" + managedServices.size());
+	    	
+    	} catch (Throwable th) {
+    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "*************** Throwable exception #registerManagedService: " + th.getMessage());
+    		//th.printStackTrace();
+    	}finally{
+    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "[" +uid+ "] registerManagedService Releasing semaphore "+ System.currentTimeMillis());
+    		SEMAPHORE.release();
+    	}
+    }
+    
+    
+    public static boolean consumeManagedService(String service) {
+    	
+    	if(Build.VERSION.SDK_INT < 11){ 
+    		// "onLoadResource" in UnityWebViewClient is not 100% guaranteed to be called prior to serving the service
+    		// so, the service sometimes is called before registered (from the webviewclient method).
+    		// "shouldInterceptRequest" is a better method to be used, but unfortunately is not available for 2.3.6 versions.
+    		try {
+    			// In order to prevent this, we will wait for those devices some milliseconds to "give the WebViewClient time" to process
+    			// It is not an elegant solution, but it is the only we can do to provide security in those devices
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				LOG.LogDebug("*** Warning checking consumed managed services");
+			}  
+    	}
+    	
+    	long uid = System.currentTimeMillis();
+    	LOG.LogDebug(SystemLogger.Module.PLATFORM, "[" +uid+ "] consumeManagedService Acquiring semaphore "+ System.currentTimeMillis());
+    	SEMAPHORE.acquireUninterruptibly();
+    	boolean result = false;
+    	try {	    	
+    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "consumeManagedService managedServices Size b4:" + managedServices.size());
+    		int index = -1;
+			for(String  managedService: managedServices) {
+				if(managedService.startsWith(AndroidServiceLocator.INTERNAL_SERVER_URL + service)) {
+					//LOG.LogDebug(SystemLogger.Module.PLATFORM, "Consuming managed service...");
+					index = managedServices.indexOf(managedService);
+					break;
+				}
+			}
+			if(index>-1) {				
+				String removedService = managedServices.remove(index);
+	        
+				removedService = null;
+				System.gc();
+				
+				result = true;
+			}
+			
+    	} catch (Throwable th) {
+    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "*************** Throwable exception #consumeManagedService: " + th.getMessage());
+    		//th.printStackTrace();
+    	}finally{
+    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "[" +uid+ "] consumeManagedService Releasing semaphore "+ System.currentTimeMillis());
+    		SEMAPHORE.release();
+    	}
+    	LOG.LogDebug(SystemLogger.Module.PLATFORM, "consumeManagedService managedServices Size after:" + managedServices.size());		
+    	return result;
+    }
+    
+    public static boolean isSocketListening() {
+    	return ServerSocketEndPoint.isSocketListening();
+    }
+
 }

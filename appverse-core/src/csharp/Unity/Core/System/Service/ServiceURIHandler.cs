@@ -32,8 +32,8 @@ namespace Unity.Core.System.Service
 {
 	public class ServiceURIHandler : IHttpHandler
 	{
-		private static string SERVICE_URI = "/service/";
-		private static string SERVICE_ASYNC_URI = "/service-async/";
+		protected static string SERVICE_URI = "/service/";
+		protected static string SERVICE_ASYNC_URI = "/service-async/";
 		private static string CACHE_CONTROL_HEADER = "Cache-Control";
 		private static string DEFAULT_CACHE_CONTROL = "no-cache";
 		private IServiceLocator serviceLocator = null;
@@ -168,7 +168,7 @@ namespace Unity.Core.System.Service
 
         #region Miembros de IHttpHandler
 
-		public bool Process (HttpServer server, HttpRequest request, HttpResponse response)
+		public virtual bool Process (HttpServer server, HttpRequest request, HttpResponse response)
 		{
 			SystemLogger.Log (SystemLogger.Module .CORE, " ############## " + this.GetType () + " -> " + request.Url);
 			if (request.Url.StartsWith (SERVICE_URI) || request.Url.StartsWith (SERVICE_ASYNC_URI)) {

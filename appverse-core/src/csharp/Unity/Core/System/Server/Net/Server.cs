@@ -86,14 +86,19 @@ namespace Unity.Core.System.Server.Net
 			ss.ReceiveBufferSize = 256;
 			ss.Bind (new IPEndPoint (IPAddress.Loopback, port));
 			ss.Listen (25);
-			
-			
 			// Start the accept process. When a connection is accepted, the callback
 			// must do this again to accept another connection
 			ss.BeginAccept (new AsyncCallback (AcceptCallback), ss);
-			
-			
-			
+		}
+
+		public bool IsListening {
+			get { 
+				bool listening = false;
+				if (ss != null) {
+					listening = ss.IsBound;
+				}
+				return listening;
+			}
 		}
 
 		internal void ClientClosed (ClientInfo ci)
