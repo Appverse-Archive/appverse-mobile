@@ -307,6 +307,19 @@ namespace Unity.Platform.IPhone
 			}
 			return true;
 		}
+
+		public override bool OpenBrowserWithOptions (SecondaryBrowserOptions browserOptions)
+		{ 
+			using (var pool = new NSAutoreleasePool ()) {
+				var thread = new Thread (OpenBrowserWithOptionsOnThread);
+				if(browserOptions==null)
+					browserOptions = new SecondaryBrowserOptions();
+				else
+					browserOptions.CheckNullsAndSetDefaults();
+				thread.Start (browserOptions);
+			}
+			return true;
+		}
 		
 		public override bool ShowHtml (string title, string buttonText, string html)
 		{
@@ -321,6 +334,16 @@ namespace Unity.Platform.IPhone
 			}
 			return true;
 		}
+
+		public override bool ShowHtmlWithOptions (SecondaryBrowserOptions browserOptions)
+		{
+			if(browserOptions==null)
+				browserOptions = new SecondaryBrowserOptions();
+			else
+				browserOptions.CheckNullsAndSetDefaults();
+			browserOptions.Url = String.Empty;
+			return OpenBrowserWithOptions (browserOptions);
+		}
 		
 		[Export("OpenBrowserOnThread")]
 		private void OpenBrowserOnThread (object browserCommandObject)
@@ -330,32 +353,78 @@ namespace Unity.Platform.IPhone
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 				
 				IPhoneUIViewController contentController = new IPhoneUIViewController(browserCommand.Title, browserCommand.ButtonText);
-				
-				UIWebView webView = new UIWebView();
-				webView.ScalesPageToFit = true;
-				webView.LoadStarted+= delegate (object sender, EventArgs e) {
-					UIApplication.SharedApplication.NetworkActivityIndicatorVisible = true;
-				};
-				webView.LoadFinished+=delegate (object sender, EventArgs e) {
-					UIApplication.SharedApplication.NetworkActivityIndicatorVisible = false;
-					
-					// stop notify loading masks if any
-					INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
-					notificationService.StopNotifyLoading();
-				};	
+				UIWebView webView = IPhoneNet.generateWebView();
 				contentController.AddInnerView(webView);     
 				
 				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController(contentController, true);				
 				IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
-				if(browserCommand.Url!=null && browserCommand.Url.Length>0) {
+				if(!String.IsNullOrWhiteSpace(browserCommand.Url)) {
 					NSUrl nsUrl = new NSUrl (browserCommand.Url);				
 					NSUrlRequest  nsUrlRequest = new NSUrlRequest(nsUrl,NSUrlRequestCachePolicy.ReloadRevalidatingCacheData, 120.0);
 					webView.LoadRequest(nsUrlRequest);
-				} else if(browserCommand.Html!=null && browserCommand.Html.Length>0) {
+				} else if(!String.IsNullOrWhiteSpace(browserCommand.Html)) {
 					webView.LoadHtmlString(browserCommand.Html, new NSUrl("/"));
 				}
 				
 				
+			});
+		}
+
+		public static UIWebView generateWebView() {
+			UIWebView webView = new UIWebView();
+			webView.ScalesPageToFit = true;
+			webView.LoadStarted+= delegate (object sender, EventArgs e) {
+				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = true;
+			};
+			webView.LoadFinished+=delegate (object sender, EventArgs e) {
+				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = false;
+
+				// stop notify loading masks if any
+				INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
+				notificationService.StopNotifyLoading();
+			};	
+
+
+			return webView;
+		}
+
+		[Export("OpenBrowserWithOptionsOnThread")]
+		private void OpenBrowserWithOptionsOnThread (object browserOptionsObject)
+		{
+			SecondaryBrowserOptions browserOptions = (SecondaryBrowserOptions)browserOptionsObject;
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+
+				IPhoneUIViewController contentController = new IPhoneUIViewController(browserOptions.Title, browserOptions.CloseButtonText);
+				UIWebView webView = IPhoneNet.generateWebView();
+
+				//IF NO EXTENSIONS ARE USED THEN PARSE THE URL FILE EXTENSION
+				if(browserOptions.BrowserFileExtensions!=null && browserOptions.BrowserFileExtensions.Length>0){
+					webView.ShouldStartLoad = delegate (UIWebView view, NSUrlRequest req, UIWebViewNavigationType nav){
+						if(req!=null && req.Url!=null && req.Url.Path.LastIndexOf(".") != -1){
+							string sFileExtension = req.Url.Path.Substring(req.Url.Path.LastIndexOf("."));
+							if(browserOptions.BrowserFileExtensions.Contains(sFileExtension)){
+								//HANDLE URL LIKE SYSTEM DOES
+								DownloadFile(req.Url.ToString());
+								//RETURN FALSE TO NOT LOAD THE URL ON OUR WEBVIEW
+								return false;
+							}else{
+								//LOAD URL
+								return true;
+							}
+						}
+						return true;
+					};
+				}
+				contentController.AddInnerView(webView);     
+				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentModalViewController(contentController, true);				
+				IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
+				if(!String.IsNullOrWhiteSpace(browserOptions.Url)) {
+					NSUrl nsUrl = new NSUrl (browserOptions.Url);				
+					NSUrlRequest  nsUrlRequest = new NSUrlRequest(nsUrl,NSUrlRequestCachePolicy.ReloadRevalidatingCacheData, 120.0);
+					webView.LoadRequest(nsUrlRequest);
+				} else if(!String.IsNullOrWhiteSpace(browserOptions.Html)) {
+					webView.LoadHtmlString(browserOptions.Html, new NSUrl("/"));
+				}
 			});
 		}
 		

@@ -9,5 +9,5 @@ package com.gft.unity.core.pim;
  * @author FRMI
  */
 public enum ContactQueryCondition {
-    Equals, StartsWith, EndsWith, Contains
+    Equals, StartsWith, EndsWith, Contains, Available
 }

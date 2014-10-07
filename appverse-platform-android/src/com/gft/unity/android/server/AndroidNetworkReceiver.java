@@ -24,11 +24,13 @@
 package com.gft.unity.android.server;
 
 
+import com.gft.unity.core.system.log.Logger;
+import com.gft.unity.core.system.log.Logger.LogCategory;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.webkit.WebView;
 
 /**
@@ -37,7 +39,9 @@ import android.webkit.WebView;
  */
 public class AndroidNetworkReceiver extends BroadcastReceiver {
 
-	private static final String TAG = "Appverse.AndroidNetworkReceiver";
+	private static final String LOGGER_MODULE = "Appverse.AndroidNetworkReceiver";
+	private static final Logger LOGGER = Logger.getInstance(
+			LogCategory.PLATFORM, LOGGER_MODULE);
 	
 	private WebView view;
 	
@@ -74,8 +78,8 @@ public class AndroidNetworkReceiver extends BroadcastReceiver {
 			try {
 				ProxySettings.setProxy(this.context, this.view, "", 0);
 			} catch (Exception ex) {
-				Log.d(TAG, "******* NETWORK RECEIVER error setting proxy " + ex.getMessage());
-				Log.d(TAG, "stacktrace:" + ex);
+				LOGGER.logDebug("ProxySettingsAction#run", "******* NETWORK RECEIVER error setting proxy " + ex.getMessage());
+				LOGGER.logDebug("ProxySettingsAction#run", "stacktrace:" + ex);
 			}
 		}
 	}

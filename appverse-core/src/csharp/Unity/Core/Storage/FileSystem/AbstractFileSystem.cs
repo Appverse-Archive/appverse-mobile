@@ -29,7 +29,7 @@ namespace Unity.Core.Storage.FileSystem
 {
 	public abstract class AbstractFileSystem : IFileSystem
 	{
-		
+
 		#region Miembros de IFileSystem
 
 		/// <summary>
@@ -42,6 +42,9 @@ namespace Unity.Core.Storage.FileSystem
 		{
 			FileData file = null;
 			string path = Path.Combine (baseDirectory.FullName, fileName);
+			//TODO Review
+			if (!CheckSecurePath (path))
+				return null;
 			string rootPath = GetDirectoryRoot ().FullName;
 
 			if (baseDirectory != null) {
@@ -51,7 +54,7 @@ namespace Unity.Core.Storage.FileSystem
 			} else {
 				path = rootPath; // creates file under root path.
 			}
-			
+
 			if (!File.Exists (path)) {
 				try {
 					FileStream fs = File.Create (path);
@@ -61,7 +64,7 @@ namespace Unity.Core.Storage.FileSystem
 					SystemLogger.Log (SystemLogger.Module .CORE, "Error creating file [" + path + "]", e);
 				}
 			}
-            
+
 			return file;
 		}
 
@@ -85,6 +88,9 @@ namespace Unity.Core.Storage.FileSystem
 		{
 			DirectoryData directory = null;
 			string path = Path.Combine (baseDirectory.FullName, directoryName);
+			//TODO Review
+			if (!CheckSecurePath (path))
+				return null;
 			string rootPath = GetDirectoryRoot ().FullName;
 			if (baseDirectory != null) {
 				if (!path.StartsWith (rootPath)) {
@@ -100,7 +106,7 @@ namespace Unity.Core.Storage.FileSystem
 					SystemLogger.Log (SystemLogger.Module .CORE, "Error creating directory [" + path + "]", e);
 				}
 			}
-			
+
 			return directory;
 		}
 
@@ -128,6 +134,9 @@ namespace Unity.Core.Storage.FileSystem
 					if (!file.FullName.StartsWith (roothPath)) {
 						file.FullName = Path.Combine (roothPath, file.FullName);
 					}
+					//TODO Review
+					if (!CheckSecurePath (file.FullName))
+						return false;
 					File.Delete (file.FullName);
 					deleted = true;
 				} catch (Exception e) {
@@ -152,6 +161,9 @@ namespace Unity.Core.Storage.FileSystem
 					if (!directory.FullName.StartsWith (roothPath)) {
 						directory.FullName = Path.Combine (roothPath, directory.FullName);
 					}
+					//TODO Review
+					if (!CheckSecurePath (directory.FullName))
+						return false;
 					Directory.Delete (directory.FullName, true); // recursively delete contents
 					deleted = true;
 				} catch (Exception e) {
@@ -172,11 +184,14 @@ namespace Unity.Core.Storage.FileSystem
 			if (directory == null) {
 				return GetDirectoryRoot ().GetFiles ();
 			}
-			
+
 			string roothPath = GetDirectoryRoot ().FullName;
 			if (!directory.FullName.StartsWith (roothPath)) {
 				directory.FullName = Path.Combine (roothPath, directory.FullName);
 			}
+			//TODO Review
+			if (!CheckSecurePath (directory.FullName))
+				return null;
 			return directory.GetFiles ();
 		}
 
@@ -190,12 +205,14 @@ namespace Unity.Core.Storage.FileSystem
 			if (directory == null) {
 				return ListDirectories ();
 			}
-			
+
 			string roothPath = GetDirectoryRoot ().FullName;
 			if (!directory.FullName.StartsWith (roothPath)) {
 				directory.FullName = Path.Combine (roothPath, directory.FullName);
 			}
-			
+			//TODO Review
+			if (!CheckSecurePath (directory.FullName))
+				return null;
 			return directory.GetDirectories ();
 		}
 
@@ -209,7 +226,7 @@ namespace Unity.Core.Storage.FileSystem
 		}
 
 		public abstract DirectoryData GetDirectoryRoot ();
-		
+
 		public abstract DirectoryData GetDirectoryResources ();
 
 		/// <summary>
@@ -219,6 +236,9 @@ namespace Unity.Core.Storage.FileSystem
 		/// <returns>Readed bytes.</returns>
 		public byte[] ReadFile (FileData file)
 		{
+			//TODO Review
+			if (!CheckSecurePath (file.FullName))
+				return null;
 			byte[] fileBytes = null;
 
 			if (ExistsFile (file)) {
@@ -227,7 +247,7 @@ namespace Unity.Core.Storage.FileSystem
 					file.Length = fi.Length;
 					FileStream fs = fi.OpenRead ();
 					fileBytes = new byte[(int)file.Length];
-                    
+
 					fs.Read (fileBytes, 0, (int)file.Length);
 
 					fs.Close ();
@@ -249,6 +269,9 @@ namespace Unity.Core.Storage.FileSystem
 		/// <param name="append">True if data should be appended to previous file data.</param>
 		public bool WriteFile (FileData file, byte[] contents, bool append)
 		{
+			//TODO Review
+			if (!CheckSecurePath (file.FullName))
+				return false;
 			bool success = false;
 			if (ExistsFile (file)) {
 				if (!append) {
@@ -258,7 +281,7 @@ namespace Unity.Core.Storage.FileSystem
 						sw.Close ();
 					}
 				}
-                
+
 				try {
 					FileInfo fi = new FileInfo (file.FullName);
 					file.Length = fi.Length;
@@ -268,7 +291,7 @@ namespace Unity.Core.Storage.FileSystem
 						fs.Position = file.Length;
 					}
 					fs.Write (contents, 0, contents.Length);
-                    
+
 					fs.Close ();
 					fs = null;
 					fi = null;
@@ -294,6 +317,9 @@ namespace Unity.Core.Storage.FileSystem
 			if (!file.FullName.StartsWith (roothPath)) {
 				file.FullName = Path.Combine (roothPath, file.FullName);
 			}
+			//TODO Review
+			if (!CheckSecurePath (file.FullName))
+				return false;
 			return File.Exists (file.FullName);
 		}
 
@@ -311,6 +337,9 @@ namespace Unity.Core.Storage.FileSystem
 			if (!directory.FullName.StartsWith (roothPath)) {
 				directory.FullName = Path.Combine (roothPath, directory.FullName);
 			}
+			//TODO Review
+			if (!CheckSecurePath (directory.FullName))
+				return false;
 			return Directory.Exists (directory.FullName);
 		}
 
@@ -331,12 +360,17 @@ namespace Unity.Core.Storage.FileSystem
 			try {
 				DirectoryData resourcesDir = GetDirectoryResources ();
 				string fromFilePath = Path.Combine (resourcesDir.FullName, fromPath);
+				//TODO Review
+				if (!CheckSecurePath (fromFilePath))
+					return false;
 				FileData sourceFile = new FileData (fromFilePath);
-				
+				//TODO Review
+				if (!CheckSecurePath (sourceFile.FullName))
+					return false;
 				if (ExistsFile (sourceFile)) {
 					DirectoryData rootDir = GetDirectoryRoot ();
 					string toFilePath = Path.Combine (rootDir.FullName, toPath);
-					
+
 					try {
 						File.Copy (fromFilePath, toFilePath);
 					} catch (Exception ex) {
@@ -350,17 +384,17 @@ namespace Unity.Core.Storage.FileSystem
 			} catch (Exception) {
 				SystemLogger.Log (SystemLogger.Module .CORE, "Error copying from file [" + fromPath + "]. Unhandled exception.");
 			}
-			
+
 			return false;
-			
+
 		}
-		
+
 		public abstract bool CopyFromRemote (string url, string toPath);
-		
-		
-        #endregion
-		
-		
+
+
+		#endregion
+
+
 		/// <summary>
 		/// Stores the file, under the given directory, with the given contents.
 		/// </summary>
@@ -378,23 +412,28 @@ namespace Unity.Core.Storage.FileSystem
 		/// </param>
 		public string StoreFile (string directoryPath, string fileName, byte[] fileData)
 		{
-			
+
 			// Create directory if it does not exists
 			DirectoryData assetsDirectory = this.CreateDirectory (directoryPath);	
 			if (assetsDirectory == null) {
 				// Directory already exists
 				assetsDirectory = new DirectoryData (Path.Combine (this.GetDirectoryRoot ().FullName, directoryPath));
 			}
-			
+			//TODO Review
+			if (!CheckSecurePath (assetsDirectory.FullName))
+				return null;
+
 			SystemLogger.Log (SystemLogger.Module.CORE, "Directory created: " + assetsDirectory.FullName);
-			
+
 			// Create file on the directory
 			FileData storedFile = this.CreateFile (fileName, assetsDirectory);
 			if (storedFile == null) {
 				// File already created (would be overwritten with the WriteFile call)
 				storedFile = new FileData (Path.Combine (assetsDirectory.FullName, fileName), 0);
 			}
-			
+			//TODO Review
+			if (!CheckSecurePath (storedFile.FullName))
+				return null;
 			// Write contents to file
 			bool success = this.WriteFile (storedFile, fileData, false);
 			if (success) {
@@ -402,9 +441,17 @@ namespace Unity.Core.Storage.FileSystem
 			} else {
 				SystemLogger.Log (SystemLogger.Module.CORE, "File could not be stored locally to path: " + storedFile.FullName);
 			}
-			
+
 			return Path.Combine (directoryPath, fileName);
+
+		}
 			
+		public bool CheckSecurePath(string path){
+		
+			string rootPath = Path.GetFullPath (this.GetDirectoryRoot ().FullName);
+			string filePath = Path.GetFullPath (path);
+			SystemLogger.Log (SystemLogger.Module.CORE, "CheckSecurePath [RootPath: "+rootPath+"] is in [Filepath: "+ filePath+"]");
+			return filePath.StartsWith (rootPath);
 		}
 	}
 }

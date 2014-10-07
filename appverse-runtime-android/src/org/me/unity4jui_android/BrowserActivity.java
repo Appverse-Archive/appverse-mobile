@@ -23,8 +23,16 @@
  */
 package org.me.unity4jui_android;
 
+import java.io.ByteArrayInputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -32,11 +40,13 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings.ZoomDensity;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 
 import com.gft.unity.android.AndroidNet;
+import com.gft.unity.android.AndroidServiceLocator;
 
 public class BrowserActivity extends Activity {
 
@@ -52,6 +62,7 @@ public class BrowserActivity extends Activity {
 
 	private WebView mWebView;
 	private Button btnClose;
+	private List<String> browserfileExtensions = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -73,8 +84,12 @@ public class BrowserActivity extends Activity {
 		mWebView.getSettings().setBuiltInZoomControls(true);
 		mWebView.getSettings().setSupportZoom(true);
 		mWebView.getSettings().setDomStorageEnabled(true);
-
-		mWebView.setWebViewClient(new UnityWebViewClient());
+		getIntentExtras_FileExtensions();
+		if(browserfileExtensions!= null && !browserfileExtensions.isEmpty()){
+			mWebView.setWebViewClient(new UnityWebViewClient(browserfileExtensions));
+		}else{
+			mWebView.setWebViewClient(new UnityWebViewClient());
+		}
 
 		mWebView.setWebChromeClient(new WebChromeClient() {
 			@Override
@@ -93,6 +108,18 @@ public class BrowserActivity extends Activity {
 		});
 
 	}
+	
+	private void getIntentExtras_FileExtensions(){
+		Intent intent = getIntent();
+		if(intent!=null) {
+			String fileExtensions = intent.hasExtra(AndroidNet.EXTRA_FILE_EXTENSIONS) ? intent
+					.getExtras().getString(AndroidNet.EXTRA_FILE_EXTENSIONS)
+					: "";
+			if(fileExtensions != null && !fileExtensions.trim().isEmpty()){
+				browserfileExtensions = Arrays.asList(fileExtensions.split("/\\;/g"));
+			}
+		}
+	}
 
 	@Override
 	protected void onResume() {
@@ -100,22 +127,25 @@ public class BrowserActivity extends Activity {
 
 		mWebView.getSettings().setJavaScriptEnabled(true);
 		Intent intent = getIntent();
-		if (intent.hasExtra(AndroidNet.EXTRA_URL)) {
-			String url = intent.getExtras().getString(AndroidNet.EXTRA_URL);
-			mWebView.loadUrl(url);
-		} else if (intent.hasExtra(AndroidNet.EXTRA_HTML)) {
-			String html = intent.getExtras().getString(AndroidNet.EXTRA_HTML);
-			mWebView.loadData(html, "text/html", "UTF-8");
-		}
+		if(intent!=null) {
+			getIntentExtras_FileExtensions();
+			if (intent.hasExtra(AndroidNet.EXTRA_URL)) {
+				String url = intent.getExtras().getString(AndroidNet.EXTRA_URL);
+				mWebView.loadUrl(url);
+			} else if (intent.hasExtra(AndroidNet.EXTRA_HTML)) {
+				String html = intent.getExtras().getString(AndroidNet.EXTRA_HTML);
+				mWebView.loadData(html, "text/html", "UTF-8");
+			}
 
-		String title = intent.hasExtra(AndroidNet.EXTRA_BROWSER_TITLE) ? intent
-				.getExtras().getString(AndroidNet.EXTRA_BROWSER_TITLE)
-				: DEFAULT_BROWSER_TITLE;
-		setTitle(title);
-		String buttonText = intent.hasExtra(AndroidNet.EXTRA_BUTTON_TEXT) ? intent
-				.getExtras().getString(AndroidNet.EXTRA_BUTTON_TEXT)
-				: DEFAULT_BTN_CLOSE_TEXT;
-		btnClose.setText(buttonText);
+			String title = intent.hasExtra(AndroidNet.EXTRA_BROWSER_TITLE) ? intent
+					.getExtras().getString(AndroidNet.EXTRA_BROWSER_TITLE)
+					: DEFAULT_BROWSER_TITLE;
+			setTitle(title);
+			String buttonText = intent.hasExtra(AndroidNet.EXTRA_BUTTON_TEXT) ? intent
+					.getExtras().getString(AndroidNet.EXTRA_BUTTON_TEXT)
+					: DEFAULT_BTN_CLOSE_TEXT;
+			btnClose.setText(buttonText);
+		}
 	}
 
 	@Override
@@ -133,11 +163,69 @@ public class BrowserActivity extends Activity {
 	}
 
 	private class UnityWebViewClient extends WebViewClient {
+		private List<String> fileExtensions = null;
+		
+		public UnityWebViewClient(){
+			super();
+		}
+		
+		public UnityWebViewClient(List<String> browserFileExtensions) {
+			super();
+			this.fileExtensions = browserFileExtensions;
+		}
 
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			try {
+				String path = new URL(url).getPath();
+				if(path!=null && path.lastIndexOf('.')!=-1){
+					String urlExtension = path.substring(path.lastIndexOf('.'));
+					if(!urlExtension.isEmpty()&& fileExtensions!=null && fileExtensions.size()>0 && fileExtensions.contains(urlExtension))
+					{
+						// Delegate to the system the open/download of that file (operating system handles the url)
+						view.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+						return true;
+					}
+				}
+			} catch (MalformedURLException e) {
+				//LOG ERROR
+			} catch (Exception e) {
+				//LOG ERROR
+			}
 			view.loadUrl(url);
 			return true;
+		}
+		
+		@Override
+		public WebResourceResponse shouldInterceptRequest (WebView view, String url) {
+		
+			//LOG.Log(Module.GUI, "shouldInterceptRequest [" + url + "]");			
+			if(!(url!=null && url.indexOf(AndroidServiceLocator.INTERNAL_SERVER_URL)>-1 
+					&& (url.indexOf("/service/")>-1 || url.indexOf("/service-async/")>-1) )){
+				return null;
+			}
+			
+			boolean isSocketListening = AndroidServiceLocator.isSocketListening();
+			//LOG.Log(Module.GUI, "*** isSocketListening ?: " + isSocketListening);
+			if(!isSocketListening) {
+				//LOG.Log(Module.GUI, "*** WARNING - call to service STOPPED. Appverse is not listening right now!!");
+				return new WebResourceResponse("text/plain", "utf-8", 
+				new ByteArrayInputStream("SECURITY ISSUE".getBytes()));
+			} else {
+				AndroidServiceLocator.checkResourceIsManagedService(url);
+				// Do not handle this request
+				return null;
+			}
+		}
+		
+		@Override
+		public void onLoadResource(WebView view, String url) {
+			//LOG.Log(Module.GUI, "loading resource [" + url + "]");
+			if(Build.VERSION.SDK_INT < 11){ 
+				AndroidServiceLocator.checkResourceIsManagedService(url);
+			}
+			
+			super.onLoadResource(view, url);
 		}
 	}
 }

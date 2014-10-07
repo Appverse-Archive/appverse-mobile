@@ -54,8 +54,12 @@ namespace Unity.Core.Net
 		NetworkType[] GetNetworkTypeReachableList (string url);
 		
 		bool OpenBrowser (string title, string buttonText, string url);
+
+		bool OpenBrowserWithOptions (SecondaryBrowserOptions browserOptions);
 		
 		bool ShowHtml (string title, string buttonText, string html);
+
+		bool ShowHtmlWithOptions (SecondaryBrowserOptions browserOptions);
 		
 		/// <summary>
 		/// Downloads the given url file by using the default native handler. 

@@ -63,9 +63,16 @@ public class ServiceHandler extends AndroidHandler {
 		if (aRequest instanceof HttpRequest) {
 			HttpRequest request = (HttpRequest) aRequest;
 			HttpResponse response = (HttpResponse) aResponse;
-			Log(request.getMethod() + " " + request.getUrl());
+			// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+			//Log("COMMENT FOR PLATFORM RELEASE: " + request.getMethod() + " " + request.getUrl());
 
-			if (request.getUrl().startsWith(SERVICE_PREFIX) || request.getUrl().startsWith (SERVICE_ASYNC_PREFIX)) {
+			boolean isManagedService = AndroidServiceLocator.consumeManagedService(request.getUrl());
+			if(!isManagedService) {
+				Log("**** WARNING: Anonymous service call, not managed by Appverse !!!");
+			}
+			//LogDebug("Managed Service [" + request.getUrl() + "]: " + managedService);
+			
+			if ((request.getUrl().startsWith(SERVICE_PREFIX) || request.getUrl().startsWith (SERVICE_ASYNC_PREFIX)) && isManagedService ) {
 
 				boolean asyncmode = false;
 				int serviceUriLength = SERVICE_PREFIX.length();
@@ -78,7 +85,7 @@ public class ServiceHandler extends AndroidHandler {
 						.substring(serviceUriLength).split("/");
 				String serviceName = commands[0];
 				String methodName = commands[1];
-				Log("Service: [" + serviceName + "] Method:[" + methodName
+				LogDebug("Service: [" + serviceName + "] Method:[" + methodName
 						+ "]");
 
 				String params = "";
@@ -120,7 +127,7 @@ public class ServiceHandler extends AndroidHandler {
 				}
 				
 				response.addHeader(HEADER_CACHE_NAME, cacheControlHeader);
-				Log ("Added Caching-Control header to response: " + cacheControlHeader);
+				LogDebug ("Added Caching-Control header to response: " + cacheControlHeader);
 				
 				if (result != null && result.length > 0) {
 					response.setMimeType("application/json");
@@ -133,9 +140,13 @@ public class ServiceHandler extends AndroidHandler {
 
 				return true;
 			}
-			Log("Unknown URL format: [" + request.getUrl() + "]");
+			// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+			//LogDebug("Unknown URL format: [" + request.getUrl() + "]");
+			LogDebug("Unknown URL format");
 		} else {
-			Log("Expecting HttpRequest, received " + aRequest);
+			// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+			// LogDebug("Expecting HttpRequest, received " + aRequest);
+			LogDebug("Not valid HttpRequest received");
 		}
 
 		return false;
@@ -144,15 +155,15 @@ public class ServiceHandler extends AndroidHandler {
 	private void processAsyncPOSTResult(AndroidInvocationManager aim, AndroidActivityManager aam,
 				Object service, String methodName, String query) {
 		
-		Log("Processing result asynchronously");
-		Log("query: " + query);
+		LogDebug("Processing result asynchronously");
+		// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+		// LogDebug("query: " + query);
 
 		String callback = null;
 		String ID = null;
 		String JSON = "";
 
 		// querystring format: callbackFunction$$$ID$$$json=****** 
-		// [MOBPLAT-185], the "json" latest query parameter could not be present (for API methods without parameters)
 		if (query!= null) {
 			String token0 = "&";
 			String token1 = "callback=";
@@ -183,9 +194,12 @@ public class ServiceHandler extends AndroidHandler {
 			}
 			if(query != null)  JSON = query;
 		}
-		Log("callback function: " + callback);
-		Log("callback ID: " + ID);
-		Log("JSON data: " + JSON);
+		// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+		/*
+		LogDebug("callback function: " + callback);
+		LogDebug("callback ID: " + ID);
+		LogDebug("JSON data: " + JSON);
+		*/
 
 		this.processServiceAsynchronously(callback, ID, aim, aam, service, methodName,JSON);
 
@@ -238,7 +252,7 @@ public class ServiceHandler extends AndroidHandler {
 			try {
 				result = processPOSTResult(invocationManager, service, methodName, query);
 			} catch (Exception e) {
-				Log(" ############## Exception while invoking service: " + e.getMessage());
+				LogDebug(" ############## Exception while invoking service: " + e.getMessage());
 			}
 	   		String jsonResultString = null;
 	   		if(result!=null) {
@@ -250,9 +264,13 @@ public class ServiceHandler extends AndroidHandler {
         }
        
        protected void sendBackResult(AndroidActivityManager aam, String callbackFunction, String id, String jsonResultString) {
-	   		Log(" ############## sending back result to callback fn [" + callbackFunction+ "] and id [" + id+ "]: " + 
-	   				(jsonResultString!=null?jsonResultString.length():0));
-	   		aam.executeJSCallback(callbackFunction, id, jsonResultString);
+		    if(callbackFunction==null || callbackFunction.equalsIgnoreCase("NULL")){
+		    	LogDebug(" ############## There is no callback defined for sending back result to javascript app"); 
+			} else {
+				LogDebug(" ############## sending back result to callback fn [" + callbackFunction+ "] and id [" + id+ "]: " + 
+						(jsonResultString!=null?jsonResultString.length():0));
+				aam.executeJSCallback(callbackFunction, id, jsonResultString);
+			}
 	   }
     }
 	

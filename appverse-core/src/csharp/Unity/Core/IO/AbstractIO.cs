@@ -265,6 +265,9 @@ namespace Unity.Core.IO
 			webReq.KeepAlive = false;
 			webReq.ProtocolVersion = HttpVersion.Version10;
 			if (request.ProtocolVersion == HTTPProtocolVersion.HTTP11) webReq.ProtocolVersion = HttpVersion.Version11;
+
+            
+            webReq.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 			
 			// user agent needs to be informed - some servers check this parameter and send 500 errors when not informed.
 			webReq.UserAgent = this.IOUserAgent;
