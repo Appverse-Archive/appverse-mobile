@@ -97,7 +97,8 @@ namespace Unity.Core.Pim
 	public enum ContactQueryColumn
 	{
 		ID,
-		Name
+		Name,
+		Phone
 	}
 
 	public enum ContactQueryCondition
@@ -105,6 +106,7 @@ namespace Unity.Core.Pim
 		Equals,
 		StartsWith,
 		EndsWith,
-		Contains
+		Contains,
+		Available
 	}
 }

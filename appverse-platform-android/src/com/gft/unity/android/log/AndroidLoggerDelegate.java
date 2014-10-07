@@ -27,6 +27,7 @@ import java.util.HashMap;
 
 import android.util.Log;
 
+import com.gft.unity.android.AndroidServiceLocator;
 import com.gft.unity.core.system.log.AbstractLoggerDelegate;
 import com.gft.unity.core.system.log.Logger.LogCategory;
 import com.gft.unity.core.system.log.Logger.LogLevel;
@@ -57,7 +58,8 @@ public class AndroidLoggerDelegate extends AbstractLoggerDelegate {
 		String text = module + "." + operation + ": " + message;
 		switch (level) {
 		case DEBUG:
-			Log.d(tag, text);
+			if(AndroidServiceLocator.isDebuggable())
+				Log.d(tag, text);
 			break;
 		case INFO:
 			if (ex != null) {
@@ -102,7 +104,7 @@ public class AndroidLoggerDelegate extends AbstractLoggerDelegate {
 		String tag = category.toString();
 		if (Log.isLoggable(tag, Log.INFO)) {
 			Log.i(tag, module + "." + operation + " BEGIN");
-			if (Log.isLoggable(tag, Log.DEBUG)) {
+			if (Log.isLoggable(tag, Log.DEBUG) && AndroidServiceLocator.isDebuggable()) {
 				int index = 0;
 				for (String name : names) {
 					Log.d(tag, module + "." + operation + "  " + name + " ["
@@ -120,7 +122,7 @@ public class AndroidLoggerDelegate extends AbstractLoggerDelegate {
 		String tag = category.toString();
 		if (Log.isLoggable(tag, Log.INFO)) {
 			Log.i(tag, module + "." + operation + " END");
-			if (Log.isLoggable(tag, Log.DEBUG)) {
+			if (Log.isLoggable(tag, Log.DEBUG) && AndroidServiceLocator.isDebuggable()) {
 
 				if ((result != null) && (result instanceof Object[])) {
 					Object[] array = (Object[]) result;

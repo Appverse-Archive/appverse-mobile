@@ -27,12 +27,22 @@ using System.Text;
 using Unity.Core.System.Service;
 using System.IO;
 using MonoTouch.UIKit;
+using MonoTouch.Foundation;
+using Unity.Core.System;
+using System.Runtime.CompilerServices;
+using Unity.Core.System.Server.Net;
 
 namespace Unity.Platform.IPhone
 {
     public class IPhoneServiceLocator : AbstractServiceLocator
     {
         static IPhoneUIApplicationDelegate uiApplicationDelegate;
+
+		public static string INTERNAL_SERVER_HOST = "127.0.0.1";
+		public static string INTERNAL_SERVER_PORT = "8080";
+		public static string INTERNAL_SERVER_URL = "http://" + INTERNAL_SERVER_HOST + ":" + INTERNAL_SERVER_PORT;
+
+		private static List<string> managedServices = new List<string> ();
 		
 		public static IPhoneUIApplicationDelegate CurrentDelegate {
 			get {
@@ -79,8 +89,99 @@ namespace Unity.Platform.IPhone
             if (singletonServiceLocator == null)
             {
                 singletonServiceLocator = new IPhoneServiceLocator();
+
+				NSUrlProtocol.RegisterClass (new MonoTouch.ObjCRuntime.Class (typeof (IPhoneNSUrlProtocol)));
+
             }
             return singletonServiceLocator;
         }
+
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public static void registerManagedService(string service, string timestamp) {
+			try {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneResourceHandler. Registered managed service: " + service + "_" +timestamp);
+				managedServices.Add(service + "_" +timestamp);
+			} catch (Exception ex) {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneResourceHandler Exception in registerManagedService: " + ex.Message);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public static bool consumeManagedService(String service) {
+			try {
+
+				int index = -1;
+				foreach(string managedService in managedServices) {
+					if(managedService.StartsWith(IPhoneServiceLocator.INTERNAL_SERVER_URL + service)) {
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Consuming managed service...");
+						index = managedServices.IndexOf(managedService);
+						break;
+					}
+				}
+				if(index>-1) {
+					managedServices.RemoveAt(index);
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Managed service consumed.");
+					return true;
+				}
+
+			} catch (Exception ex) {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneResourceHandler Exception #consumeManagedService: " + ex.Message);
+			}
+
+			return false;
+		}
+
     }
+
+	public class IPhoneNSUrlProtocol : NSUrlProtocol {
+
+		[Export ("initWithRequest:cachedResponse:client:")]
+		public IPhoneNSUrlProtocol (NSUrlRequest request, NSCachedUrlResponse cachedResponse, NSUrlProtocolClient client) 
+			: base (request, cachedResponse, client)
+		{
+		}
+
+		[MonoTouch.Foundation.Export("canInitWithRequest:")]
+		public static bool CanInitWithRequest (NSUrlRequest request) {
+			// SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneNSUrlProtocol canInitWithRequest: " + request.Url.Host + ", path: " + request.Url.ToString());
+
+			bool shouldHandle = true;  //custom iPhoneNSUrlProtocol will handle all requests by default
+			if (request != null && request.Url != null) {
+				String url = request.Url.ToString ();
+
+				//checking internal server status
+				if (HttpServer.SingletonInstance !=null) {
+					shouldHandle = !HttpServer.SingletonInstance.IsListening;
+				}
+
+				if (url.StartsWith ("http://127.0.0.1:8080") && (url.Contains ("/service/") || url.Contains ("/service-async/"))) {
+					if (!shouldHandle) {
+						// SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneNSUrlProtocol MANAGED SERVICE");
+						// add to managed service mapping
+						IPhoneServiceLocator.registerManagedService (url, "" + DateTime.Now.Ticks);
+					}
+				}
+			}
+
+			return shouldHandle;
+		}
+
+		[Export ("canonicalRequestForRequest:")]
+		public static new NSUrlRequest GetCanonicalRequest (NSUrlRequest forRequest)
+		{
+			return forRequest;
+		}
+
+		public override void StartLoading ()
+		{
+			Client.DataLoaded (this, NSData.FromString ("SECURITY ISSUE"));
+			Client.FinishedLoading (this);
+		}
+
+		public override void StopLoading ()
+		{
+		}
+
+	}
+
 }

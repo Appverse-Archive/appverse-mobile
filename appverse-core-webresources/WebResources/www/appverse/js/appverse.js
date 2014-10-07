@@ -11,56 +11,35 @@
  * @singleton
  * @constructor
  * @return {Appverse} A new Appverse interface.
- */ 
+ */
 Appverse = new function() {
-	// javadoc utility to show singleton classes.
+    // javadoc utility to show singleton classes.
 };
 
-Appverse={
-	version:"4.4",
-	
-	/**
-	 * Boolean to indicate if the next request send to the platform (using any Appverse.<API_serviceName>.<API_serviceMethod>() call) should unscape or not the data send.
-	 * <br>By default platform will unscape any data send. In some cases, scaped characters (for example, the %20 encoded characters in a URL) need to arrive to the service without being unscaped.
-	 * <br>Setting this value to false, will send the next platform without replacing escaped characters; you should change value to false if time needed, because the parameter will change to true after making the call.
-	 * <pre>Default value: true.</pre>
-	 * <br> @version 4.0
-	 * @type Boolean
-	 */
-	unescapeNextRequestData: true, 
-	
-	/**
+Appverse = {
+    version: "4.7",
+    /**
+     * Boolean to indicate if the next request send to the platform (using any Appverse.<API_serviceName>.<API_serviceMethod>() call) should unscape or not the data send.
+     * <br>By default platform will unscape any data send. In some cases, scaped characters (for example, the %20 encoded characters in a URL) need to arrive to the service without being unscaped.
+     * <br>Setting this value to false, will send the next platform without replacing escaped characters; you should change value to false if time needed, because the parameter will change to true after making the call.
+     * <pre>Default value: true.</pre>
+     * <br> @version 4.0
+     * @type Boolean
+     */
+    unescapeNextRequestData: true,
+    /**
      * Initialization function
      */
-	init : function() {
-		this.is = post_to_url(Appverse.System.serviceName, "GetUnityContext", null, "POST");
-		if(typeof(this.is.Emulator)!="undefined" && this.is.Emulator==true) {
-			console.log("platform is EMULATOR");
-			if(this.is.iOS) {
-				console.log("setting orientation to: " + this.is.EmulatorOrientation);
-				window.orientation = this.is.EmulatorOrientation;
-				if(Appverse.is.Tablet){
-					window.deviceType = 'iPad'; // used by some JS frameworks to determine device type (phone/tablet) in iOS.
-					console.log("setting window.deviceType to: iPad");
-				}
-				if(typeof(this.is.EmulatorScreen)!="undefined") {
-					try{window.screen = eval('(' + this.is.EmulatorScreen + ')');
-					console.log("setting window.screen", window.screen);
-					} catch(e) {
-						console.log("error setting window.screen",e );
-					}
-				}
-			}
-			post_to_url_async = post_to_url_async_emu;
-		}
-	}
+    init: function() {
+        this.is = post_to_url(Appverse.System.serviceName, "GetUnityContext", null, "POST");        
+    }
 };
 
 // Checking Appverse compatibility versions
-if(typeof(APPVERSE_VERSION)!="undefined") {
-	if(UAPPVERSE_VERSION!=Appverse.version) {
-		alert("APPVERSE WARNING\nYour application was compiled with a Appverse version different from the one configured.");
-	}
+if (typeof(APPVERSE_VERSION) != "undefined") {
+    if (UAPPVERSE_VERSION != Appverse.version) {
+        alert("APPVERSE WARNING\nYour application was compiled with a Appverse version different from the one configured.");
+    }
 }
 
 /**
@@ -70,7 +49,8 @@ if(typeof(APPVERSE_VERSION)!="undefined") {
  * @return {String} Current Device Orientation.
  * 
  */
-Appverse.getCurrentOrientation = function() { };
+Appverse.getCurrentOrientation = function() {
+};
 
 /**
  * Applications should override this method to implement specific rotation/resizing actions for given orientation, width and height.
@@ -80,7 +60,8 @@ Appverse.getCurrentOrientation = function() { };
  * @param {int} width The new width to be set.
  * @param {int} height The height width to be set.
  */
-Appverse.setOrientationChange = function(orientation, width, height) { };
+Appverse.setOrientationChange = function(orientation, width, height) {
+};
 
 /**
  * @ignore
@@ -89,24 +70,24 @@ Appverse.setOrientationChange = function(orientation, width, height) { };
  * @method
  */
 var updateOrientation = function() {
-	
-	if(Appverse.is.iPhone) {
-		////// trigger orientationchange in UIWebView for Javascript Frameworks (such as Sencha) 
-		var e = document.createEvent('Events'); 
-		e.initEvent('orientationchange', true, false);
-		document.dispatchEvent(e);
-	} else if (!Appverse.is.iPad){
-	
-		if (Appverse.getCurrentOrientation() == 'portrait') {
-			var newWidth = window.innerHeight+20;
-			var newHeight = window.innerWidth-20;
-			Appverse.setOrientationChange( 'landscape' , newWidth , newHeight );
-		} else {
-			var newWidth = window.innerHeight+20;
-			var newHeight = window.innerWidth-20;
-			Appverse.setOrientationChange( 'portrait' , newWidth , newHeight );
-		}
-	}
+
+    if (Appverse.is.iPhone) {
+        ////// trigger orientationchange in UIWebView for Javascript Frameworks (such as Sencha) 
+        var e = document.createEvent('Events');
+        e.initEvent('orientationchange', true, false);
+        document.dispatchEvent(e);
+    } else if (!Appverse.is.iPad) {
+
+        if (Appverse.getCurrentOrientation() == 'portrait') {
+            var newWidth = window.innerHeight + 20;
+            var newHeight = window.innerWidth - 20;
+            Appverse.setOrientationChange('landscape', newWidth, newHeight);
+        } else {
+            var newWidth = window.innerHeight + 20;
+            var newHeight = window.innerWidth - 20;
+            Appverse.setOrientationChange('portrait', newWidth, newHeight);
+        }
+    }
 }
 
 /**
@@ -116,7 +97,7 @@ var updateOrientation = function() {
  * @method
  */
 var refreshOrientation = function() {
-	Appverse.setOrientationChange( Appverse.getCurrentOrientation() , window.innerWidth , window.innerHeight );
+    Appverse.setOrientationChange(Appverse.getCurrentOrientation(), window.innerWidth, window.innerHeight);
 }
 
 
@@ -132,7 +113,7 @@ Appverse._background = false;
  * 
  */
 Appverse.isBackground = function() {
-	return Appverse._background ? Appverse._background : false;
+    return Appverse._background ? Appverse._background : false;
 };
 
 /**
@@ -143,7 +124,8 @@ Appverse.isBackground = function() {
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  * 
  */
-Appverse.backgroundApplicationListener= function() {};
+Appverse.backgroundApplicationListener = function() {
+};
 
 /**
  * Applications should override/implement this method to be aware of application coming back from background, and should perform the desired javascript code on this case.
@@ -152,7 +134,8 @@ Appverse.backgroundApplicationListener= function() {};
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  * @aside guide application_listeners
  */
-Appverse.foregroundApplicationListener = function() {};
+Appverse.foregroundApplicationListener = function() {
+};
 
 /**
  * Applications should override/implement this method to be aware of device physical back button has been pressed, and should perform the desired javascript code on this case.
@@ -162,7 +145,8 @@ Appverse.foregroundApplicationListener = function() {};
  * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  * 
  */
-Appverse.backButtonListener = function() {};
+Appverse.backButtonListener = function() {
+};
 
 /**
  * Applications should override/implement this method to be aware of remote notification arrival, and should perform the desired javascript code on this case.
@@ -174,7 +158,8 @@ Appverse.backButtonListener = function() {};
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  * 
  */
-Appverse.OnRemoteNotificationReceived = function(notificationData) {};
+Appverse.OnRemoteNotificationReceived = function(notificationData) {
+};
 
 /**
  * Applications should override/implement this method to be aware of local notification reception, and should perform the desired javascript code on this case.
@@ -186,7 +171,8 @@ Appverse.OnRemoteNotificationReceived = function(notificationData) {};
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  * 
  */
-Appverse.OnLocalNotificationReceived = function(notificationData) {};
+Appverse.OnLocalNotificationReceived = function(notificationData) {
+};
 
 /**
  * Applications should override/implement this method to be aware of a successfully registration for remote notifications, and should perform the desired javascript code on this case.
@@ -198,7 +184,8 @@ Appverse.OnLocalNotificationReceived = function(notificationData) {};
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  * 
  */
-Appverse.OnRegisterForRemoteNotificationsSuccess = function(registrationToken) {};
+Appverse.OnRegisterForRemoteNotificationsSuccess = function(registrationToken) {
+};
 
 /**
  * Applications should override/implement this method to be aware of a successfully registration for remote notifications, and should perform the desired javascript code on this case.
@@ -210,7 +197,8 @@ Appverse.OnRegisterForRemoteNotificationsSuccess = function(registrationToken) {
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  * 
  */
-Appverse.OnRegisterForRemoteNotificationsFailure = function(registrationError) {};
+Appverse.OnRegisterForRemoteNotificationsFailure = function(registrationError) {
+};
 
 /**
  * Applications should override/implement this method to be aware of a successfully unregistration for remote notifications, and should perform the desired javascript code on this case.
@@ -220,7 +208,8 @@ Appverse.OnRegisterForRemoteNotificationsFailure = function(registrationError) {
  * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  * 
  */
-Appverse.OnUnRegisterForRemoteNotificationsSuccess = function() {};
+Appverse.OnUnRegisterForRemoteNotificationsSuccess = function() {
+};
 
 /**
  * Applications should override/implement this method to be aware of storing of KeyPairs object into the local secure storage, and should perform the desired javascript code on this case.
@@ -232,7 +221,8 @@ Appverse.OnUnRegisterForRemoteNotificationsSuccess = function() {};
  * @param {Appverse.Security.KeyPair[]} failedKeyPairs An array of KeyPair objects that could not be successfully stored in the device local secure storage.
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Appverse.OnKeyValuePairsStoreCompleted = function(storedKeyPairs, failedKeyPairs){};
+Appverse.OnKeyValuePairsStoreCompleted = function(storedKeyPairs, failedKeyPairs) {
+};
 
 /**
  * Applications should override/implement this method to be aware of KeyPair objects found in the device local secure storage, and should perform the desired javascript code on this case.
@@ -243,7 +233,8 @@ Appverse.OnKeyValuePairsStoreCompleted = function(storedKeyPairs, failedKeyPairs
  * @param {Appverse.Security.KeyPair[]} foundKeyPairs An array of KeyPair objects found in the device local secure storage.
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Appverse.OnKeyValuePairsFound = function(foundKeyPairs){};
+Appverse.OnKeyValuePairsFound = function(foundKeyPairs) {
+};
 
 /**
  * Applications should override/implement this method to be aware of deletion of KeyPairs objects from the local secure storage, and should perform the desired javascript code on this case.
@@ -255,7 +246,8 @@ Appverse.OnKeyValuePairsFound = function(foundKeyPairs){};
  * @param {Appverse.Security.KeyPair[]} failedKeyPairs An array of KeyPair objects that could not be removed from the device local secure storage.
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Appverse.OnKeyValuePairsRemoveCompleted = function (removedKeyPairs, failedKeyPairs){};
+Appverse.OnKeyValuePairsRemoveCompleted = function(removedKeyPairs, failedKeyPairs) {
+};
 
 /**
  * Applications should override/implement this method to be aware of being lanched by a third-party application, and should perform the desired javascript code on this case.
@@ -269,7 +261,8 @@ Appverse.OnKeyValuePairsRemoveCompleted = function (removedKeyPairs, failedKeyPa
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  * 
  */
-Appverse.OnExternallyLaunched = function(launchData) {};
+Appverse.OnExternallyLaunched = function(launchData) {
+};
 
 /**
  * @ignore
@@ -278,12 +271,12 @@ Appverse.OnExternallyLaunched = function(launchData) {};
  * @method
  */
 Appverse._toBackground = function() {
-	//call overrided function to inform application that we are about to put application on background
-	if(Appverse.backgroundApplicationListener && typeof Appverse.backgroundApplicationListener == "function" && !Appverse._background){
-		Appverse.backgroundApplicationListener();
-	}
-	// setting flag after calling backgroundApplicationListener; a appverse service call could be executed in that listener
-	Appverse._background  = true;
+    //call overrided function to inform application that we are about to put application on background
+    if (Appverse.backgroundApplicationListener && typeof Appverse.backgroundApplicationListener == "function" && !Appverse._background) {
+        Appverse.backgroundApplicationListener();
+    }
+    // setting flag after calling backgroundApplicationListener; a appverse service call could be executed in that listener
+    Appverse._background = true;
 }
 
 
@@ -294,12 +287,12 @@ Appverse._toBackground = function() {
  * @method
  */
 Appverse._toForeground = function() {
-	Appverse._background  = false;
-	
-	//call overrided function to inform application that we are about to put application on foreground
-	if(Appverse.foregroundApplicationListener && typeof Appverse.foregroundApplicationListener == "function"){
-		Appverse.foregroundApplicationListener();
-	}
+    Appverse._background = false;
+
+    //call overrided function to inform application that we are about to put application on foreground
+    if (Appverse.foregroundApplicationListener && typeof Appverse.foregroundApplicationListener == "function") {
+        Appverse.foregroundApplicationListener();
+    }
 }
 
 /**
@@ -309,11 +302,11 @@ Appverse._toForeground = function() {
  * @method
  */
 Appverse._backButtonPressed = function() {
-	
-	//call overrided function to inform application that the back button has been pressed
-	if(Appverse.backButtonListener && typeof Appverse.backButtonListener == "function"){
-		Appverse.backButtonListener();
-	}
+
+    //call overrided function to inform application that the back button has been pressed
+    if (Appverse.backButtonListener && typeof Appverse.backButtonListener == "function") {
+        Appverse.backButtonListener();
+    }
 }
 
 /*
@@ -362,7 +355,7 @@ Appverse.DOCUMENTS_RESOURCE_URI = '/documents/';
  */
 Appverse.MODULES_RESOURCE_URI = Appverse.DOCUMENTS_RESOURCE_URI + 'apps/';
 
-if(typeof(LOCAL_SERVER_PORT)=="undefined") {
+if (typeof(LOCAL_SERVER_PORT) == "undefined") {
     LOCAL_SERVER_PORT = 8080; // default port
 }
 
@@ -389,54 +382,54 @@ Appverse.MODULES_RESOURCE_URI = 'http://127.0.0.1:' + LOCAL_SERVER_PORT + Appver
  * @return {Appverse.Net} A new Net interface.
  */
 Net = function() {
-	/**
-	 * Net service name (as configured on Platform Service Locator).
-	 * <br> @version 1.0
-	 * @type String
-	 */
-	this.serviceName = "net";
-        /**
-	 * Unknown Network Type.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NETWORKTYPE_UNKNOWN = 0;
-        /**
-	 * Network Type for Cable.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NETWORKTYPE_CABLE = 1;
-        /**
-	 * Network Type for GSM Carrier.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NETWORKTYPE_GSM = 2;
-        /**
-	 * Network Type for 2G Carrier.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NETWORKTYPE_2G = 3;
-        /**
-	 * Network Type for 25G Carrier.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NETWORKTYPE_25G = 4;
-	/**
-	 * Network Type for 3G Carrier.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NETWORKTYPE_3G = 5;
-	/**
-	 * Network Type for WIFI.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NETWORKTYPE_WIFI = 6;
+    /**
+     * Net service name (as configured on Platform Service Locator).
+     * <br> @version 1.0
+     * @type String
+     */
+    this.serviceName = "net";
+    /**
+     * Unknown Network Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NETWORKTYPE_UNKNOWN = 0;
+    /**
+     * Network Type for Cable.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NETWORKTYPE_CABLE = 1;
+    /**
+     * Network Type for GSM Carrier.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NETWORKTYPE_GSM = 2;
+    /**
+     * Network Type for 2G Carrier.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NETWORKTYPE_2G = 3;
+    /**
+     * Network Type for 25G Carrier.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NETWORKTYPE_25G = 4;
+    /**
+     * Network Type for 3G Carrier.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NETWORKTYPE_3G = 5;
+    /**
+     * Network Type for WIFI.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NETWORKTYPE_WIFI = 6;
 }
 
 
@@ -452,7 +445,7 @@ Appverse.Net = new Net();
  */
 Net.prototype.IsNetworkReachable = function(url)
 {
-	return post_to_url(Appverse.Net.serviceName, "IsNetworkReachable", get_params([url]), "POST");
+    return post_to_url(Appverse.Net.serviceName, "IsNetworkReachable", get_params([url]), "POST");
 };
 
 /**
@@ -464,7 +457,7 @@ Net.prototype.IsNetworkReachable = function(url)
  */
 Net.prototype.GetNetworkData = function()
 {
-	return post_to_url(Appverse.Net.serviceName, "GetNetworkData", null, "POST");
+    return post_to_url(Appverse.Net.serviceName, "GetNetworkData", null, "POST");
 };
 
 /**
@@ -484,7 +477,7 @@ Net.prototype.GetNetworkData = function()
  */
 Net.prototype.GetNetworkTypeSupported = function()
 {
-	return post_to_url(Appverse.Net.serviceName, "GetNetworkTypeSupported", null, "POST");
+    return post_to_url(Appverse.Net.serviceName, "GetNetworkTypeSupported", null, "POST");
 };
 
 /**
@@ -505,7 +498,7 @@ Net.prototype.GetNetworkTypeSupported = function()
  */
 Net.prototype.GetNetworkTypeReachableList = function(url)
 {
-	return post_to_url(Appverse.Net.serviceName, "GetNetworkTypeReachableList", get_params([url]), "POST");
+    return post_to_url(Appverse.Net.serviceName, "GetNetworkTypeReachableList", get_params([url]), "POST");
 };
 
 /**
@@ -526,7 +519,7 @@ Net.prototype.GetNetworkTypeReachableList = function(url)
  */
 Net.prototype.GetNetworkTypeReachable = function(url)
 {
-	return post_to_url(Appverse.Net.serviceName, "GetNetworkTypeReachable", get_params([url]), "POST");
+    return post_to_url(Appverse.Net.serviceName, "GetNetworkTypeReachable", get_params([url]), "POST");
 };
 
 /**
@@ -546,7 +539,25 @@ Net.prototype.GetNetworkTypeReachable = function(url)
  */
 Net.prototype.OpenBrowser = function(title, buttonText, url)
 {
-	return post_to_url(Appverse.Net.serviceName, "OpenBrowser", get_params([title, buttonText, url]), "POST");
+    return post_to_url(Appverse.Net.serviceName, "OpenBrowser", get_params([title, buttonText, url]), "POST");
+};
+
+/**
+ * Opens the given url in a different Web View with a Navigation Bar.
+ * <br/><img src="resources/images/warning.png"/> &nbsp; <b>PDF</b> files could not be displayed on most <b>Android</b> devices (PDF viewer/reader is not included by default). A workaround could be to use the online Google DOCS viewer:<br/>
+ * <pre>To see this PDF url 'http://mydomain.com/folder/mypdffile.pdf', 
+ * you could use the URL, http://docs.google.com/viewer?url=http%3A%2F%2Fmydomain.com%2Ffolder%2Fmypdffile.pdf</pre>
+ * More info at: [https://docs.google.com/viewer?hl=en][1]
+ * [1]: https://docs.google.com/viewer?hl=en
+ * <br> @version 4.6
+ * @param {SecondaryBrowserOptions} Object containing options like title, url, html content, close button text and a list of file extensions the browser will handle like the operating system
+ * @return {Boolean} True on successful 
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ */
+Net.prototype.OpenBrowserWithOptions = function(secondaryBrowserOptions)
+{
+    return post_to_url(Appverse.Net.serviceName, "OpenBrowserWithOptions", get_params([secondaryBrowserOptions]), "POST");
 };
 
 /**
@@ -561,7 +572,20 @@ Net.prototype.OpenBrowser = function(title, buttonText, url)
  */
 Net.prototype.ShowHtml = function(title, buttonText, html)
 {
-	return post_to_url(Appverse.Net.serviceName, "ShowHtml", get_params([title, buttonText, html]), "POST");
+    return post_to_url(Appverse.Net.serviceName, "ShowHtml", get_params([title, buttonText, html]), "POST");
+};
+
+/**
+ * Renders the given html in a different Web View with a Navigation Bar.
+ * <br> @version 4.6
+ * @param {SecondaryBrowserOptions} Object containing options like title, url, html content, close button text and a list of file extensions the browser will handle like the operating system
+ * @return {Boolean} True on successful 
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ */
+Net.prototype.ShowHtmlWithOptions = function(secondaryBrowserOptions)
+{
+    return post_to_url(Appverse.Net.serviceName, "ShowHtmlWithOptions", get_params([secondaryBrowserOptions]), "POST");
 };
 
 /**
@@ -574,7 +598,7 @@ Net.prototype.ShowHtml = function(title, buttonText, html)
  */
 Net.prototype.DownloadFile = function(url)
 {
-	return post_to_url(Appverse.Net.serviceName, "DownloadFile", get_params([url]), "POST");
+    return post_to_url(Appverse.Net.serviceName, "DownloadFile", get_params([url]), "POST");
 };
 
 /** 
@@ -588,110 +612,144 @@ Net.prototype.DownloadFile = function(url)
  * </pre>
  */
 Net.prototype.Async = {
-
-
-/**
- * Detects ASYNC if network is reachable or not. 
- * <br> @version 2.0
- * @param {String} url The host url to check for reachability.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-IsNetworkReachable : function(url, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Net.serviceName, "IsNetworkReachable", get_params([url]), callbackFunctionName, callbackId);
-},
-
-/**
- * Gets ASYNC the network information. <br/>For further information see, {@link Appverse.Net.NetworkData NetworkData}.
- * <br> @version 3.8.5
- * @return {Appverse.Net.NetworkData} NetworkData object. 
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
- */
-GetNetworkData : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Net.serviceName, "GetNetworkData", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Gets ASYNC the network types currently supported by this device.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-GetNetworkTypeSupported : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Net.serviceName, "GetNetworkTypeSupported", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Gets ASYNC the network types from which this device is able to reach the given url host. Preference ordered list.
- * <br> @version 2.0
- * @param {String} url The host url to check for reachability.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-GetNetworkTypeReachableList : function(url, callbackFunctionName, callbackId)
-{
-    post_to_url_async(Appverse.Net.serviceName, "GetNetworkTypeReachableList", get_params([url]), callbackFunctionName, callbackId);
-},
-
-/**
- * Gets ASYNC the prefered network type from which this device is able to reach the given url host.
- * <br> @version 2.0
- * @param {String} url The host url to check for reachability.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- */
-GetNetworkTypeReachable : function(url, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Net.serviceName, "GetNetworkTypeReachable", get_params([url]), callbackFunctionName, callbackId);
-},
-
-/**
- * Opens ASYNC the given url in a different Web View with a Navigation Bar.
- * <br/><img src="resources/images/warning.png"/> &nbsp; <b>PDF</b> files could not be displayed on most <b>Android</b> devices (PDF viewer/reader is not included by default). A workaround could be to use the online Google DOCS viewer:<br/>
- * <pre>To see this PDF url 'http://mydomain.com/folder/mypdffile.pdf', 
- * you could use the URL, http://docs.google.com/viewer?url=http%3A%2F%2Fmydomain.com%2Ffolder%2Fmypdffile.pdf</pre>
- * More info at: [https://docs.google.com/viewer?hl=en][1]
- * [1]: https://docs.google.com/viewer?hl=en
- * <br> @version 2.0
- * @param {String} title The title of the Navigation Bar.
- * @param {String} buttonText The Back Button text of the Navigation Bar.
- * @param {String} url The url to be opened.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-OpenBrowser : function(title, buttonText, url, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Net.serviceName, "OpenBrowser", get_params([title, buttonText, url]), callbackFunctionName, callbackId);
-},
-
-/**
- * Renders ASYNC the given html in a different Web View with a Navigation Bar.
- * <br> @version 2.0
- * @param {String} title The title of the Navigation Bar.
- * @param {String} buttonText The Back Button text of the Navigation Bar.
- * @param {String} htmls The html string to be rendered.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-ShowHtml : function(title, buttonText, html, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Net.serviceName, "ShowHtml", get_params([title, buttonText, html]), callbackFunctionName, callbackId);
-}
+    /**
+     * Detects ASYNC if network is reachable or not. 
+     * <br> @version 2.0
+     * @param {String} url The host url to check for reachability.
+     * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For iOS</b>: only the hostname is allowed as the URL to check reachability. For example: "www.google.com". Otherwise, the method will return always false.
+     * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For Android</b>: you could specifiy a more complete URL. For example: "http://www.google.com", "https://www.dropbox.com/", etc. If scheme is not provided, the platform will check first HTTP and then HTTPS to check reachability agaisnt the given URL.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    IsNetworkReachable: function(url, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Net.serviceName, "IsNetworkReachable", get_params([url]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Gets ASYNC the network information. <br/>For further information see, {@link Appverse.Net.NetworkData NetworkData}.
+     * <br> @version 3.8.5
+     * @return {Appverse.Net.NetworkData} NetworkData object. 
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+     */
+    GetNetworkData: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Net.serviceName, "GetNetworkData", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Gets ASYNC the network types currently supported by this device.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    GetNetworkTypeSupported: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Net.serviceName, "GetNetworkTypeSupported", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Gets ASYNC the network types from which this device is able to reach the given url host. Preference ordered list.
+     * <br> @version 2.0
+     * @param {String} url The host url to check for reachability.
+     * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For iOS</b>: only the hostname is allowed as the URL to check reachability. For example: "www.google.com". Otherwise, the method will return always false.
+     * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For Android</b>: you could specifiy a more complete URL. For example: "http://www.google.com", "https://www.dropbox.com/", etc. If scheme is not provided, the platform will check first HTTP and then HTTPS to check reachability agaisnt the given URL.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    GetNetworkTypeReachableList: function(url, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Net.serviceName, "GetNetworkTypeReachableList", get_params([url]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Gets ASYNC the prefered network type from which this device is able to reach the given url host.
+     * <br> @version 2.0
+     * @param {String} url The host url to check for reachability.
+     * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For iOS</b>: only the hostname is allowed as the URL to check reachability. For example: "www.google.com". Otherwise, the method will return always false.
+     * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For Android</b>: you could specifiy a more complete URL. For example: "http://www.google.com", "https://www.dropbox.com/", etc. If scheme is not provided, the platform will check first HTTP and then HTTPS to check reachability agaisnt the given URL.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     */
+    GetNetworkTypeReachable: function(url, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Net.serviceName, "GetNetworkTypeReachable", get_params([url]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Opens ASYNC the given url in a different Web View with a Navigation Bar.
+     * <br/><img src="resources/images/warning.png"/> &nbsp; <b>PDF</b> files could not be displayed on most <b>Android</b> devices (PDF viewer/reader is not included by default). A workaround could be to use the online Google DOCS viewer:<br/>
+     * <pre>To see this PDF url 'http://mydomain.com/folder/mypdffile.pdf', 
+     * you could use the URL, http://docs.google.com/viewer?url=http%3A%2F%2Fmydomain.com%2Ffolder%2Fmypdffile.pdf</pre>
+     * More info at: [https://docs.google.com/viewer?hl=en][1]
+     * [1]: https://docs.google.com/viewer?hl=en
+     * <br> @version 2.0
+     * @param {String} title The title of the Navigation Bar.
+     * @param {String} buttonText The Back Button text of the Navigation Bar.
+     * @param {String} url The url to be opened.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    OpenBrowser: function(title, buttonText, url, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Net.serviceName, "OpenBrowser", get_params([title, buttonText, url]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Opens ASYNC the given url in a different Web View with a Navigation Bar.
+     * <br/><img src="resources/images/warning.png"/> &nbsp; <b>PDF</b> files could not be displayed on most <b>Android</b> devices (PDF viewer/reader is not included by default). A workaround could be to use the online Google DOCS viewer:<br/>
+     * <pre>To see this PDF url 'http://mydomain.com/folder/mypdffile.pdf', 
+     * you could use the URL, http://docs.google.com/viewer?url=http%3A%2F%2Fmydomain.com%2Ffolder%2Fmypdffile.pdf</pre>
+     * More info at: [https://docs.google.com/viewer?hl=en][1]
+     * [1]: https://docs.google.com/viewer?hl=en
+     * <br> @version 4.6
+     * @param {SecondaryBrowserOptions} Object containing options like title, url, close button text and a list of file extensions the browser will handle like the operating system
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    OpenBrowserWithOptions: function(secondaryBrowserOptions, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Net.serviceName, "OpenBrowserWithOptions", get_params([secondaryBrowserOptions]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Renders ASYNC the given html in a different Web View with a Navigation Bar.
+     * <br> @version 2.0
+     * @param {String} title The title of the Navigation Bar.
+     * @param {String} buttonText The Back Button text of the Navigation Bar.
+     * @param {String} htmls The html string to be rendered.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    ShowHtml: function(title, buttonText, html, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Net.serviceName, "ShowHtml", get_params([title, buttonText, html]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Opens ASYNC the given html in a different Web View with a Navigation Bar.
+     * <br/><img src="resources/images/warning.png"/> &nbsp; <b>PDF</b> files could not be displayed on most <b>Android</b> devices (PDF viewer/reader is not included by default). A workaround could be to use the online Google DOCS viewer:<br/>
+     * <pre>To see this PDF url 'http://mydomain.com/folder/mypdffile.pdf', 
+     * you could use the URL, http://docs.google.com/viewer?url=http%3A%2F%2Fmydomain.com%2Ffolder%2Fmypdffile.pdf</pre>
+     * More info at: [https://docs.google.com/viewer?hl=en][1]
+     * [1]: https://docs.google.com/viewer?hl=en
+     * <br> @version 4.6
+     * @param {SecondaryBrowserOptions} Object containing options like title, url, close button text and a list of file extensions the browser will handle like the operating system
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    ShowHtmlWithOptions: function(secondaryBrowserOptions, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Net.serviceName, "ShowHtmlWithOptions", get_params([secondaryBrowserOptions]), callbackFunctionName, callbackId);
+    }
 
 
 };
@@ -699,7 +757,7 @@ ShowHtml : function(title, buttonText, html, callbackFunctionName, callbackId)
 /*
  * SYSTEM INTERFACES
  */
- 
+
 /**
  * @class Appverse.System 
  * Singleton class field to access System interface. 
@@ -716,201 +774,201 @@ ShowHtml : function(title, buttonText, html, callbackFunctionName, callbackId)
  * @return {Appverse.System} A new System interface.
  */
 System = function() {
-	/**
-	 * System service name (as configured on Platform Service Locator).
- 	 * <br> @version 1.0
-	 * @type String
-	 */
-	this.serviceName = "system";
-	/**
-	 * Unknown Display Orientation.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.ORIENTATION_UNKNOWN = 0;
-	/**
-	 * Portrait Display Orientation.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.ORIENTATION_PORTRAIT = 1;
-	/**
-	 * Landscape Display Orientation.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.ORIENTATION_LANDSCAPE = 2;
-	/**
-	 * Unknown Display Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.DISPLAYTYPE_UNKNOWN = 0;
-	/**
-	 * Primary Display Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.DISPLAYTYPE_PRIMARY = 1;
-	/**
-	 * External Display Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.DISPLAYTYPE_EXTERNAL = 2;
-	/**
-	 * Unknown Display Bit Depth.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.BITDEPTH_UNKNOWN = 0;
-	/**
-	 * Bpp8 Display Bit Depth.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.BITDEPTH_BPP8 = 1;
-	/**
-	 * Bpp16 Display Bit Depth.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.BITDEPTH_BPP16 = 2;
-	/**
-	 * Bpp24 Display Bit Depth.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.BITDEPTH_BPP24 = 3;
-	/**
-	 * Bpp32 Display Bit Depth.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.BITDEPTH_BPP32 = 4;
-	/**
-	 * Unknown Input Method.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.INPUTCAPABILITY_UNKNOWN = 0;
-	/**
-	 * Internal Touch Keyboard Input Method.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.INPUTCAPABILITY_INTERNAL_TOUCH_KEYBOARD = 1;
-	/**
-	 * Internal Keyboard Input Method.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.INPUTCAPABILITY_INTERNAL_KEYBOARD = 2;
-	/**
-	 * External Keyboard Input Method.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.INPUTCAPABILITY_EXTERNAL_KEYBOARD = 3;
-	/**
-	 * Internal Pointing Device Input Method.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.INPUTCAPABILITY_INTERNAL_POINTING = 4;
-	/**
-	 * External Pointing Device Input Method.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.INPUTCAPABILITY_EXTERNAL_POINTING = 5;
-	/**
-	 * Voice Recognition Device Input Method.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.INPUTCAPABILITY_VOICE_RECOGNITION = 6;
-	/**
-	 * Multi Touch Gestures Device Input Method.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.INPUTCAPABILITY_MULTI_TOUCH_GESTURES = 7;
-	/**
-	 * Mono Touch Gestures Device Input Method.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.INPUTCAPABILITY_MONO_TOUCH_GESTURES = 8;
-	/**
-	 * Unknown Memory Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEMORYTYPE_UNKNOWN = 0;
-	/**
-	 * Main Memory Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEMORYTYPE_MAIN = 1;
-	/**
-	 * Extended Memory Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEMORYTYPE_EXTENDED = 2;
-	/**
-	 * Application Memory Use.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEMORYUSE_APPLICATION = 0;
-	/**
-	 * Storage Memory Use.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEMORYUSE_STORAGE = 1;
-	/**
-	 * Other Memory Use.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEMORYUSE_OTHER = 2;
-	/**
-	 * Unknown Power Status.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.POWER_UNKNOWN = 0;
-	/**
-	 * Fully Charged Power Status.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.POWER_FULLY_CHARGED = 1;
-	/**
-	 * Charging Power Status.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.POWER_CHARGING = 2;
-	/**
-	 * Discharging Power Status.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.POWER_DISCHARGING = 3;
-	
-	/**
-	 * The name of the launch data parameter that contains the "URI scheme host" or relative scheme part when application is launched with extra data.
-	 * This parameter will be just provided by the platforms that launch apps using an URI scheme.
- 	 * <br> @version 4.2
-	 * @type String
-	 */
-	this.LAUNCH_DATA_URI_SCHEME_PATH = "URI_SCHEME_PATH";
-	
+    /**
+     * System service name (as configured on Platform Service Locator).
+     * <br> @version 1.0
+     * @type String
+     */
+    this.serviceName = "system";
+    /**
+     * Unknown Display Orientation.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.ORIENTATION_UNKNOWN = 0;
+    /**
+     * Portrait Display Orientation.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.ORIENTATION_PORTRAIT = 1;
+    /**
+     * Landscape Display Orientation.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.ORIENTATION_LANDSCAPE = 2;
+    /**
+     * Unknown Display Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.DISPLAYTYPE_UNKNOWN = 0;
+    /**
+     * Primary Display Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.DISPLAYTYPE_PRIMARY = 1;
+    /**
+     * External Display Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.DISPLAYTYPE_EXTERNAL = 2;
+    /**
+     * Unknown Display Bit Depth.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.BITDEPTH_UNKNOWN = 0;
+    /**
+     * Bpp8 Display Bit Depth.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.BITDEPTH_BPP8 = 1;
+    /**
+     * Bpp16 Display Bit Depth.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.BITDEPTH_BPP16 = 2;
+    /**
+     * Bpp24 Display Bit Depth.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.BITDEPTH_BPP24 = 3;
+    /**
+     * Bpp32 Display Bit Depth.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.BITDEPTH_BPP32 = 4;
+    /**
+     * Unknown Input Method.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.INPUTCAPABILITY_UNKNOWN = 0;
+    /**
+     * Internal Touch Keyboard Input Method.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.INPUTCAPABILITY_INTERNAL_TOUCH_KEYBOARD = 1;
+    /**
+     * Internal Keyboard Input Method.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.INPUTCAPABILITY_INTERNAL_KEYBOARD = 2;
+    /**
+     * External Keyboard Input Method.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.INPUTCAPABILITY_EXTERNAL_KEYBOARD = 3;
+    /**
+     * Internal Pointing Device Input Method.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.INPUTCAPABILITY_INTERNAL_POINTING = 4;
+    /**
+     * External Pointing Device Input Method.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.INPUTCAPABILITY_EXTERNAL_POINTING = 5;
+    /**
+     * Voice Recognition Device Input Method.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.INPUTCAPABILITY_VOICE_RECOGNITION = 6;
+    /**
+     * Multi Touch Gestures Device Input Method.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.INPUTCAPABILITY_MULTI_TOUCH_GESTURES = 7;
+    /**
+     * Mono Touch Gestures Device Input Method.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.INPUTCAPABILITY_MONO_TOUCH_GESTURES = 8;
+    /**
+     * Unknown Memory Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEMORYTYPE_UNKNOWN = 0;
+    /**
+     * Main Memory Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEMORYTYPE_MAIN = 1;
+    /**
+     * Extended Memory Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEMORYTYPE_EXTENDED = 2;
+    /**
+     * Application Memory Use.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEMORYUSE_APPLICATION = 0;
+    /**
+     * Storage Memory Use.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEMORYUSE_STORAGE = 1;
+    /**
+     * Other Memory Use.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEMORYUSE_OTHER = 2;
+    /**
+     * Unknown Power Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.POWER_UNKNOWN = 0;
+    /**
+     * Fully Charged Power Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.POWER_FULLY_CHARGED = 1;
+    /**
+     * Charging Power Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.POWER_CHARGING = 2;
+    /**
+     * Discharging Power Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.POWER_DISCHARGING = 3;
+
+    /**
+     * The name of the launch data parameter that contains the "URI scheme host" or relative scheme part when application is launched with extra data.
+     * This parameter will be just provided by the platforms that launch apps using an URI scheme.
+     * <br> @version 4.2
+     * @type String
+     */
+    this.LAUNCH_DATA_URI_SCHEME_PATH = "URI_SCHEME_PATH";
+
 }
 
 Appverse.System = new System();
@@ -924,7 +982,7 @@ Appverse.System = new System();
  */
 System.prototype.GetDisplays = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetDisplays", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetDisplays", null, "POST");
 };
 
 /**
@@ -937,11 +995,11 @@ System.prototype.GetDisplays = function()
  */
 System.prototype.GetDisplayInfo = function(displayNumber)
 {
-	if(displayNumber == null) {
-		return post_to_url(Appverse.System.serviceName, "GetDisplayInfo", null, "POST");
-	} else {
-		return post_to_url(Appverse.System.serviceName, "GetDisplayInfo", get_params([displayNumber]), "POST");
-	}
+    if (displayNumber == null) {
+        return post_to_url(Appverse.System.serviceName, "GetDisplayInfo", null, "POST");
+    } else {
+        return post_to_url(Appverse.System.serviceName, "GetDisplayInfo", get_params([displayNumber]), "POST");
+    }
 };
 
 /**
@@ -958,7 +1016,7 @@ System.prototype.GetDisplayInfo = function(displayNumber)
  */
 System.prototype.GetOrientation = function(displayNumber)
 {
-	return post_to_url(Appverse.System.serviceName, "GetOrientation", get_params([displayNumber]), "POST");
+    return post_to_url(Appverse.System.serviceName, "GetOrientation", get_params([displayNumber]), "POST");
 };
 
 /**
@@ -974,7 +1032,7 @@ System.prototype.GetOrientation = function(displayNumber)
  */
 System.prototype.GetOrientationCurrent = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetOrientationCurrent", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetOrientationCurrent", null, "POST");
 };
 
 /**
@@ -991,11 +1049,11 @@ System.prototype.GetOrientationCurrent = function()
  */
 System.prototype.GetOrientationSupported = function(displayNumber)
 {
-	if(displayNumber == null) {
-		return post_to_url(Appverse.System.serviceName, "GetOrientationSupported", null, "POST");
-	} else {
-		return post_to_url(Appverse.System.serviceName, "GetOrientationSupported", get_params([displayNumber]), "POST");
-	}
+    if (displayNumber == null) {
+        return post_to_url(Appverse.System.serviceName, "GetOrientationSupported", null, "POST");
+    } else {
+        return post_to_url(Appverse.System.serviceName, "GetOrientationSupported", get_params([displayNumber]), "POST");
+    }
 };
 
 /**
@@ -1007,7 +1065,7 @@ System.prototype.GetOrientationSupported = function(displayNumber)
  */
 System.prototype.GetLocaleSupported = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetLocaleSupported", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetLocaleSupported", null, "POST");
 };
 
 /**
@@ -1019,7 +1077,7 @@ System.prototype.GetLocaleSupported = function()
  */
 System.prototype.GetLocaleCurrent = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetLocaleCurrent", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetLocaleCurrent", null, "POST");
 };
 
 /**
@@ -1041,7 +1099,7 @@ System.prototype.GetLocaleCurrent = function()
  */
 System.prototype.GetInputMethods = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetInputMethods", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetInputMethods", null, "POST");
 };
 
 /**
@@ -1053,7 +1111,7 @@ System.prototype.GetInputMethods = function()
  */
 System.prototype.GetInputGestures = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetInputGestures", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetInputGestures", null, "POST");
 };
 
 /**
@@ -1065,7 +1123,7 @@ System.prototype.GetInputGestures = function()
  */
 System.prototype.GetInputButtons = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetInputButtons", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetInputButtons", null, "POST");
 };
 
 /**
@@ -1087,7 +1145,7 @@ System.prototype.GetInputButtons = function()
  */
 System.prototype.GetInputMethodCurrent = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetInputMethodCurrent", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetInputMethodCurrent", null, "POST");
 };
 
 /**
@@ -1109,11 +1167,11 @@ System.prototype.GetInputMethodCurrent = function()
  */
 System.prototype.GetMemoryAvailable = function(memUse, memType)
 {
-	if(memType == null) {
-		return post_to_url(Appverse.System.serviceName, "GetMemoryAvailable", get_params([memUse]), "POST");
-	} else {
-		return post_to_url(Appverse.System.serviceName, "GetMemoryAvailable", get_params([memUse,memType]), "POST");
-	}
+    if (memType == null) {
+        return post_to_url(Appverse.System.serviceName, "GetMemoryAvailable", get_params([memUse]), "POST");
+    } else {
+        return post_to_url(Appverse.System.serviceName, "GetMemoryAvailable", get_params([memUse, memType]), "POST");
+    }
 };
 
 /**
@@ -1129,7 +1187,7 @@ System.prototype.GetMemoryAvailable = function(memUse, memType)
  */
 System.prototype.GetMemoryAvailableTypes = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetMemoryAvailableTypes", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetMemoryAvailableTypes", null, "POST");
 };
 
 /**
@@ -1148,11 +1206,11 @@ System.prototype.GetMemoryAvailableTypes = function()
  */
 System.prototype.GetMemoryStatus = function(memType)
 {
-	if(memType == null) {
-		return post_to_url(Appverse.System.serviceName, "GetMemoryStatus", null, "POST");
-	} else {
-		return post_to_url(Appverse.System.serviceName, "GetMemoryStatus", get_params([memType]), "POST");
-	}
+    if (memType == null) {
+        return post_to_url(Appverse.System.serviceName, "GetMemoryStatus", null, "POST");
+    } else {
+        return post_to_url(Appverse.System.serviceName, "GetMemoryStatus", get_params([memType]), "POST");
+    }
 };
 
 /**
@@ -1168,7 +1226,7 @@ System.prototype.GetMemoryStatus = function(memType)
  */
 System.prototype.GetMemoryTypes = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetMemoryTypes", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetMemoryTypes", null, "POST");
 };
 
 /**
@@ -1184,7 +1242,7 @@ System.prototype.GetMemoryTypes = function()
  */
 System.prototype.GetMemoryUses = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetMemoryUses", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetMemoryUses", null, "POST");
 };
 
 /**
@@ -1196,7 +1254,7 @@ System.prototype.GetMemoryUses = function()
  */
 System.prototype.GetOSHardwareInfo = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetOSHardwareInfo", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetOSHardwareInfo", null, "POST");
 };
 
 /**
@@ -1208,7 +1266,7 @@ System.prototype.GetOSHardwareInfo = function()
  */
 System.prototype.GetOSInfo = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetOSInfo", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetOSInfo", null, "POST");
 };
 
 /**
@@ -1220,7 +1278,7 @@ System.prototype.GetOSInfo = function()
  */
 System.prototype.GetOSUserAgent = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetOSUserAgent", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetOSUserAgent", null, "POST");
 };
 
 /**
@@ -1232,7 +1290,7 @@ System.prototype.GetOSUserAgent = function()
  */
 System.prototype.GetPowerInfo = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetPowerInfo", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetPowerInfo", null, "POST");
 };
 
 /**
@@ -1244,7 +1302,7 @@ System.prototype.GetPowerInfo = function()
  */
 System.prototype.GetPowerRemainingTime = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetPowerRemainingTime", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetPowerRemainingTime", null, "POST");
 };
 
 /**
@@ -1256,7 +1314,7 @@ System.prototype.GetPowerRemainingTime = function()
  */
 System.prototype.GetCPUInfo = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetCPUInfo", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetCPUInfo", null, "POST");
 };
 
 /**
@@ -1266,8 +1324,8 @@ System.prototype.GetCPUInfo = function()
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
  */
-System.prototype.IsOrientationLocked  = function() {
-	return post_to_url(Appverse.System.serviceName, "IsOrientationLocked", null, "POST");
+System.prototype.IsOrientationLocked = function() {
+    return post_to_url(Appverse.System.serviceName, "IsOrientationLocked", null, "POST");
 };
 
 /**
@@ -1279,7 +1337,7 @@ System.prototype.IsOrientationLocked  = function() {
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.LockOrientation = function(lock, orientation) {
-	return post_to_url(Appverse.System.serviceName, "LockOrientation", get_params([lock,orientation]), "POST");
+    return post_to_url(Appverse.System.serviceName, "LockOrientation", get_params([lock, orientation]), "POST");
 };
 
 /**
@@ -1292,7 +1350,7 @@ System.prototype.LockOrientation = function(lock, orientation) {
  */
 System.prototype.CopyToClipboard = function(textToCopy)
 {
-	return post_to_url(Appverse.System.serviceName, "CopyToClipboard", get_params([textToCopy]), "POST");
+    return post_to_url(Appverse.System.serviceName, "CopyToClipboard", get_params([textToCopy]), "POST");
 };
 
 /**
@@ -1305,7 +1363,7 @@ System.prototype.CopyToClipboard = function(textToCopy)
  */
 System.prototype.ShowSplashScreen = function()
 {
-	return post_to_url(Appverse.System.serviceName, "ShowSplashScreen", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "ShowSplashScreen", null, "POST");
 };
 
 /**
@@ -1317,7 +1375,7 @@ System.prototype.ShowSplashScreen = function()
  */
 System.prototype.DismissSplashScreen = function()
 {
-	return post_to_url(Appverse.System.serviceName, "DismissSplashScreen", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "DismissSplashScreen", null, "POST");
 };
 
 /**
@@ -1330,7 +1388,7 @@ System.prototype.DismissSplashScreen = function()
  */
 System.prototype.DismissApplication = function()
 {
-	post_to_url(Appverse.System.serviceName, "DismissApplication", null, "POST");
+    post_to_url(Appverse.System.serviceName, "DismissApplication", null, "POST");
 };
 
 /**
@@ -1342,7 +1400,7 @@ System.prototype.DismissApplication = function()
  */
 System.prototype.GetApplications = function()
 {
-	return post_to_url(Appverse.System.serviceName, "GetApplications", null, "POST");
+    return post_to_url(Appverse.System.serviceName, "GetApplications", null, "POST");
 };
 
 /**
@@ -1355,7 +1413,7 @@ System.prototype.GetApplications = function()
  */
 System.prototype.GetApplication = function(appName)
 {
-	return post_to_url(Appverse.System.serviceName, "GetApplication", get_params([appName]), "POST");
+    return post_to_url(Appverse.System.serviceName, "GetApplication", get_params([appName]), "POST");
 };
 
 /**
@@ -1368,7 +1426,7 @@ System.prototype.GetApplication = function(appName)
  */
 System.prototype.LaunchApplication = function(app, query)
 {
-	post_to_url(Appverse.System.serviceName, "LaunchApplication", get_params([app, query]), "POST");
+    post_to_url(Appverse.System.serviceName, "LaunchApplication", get_params([app, query]), "POST");
 };
 
 /*
@@ -1386,12 +1444,12 @@ System.prototype.LaunchApplication = function(app, query)
  * @return {Appverse.Database} A new Database interface.
  */
 Database = function() {
-	/**
-	 * Database service name (as configured on Platform Service Locator).
- 	 * <br> @version 1.0
-	 * @type String
-	 */
-	this.serviceName = "db";
+    /**
+     * Database service name (as configured on Platform Service Locator).
+     * <br> @version 1.0
+     * @type String
+     */
+    this.serviceName = "db";
 }
 
 Appverse.Database = new Database();
@@ -1405,7 +1463,7 @@ Appverse.Database = new Database();
  */
 Database.prototype.GetDatabaseList = function()
 {
-	return post_to_url(Appverse.Database.serviceName, "GetDatabaseList", null, "POST");
+    return post_to_url(Appverse.Database.serviceName, "GetDatabaseList", null, "POST");
 };
 
 /**
@@ -1418,7 +1476,7 @@ Database.prototype.GetDatabaseList = function()
  */
 Database.prototype.CreateDatabase = function(dbName)
 {
-	return post_to_url(Appverse.Database.serviceName, "CreateDatabase", get_params([dbName]), "POST");
+    return post_to_url(Appverse.Database.serviceName, "CreateDatabase", get_params([dbName]), "POST");
 };
 
 /**
@@ -1432,7 +1490,7 @@ Database.prototype.CreateDatabase = function(dbName)
  */
 Database.prototype.GetDatabase = function(dbName)
 {
-	return post_to_url(Appverse.Database.serviceName, "GetDatabase", get_params([dbName]), "POST");
+    return post_to_url(Appverse.Database.serviceName, "GetDatabase", get_params([dbName]), "POST");
 };
 
 /**
@@ -1445,9 +1503,9 @@ Database.prototype.GetDatabase = function(dbName)
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
  */
-Database.prototype.CreateTable = function(db,tableName,columnsDefs)
+Database.prototype.CreateTable = function(db, tableName, columnsDefs)
 {
-	return post_to_url(Appverse.Database.serviceName, "CreateTable", get_params([db,tableName, columnsDefs]), "POST");
+    return post_to_url(Appverse.Database.serviceName, "CreateTable", get_params([db, tableName, columnsDefs]), "POST");
 };
 
 /**
@@ -1460,7 +1518,7 @@ Database.prototype.CreateTable = function(db,tableName,columnsDefs)
  */
 Database.prototype.DeleteDatabase = function(db)
 {
-	return post_to_url(Appverse.Database.serviceName, "DeleteDatabase", get_params([db]), "POST");
+    return post_to_url(Appverse.Database.serviceName, "DeleteDatabase", get_params([db]), "POST");
 };
 
 /**
@@ -1472,9 +1530,9 @@ Database.prototype.DeleteDatabase = function(db)
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
  */
-Database.prototype.DeleteTable = function(db,tableName)
+Database.prototype.DeleteTable = function(db, tableName)
 {
-	return post_to_url(Appverse.Database.serviceName, "DeleteTable", get_params([db,tableName]), "POST");
+    return post_to_url(Appverse.Database.serviceName, "DeleteTable", get_params([db, tableName]), "POST");
 };
 
 /**
@@ -1487,7 +1545,7 @@ Database.prototype.DeleteTable = function(db,tableName)
  */
 Database.prototype.GetTableNames = function(db)
 {
-	return post_to_url(Appverse.Database.serviceName, "GetTableNames", get_params([db]), "POST");
+    return post_to_url(Appverse.Database.serviceName, "GetTableNames", get_params([db]), "POST");
 };
 
 /**
@@ -1503,11 +1561,11 @@ Database.prototype.GetTableNames = function(db)
  */
 Database.prototype.Exists = function(db, tableName)
 {
-	if(tableName == null) {
-		 return post_to_url(Appverse.Database.serviceName, "Exists", get_params([db]), "POST");
-	} else {
-		return post_to_url(Appverse.Database.serviceName, "Exists", get_params([db,tableName]), "POST");
-	}
+    if (tableName == null) {
+        return post_to_url(Appverse.Database.serviceName, "Exists", get_params([db]), "POST");
+    } else {
+        return post_to_url(Appverse.Database.serviceName, "Exists", get_params([db, tableName]), "POST");
+    }
 };
 
 /**
@@ -1520,7 +1578,7 @@ Database.prototype.Exists = function(db, tableName)
  */
 Database.prototype.ExistsDatabase = function(dbName)
 {
-	return post_to_url(Appverse.Database.serviceName, "ExistsDatabase", get_params([dbName]), "POST");
+    return post_to_url(Appverse.Database.serviceName, "ExistsDatabase", get_params([dbName]), "POST");
 };
 
 /**
@@ -1535,11 +1593,11 @@ Database.prototype.ExistsDatabase = function(dbName)
  */
 Database.prototype.ExecuteSQLQuery = function(db, query, replacements)
 {
-	if(replacements == null) {
-		return post_to_url(Appverse.Database.serviceName, "ExecuteSQLQuery", get_params([db,query]), "POST");
-	} else {
-		return post_to_url(Appverse.Database.serviceName, "ExecuteSQLQuery", get_params([db,query,replacements]), "POST");
-	}
+    if (replacements == null) {
+        return post_to_url(Appverse.Database.serviceName, "ExecuteSQLQuery", get_params([db, query]), "POST");
+    } else {
+        return post_to_url(Appverse.Database.serviceName, "ExecuteSQLQuery", get_params([db, query, replacements]), "POST");
+    }
 };
 
 /**
@@ -1554,11 +1612,11 @@ Database.prototype.ExecuteSQLQuery = function(db, query, replacements)
  */
 Database.prototype.ExecuteSQLStatement = function(db, statement, replacements)
 {
-	if(replacements == null) {
-		return post_to_url(Appverse.Database.serviceName, "ExecuteSQLStatement", get_params([db,statement]), "POST");
-	} else {
-		return post_to_url(Appverse.Database.serviceName, "ExecuteSQLStatement", get_params([db,statement,replacements]), "POST");
-	}
+    if (replacements == null) {
+        return post_to_url(Appverse.Database.serviceName, "ExecuteSQLStatement", get_params([db, statement]), "POST");
+    } else {
+        return post_to_url(Appverse.Database.serviceName, "ExecuteSQLStatement", get_params([db, statement, replacements]), "POST");
+    }
 };
 
 /**
@@ -1573,7 +1631,7 @@ Database.prototype.ExecuteSQLStatement = function(db, statement, replacements)
  */
 Database.prototype.ExecuteSQLTransaction = function(db, statements, rollbackFlag)
 {
-	return post_to_url(Appverse.Database.serviceName, "ExecuteSQLTransaction", get_params([db,statements,rollbackFlag]), "POST");
+    return post_to_url(Appverse.Database.serviceName, "ExecuteSQLTransaction", get_params([db, statements, rollbackFlag]), "POST");
 };
 
 /**
@@ -1589,197 +1647,185 @@ Database.prototype.ExecuteSQLTransaction = function(db, statements, rollbackFlag
  * </pre>
  */
 Database.prototype.Async = {
-
-/**
- * Gets stored databases, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-GetDatabaseList : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Database.serviceName, "GetDatabaseList", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Creates database on default path, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} dbName The database file name (please include .db extension).
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-CreateDatabase : function(dbName, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Database.serviceName, "CreateDatabase", get_params([dbName]), callbackFunctionName, callbackId);
-},
-
-/**
- * Gets database reference object by given name, in ASYNC mode.
- * <br>Databases are located on the default database path: /<PersonalFolder>/sqlite/
- * <br> @version 2.0
- * @param {String} dbName The database file name (including .db extension).
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-GetDatabase : function(dbName, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Database.serviceName, "GetDatabase", get_params([dbName]), callbackFunctionName, callbackId);
-},
-
-/**
- * Creates a table inside the given database, in ASYNC mode.
- * <br> @version 2.0
- * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase} ).
- * @param {String} tableName The table name to be inserted.
- * @param {String[]} columnsDefs The column definitions array (SQLITE syntax).
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-CreateTable : function(db,tableName,columnsDefs, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Database.serviceName, "CreateTable", get_params([db,tableName, columnsDefs]), callbackFunctionName, callbackId);
-},
-
-/**
- * Deletes database on default path, in ASYNC mode.
- * <br> @version 2.0
- * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}) to be deleted.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-DeleteDatabase : function(db, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Database.serviceName, "DeleteDatabase", get_params([db]), callbackFunctionName, callbackId);
-},
-
-/**
- * Deletes table from the given database, in ASYNC mode.
- * <br> @version 2.0
- * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase} ).
- * @param {String} tableName The table name to be deleted.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-DeleteTable : function(db,tableName, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Database.serviceName, "DeleteTable", get_params([db,tableName]), callbackFunctionName, callbackId);
-},
-
-/**
- * Gets table names from the given database, in ASYNC mode.
- * <br> @version 1.0
- * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}) to check for table names.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-GetTableNames : function(db, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Database.serviceName, "GetTableNames", get_params([db]), callbackFunctionName, callbackId);
-},
-
-/**
- * Checks if database exists by database bean reference, if 'tableName' is not provided, in ASYNC mode.
- * Checks if database table exists by database bean reference and table name, if 'tableName' is provided.
- * <br> @version 2.0
- * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}).
- * @param {String} tableName The table name  to check for existence. Optional parameter.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-Exists : function(db, tableName, callbackFunctionName, callbackId)
-{
-	if(tableName == null) {
-        post_to_url_async(Appverse.Database.serviceName, "Exists", get_params([db]), callbackFunctionName, callbackId);
-	} else {
-		post_to_url_async(Appverse.Database.serviceName, "Exists", get_params([db,tableName]), callbackFunctionName, callbackId);
-	}
-},
-
-/**
- * Checks if database exists by given database name (including .db extension), in ASYNC mode.
- * <br> @version 2.0
- * @param {String} dbName The database name to check for existence.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-ExistsDatabase : function(dbName, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Database.serviceName, "ExistsDatabase", get_params([dbName]), callbackFunctionName, callbackId);
-},
-
-/**
- * Executes SQL query against given database, in ASYNC mode.
- * <br> @version 2.0
- * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}).
- * @param {String} query The SQL query to execute. 
- * @param {String[]} replacements The replacement arguments for a preformatted SQL query. Optional parameter.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-ExecuteSQLQuery : function(db, query, replacements, callbackFunctionName, callbackId)
-{
-	if(replacements == null) {
-		post_to_url_async(Appverse.Database.serviceName, "ExecuteSQLQuery", get_params([db,query]), callbackFunctionName, callbackId);
-	} else {
-		post_to_url_async(Appverse.Database.serviceName, "ExecuteSQLQuery", get_params([db,query,replacements]), callbackFunctionName, callbackId);
-	}
-},
-
-/**
- * Executes SQL statement into the given database, in ASYNC mode.
- * <br> @version 2.0
- * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}).
- * @param {String} statement The SQL statement to execute. 
- * @param {String[]} replacements The replacement arguments for a preformatted SQL statement. Optional parameter.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-ExecuteSQLStatement : function(db, statement, replacements, callbackFunctionName, callbackId)
-{
-	if(replacements == null) {
-		post_to_url_async(Appverse.Database.serviceName, "ExecuteSQLStatement", get_params([db,statement]), callbackFunctionName, callbackId);
-	} else {
-		post_to_url_async(Appverse.Database.serviceName, "ExecuteSQLStatement", get_params([db,statement,replacements]), callbackFunctionName, callbackId);
-	}
-},
-
-/**
- * Executes SQL transaction (some statements chain) inside given database, in ASYNC mode.
- * <br> @version 2.0
- * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}).
- * @param {String[]} statements The statements to be executed during transaction (sqlite syntax language).. 
- * @param {Boolean} rollbackFlag Indicates if rollback should be performed when any statement execution fails.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-ExecuteSQLTransaction : function(db, statements, rollbackFlag, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Database.serviceName, "ExecuteSQLTransaction", get_params([db,statements,rollbackFlag]), callbackFunctionName, callbackId);
-}
+    /**
+     * Gets stored databases, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    GetDatabaseList: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Database.serviceName, "GetDatabaseList", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Creates database on default path, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} dbName The database file name (please include .db extension).
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    CreateDatabase: function(dbName, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Database.serviceName, "CreateDatabase", get_params([dbName]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Gets database reference object by given name, in ASYNC mode.
+     * <br>Databases are located on the default database path: /<PersonalFolder>/sqlite/
+     * <br> @version 2.0
+     * @param {String} dbName The database file name (including .db extension).
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    GetDatabase: function(dbName, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Database.serviceName, "GetDatabase", get_params([dbName]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Creates a table inside the given database, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase} ).
+     * @param {String} tableName The table name to be inserted.
+     * @param {String[]} columnsDefs The column definitions array (SQLITE syntax).
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    CreateTable: function(db, tableName, columnsDefs, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Database.serviceName, "CreateTable", get_params([db, tableName, columnsDefs]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Deletes database on default path, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}) to be deleted.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    DeleteDatabase: function(db, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Database.serviceName, "DeleteDatabase", get_params([db]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Deletes table from the given database, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase} ).
+     * @param {String} tableName The table name to be deleted.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    DeleteTable: function(db, tableName, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Database.serviceName, "DeleteTable", get_params([db, tableName]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Gets table names from the given database, in ASYNC mode.
+     * <br> @version 1.0
+     * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}) to check for table names.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    GetTableNames: function(db, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Database.serviceName, "GetTableNames", get_params([db]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Checks if database exists by database bean reference, if 'tableName' is not provided, in ASYNC mode.
+     * Checks if database table exists by database bean reference and table name, if 'tableName' is provided.
+     * <br> @version 2.0
+     * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}).
+     * @param {String} tableName The table name  to check for existence. Optional parameter.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    Exists: function(db, tableName, callbackFunctionName, callbackId)
+    {
+        if (tableName == null) {
+            post_to_url_async(Appverse.Database.serviceName, "Exists", get_params([db]), callbackFunctionName, callbackId);
+        } else {
+            post_to_url_async(Appverse.Database.serviceName, "Exists", get_params([db, tableName]), callbackFunctionName, callbackId);
+        }
+    },
+    /**
+     * Checks if database exists by given database name (including .db extension), in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} dbName The database name to check for existence.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    ExistsDatabase: function(dbName, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Database.serviceName, "ExistsDatabase", get_params([dbName]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Executes SQL query against given database, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}).
+     * @param {String} query The SQL query to execute. 
+     * @param {String[]} replacements The replacement arguments for a preformatted SQL query. Optional parameter.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    ExecuteSQLQuery: function(db, query, replacements, callbackFunctionName, callbackId)
+    {
+        if (replacements == null) {
+            post_to_url_async(Appverse.Database.serviceName, "ExecuteSQLQuery", get_params([db, query]), callbackFunctionName, callbackId);
+        } else {
+            post_to_url_async(Appverse.Database.serviceName, "ExecuteSQLQuery", get_params([db, query, replacements]), callbackFunctionName, callbackId);
+        }
+    },
+    /**
+     * Executes SQL statement into the given database, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}).
+     * @param {String} statement The SQL statement to execute. 
+     * @param {String[]} replacements The replacement arguments for a preformatted SQL statement. Optional parameter.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    ExecuteSQLStatement: function(db, statement, replacements, callbackFunctionName, callbackId)
+    {
+        if (replacements == null) {
+            post_to_url_async(Appverse.Database.serviceName, "ExecuteSQLStatement", get_params([db, statement]), callbackFunctionName, callbackId);
+        } else {
+            post_to_url_async(Appverse.Database.serviceName, "ExecuteSQLStatement", get_params([db, statement, replacements]), callbackFunctionName, callbackId);
+        }
+    },
+    /**
+     * Executes SQL transaction (some statements chain) inside given database, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}).
+     * @param {String[]} statements The statements to be executed during transaction (sqlite syntax language).. 
+     * @param {Boolean} rollbackFlag Indicates if rollback should be performed when any statement execution fails.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    ExecuteSQLTransaction: function(db, statements, rollbackFlag, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Database.serviceName, "ExecuteSQLTransaction", get_params([db, statements, rollbackFlag]), callbackFunctionName, callbackId);
+    }
 
 };
 
@@ -1798,12 +1844,12 @@ ExecuteSQLTransaction : function(db, statements, rollbackFlag, callbackFunctionN
  * @return {Appverse.FileSystem} A new FileSystem interface.
  */
 FileSystem = function() {
-	/**
-	 * FileSystem service name (as configured on Platform Service Locator).
-	 * @type String
- 	 * <br> @version 1.0
-	 */
-	this.serviceName = "file";
+    /**
+     * FileSystem service name (as configured on Platform Service Locator).
+     * @type String
+     * <br> @version 1.0
+     */
+    this.serviceName = "file";
 }
 
 Appverse.FileSystem = new FileSystem();
@@ -1817,7 +1863,7 @@ Appverse.FileSystem = new FileSystem();
  */
 FileSystem.prototype.GetDirectoryRoot = function()
 {
-	return post_to_url(Appverse.FileSystem.serviceName, "GetDirectoryRoot", null, "POST");
+    return post_to_url(Appverse.FileSystem.serviceName, "GetDirectoryRoot", null, "POST");
 };
 
 /**
@@ -1831,11 +1877,11 @@ FileSystem.prototype.GetDirectoryRoot = function()
  */
 FileSystem.prototype.CreateDirectory = function(directoryName, baseDirectory)
 {
-	if(baseDirectory == null) {
-		return post_to_url(Appverse.FileSystem.serviceName, "CreateDirectory", get_params([directoryName]), "POST");
-	} else {
-		return post_to_url(Appverse.FileSystem.serviceName, "CreateDirectory", get_params([directoryName,baseDirectory]), "POST");
-	}
+    if (baseDirectory == null) {
+        return post_to_url(Appverse.FileSystem.serviceName, "CreateDirectory", get_params([directoryName]), "POST");
+    } else {
+        return post_to_url(Appverse.FileSystem.serviceName, "CreateDirectory", get_params([directoryName, baseDirectory]), "POST");
+    }
 };
 
 /**
@@ -1849,11 +1895,11 @@ FileSystem.prototype.CreateDirectory = function(directoryName, baseDirectory)
  */
 FileSystem.prototype.CreateFile = function(fileName, baseDirectory)
 {
-	if(baseDirectory == null) {
-		return post_to_url(Appverse.FileSystem.serviceName, "CreateFile", get_params([fileName]), "POST");
-	} else {
-		return post_to_url(Appverse.FileSystem.serviceName, "CreateFile", get_params([fileName,baseDirectory]), "POST");
-	}
+    if (baseDirectory == null) {
+        return post_to_url(Appverse.FileSystem.serviceName, "CreateFile", get_params([fileName]), "POST");
+    } else {
+        return post_to_url(Appverse.FileSystem.serviceName, "CreateFile", get_params([fileName, baseDirectory]), "POST");
+    }
 };
 
 /**
@@ -1866,11 +1912,11 @@ FileSystem.prototype.CreateFile = function(fileName, baseDirectory)
  */
 FileSystem.prototype.ListDirectories = function(dirData)
 {
-	if(dirData == null) {
-		return post_to_url(Appverse.FileSystem.serviceName, "ListDirectories", null, "POST");
-	} else {
-		return post_to_url(Appverse.FileSystem.serviceName, "ListDirectories", get_params([dirData]), "POST");
-	}
+    if (dirData == null) {
+        return post_to_url(Appverse.FileSystem.serviceName, "ListDirectories", null, "POST");
+    } else {
+        return post_to_url(Appverse.FileSystem.serviceName, "ListDirectories", get_params([dirData]), "POST");
+    }
 };
 
 /**
@@ -1883,7 +1929,7 @@ FileSystem.prototype.ListDirectories = function(dirData)
  */
 FileSystem.prototype.ListFiles = function(dirData)
 {
-	return post_to_url(Appverse.FileSystem.serviceName, "ListFiles", get_params([dirData]), "POST");
+    return post_to_url(Appverse.FileSystem.serviceName, "ListFiles", get_params([dirData]), "POST");
 };
 
 /**
@@ -1895,7 +1941,7 @@ FileSystem.prototype.ListFiles = function(dirData)
  */
 FileSystem.prototype.ExistsDirectory = function(dirData)
 {
-	return post_to_url(Appverse.FileSystem.serviceName, "ExistsDirectory", get_params([dirData]), "POST");
+    return post_to_url(Appverse.FileSystem.serviceName, "ExistsDirectory", get_params([dirData]), "POST");
 };
 
 /**
@@ -1908,7 +1954,7 @@ FileSystem.prototype.ExistsDirectory = function(dirData)
  */
 FileSystem.prototype.DeleteDirectory = function(dirData)
 {
-	return post_to_url(Appverse.FileSystem.serviceName, "DeleteDirectory", get_params([dirData]), "POST");
+    return post_to_url(Appverse.FileSystem.serviceName, "DeleteDirectory", get_params([dirData]), "POST");
 };
 
 /**
@@ -1921,7 +1967,7 @@ FileSystem.prototype.DeleteDirectory = function(dirData)
  */
 FileSystem.prototype.DeleteFile = function(fileData)
 {
-	return post_to_url(Appverse.FileSystem.serviceName, "DeleteFile", get_params([fileData]), "POST");
+    return post_to_url(Appverse.FileSystem.serviceName, "DeleteFile", get_params([fileData]), "POST");
 };
 
 /**
@@ -1933,7 +1979,7 @@ FileSystem.prototype.DeleteFile = function(fileData)
  */
 FileSystem.prototype.ExistsFile = function(fileData)
 {
-	return post_to_url(Appverse.FileSystem.serviceName, "ExistsFile", get_params([fileData]), "POST");
+    return post_to_url(Appverse.FileSystem.serviceName, "ExistsFile", get_params([fileData]), "POST");
 };
 
 /**
@@ -1946,7 +1992,7 @@ FileSystem.prototype.ExistsFile = function(fileData)
  */
 FileSystem.prototype.ReadFile = function(fileData)
 {
-	return post_to_url(Appverse.FileSystem.serviceName, "ReadFile", get_params([fileData]), "POST");
+    return post_to_url(Appverse.FileSystem.serviceName, "ReadFile", get_params([fileData]), "POST");
 };
 
 /**
@@ -1961,7 +2007,7 @@ FileSystem.prototype.ReadFile = function(fileData)
  */
 FileSystem.prototype.WriteFile = function(fileData, contents, appendFlag)
 {
-	return post_to_url(Appverse.FileSystem.serviceName, "WriteFile", get_params([fileData,contents,appendFlag]), "POST");
+    return post_to_url(Appverse.FileSystem.serviceName, "WriteFile", get_params([fileData, contents, appendFlag]), "POST");
 };
 
 /**
@@ -1975,7 +2021,7 @@ FileSystem.prototype.WriteFile = function(fileData, contents, appendFlag)
  */
 FileSystem.prototype.CopyFromResources = function(sourceFileName, destFileName)
 {
-	return post_to_url(Appverse.FileSystem.serviceName, "CopyFromResources", get_params([sourceFileName,destFileName]), "POST");
+    return post_to_url(Appverse.FileSystem.serviceName, "CopyFromResources", get_params([sourceFileName, destFileName]), "POST");
 };
 
 /**
@@ -1989,7 +2035,7 @@ FileSystem.prototype.CopyFromResources = function(sourceFileName, destFileName)
  */
 FileSystem.prototype.CopyFromRemote = function(url, destFileName)
 {
-	return post_to_url(Appverse.FileSystem.serviceName, "CopyFromRemote", get_params([url,destFileName]), "POST");
+    return post_to_url(Appverse.FileSystem.serviceName, "CopyFromRemote", get_params([url, destFileName]), "POST");
 };
 
 /**
@@ -2005,210 +2051,197 @@ FileSystem.prototype.CopyFromRemote = function(url, destFileName)
  * </pre>
  */
 FileSystem.prototype.Async = {
-
-/**
- * Get configured root directory.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-GetDirectoryRoot : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.FileSystem.serviceName, "GetDirectoryRoot", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Creates a directory under the given base directory, or under root directory if it is not provided.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {String} directoryName The directory name to be created. 
- * @param {Appverse.FileSystem.DirectoryData} baseDirectory The base Directory to create directory under it. Optional parameter.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-CreateDirectory : function(directoryName, baseDirectory, callbackFunctionName, callbackId)
-{
-	if(baseDirectory == null) {
-		post_to_url_async(Appverse.FileSystem.serviceName, "CreateDirectory", get_params([directoryName]), callbackFunctionName, callbackId);
-	} else {
-		post_to_url_async(Appverse.FileSystem.serviceName, "CreateDirectory", get_params([directoryName,baseDirectory]), callbackFunctionName, callbackId);
-	}
-},
-
-/**
- * Creates a file under the given base directory, or under root directory if it is not provided.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData} and {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {String} fileName The file name to be created. 
- * @param {Appverse.FileSystem.DirectoryData} baseDirectory The base Directory to create file under it. Optional parameter.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-CreateFile : function(fileName, baseDirectory, callbackFunctionName, callbackId)
-{
-	if(baseDirectory == null) {
-		post_to_url_async(Appverse.FileSystem.serviceName, "CreateFile", get_params([fileName]), callbackFunctionName, callbackId);
-	} else {
-		post_to_url_async(Appverse.FileSystem.serviceName, "CreateFile", get_params([fileName,baseDirectory]), callbackFunctionName, callbackId);
-	}
-},
-
-/**
- * List all directories under the given base directory data, or under root directory if it is not provided.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {Appverse.FileSystem.DirectoryData} dirData The base Directory to check for directories under it. Optional parameter.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-ListDirectories : function(dirData, callbackFunctionName, callbackId)
-{
-	if(dirData == null) {
-		post_to_url_async(Appverse.FileSystem.serviceName, "ListDirectories", null, callbackFunctionName, callbackId);
-	} else {
-		post_to_url_async(Appverse.FileSystem.serviceName, "ListDirectories", get_params([dirData]), callbackFunctionName, callbackId);
-	}
-},
-
-/**
- * List all files under the given base directory data, or under root directory if it is not provided.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData} and {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {Appverse.FileSystem.DirectoryData} dirData The base Directory to check for files under it. Optional parameter.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-ListFiles : function(dirData, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.FileSystem.serviceName, "ListFiles", get_params([dirData]), callbackFunctionName, callbackId);
-},
-
-/**
- * Checks if the given directory exists.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {Appverse.FileSystem.DirectoryData} dirData The directory to check for existence.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- */
-ExistsDirectory : function(dirData, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.FileSystem.serviceName, "ExistsDirectory", get_params([dirData]), callbackFunctionName, callbackId);
-},
-
-/**
- * Deletes the given directory.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {Appverse.FileSystem.DirectoryData} dirData The directory to be deleted.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-DeleteDirectory : function(dirData, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.FileSystem.serviceName, "DeleteDirectory", get_params([dirData]), callbackFunctionName, callbackId);
-},
-
-/**
- * Deletes the given file.<br/>For further information see, {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {Appverse.FileSystem.FileData} fileData The file to be deleted.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-DeleteFile : function(fileData, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.FileSystem.serviceName, "DeleteFile", get_params([fileData]), callbackFunctionName, callbackId);
-},
-
-/**
- * Checks if the given file exists.<br/>For further information see, {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {Appverse.FileSystem.FileData} fileData The file data to check for existence.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- */
-ExistsFile : function(fileData, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.FileSystem.serviceName, "ExistsFile", get_params([fileData]), callbackFunctionName, callbackId);
-},
-
-/**
- * Reads file on given path.<br/>For further information see, {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {Appverse.FileSystem.FileData} fileData The file data to read.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-ReadFile : function(fileData, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.FileSystem.serviceName, "ReadFile", get_params([fileData]), callbackFunctionName, callbackId);
-},
-
-/**
- * Writes contents to file on given path.<br/>For further information see, {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
- * <br> @version 3.8.5
- * @param {Appverse.FileSystem.FileData} fileData The file to add/append contents to.
- * @param {byte[]} contents The data to be written to file.
- * @param {Boolean} appendFlag True if data should be appended to previous file data.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-WriteFile : function(fileData, contents, appendFlag, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.FileSystem.serviceName, "WriteFile", get_params([fileData,contents,appendFlag]), callbackFunctionName, callbackId);
-},
-
-/**
- * Copies the given file on "fromPath" to the "toPath", in ASYNC mode.
- * <br> @version 3.8.5
- * @param {String} sourceFileName The file name (relative path under "resources" application directory) to be copied from. 
- * @param {String} destFileName The file name (relative path under "documents" application directory) to be copied to.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/warning.png"/> *"resources" path pending to be defined for this platform </pre>
- */
-CopyFromResources : function(sourceFileName, destFileName, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.FileSystem.serviceName, "CopyFromResources", get_params([sourceFileName,destFileName]), callbackFunctionName, callbackId);
-},
-
-/**
- * Copies the given remote file from "url" to the "toPath" (local relative path), in ASYNC mode.
- * <br> @version 3.8.5
- * @param {String} url The remote url file to be copied from. 
- * @param {String} destFileName The file name (relative path under "documents" application directory) to be copied to.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-CopyFromRemote : function(url, destFileName, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.FileSystem.serviceName, "CopyFromRemote", get_params([url,destFileName]), callbackFunctionName, callbackId);
-}
+    /**
+     * Get configured root directory.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    GetDirectoryRoot: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.FileSystem.serviceName, "GetDirectoryRoot", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Creates a directory under the given base directory, or under root directory if it is not provided.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {String} directoryName The directory name to be created. 
+     * @param {Appverse.FileSystem.DirectoryData} baseDirectory The base Directory to create directory under it. Optional parameter.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    CreateDirectory: function(directoryName, baseDirectory, callbackFunctionName, callbackId)
+    {
+        if (baseDirectory == null) {
+            post_to_url_async(Appverse.FileSystem.serviceName, "CreateDirectory", get_params([directoryName]), callbackFunctionName, callbackId);
+        } else {
+            post_to_url_async(Appverse.FileSystem.serviceName, "CreateDirectory", get_params([directoryName, baseDirectory]), callbackFunctionName, callbackId);
+        }
+    },
+    /**
+     * Creates a file under the given base directory, or under root directory if it is not provided.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData} and {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {String} fileName The file name to be created. 
+     * @param {Appverse.FileSystem.DirectoryData} baseDirectory The base Directory to create file under it. Optional parameter.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    CreateFile: function(fileName, baseDirectory, callbackFunctionName, callbackId)
+    {
+        if (baseDirectory == null) {
+            post_to_url_async(Appverse.FileSystem.serviceName, "CreateFile", get_params([fileName]), callbackFunctionName, callbackId);
+        } else {
+            post_to_url_async(Appverse.FileSystem.serviceName, "CreateFile", get_params([fileName, baseDirectory]), callbackFunctionName, callbackId);
+        }
+    },
+    /**
+     * List all directories under the given base directory data, or under root directory if it is not provided.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {Appverse.FileSystem.DirectoryData} dirData The base Directory to check for directories under it. Optional parameter.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    ListDirectories: function(dirData, callbackFunctionName, callbackId)
+    {
+        if (dirData == null) {
+            post_to_url_async(Appverse.FileSystem.serviceName, "ListDirectories", null, callbackFunctionName, callbackId);
+        } else {
+            post_to_url_async(Appverse.FileSystem.serviceName, "ListDirectories", get_params([dirData]), callbackFunctionName, callbackId);
+        }
+    },
+    /**
+     * List all files under the given base directory data, or under root directory if it is not provided.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData} and {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {Appverse.FileSystem.DirectoryData} dirData The base Directory to check for files under it. Optional parameter.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    ListFiles: function(dirData, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.FileSystem.serviceName, "ListFiles", get_params([dirData]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Checks if the given directory exists.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {Appverse.FileSystem.DirectoryData} dirData The directory to check for existence.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     */
+    ExistsDirectory: function(dirData, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.FileSystem.serviceName, "ExistsDirectory", get_params([dirData]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Deletes the given directory.<br/>For further information see, {@link Appverse.FileSystem.DirectoryData DirectoryData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {Appverse.FileSystem.DirectoryData} dirData The directory to be deleted.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    DeleteDirectory: function(dirData, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.FileSystem.serviceName, "DeleteDirectory", get_params([dirData]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Deletes the given file.<br/>For further information see, {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {Appverse.FileSystem.FileData} fileData The file to be deleted.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    DeleteFile: function(fileData, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.FileSystem.serviceName, "DeleteFile", get_params([fileData]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Checks if the given file exists.<br/>For further information see, {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {Appverse.FileSystem.FileData} fileData The file data to check for existence.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     */
+    ExistsFile: function(fileData, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.FileSystem.serviceName, "ExistsFile", get_params([fileData]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Reads file on given path.<br/>For further information see, {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {Appverse.FileSystem.FileData} fileData The file data to read.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    ReadFile: function(fileData, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.FileSystem.serviceName, "ReadFile", get_params([fileData]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Writes contents to file on given path.<br/>For further information see, {@link Appverse.FileSystem.FileData FileData}, in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {Appverse.FileSystem.FileData} fileData The file to add/append contents to.
+     * @param {byte[]} contents The data to be written to file.
+     * @param {Boolean} appendFlag True if data should be appended to previous file data.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    WriteFile: function(fileData, contents, appendFlag, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.FileSystem.serviceName, "WriteFile", get_params([fileData, contents, appendFlag]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Copies the given file on "fromPath" to the "toPath", in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {String} sourceFileName The file name (relative path under "resources" application directory) to be copied from. 
+     * @param {String} destFileName The file name (relative path under "documents" application directory) to be copied to.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/warning.png"/> *"resources" path pending to be defined for this platform </pre>
+     */
+    CopyFromResources: function(sourceFileName, destFileName, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.FileSystem.serviceName, "CopyFromResources", get_params([sourceFileName, destFileName]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Copies the given remote file from "url" to the "toPath" (local relative path), in ASYNC mode.
+     * <br> @version 3.8.5
+     * @param {String} url The remote url file to be copied from. 
+     * @param {String} destFileName The file name (relative path under "documents" application directory) to be copied to.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    CopyFromRemote: function(url, destFileName, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.FileSystem.serviceName, "CopyFromRemote", get_params([url, destFileName]), callbackFunctionName, callbackId);
+    }
 
 };
 
 /*
  * Notification INTERFACES
  */
- 
+
 /**
  * @class Appverse.Notification 
  * Singleton class field to access Notification interface. 
@@ -2220,105 +2253,105 @@ CopyFromRemote : function(url, destFileName, callbackFunctionName, callbackId)
  * @return {Appverse.Notification} A new Notification interface.
  */
 Notification = function() {
-	/**
-	 * Notification service name (as configured on Platform Service Locator).
-	 * @type String
- 	 * <br> @version 1.0
-	 */
-	this.serviceName = "notify";
-	/**
-	 * None Remote Notification Type.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.REMOTE_NOTIFICATION_TYPE_NONE = 0;
     /**
-	 * Badge Remote Notification Type.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.REMOTE_NOTIFICATION_TYPE_BADGE = 1;
+     * Notification service name (as configured on Platform Service Locator).
+     * @type String
+     * <br> @version 1.0
+     */
+    this.serviceName = "notify";
     /**
-	 * Sound Remote Notification Type.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.REMOTE_NOTIFICATION_TYPE_SOUND = 2;
+     * None Remote Notification Type.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.REMOTE_NOTIFICATION_TYPE_NONE = 0;
     /**
-	 * Alert Remote Notification Type.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.REMOTE_NOTIFICATION_TYPE_ALERT = 3;
+     * Badge Remote Notification Type.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.REMOTE_NOTIFICATION_TYPE_BADGE = 1;
     /**
-	 * Content Availability Remote Notification Type.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY = 4;
-	
-	/**
-	 * No-Repeat Interval for Local Notification.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_NO_REPEAT = 0;
-	
-	/**
-	 * Hourly Repeat Interval for Local Notification.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_HOURLY = 1;
-	
-	/**
-	 * Daily Repeat Interval for Local Notification.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_DAILY = 2;
-	
-	/**
-	 * Weekly Repeat Interval for Local Notification.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_WEEKLY = 3;
+     * Sound Remote Notification Type.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.REMOTE_NOTIFICATION_TYPE_SOUND = 2;
+    /**
+     * Alert Remote Notification Type.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.REMOTE_NOTIFICATION_TYPE_ALERT = 3;
+    /**
+     * Content Availability Remote Notification Type.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY = 4;
 
-	/**
-	 * Monthly Repeat Interval for Local Notification.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_MONTHLY = 4;
-	
-	/**
-	 * Yearly Repeat Interval for Local Notification.
-	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_YEARLY = 5;
-	
-	/**
-	 * Default registration exception code for remote notifications.
-	 * <br> @version 4.0
-	 * @type String
-	 */
-	this.REMOTE_NOTIFICATION_REGISTRATION_FAILURE_DEFAULT = "99";
-	
-	/**
-	 * Registration exception code for remote notifications indicating unsuccessful registration due to a different sender id previous registration.
-	 * <br> @version 4.0
-	 * @type String
-	 */
-	this.REMOTE_NOTIFICATION_REGISTRATION_FAILURE_MISMATCH_SENDERID = "10";
-	
-	/**
-	 * Registration exception code send by the GCM Server for remote notifications (both registration and unregistration processes)
-	 * <br> @version 4.0
-	 * @type String
-	 */
-	this.REMOTE_NOTIFICATION_REGISTRATION_FAILURE_GCM_SERVER = "11";
+    /**
+     * No-Repeat Interval for Local Notification.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_NO_REPEAT = 0;
+
+    /**
+     * Hourly Repeat Interval for Local Notification.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_HOURLY = 1;
+
+    /**
+     * Daily Repeat Interval for Local Notification.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_DAILY = 2;
+
+    /**
+     * Weekly Repeat Interval for Local Notification.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_WEEKLY = 3;
+
+    /**
+     * Monthly Repeat Interval for Local Notification.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_MONTHLY = 4;
+
+    /**
+     * Yearly Repeat Interval for Local Notification.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.LOCAL_NOTIFICATION_REPEAT_INTERVAL_YEARLY = 5;
+
+    /**
+     * Default registration exception code for remote notifications.
+     * <br> @version 4.0
+     * @type String
+     */
+    this.REMOTE_NOTIFICATION_REGISTRATION_FAILURE_DEFAULT = "99";
+
+    /**
+     * Registration exception code for remote notifications indicating unsuccessful registration due to a different sender id previous registration.
+     * <br> @version 4.0
+     * @type String
+     */
+    this.REMOTE_NOTIFICATION_REGISTRATION_FAILURE_MISMATCH_SENDERID = "10";
+
+    /**
+     * Registration exception code send by the GCM Server for remote notifications (both registration and unregistration processes)
+     * <br> @version 4.0
+     * @type String
+     */
+    this.REMOTE_NOTIFICATION_REGISTRATION_FAILURE_GCM_SERVER = "11";
 }
 
 Appverse.Notification = new Notification();
@@ -2332,7 +2365,7 @@ Appverse.Notification = new Notification();
  */
 Notification.prototype.StartNotifyActivity = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "StartNotifyActivity", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StartNotifyActivity", null, "POST");
 };
 
 /**
@@ -2344,7 +2377,7 @@ Notification.prototype.StartNotifyActivity = function()
  */
 Notification.prototype.StopNotifyActivity = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "StopNotifyActivity", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StopNotifyActivity", null, "POST");
 };
 
 /**
@@ -2356,7 +2389,7 @@ Notification.prototype.StopNotifyActivity = function()
  */
 Notification.prototype.IsNotifyActivityRunning = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "IsNotifyActivityRunning", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "IsNotifyActivityRunning", null, "POST");
 };
 
 /**
@@ -2371,11 +2404,11 @@ Notification.prototype.IsNotifyActivityRunning = function()
  */
 Notification.prototype.StartNotifyAlert = function(message, title, buttonText)
 {
-	if(title == null && buttonText == null) {
-		return post_to_url(Appverse.Notification.serviceName, "StartNotifyAlert", get_params([message]), "POST");
-	} else {
-		return post_to_url(Appverse.Notification.serviceName, "StartNotifyAlert", get_params([title,message,buttonText]), "POST");
-	}
+    if (title == null && buttonText == null) {
+        return post_to_url(Appverse.Notification.serviceName, "StartNotifyAlert", get_params([message]), "POST");
+    } else {
+        return post_to_url(Appverse.Notification.serviceName, "StartNotifyAlert", get_params([title, message, buttonText]), "POST");
+    }
 };
 
 /**
@@ -2387,7 +2420,7 @@ Notification.prototype.StartNotifyAlert = function(message, title, buttonText)
  */
 Notification.prototype.StopNotifyAlert = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "StopNotifyAlert", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StopNotifyAlert", null, "POST");
 };
 
 /**
@@ -2402,7 +2435,7 @@ Notification.prototype.StopNotifyAlert = function()
  */
 Notification.prototype.StartNotifyActionSheet = function(title, buttons, jsCallbackFunctions)
 {
-	return post_to_url(Appverse.Notification.serviceName, "StartNotifyActionSheet", get_params([title, buttons, jsCallbackFunctions]), "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StartNotifyActionSheet", get_params([title, buttons, jsCallbackFunctions]), "POST");
 };
 
 /**
@@ -2414,7 +2447,7 @@ Notification.prototype.StartNotifyActionSheet = function(title, buttons, jsCallb
  */
 Notification.prototype.StartNotifyBeep = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "StartNotifyBeep", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StartNotifyBeep", null, "POST");
 };
 
 /**
@@ -2426,7 +2459,7 @@ Notification.prototype.StartNotifyBeep = function()
  */
 Notification.prototype.StopNotifyBeep = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "StopNotifyBeep", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StopNotifyBeep", null, "POST");
 };
 
 /**
@@ -2438,7 +2471,7 @@ Notification.prototype.StopNotifyBeep = function()
  */
 Notification.prototype.StartNotifyBlink = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "StartNotifyBlink", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StartNotifyBlink", null, "POST");
 };
 
 /**
@@ -2450,7 +2483,7 @@ Notification.prototype.StartNotifyBlink = function()
  */
 Notification.prototype.StopNotifyBlink = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "StopNotifyBlink", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StopNotifyBlink", null, "POST");
 };
 
 /**
@@ -2468,11 +2501,11 @@ Notification.prototype.StopNotifyBlink = function()
  */
 Notification.prototype.StartNotifyLoading = function(loadingText)
 {
-	if(loadingText == null) {
-		return post_to_url(Appverse.Notification.serviceName, "StartNotifyLoading", null, "POST");
-	} else {
-		return post_to_url(Appverse.Notification.serviceName, "StartNotifyLoading", get_params([loadingText]), "POST");
-	}
+    if (loadingText == null) {
+        return post_to_url(Appverse.Notification.serviceName, "StartNotifyLoading", null, "POST");
+    } else {
+        return post_to_url(Appverse.Notification.serviceName, "StartNotifyLoading", get_params([loadingText]), "POST");
+    }
 };
 
 /**
@@ -2484,7 +2517,7 @@ Notification.prototype.StartNotifyLoading = function(loadingText)
  */
 Notification.prototype.StopNotifyLoading = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "StopNotifyLoading", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StopNotifyLoading", null, "POST");
 };
 
 /**
@@ -2496,7 +2529,7 @@ Notification.prototype.StopNotifyLoading = function()
  */
 Notification.prototype.IsNotifyLoadingRunning = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "IsNotifyLoadingRunning", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "IsNotifyLoadingRunning", null, "POST");
 };
 
 /**
@@ -2508,7 +2541,7 @@ Notification.prototype.IsNotifyLoadingRunning = function()
  */
 Notification.prototype.UpdateNotifyLoading = function(progress)
 {
-	return post_to_url(Appverse.Notification.serviceName, "UpdateNotifyLoading", get_params([progress]), "POST");
+    return post_to_url(Appverse.Notification.serviceName, "UpdateNotifyLoading", get_params([progress]), "POST");
 };
 
 /**
@@ -2520,7 +2553,7 @@ Notification.prototype.UpdateNotifyLoading = function(progress)
  */
 Notification.prototype.StartNotifyVibrate = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "StartNotifyVibrate", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StartNotifyVibrate", null, "POST");
 };
 
 /**
@@ -2532,7 +2565,7 @@ Notification.prototype.StartNotifyVibrate = function()
  */
 Notification.prototype.StopNotifyVibrate = function()
 {
-	return post_to_url(Appverse.Notification.serviceName, "StopNotifyVibrate", null, "POST");
+    return post_to_url(Appverse.Notification.serviceName, "StopNotifyVibrate", null, "POST");
 };
 
 /**
@@ -2544,9 +2577,9 @@ Notification.prototype.StopNotifyVibrate = function()
  * @param {Appverse.Notification.RemoteNotificationType[]} types The remote notifications types accepted by this application. For further information see, {@link Appverse.Notification#REMOTE_NOTIFICATION_TYPE_NONE REMOTE_NOTIFICATION_TYPE_NONE}, {@link Appverse.Notification#REMOTE_NOTIFICATION_TYPE_BADGE REMOTE_NOTIFICATION_TYPE_BADGE}, {@link Appverse.Notification#REMOTE_NOTIFICATION_TYPE_SOUND REMOTE_NOTIFICATION_TYPE_SOUND}, {@link Appverse.Notification#REMOTE_NOTIFICATION_TYPE_ALERT REMOTE_NOTIFICATION_TYPE_ALERT} and {@link Appverse.Notification#REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY}
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Notification.prototype.RegisterForRemoteNotifications = function(senderId, types) 
+Notification.prototype.RegisterForRemoteNotifications = function(senderId, types)
 {
-	post_to_url(Appverse.Notification.serviceName, "RegisterForRemoteNotifications", get_params([senderId, types]), "POST");
+    post_to_url(Appverse.Notification.serviceName, "RegisterForRemoteNotifications", get_params([senderId, types]), "POST");
 };
 
 /**
@@ -2556,9 +2589,9 @@ Notification.prototype.RegisterForRemoteNotifications = function(senderId, types
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Notification.prototype.UnRegisterForRemoteNotifications = function() 
+Notification.prototype.UnRegisterForRemoteNotifications = function()
 {
-	post_to_url(Appverse.Notification.serviceName, "UnRegisterForRemoteNotifications", null, "POST");
+    post_to_url(Appverse.Notification.serviceName, "UnRegisterForRemoteNotifications", null, "POST");
 };
 
 /**
@@ -2568,9 +2601,9 @@ Notification.prototype.UnRegisterForRemoteNotifications = function()
  * @param {int} badge The badge number to set.
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> N/A  | windows <img src="resources/images/error.png"/></pre>
  */
-Notification.prototype.SetApplicationIconBadgeNumber = function(badge) 
+Notification.prototype.SetApplicationIconBadgeNumber = function(badge)
 {
-	post_to_url(Appverse.Notification.serviceName, "SetApplicationIconBadgeNumber", get_params([badge]), "POST");
+    post_to_url(Appverse.Notification.serviceName, "SetApplicationIconBadgeNumber", get_params([badge]), "POST");
 };
 
 /**
@@ -2579,9 +2612,9 @@ Notification.prototype.SetApplicationIconBadgeNumber = function(badge)
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> N/A  | windows <img src="resources/images/error.png"/></pre>
  */
-Notification.prototype.IncrementApplicationIconBadgeNumber = function() 
+Notification.prototype.IncrementApplicationIconBadgeNumber = function()
 {
-	post_to_url(Appverse.Notification.serviceName, "IncrementApplicationIconBadgeNumber", null, "POST");
+    post_to_url(Appverse.Notification.serviceName, "IncrementApplicationIconBadgeNumber", null, "POST");
 };
 
 /**
@@ -2590,9 +2623,9 @@ Notification.prototype.IncrementApplicationIconBadgeNumber = function()
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> N/A  | windows <img src="resources/images/error.png"/></pre>
  */
-Notification.prototype.DecrementApplicationIconBadgeNumber = function() 
+Notification.prototype.DecrementApplicationIconBadgeNumber = function()
 {
-	post_to_url(Appverse.Notification.serviceName, "DecrementApplicationIconBadgeNumber", null, "POST");
+    post_to_url(Appverse.Notification.serviceName, "DecrementApplicationIconBadgeNumber", null, "POST");
 };
 
 /**
@@ -2602,9 +2635,9 @@ Notification.prototype.DecrementApplicationIconBadgeNumber = function()
  * @param {Appverse.Notification.NotificationData} notification The notification data to be presented. For further information see, {@link Appverse.Notification.NotificationData NotificationData}.
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Notification.prototype.PresentLocalNotificationNow = function(notification) 
+Notification.prototype.PresentLocalNotificationNow = function(notification)
 {
-	post_to_url(Appverse.Notification.serviceName, "PresentLocalNotificationNow", get_params([notification]), "POST");
+    post_to_url(Appverse.Notification.serviceName, "PresentLocalNotificationNow", get_params([notification]), "POST");
 };
 
 /**
@@ -2615,9 +2648,9 @@ Notification.prototype.PresentLocalNotificationNow = function(notification)
  * @param {SchedulingData} schedule The scheduling data with the fire date. For further information see, {@link Appverse.Notification.SchedulingData SchedulingData}.
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Notification.prototype.ScheduleLocalNotification = function(notification, schedule) 
+Notification.prototype.ScheduleLocalNotification = function(notification, schedule)
 {
-	post_to_url(Appverse.Notification.serviceName, "ScheduleLocalNotification", get_params([notification, schedule]), "POST");
+    post_to_url(Appverse.Notification.serviceName, "ScheduleLocalNotification", get_params([notification, schedule]), "POST");
 };
 
 /**
@@ -2628,9 +2661,9 @@ Notification.prototype.ScheduleLocalNotification = function(notification, schedu
  * @param {Appverse.DateTime} fireDate The local notification fire date identifier to be cancelled.
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Notification.prototype.CancelLocalNotification = function(fireDate) 
+Notification.prototype.CancelLocalNotification = function(fireDate)
 {
-	post_to_url(Appverse.Notification.serviceName, "CancelLocalNotification", get_params([fireDate]), "POST");
+    post_to_url(Appverse.Notification.serviceName, "CancelLocalNotification", get_params([fireDate]), "POST");
 };
 
 /**
@@ -2639,9 +2672,9 @@ Notification.prototype.CancelLocalNotification = function(fireDate)
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Notification.prototype.CancelAllLocalNotifications = function() 
+Notification.prototype.CancelAllLocalNotifications = function()
 {
-	post_to_url(Appverse.Notification.serviceName, "CancelAllLocalNotifications", null, "POST");
+    post_to_url(Appverse.Notification.serviceName, "CancelAllLocalNotifications", null, "POST");
 };
 
 /**
@@ -2657,235 +2690,219 @@ Notification.prototype.CancelAllLocalNotifications = function()
  * </pre>
  */
 Notification.prototype.Async = {
-
-/**
- * Shows and starts the activity indicator animation, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-StartNotifyActivity : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StartNotifyActivity", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Stops and hides the activity indicator animation, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-StopNotifyActivity : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StopNotifyActivity", null, "POST",callbackFunctionName, callbackId);
-},
-
-/**
- * Checks if activity indicator animation is started, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-IsNotifyActivityRunning : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "IsNotifyActivityRunning", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Starts an alert notification, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} message The alert message to be displayed.
- * @param {String} title The alert title to be displayed.
- * @param {String} buttonText The accept button text to be displayed.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-StartNotifyAlert : function(message, title, buttonText, callbackFunctionName, callbackId)
-{
-	if(title == null && buttonText == null) {
-		post_to_url_async(Appverse.Notification.serviceName, "StartNotifyAlert", get_params([message]), callbackFunctionName, callbackId);
-	} else {
-		post_to_url_async(Appverse.Notification.serviceName, "StartNotifyAlert", get_params([title,message,buttonText]), callbackFunctionName, callbackId);
-	}
-},
-
-/**
- * Stops an alert notification, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-StopNotifyAlert : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StopNotifyAlert", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Shows an action sheet, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} title The title to be displayed on the action sheet.
- * @param {String[]} buttons Array of button texts to be displayed. First index button is the "cancel" button, default button.
- * @param {String[]} jsCallbackFunctions The callback javascript functions as string texts for each of the given buttons. Empty string if no action is required for a button.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
- */
-StartNotifyActionSheet : function(title, buttons, jsCallbackFunctions, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StartNotifyActionSheet", get_params([title, buttons, jsCallbackFunctions]), callbackFunctionName, callbackId);
-},
-
-/**
- * Starts a beep notification, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-StartNotifyBeep : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StartNotifyBeep", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Stops the current beep notification, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-StopNotifyBeep : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StopNotifyBeep", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Starts a blink notification, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
- */
-StartNotifyBlink : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StartNotifyBlink", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Stops the current blink notification, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
- */
-StopNotifyBlink : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StopNotifyBlink", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Shows and starts the progress indicator animation, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> | windows <img src="resources/images/check.png"/> 
- * <br><br><img src="resources/images/warning.png"/> Showing the native loading window in <b>Android</b> is currently sending the application to background.
- * <br>This means that the platform server (Appverse) is no available till application comes to foreground again.
- * <br>But application could not wake up itself to foreground from javascript code.
- * <br>So, we strongly recommend you to do not use this function till we solve this problem from platform side.
- * <br>Use HTML5/JS/CSS3 loading overlays instead.
- * </pre>
- */
-StartNotifyLoading : function(loadingText, callbackFunctionName, callbackId)
-{
-	if(loadingText == null) {
-		post_to_url_async(Appverse.Notification.serviceName, "StartNotifyLoading", null, callbackFunctionName, callbackId);
-	} else {
-		post_to_url_async(Appverse.Notification.serviceName, "StartNotifyLoading", get_params([loadingText]), callbackFunctionName, callbackId);
-	}
-},
-
-/**
- * Stops the current progress indicator animation, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-StopNotifyLoading : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StopNotifyLoading", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Checks if progress indicator animation is started, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-IsNotifyLoadingRunning : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "IsNotifyLoadingRunning", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Updates the progress indicator animation, in ASYNC mode.
- * <br> @version 2.0
- * @param {float} progress The current progress; values between 0.0 and 1.0 (completed).
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
- */
-UpdateNotifyLoading : function(progress, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "UpdateNotifyLoading", get_params([progress]), callbackFunctionName, callbackId);
-},
-
-/**
- * Starts a vibration notification, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
- */
-StartNotifyVibrate : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StartNotifyVibrate", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Stops the current vibration notification, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
- */
-StopNotifyVibrate : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Notification.serviceName, "StopNotifyVibrate", null, callbackFunctionName, callbackId);
-}
+    /**
+     * Shows and starts the activity indicator animation, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    StartNotifyActivity: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StartNotifyActivity", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Stops and hides the activity indicator animation, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    StopNotifyActivity: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StopNotifyActivity", null, "POST", callbackFunctionName, callbackId);
+    },
+    /**
+     * Checks if activity indicator animation is started, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    IsNotifyActivityRunning: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "IsNotifyActivityRunning", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Starts an alert notification, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} message The alert message to be displayed.
+     * @param {String} title The alert title to be displayed.
+     * @param {String} buttonText The accept button text to be displayed.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    StartNotifyAlert: function(message, title, buttonText, callbackFunctionName, callbackId)
+    {
+        if (title == null && buttonText == null) {
+            post_to_url_async(Appverse.Notification.serviceName, "StartNotifyAlert", get_params([message]), callbackFunctionName, callbackId);
+        } else {
+            post_to_url_async(Appverse.Notification.serviceName, "StartNotifyAlert", get_params([title, message, buttonText]), callbackFunctionName, callbackId);
+        }
+    },
+    /**
+     * Stops an alert notification, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    StopNotifyAlert: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StopNotifyAlert", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Shows an action sheet, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} title The title to be displayed on the action sheet.
+     * @param {String[]} buttons Array of button texts to be displayed. First index button is the "cancel" button, default button.
+     * @param {String[]} jsCallbackFunctions The callback javascript functions as string texts for each of the given buttons. Empty string if no action is required for a button.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+     */
+    StartNotifyActionSheet: function(title, buttons, jsCallbackFunctions, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StartNotifyActionSheet", get_params([title, buttons, jsCallbackFunctions]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Starts a beep notification, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    StartNotifyBeep: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StartNotifyBeep", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Stops the current beep notification, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    StopNotifyBeep: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StopNotifyBeep", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Starts a blink notification, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+     */
+    StartNotifyBlink: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StartNotifyBlink", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Stops the current blink notification, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+     */
+    StopNotifyBlink: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StopNotifyBlink", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Shows and starts the progress indicator animation, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> | windows <img src="resources/images/check.png"/> 
+     * <br><br><img src="resources/images/warning.png"/> Showing the native loading window in <b>Android</b> is currently sending the application to background.
+     * <br>This means that the platform server (Appverse) is no available till application comes to foreground again.
+     * <br>But application could not wake up itself to foreground from javascript code.
+     * <br>So, we strongly recommend you to do not use this function till we solve this problem from platform side.
+     * <br>Use HTML5/JS/CSS3 loading overlays instead.
+     * </pre>
+     */
+    StartNotifyLoading: function(loadingText, callbackFunctionName, callbackId)
+    {
+        if (loadingText == null) {
+            post_to_url_async(Appverse.Notification.serviceName, "StartNotifyLoading", null, callbackFunctionName, callbackId);
+        } else {
+            post_to_url_async(Appverse.Notification.serviceName, "StartNotifyLoading", get_params([loadingText]), callbackFunctionName, callbackId);
+        }
+    },
+    /**
+     * Stops the current progress indicator animation, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    StopNotifyLoading: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StopNotifyLoading", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Checks if progress indicator animation is started, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    IsNotifyLoadingRunning: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "IsNotifyLoadingRunning", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Updates the progress indicator animation, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {float} progress The current progress; values between 0.0 and 1.0 (completed).
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     */
+    UpdateNotifyLoading: function(progress, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "UpdateNotifyLoading", get_params([progress]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Starts a vibration notification, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
+     */
+    StartNotifyVibrate: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StartNotifyVibrate", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Stops the current vibration notification, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
+     */
+    StopNotifyVibrate: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Notification.serviceName, "StopNotifyVibrate", null, callbackFunctionName, callbackId);
+    }
 
 };
 
@@ -2904,86 +2921,86 @@ StopNotifyVibrate : function(callbackFunctionName, callbackId)
  * @return {Appverse.IO} A new IO interface.
  */
 IO = function() {
-	/**
-	 * IO service name (as configured on Platform Service Locator).
- 	 * <br> @version 1.0
-	 * @type String
-	 */
-	this.serviceName = "io";
-	/**
-	 * SOAP XML Service Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.SERVICETYPE_SOAP_XML = 0;
-	/**
-	 * SOAP JSON Service Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.SERVICETYPE_SOAP_JSON = 1;
-	/**
-	 * XML RPC Service Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.SERVICETYPE_XMLRPC_XML = 2;
-	/**
-	 * REST XML Service Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.SERVICETYPE_REST_XML = 3;
-	/**
-	 * JSON RPC Service Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.SERVICETYPE_XMLRPC_JSON = 4;
-	/**
-	 * REST JSON Service Type.
-	 * @type int
- 	 * <br> @version 1.0
-	 */
-	this.SERVICETYPE_REST_JSON = 5;
-	/**
-	 * AMF Serialization Service Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.SERVICETYPE_AMF_SERIALIZATION = 6;
-	/**
-	 * Remoting Serialization Service Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.SERVICETYPE_REMOTING_SERIALIZATION = 7;
-	/**
-	 * Octet Binary Service Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.SERVICETYPE_OCTET_BINARY = 8;
-	
-	/**
-	 * GWT RPC Service Type.
- 	 * <br> @version 2.1
-	 * @type int
-	 */
-	this.SERVICETYPE_GWT_RPC = 9;
-	
-	/**
-	 * HTTP Protocol Version "HTTP/1.0".
- 	 * <br> @version 3.8
-	 * @type int
-	 */
-	this.HTTP_PROTOCOL_VERSION_1_0 = 0;
-	/**
-	 * HTTP Protocol Version "HTTP/1.1".
- 	 * <br> @version 3.8
-	 * @type int
-	 */
-	this.HTTP_PROTOCOL_VERSION_1_1 = 1;
+    /**
+     * IO service name (as configured on Platform Service Locator).
+     * <br> @version 1.0
+     * @type String
+     */
+    this.serviceName = "io";
+    /**
+     * SOAP XML Service Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.SERVICETYPE_SOAP_XML = 0;
+    /**
+     * SOAP JSON Service Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.SERVICETYPE_SOAP_JSON = 1;
+    /**
+     * XML RPC Service Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.SERVICETYPE_XMLRPC_XML = 2;
+    /**
+     * REST XML Service Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.SERVICETYPE_REST_XML = 3;
+    /**
+     * JSON RPC Service Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.SERVICETYPE_XMLRPC_JSON = 4;
+    /**
+     * REST JSON Service Type.
+     * @type int
+     * <br> @version 1.0
+     */
+    this.SERVICETYPE_REST_JSON = 5;
+    /**
+     * AMF Serialization Service Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.SERVICETYPE_AMF_SERIALIZATION = 6;
+    /**
+     * Remoting Serialization Service Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.SERVICETYPE_REMOTING_SERIALIZATION = 7;
+    /**
+     * Octet Binary Service Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.SERVICETYPE_OCTET_BINARY = 8;
+
+    /**
+     * GWT RPC Service Type.
+     * <br> @version 2.1
+     * @type int
+     */
+    this.SERVICETYPE_GWT_RPC = 9;
+
+    /**
+     * HTTP Protocol Version "HTTP/1.0".
+     * <br> @version 3.8
+     * @type int
+     */
+    this.HTTP_PROTOCOL_VERSION_1_0 = 0;
+    /**
+     * HTTP Protocol Version "HTTP/1.1".
+     * <br> @version 3.8
+     * @type int
+     */
+    this.HTTP_PROTOCOL_VERSION_1_1 = 1;
 }
 
 Appverse.IO = new IO();
@@ -2997,7 +3014,7 @@ Appverse.IO = new IO();
  */
 IO.prototype.GetServices = function()
 {
-	return post_to_url(Appverse.IO.serviceName, "GetServices", null, "POST");
+    return post_to_url(Appverse.IO.serviceName, "GetServices", null, "POST");
 };
 
 /**
@@ -3023,11 +3040,11 @@ IO.prototype.GetServices = function()
  */
 IO.prototype.GetService = function(serviceName, serviceType)
 {
-	if(serviceType == null) {
-		return post_to_url(Appverse.IO.serviceName, "GetService",get_params([serviceName]), "POST");
-	} else {
-		return post_to_url(Appverse.IO.serviceName, "GetService",get_params([serviceName,serviceType]), "POST");
-	}
+    if (serviceType == null) {
+        return post_to_url(Appverse.IO.serviceName, "GetService", get_params([serviceName]), "POST");
+    } else {
+        return post_to_url(Appverse.IO.serviceName, "GetService", get_params([serviceName, serviceType]), "POST");
+    }
 };
 
 /**
@@ -3054,11 +3071,11 @@ IO.prototype.GetService = function(serviceName, serviceType)
  */
 IO.prototype.InvokeService = function(requestObjt, service, serviceType)
 {
-	if(serviceType == null) {
-		return post_to_url(Appverse.IO.serviceName, "InvokeService",get_params([requestObjt,service]), "POST");
-	} else {
-		return post_to_url(Appverse.IO.serviceName, "InvokeService",get_params([requestObjt,service,serviceType]), "POST");
-	}
+    if (serviceType == null) {
+        return post_to_url(Appverse.IO.serviceName, "InvokeService", get_params([requestObjt, service]), "POST");
+    } else {
+        return post_to_url(Appverse.IO.serviceName, "InvokeService", get_params([requestObjt, service, serviceType]), "POST");
+    }
 };
 
 /**
@@ -3075,7 +3092,7 @@ IO.prototype.InvokeService = function(requestObjt, service, serviceType)
  */
 IO.prototype.InvokeServiceForBinary = function(requestObjt, service, storePath)
 {
-	return post_to_url(Appverse.IO.serviceName, "InvokeServiceForBinary",get_params([requestObjt,service,storePath]), "POST");
+    return post_to_url(Appverse.IO.serviceName, "InvokeServiceForBinary", get_params([requestObjt, service, storePath]), "POST");
 };
 
 /**
@@ -3093,83 +3110,79 @@ IO.prototype.InvokeServiceForBinary = function(requestObjt, service, storePath)
  * </pre>
  */
 IO.prototype.Async = {
-
-/**
- * Gets ASYNC the configured I/O services (the ones configured on the '/app/config/io-services-config.xml' file).
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
- */
-GetServices : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.IO.serviceName, "GetServices", null, callbackFunctionName, callbackId);
-},
-
-/**
- * Gets ASYNC the I/O Service that matches the given name, and type (if provided). It is possible to define two services with the same name, but different type.
- * <br> @version 2.0
- * @param {String} serviceName The service name to look for.
- * @param {int} serviceType The service type to look for. Optional parameter.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
- */
-GetService : function(serviceName, serviceType, callbackFunctionName, callbackId)
-{
-	if(serviceType == null) {
-        post_to_url_async(Appverse.IO.serviceName, "GetService",get_params([serviceName]), callbackFunctionName, callbackId);
-	} else {
-        post_to_url_async(Appverse.IO.serviceName, "GetService",get_params([serviceName,serviceType]), callbackFunctionName, callbackId);
-	}
-},
-
-/**
- * Invokes ASYNC the I/O Service that matches the given service name (or service object reference), and type (if provided).
- * <br> @version 2.0
- * @param {Appverse.IO.IORequest} requestObjt The request object with the needed invocation parameters. Example:<pre>{"Session":null,"Content":"{method:authenticationService.login,id:1,params:['username','password']}"}</pre>
- * @param {String/Appverse.IO.IOService} service This param could be a IOService object (as provided by {@link #GetService}), or only the service name. First service match would be invoked. ATTENTION: when using the 'object', the third argument (type) shouldn't be informed.
- * @param {int} serviceType The service type to look for. Optional parameter. Just inform this when you pass the service name in the second argument.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
- */
-InvokeService : function(requestObjt, service, serviceType, callbackFunctionName, callbackId)
-{
-	if(serviceType == null) {
-        post_to_url_async(Appverse.IO.serviceName, "InvokeService",get_params([requestObjt,service]), callbackFunctionName, callbackId);
-	} else {
-		post_to_url_async(Appverse.IO.serviceName, "InvokeService",get_params([requestObjt,service,serviceType]), callbackFunctionName, callbackId);
-	}
-},
-
-/**
- * Invokes ASYNC the I/O Service (that matches the given service object reference) for retreiving a file (specially big ones) and stores it locally (under given store path)
- * Only {@link Appverse.IO#SERVICETYPE_OCTET_BINARY SERVICETYPE_OCTET_BINARY} types are allowed in this method.
- * <br/>For further information see, {@link Appverse.IO.IOService IOService} and {@link Appverse.IO.IORequest IORequest}.
- * <br> @version 4.0
- * @param {Appverse.IO.IORequest} requestObjt The request object with the needed invocation parameters. Example:<pre>{"Session":null,"Content":"{method:authenticationService.login,id:1,params:['username','password']}"}</pre>
- * @param {Appverse.IO.IOService} service This param could be a IOService object (as provided by {@link #GetService}), or only the service name. First service match would be invoked. ATTENTION: when using the 'object', the third argument (type) shouldn't be informed.
- * @param {String} storePath The relative path (under application documents root direectory) to store the contents received from this service invocation.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
- */
-InvokeServiceForBinary : function(requestObjt, service, storePath, callbackFunctionName, callbackId)
-{
-	return post_to_url_async(Appverse.IO.serviceName, "InvokeServiceForBinary",get_params([requestObjt,service,storePath]), callbackFunctionName, callbackId);
-}
+    /**
+     * Gets ASYNC the configured I/O services (the ones configured on the '/app/config/io-services-config.xml' file).
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+     */
+    GetServices: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.IO.serviceName, "GetServices", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Gets ASYNC the I/O Service that matches the given name, and type (if provided). It is possible to define two services with the same name, but different type.
+     * <br> @version 2.0
+     * @param {String} serviceName The service name to look for.
+     * @param {int} serviceType The service type to look for. Optional parameter.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+     */
+    GetService: function(serviceName, serviceType, callbackFunctionName, callbackId)
+    {
+        if (serviceType == null) {
+            post_to_url_async(Appverse.IO.serviceName, "GetService", get_params([serviceName]), callbackFunctionName, callbackId);
+        } else {
+            post_to_url_async(Appverse.IO.serviceName, "GetService", get_params([serviceName, serviceType]), callbackFunctionName, callbackId);
+        }
+    },
+    /**
+     * Invokes ASYNC the I/O Service that matches the given service name (or service object reference), and type (if provided).
+     * <br> @version 2.0
+     * @param {Appverse.IO.IORequest} requestObjt The request object with the needed invocation parameters. Example:<pre>{"Session":null,"Content":"{method:authenticationService.login,id:1,params:['username','password']}"}</pre>
+     * @param {String/Appverse.IO.IOService} service This param could be a IOService object (as provided by {@link #GetService}), or only the service name. First service match would be invoked. ATTENTION: when using the 'object', the third argument (type) shouldn't be informed.
+     * @param {int} serviceType The service type to look for. Optional parameter. Just inform this when you pass the service name in the second argument.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+     */
+    InvokeService: function(requestObjt, service, serviceType, callbackFunctionName, callbackId)
+    {
+        if (serviceType == null) {
+            post_to_url_async(Appverse.IO.serviceName, "InvokeService", get_params([requestObjt, service]), callbackFunctionName, callbackId);
+        } else {
+            post_to_url_async(Appverse.IO.serviceName, "InvokeService", get_params([requestObjt, service, serviceType]), callbackFunctionName, callbackId);
+        }
+    },
+    /**
+     * Invokes ASYNC the I/O Service (that matches the given service object reference) for retreiving a file (specially big ones) and stores it locally (under given store path)
+     * Only {@link Appverse.IO#SERVICETYPE_OCTET_BINARY SERVICETYPE_OCTET_BINARY} types are allowed in this method.
+     * <br/>For further information see, {@link Appverse.IO.IOService IOService} and {@link Appverse.IO.IORequest IORequest}.
+     * <br> @version 4.0
+     * @param {Appverse.IO.IORequest} requestObjt The request object with the needed invocation parameters. Example:<pre>{"Session":null,"Content":"{method:authenticationService.login,id:1,params:['username','password']}"}</pre>
+     * @param {Appverse.IO.IOService} service This param could be a IOService object (as provided by {@link #GetService}), or only the service name. First service match would be invoked. ATTENTION: when using the 'object', the third argument (type) shouldn't be informed.
+     * @param {String} storePath The relative path (under application documents root direectory) to store the contents received from this service invocation.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+     */
+    InvokeServiceForBinary: function(requestObjt, service, storePath, callbackFunctionName, callbackId)
+    {
+        return post_to_url_async(Appverse.IO.serviceName, "InvokeServiceForBinary", get_params([requestObjt, service, storePath]), callbackFunctionName, callbackId);
+    }
 
 };
 
 /*
  * GEO INTERFACES
  */
- 
+
 /**
  * @class Appverse.Geo 
  * Singleton class field to access Geo interface. 
@@ -3181,24 +3194,24 @@ InvokeServiceForBinary : function(requestObjt, service, storePath, callbackFunct
  * @return {Appverse.Geo} A new Geo interface.
  */
 Geo = function() {
-	/**
-	 * Geo service name (as configured on Platform Service Locator).
- 	 * <br> @version 1.0
-	 * @type String
-	 */
-	this.serviceName = "geo";
-	/**
-	 * Magnetic North Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NORTHTYPE_MAGNETIC = 0;
-	/**
-	 * True North Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NORTHTYPE_TRUE	= 1;
+    /**
+     * Geo service name (as configured on Platform Service Locator).
+     * <br> @version 1.0
+     * @type String
+     */
+    this.serviceName = "geo";
+    /**
+     * Magnetic North Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NORTHTYPE_MAGNETIC = 0;
+    /**
+     * True North Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NORTHTYPE_TRUE = 1;
 }
 
 Appverse.Geo = new Geo();
@@ -3212,7 +3225,7 @@ Appverse.Geo = new Geo();
  */
 Geo.prototype.GetAcceleration = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "GetAcceleration", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "GetAcceleration", null, "POST");
 };
 
 /**
@@ -3224,7 +3237,7 @@ Geo.prototype.GetAcceleration = function()
  */
 Geo.prototype.GetCoordinates = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "GetCoordinates", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "GetCoordinates", null, "POST");
 };
 
 /**
@@ -3240,14 +3253,14 @@ Geo.prototype.GetCoordinates = function()
  */
 Geo.prototype.GetHeading = function(northType)
 {
-	var headingString = "0";
-	if(northType == null) {
-		headingString = post_to_url(Appverse.Geo.serviceName, "GetHeading", null, "POST", true);  // "true" to get value as string, and parse to float here
-	} else { 
-		headingString = post_to_url(Appverse.Geo.serviceName, "GetHeading", get_params([northType]), "POST", true); // "true" to get value as string, and parse to float here
-	}
-	headingString = headingString.replace(/,/, '.');  // change comma to points, if case.
-	return parseFloat(headingString);
+    var headingString = "0";
+    if (northType == null) {
+        headingString = post_to_url(Appverse.Geo.serviceName, "GetHeading", null, "POST", true);  // "true" to get value as string, and parse to float here
+    } else {
+        headingString = post_to_url(Appverse.Geo.serviceName, "GetHeading", get_params([northType]), "POST", true); // "true" to get value as string, and parse to float here
+    }
+    headingString = headingString.replace(/,/, '.');  // change comma to points, if case.
+    return parseFloat(headingString);
 };
 
 /**
@@ -3259,9 +3272,9 @@ Geo.prototype.GetHeading = function(northType)
  */
 Geo.prototype.GetDeviceOrientation = function()
 {
-	var orientationString = post_to_url(Appverse.Geo.serviceName, "GetDeviceOrientation", null, "POST", true); // "true" to get value as string, and parse to float here
-	orientationString = orientationString.replace(/,/, '.');  // change comma to points, if case.
-	return parseFloat(orientationString);
+    var orientationString = post_to_url(Appverse.Geo.serviceName, "GetDeviceOrientation", null, "POST", true); // "true" to get value as string, and parse to float here
+    orientationString = orientationString.replace(/,/, '.');  // change comma to points, if case.
+    return parseFloat(orientationString);
 };
 
 /**
@@ -3273,9 +3286,9 @@ Geo.prototype.GetDeviceOrientation = function()
  */
 Geo.prototype.GetVelocity = function()
 {
-	var velocityString = post_to_url(Appverse.Geo.serviceName, "GetVelocity", null, "POST", true); // "true" to get value as string, and parse to float here
-	velocityString = velocityString.replace(/,/, '.');  // change comma to points, if case.
-	return parseFloat(velocityString);
+    var velocityString = post_to_url(Appverse.Geo.serviceName, "GetVelocity", null, "POST", true); // "true" to get value as string, and parse to float here
+    velocityString = velocityString.replace(/,/, '.');  // change comma to points, if case.
+    return parseFloat(velocityString);
 };
 
 /**
@@ -3286,7 +3299,7 @@ Geo.prototype.GetVelocity = function()
  */
 Geo.prototype.GetMap = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "GetMap", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "GetMap", null, "POST");
 };
 
 /**
@@ -3299,7 +3312,7 @@ Geo.prototype.GetMap = function()
  */
 Geo.prototype.SetMapSettings = function(scale, boundingBox)
 {
-	return post_to_url(Appverse.Geo.serviceName, "SetMapSettings", get_params([scale,boundingBox]), "POST");
+    return post_to_url(Appverse.Geo.serviceName, "SetMapSettings", get_params([scale, boundingBox]), "POST");
 };
 
 /**
@@ -3316,15 +3329,15 @@ Geo.prototype.SetMapSettings = function(scale, boundingBox)
  */
 Geo.prototype.GetPOIList = function(location, radius, queryText, category)
 {
-	if(queryText == null && category == null) {
-		return post_to_url(Appverse.Geo.serviceName, "GetPOIList", get_params([location,radius]), "POST");
-	} else if(queryText != null && category == null) {
-		return post_to_url(Appverse.Geo.serviceName, "GetPOIList", get_params([location,radius,queryText]), "POST");
-	} else if(queryText == null && category != null) {
-		return post_to_url(Appverse.Geo.serviceName, "GetPOIList", get_params([location,radius,category]), "POST");
-	} else {
-		return post_to_url(Appverse.Geo.serviceName, "GetPOIList", get_params([location,radius,queryText,category]), "POST");
-	}
+    if (queryText == null && category == null) {
+        return post_to_url(Appverse.Geo.serviceName, "GetPOIList", get_params([location, radius]), "POST");
+    } else if (queryText != null && category == null) {
+        return post_to_url(Appverse.Geo.serviceName, "GetPOIList", get_params([location, radius, queryText]), "POST");
+    } else if (queryText == null && category != null) {
+        return post_to_url(Appverse.Geo.serviceName, "GetPOIList", get_params([location, radius, category]), "POST");
+    } else {
+        return post_to_url(Appverse.Geo.serviceName, "GetPOIList", get_params([location, radius, queryText, category]), "POST");
+    }
 };
 
 /**
@@ -3337,7 +3350,7 @@ Geo.prototype.GetPOIList = function(location, radius, queryText, category)
  */
 Geo.prototype.GetPOI = function(poiId)
 {
-	return post_to_url(Appverse.Geo.serviceName, "GetPOI", get_params([poiId]), "POST");
+    return post_to_url(Appverse.Geo.serviceName, "GetPOI", get_params([poiId]), "POST");
 };
 
 /**
@@ -3349,7 +3362,7 @@ Geo.prototype.GetPOI = function(poiId)
  */
 Geo.prototype.RemovePOI = function(poiId)
 {
-	return post_to_url(Appverse.Geo.serviceName, "RemovePOI", get_params([poiId]), "POST");
+    return post_to_url(Appverse.Geo.serviceName, "RemovePOI", get_params([poiId]), "POST");
 };
 
 /**
@@ -3361,7 +3374,7 @@ Geo.prototype.RemovePOI = function(poiId)
  */
 Geo.prototype.UpdatePOI = function(poi)
 {
-	return post_to_url(Appverse.Geo.serviceName, "UpdatePOI", get_params([poi]), "POST");
+    return post_to_url(Appverse.Geo.serviceName, "UpdatePOI", get_params([poi]), "POST");
 };
 
 /**
@@ -3373,7 +3386,7 @@ Geo.prototype.UpdatePOI = function(poi)
  */
 Geo.prototype.StartUpdatingLocation = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "StartUpdatingLocation", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "StartUpdatingLocation", null, "POST");
 };
 
 /**
@@ -3385,7 +3398,7 @@ Geo.prototype.StartUpdatingLocation = function()
  */
 Geo.prototype.StopUpdatingLocation = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "StopUpdatingLocation", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "StopUpdatingLocation", null, "POST");
 };
 
 /**
@@ -3397,7 +3410,7 @@ Geo.prototype.StopUpdatingLocation = function()
  */
 Geo.prototype.StartUpdatingHeading = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "StartUpdatingHeading", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "StartUpdatingHeading", null, "POST");
 };
 
 /**
@@ -3409,7 +3422,7 @@ Geo.prototype.StartUpdatingHeading = function()
  */
 Geo.prototype.StopUpdatingHeading = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "StopUpdatingHeading", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "StopUpdatingHeading", null, "POST");
 };
 
 /**
@@ -3424,7 +3437,7 @@ Geo.prototype.StopUpdatingHeading = function()
  */
 Geo.prototype.GetGeoDecoder = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "GetGeoDecoder", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "GetGeoDecoder", null, "POST");
 };
 
 /**
@@ -3436,7 +3449,7 @@ Geo.prototype.GetGeoDecoder = function()
  */
 Geo.prototype.StartProximitySensor = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "StartProximitySensor", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "StartProximitySensor", null, "POST");
 };
 
 /**
@@ -3448,7 +3461,7 @@ Geo.prototype.StartProximitySensor = function()
  */
 Geo.prototype.StopProximitySensor = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "StopProximitySensor", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "StopProximitySensor", null, "POST");
 };
 
 /**
@@ -3460,7 +3473,7 @@ Geo.prototype.StopProximitySensor = function()
  */
 Geo.prototype.IsGPSEnabled = function()
 {
-	return post_to_url(Appverse.Geo.serviceName, "IsGPSEnabled", null, "POST");
+    return post_to_url(Appverse.Geo.serviceName, "IsGPSEnabled", null, "POST");
 };
 
 /*
@@ -3478,174 +3491,176 @@ Geo.prototype.IsGPSEnabled = function()
  * @return {Appverse.Media} A new Media interface.
  */
 Media = function() {
-	/**
-	 * Media service name (as configured on Platform Service Locator).
- 	 * <br> @version 1.0
-	 * @type String
-	 */
-	this.serviceName = "media";
-	/**
-	 * Not Supported Media Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEDIATYPE_NOT_SUPPORTED = 0;
-	/**
-	 * Audio Media Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEDIATYPE_AUDIO = 1;
-	/**
-	 * Video Media Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEDIATYPE_VIDEO = 2;
-	/**
-	 * Photo Media Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEDIATYPE_PHOTO = 3;
-	/**
-	 * Playing Media State.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEDIATSTATE_PLAYING = 0;
-	/**
-	 * Recording Media State.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEDIATSTATE_RECORDING = 1;
-	/**
-	 * Paused Media State.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEDIATSTATE_PAUSED = 2;
-	/**
-	 * Stopped Media State.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEDIATSTATE_STOPPED = 3;
-	/**
-	 * Error Media State.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.MEDIATSTATE_ERROR = 4;
+    /**
+     * Media service name (as configured on Platform Service Locator).
+     * <br> @version 1.0
+     * @type String
+     */
+    this.serviceName = "media";
+    /**
+     * Not Supported Media Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEDIATYPE_NOT_SUPPORTED = 0;
+    /**
+     * Audio Media Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEDIATYPE_AUDIO = 1;
+    /**
+     * Video Media Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEDIATYPE_VIDEO = 2;
+    /**
+     * Photo Media Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEDIATYPE_PHOTO = 3;
+    /**
+     * Playing Media State.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEDIATSTATE_PLAYING = 0;
+    /**
+     * Recording Media State.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEDIATSTATE_RECORDING = 1;
+    /**
+     * Paused Media State.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEDIATSTATE_PAUSED = 2;
+    /**
+     * Stopped Media State.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEDIATSTATE_STOPPED = 3;
+    /**
+     * Error Media State.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.MEDIATSTATE_ERROR = 4;
 
-	/**
-	 * QR Type AddressBook.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_ADDRESSBOOK = 0;
+    /**
+     * QR Type AddressBook.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_ADDRESSBOOK = 0;
 
-	/**
-	 * QR Type Email.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_EMAIL_ADDRESS = 1;
+    /**
+     * QR Type Email.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_EMAIL_ADDRESS = 1;
 
-	/**
-	 * QR Type Product.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_PRODUCT = 2;
+    /**
+     * QR Type Product.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_PRODUCT = 2;
 
-	/**
-	 * QR Type URI.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_URI = 3;
+    /**
+     * QR Type URI.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_URI = 3;
 
-	/**
-	 * QR Type Text.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_TEXT = 4;
+    /**
+     * QR Type Text.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_TEXT = 4;
 
-	/**
-	 * QR Type Geolocation.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_GEO =5;
+    /**
+     * QR Type Geolocation.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_GEO = 5;
 
-	/**
-	 * QR Type Telephone.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_TEL = 6;
+    /**
+     * QR Type Telephone.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_TEL = 6;
 
-	/**
-	 * QR Type SMS.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_SMS = 7;
+    /**
+     * QR Type SMS.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_SMS = 7;
 
-	/**
-	 * QR Type Calendar.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_CALENDAR = 8;
+    /**
+     * QR Type Calendar.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_CALENDAR = 8;
 
-	/**
-	 * QR Type Wifi.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_WIFI = 9;
+    /**
+     * QR Type Wifi.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_WIFI = 9;
 
-	/**
-	 * QR Type ISBN.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.QRTYPE_ISBN = 10;
+    /**
+     * QR Type ISBN.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.QRTYPE_ISBN = 10;
 
-	/**
-	 * Barcode Type QR.
- 	 * <br> @version 3.9
-	 * @type int
-	 */
-	this.BARCODETYPE_QR = 11;
-    
+    /**
+     * Barcode Type QR.
+     * <br> @version 3.9
+     * @type int
+     */
+    this.BARCODETYPE_QR = 11;
+
     /**
      * @event onFinishedPickingImage Fired when an image have been picked, either from the Photos library (after calling the {@link Appverse.Media.GetSnapshot GetSnapshot}), 
-	 * or from the Camera (after calling the {@link Appverse.Media.TakeSnapshot TakeSnapshot})
-	 * <br>Method to be overrided by JS applications, to handle this event.
-	 * @aside guide application_listeners
+     * or from the Camera (after calling the {@link Appverse.Media.TakeSnapshot TakeSnapshot})
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
      * <br> @version 3.1
-	 * @param {Appverse.Media.MediaMetadata} mediaMetadata The metadata for the image picked.
+     * @param {Appverse.Media.MediaMetadata} mediaMetadata The metadata for the image picked.
      */
-    this.onFinishedPickingImage = function(mediaMetadata){};
-	
-	
-	/**
-	 * @event onQRCodeDetected Fired when a QR Code has been read, and its data is returned to the app in order to perform the desired javascript code on this case.
-	 * <br> For further information see, {@link Appverse.Media.MediaQRContent MediaQRContent}.
-	 * <br> Method to be overrided by JS applications, to handle this event.
-	 * @aside guide application_listeners
-	 * <br> @version 3.9
-	 * @method
-	 * @param {Appverse.Media.MediaQRContent} QRCodeContent The scanned QR Code data read
-	 * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
-	 * 
-	 */
-	this.onQRCodeDetected = function(QRCodeContent) {};
+    this.onFinishedPickingImage = function(mediaMetadata) {
+    };
+
+
+    /**
+     * @event onQRCodeDetected Fired when a QR Code has been read, and its data is returned to the app in order to perform the desired javascript code on this case.
+     * <br> For further information see, {@link Appverse.Media.MediaQRContent MediaQRContent}.
+     * <br> Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 3.9
+     * @method
+     * @param {Appverse.Media.MediaQRContent} QRCodeContent The scanned QR Code data read
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     * 
+     */
+    this.onQRCodeDetected = function(QRCodeContent) {
+    };
 
 }
 
@@ -3661,7 +3676,7 @@ Appverse.Media = new Media();
  */
 Media.prototype.GetMetadata = function(filePath)
 {
-	return post_to_url(Appverse.Media.serviceName, "GetMetadata",  get_params([filePath]), "POST");
+    return post_to_url(Appverse.Media.serviceName, "GetMetadata", get_params([filePath]), "POST");
 };
 
 /**
@@ -3674,7 +3689,7 @@ Media.prototype.GetMetadata = function(filePath)
  */
 Media.prototype.Play = function(filePath)
 {
-	return post_to_url(Appverse.Media.serviceName, "Play",  get_params([filePath]), "POST");
+    return post_to_url(Appverse.Media.serviceName, "Play", get_params([filePath]), "POST");
 };
 
 /**
@@ -3687,7 +3702,7 @@ Media.prototype.Play = function(filePath)
  */
 Media.prototype.PlayStream = function(url)
 {
-	return post_to_url(Appverse.Media.serviceName, "PlayStream",  get_params([url]), "POST");
+    return post_to_url(Appverse.Media.serviceName, "PlayStream", get_params([url]), "POST");
 };
 
 /**
@@ -3700,7 +3715,7 @@ Media.prototype.PlayStream = function(url)
  */
 Media.prototype.SeekPosition = function(position)
 {
-	return post_to_url(Appverse.Media.serviceName, "SeekPosition",  get_params([position]), "POST");
+    return post_to_url(Appverse.Media.serviceName, "SeekPosition", get_params([position]), "POST");
 };
 
 /**
@@ -3712,7 +3727,7 @@ Media.prototype.SeekPosition = function(position)
  */
 Media.prototype.Stop = function()
 {
-	return post_to_url(Appverse.Media.serviceName, "Stop",  null, "POST");
+    return post_to_url(Appverse.Media.serviceName, "Stop", null, "POST");
 };
 
 /**
@@ -3724,7 +3739,7 @@ Media.prototype.Stop = function()
  */
 Media.prototype.Pause = function()
 {
-	return post_to_url(Appverse.Media.serviceName, "Pause",  null, "POST");
+    return post_to_url(Appverse.Media.serviceName, "Pause", null, "POST");
 };
 
 /**
@@ -3742,7 +3757,7 @@ Media.prototype.Pause = function()
  */
 Media.prototype.GetState = function()
 {
-	return post_to_url(Appverse.Media.serviceName, "GetState",  null, "POST");
+    return post_to_url(Appverse.Media.serviceName, "GetState", null, "POST");
 };
 
 /**
@@ -3754,7 +3769,7 @@ Media.prototype.GetState = function()
  */
 Media.prototype.GetCurrentMedia = function()
 {
-	return post_to_url(Appverse.Media.serviceName, "GetCurrentMedia",  null, "POST");
+    return post_to_url(Appverse.Media.serviceName, "GetCurrentMedia", null, "POST");
 };
 
 /**
@@ -3767,7 +3782,7 @@ Media.prototype.GetCurrentMedia = function()
  */
 Media.prototype.GetSnapshot = function()
 {
-	return post_to_url(Appverse.Media.serviceName, "GetSnapshot",  null, "POST");
+    return post_to_url(Appverse.Media.serviceName, "GetSnapshot", null, "POST");
 };
 
 /**
@@ -3780,7 +3795,7 @@ Media.prototype.GetSnapshot = function()
  */
 Media.prototype.TakeSnapshot = function()
 {
-	return post_to_url(Appverse.Media.serviceName, "TakeSnapshot",  null, "POST");
+    return post_to_url(Appverse.Media.serviceName, "TakeSnapshot", null, "POST");
 };
 
 /**
@@ -3794,7 +3809,7 @@ Media.prototype.TakeSnapshot = function()
  */
 Media.prototype.DetectQRCode = function(autoHandleQR)
 {
-	post_to_url(Appverse.Media.serviceName, "DetectQRCode",  get_params([autoHandleQR]), "POST");
+    post_to_url(Appverse.Media.serviceName, "DetectQRCode", get_params([autoHandleQR]), "POST");
 };
 
 /**
@@ -3810,7 +3825,7 @@ Media.prototype.DetectQRCode = function(autoHandleQR)
  */
 Media.prototype.HandleQRCode = function(mediaQRContent)
 {
-	return post_to_url(Appverse.Media.serviceName, "HandleQRCode",   get_params([mediaQRContent]), "POST");
+    return post_to_url(Appverse.Media.serviceName, "HandleQRCode", get_params([mediaQRContent]), "POST");
 };
 
 /**
@@ -3826,145 +3841,106 @@ Media.prototype.HandleQRCode = function(mediaQRContent)
  * </pre>
  */
 Media.prototype.Async = {
-
-/**
- * Gets Media metadata, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} filePath The media file path.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-GetMetadata : function(filePath, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Media.serviceName, "GetMetadata",  get_params([filePath]), callbackFunctionName, callbackId);
-},
-
-/**
- * Starts playing media, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} filePath The media file path.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-Play : function(filePath, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Media.serviceName, "Play",  get_params([filePath]), callbackFunctionName, callbackId);
-},
-
-/**
- * Starts playing media, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} url The media remote URL.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * bug fixing | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-PlayStream : function(url, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Media.serviceName, "PlayStream",  get_params([url]), callbackFunctionName, callbackId);
-},
-
-/**
- * Moves player to the given position in the media, in ASYNC mode.
- * <br> @version 2.0
- * @param {long} position Index position.
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-SeekPosition : function(position, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Media.serviceName, "SeekPosition",  get_params([position]), callbackFunctionName, callbackId);
-},
-
-/**
- * Stops the current media playing, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-Stop : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Media.serviceName, "Stop",  null, callbackFunctionName, callbackId);
-},
-
-/**
- * Pauses the current media playing, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-Pause : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Media.serviceName, "Pause",  null, callbackFunctionName, callbackId);
-},
-
-/**
- * Gets Audio/Movie player state, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-GetState : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Media.serviceName, "GetState",  null, callbackFunctionName, callbackId);
-},
-
-/**
- * Gets the currently playing media file metadata, in ASYNC mode.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *mock data | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-GetCurrentMedia : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Media.serviceName, "GetCurrentMedia",  null, callbackFunctionName, callbackId);
-},
-
-/**
- * Opens user interface view to select a picture from the device photos album, in ASYNC mode.
- * Data is provided via the proper event handled by the "Appverse.Media.onFinishedPickingImage" method; please, override to handle the event.
- * Returned value is "null" on synchronous call.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/></pre>
- */
-GetSnapshot : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Media.serviceName, "GetSnapshot",  null, callbackFunctionName, callbackId);
-},
-
-/**
- * Opens user interface view to take a picture using the device camera.
- * Data is provided via the proper event handled by the "Appverse.Media.onFinishedPickingImage" method; please, override to handle the event.
- * Returned value is "null" on synchronous call.
- * <br> @version 2.0
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @return {Appverse.Media.MediaMetadata} Media file metadata taken by the camera. 
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/></pre>
- */
-TakeSnapshot : function(callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Media.serviceName, "TakeSnapshot",  null, callbackFunctionName, callbackId);
-}
+    /**
+     * Gets Media metadata, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} filePath The media file path.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     */
+    GetMetadata: function(filePath, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Media.serviceName, "GetMetadata", get_params([filePath]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Starts playing media, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} filePath The media file path.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     */
+    Play: function(filePath, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Media.serviceName, "Play", get_params([filePath]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Starts playing media, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} url The media remote URL.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * bug fixing | windows <img src="resources/images/error.png"/> *mock data</pre>
+     */
+    PlayStream: function(url, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Media.serviceName, "PlayStream", get_params([url]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Moves player to the given position in the media, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {long} position Index position.
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     */
+    SeekPosition: function(position, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Media.serviceName, "SeekPosition", get_params([position]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Stops the current media playing, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     */
+    Stop: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Media.serviceName, "Stop", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Pauses the current media playing, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     */
+    Pause: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Media.serviceName, "Pause", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Gets Audio/Movie player state, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     */
+    GetState: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Media.serviceName, "GetState", null, callbackFunctionName, callbackId);
+    },
+    /**
+     * Gets the currently playing media file metadata, in ASYNC mode.
+     * <br> @version 2.0
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *mock data | windows <img src="resources/images/error.png"/> *mock data</pre>
+     */
+    GetCurrentMedia: function(callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Media.serviceName, "GetCurrentMedia", null, callbackFunctionName, callbackId);
+    }
 
 };
 
@@ -3982,57 +3958,54 @@ TakeSnapshot : function(callbackFunctionName, callbackId)
  * @constructor Constructs a new Messaging interface.
  * @return {Appverse.Messaging} A new Messaging interface.
  */
-Messaging = function () {
-	/**
-	 * Messaging service name (as configured on Platform Service Locator).
- 	 * <br> @version 1.0
-	 * @type String
-	 */
-	this.serviceName = "message";
+Messaging = function() {
+    /**
+     * Messaging service name (as configured on Platform Service Locator).
+     * <br> @version 1.0
+     * @type String
+     */
+    this.serviceName = "message";
 }
 
 Appverse.Messaging = new Messaging();
 
 /**
  * Sends a text message (SMS).
- * <br> @version 1.0
- * @param {String} phoneNumber The phone address to send the message to.
+ * <br> @version 1.0. Modified version 4.5: this method is now asynchronous, but it has no callback function.
+ * @param {String} phoneNumber The phone address to send the message to (also, multiple addresses separated by comma or semicolon).
  * @param {String} text The message body.
- * @return {Boolean} True if SMS could be send.
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
  */
 Messaging.prototype.SendMessageSMS = function(phoneNumber, text)
 {
-	return post_to_url(Appverse.Messaging.serviceName, "SendMessageSMS",  get_params([phoneNumber,text]), "POST");
+    post_to_url_async(Appverse.Messaging.serviceName, "SendMessageSMS", get_params([phoneNumber, text]), null, null);
 };
 
 /**
  * Sends a multimedia message (MMS).
- * <br> @version 1.0
- * @param {String} phoneNumber The phone address to send the message to.
+ * <br> @version 1.0. Modified version 4.5: this method is now asynchronous, but it has no callback function.
+ * @param {String} phoneNumber The phone address to send the message to (also, multiple addresses separated by comma or semicolon). 
  * @param {String} text The message body.
  * @param {Appverse.Messaging.AttachmentData} attachment Attachament data.
- * @return {Boolean} True if MMS could be send.
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
  */
 Messaging.prototype.SendMessageMMS = function(phoneNumber, text, attachment)
 {
-	return post_to_url(Appverse.Messaging.serviceName, "SendMessageMMS",  get_params([phoneNumber,text, attachment]), "POST");
+    post_to_url_async(Appverse.Messaging.serviceName, "SendMessageMMS", get_params([phoneNumber, text, attachment]), null, null);
 };
 
 /**
  * Sends an email message.<br/>For further information see, {@link Appverse.Messaging.EmailData EmailData}.
- * <br> @version 1.0
+ * <br> @version 1.0. Modified version 4.5: this method is now asynchronous, but it has no callback function.
  * @param {Appverse.Messaging.EmailData} emailData The email message data, such as: subject, 'To','Cc','Bcc' addresses, etc.
- * @return {Boolean} True if email could be send.
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
  */
 Messaging.prototype.SendEmail = function(emailData)
 {
-	return post_to_url(Appverse.Messaging.serviceName, "SendEmail",  get_params([emailData]), "POST");
+    post_to_url_async(Appverse.Messaging.serviceName, "SendEmail", get_params([emailData]), null, null);
 };
 
 /*
@@ -4050,323 +4023,349 @@ Messaging.prototype.SendEmail = function(emailData)
  * @return {Appverse.Pim} A new Pim interface.
  */
 Pim = function() {
-	/**
-	 * Pim service name (as configured on Platform Service Locator).
- 	 * <br> @version 1.0
-	 * @type String
-	 */
-	this.serviceName = "pim";
-	/**
-	 * Other Number Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NUMBERTYPE_OTHER = 0;
-	/**
-	 * Mobile Number Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NUMBERTYPE_MOBILE = 1;
-	/**
-	 * Fixed Line Number Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NUMBERTYPE_FIXED_LINE = 2; 
-	/**
-	 * Work Number Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NUMBERTYPE_WORK = 3;
-	/**
-	 * Home Fax Number Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NUMBERTYPE_HOME_FAX = 4;
-	/**
-	 * WorkFax Number Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NUMBERTYPE_WORK_FAX = 5; 
-	/**
-	 * Pager Number Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.NUMBERTYPE_PAGER = 6;
-	/**
-	 * Other Disposition Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.DISPOSITIONTYPE_OTHER = 0;
-	/**
-	 * Personal Disposition Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.DISPOSITIONTYPE_PERSONAL = 1;
-	/**
-	 * Work Disposition Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.DISPOSITIONTYPE_WORK = 2;
-	/**
-	 * HomeOffice Disposition Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.DISPOSITIONTYPE_HOME_OFFICE = 3;
-	/**
-	 * Other Calendar Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.CALENDARTYPE_OTHER = 0;
-	/**
-	 * Birthday Calendar Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.CALENDARTYPE_BIRTHDAY = 1;
-	/**
-	 * Calendaring Extensions to WebDAV (CalDAV) Calendar Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.CALENDARTYPE_CALDAV = 2;
-	/**
-	 * Exchange Calendar Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.CALENDARTYPE_EXCHANGE = 3;
-	/**
-	 * IMAP Calendar Type.
-	 * @type int
- 	 * <br> @version 1.0
-	 */
-	this.CALENDARTYPE_IMAP = 4;
-	/**
-	 * Local Calendar Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.CALENDARTYPE_LOCAL = 5;
-	/**
-	 * Subscription Calendar Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.CALENDARTYPE_SUBSCRIPTION = 6;
-	/**
-	 * 'Needs Action' Attendee Status.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.ATTENDEESTATUS_NeedsAction = 0;
-	/**
-	 * 'Accepted' Attendee Status.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.ATTENDEESTATUS_ACCEPTED = 1;
-	/**
-	 * 'Declined' Attendee Status.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.ATTENDEESTATUS_DECLINED = 2;
-	/**
-	 * 'Tentative' Attendee Status.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.ATTENDEESTATUS_TENTATIVE = 3;
-	/**
-	 * Display Alarm Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.ALARM_DISPAY = 0;
-	/**
-	 * Email Alarm Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.ALARM_EMAIL = 1;
-	/**
-	 * Sound Alarm Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.ALARM_SOUND = 2;
-	/**
-	 * Weekly Recurrence Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RECURRENCE_WEEKLY = 0;
-	/**
-	 * Fortnightly Recurrence Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RECURRENCE_FORTNIGHTLY = 1;
-	/**
-	 * FourWeekly Recurrence Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RECURRENCE_FOURWEEKLY = 2;
-	/**
-	 * Montly Recurrence Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RECURRENCE_MONTLY = 3;
-	/**
-	 * Yearly Recurrence Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RECURRENCE_YEARLY = 4;
-	/**
-	 * None Relationship Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RELATIONSHIP_NONE = 0;
-	/**
-	 * Brother Relationship Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RELATIONSHIP_BROTHER = 1;
-	/**
-	 * Sister Relationship Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RELATIONSHIP_SISTER = 2;
-	/**
-	 * Parent Relationship Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RELATIONSHIP_PARENT = 3;
-	/**
-	 * Child Relationship Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RELATIONSHIP_CHILD = 4;
-	/**
-	 * Friend Relationship Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RELATIONSHIP_FRIEND = 5;
-	/**
-	 * Partner Relationship Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RELATIONSHIP_PARTNER = 6;
-	/**
-	 * Relative Relationship Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RELATIONSHIP_RELATIVE = 7;
-	/**
-	 * Spouse Relationship Type.
- 	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.RELATIONSHIP_SPOUSE = 8;
-	
-	/*
-	this.CONTACTS_QUERY_PARAM_NAME = "name";
-	this.CONTACTS_QUERY_PARAM_GROUP = "group";
-	*/
-	
-	/**
-	 * Defines the column used to search contacts as the "ID" column (contact identifier: string or number, depending on the platform).
- 	 * <br> @version 4.3
-	 * @type int
-	 */
-	this.CONTACTS_QUERY_COLUMN_ID = 0;
-	
-	/**
-	 * Defines the column used to search contacts as the "name" column (display name in most platforms).
- 	 * <br> @version 4.3
-	 * @type int
-	 */
-	this.CONTACTS_QUERY_COLUMN_NAME = 1;
-	
-	/**
-	 * Defines the condition used to match contacts (using the column specified by the "query_column") as an "Equals" condition.
- 	 * <br> @version 4.3
-	 * @type int
-	 */
-	this.CONTACTS_QUERY_CONDITION_EQUALS = 0;
-	
-	/**
-	 * Defines the condition used to match contacts (using the column specified by the "query_column") as a "Starts With" condition.
- 	 * <br> @version 4.3
-	 * @type int
-	 */
-	this.CONTACTS_QUERY_CONDITION_STARTSWITH = 1;
-	
-	/**
-	 * Defines the condition used to match contacts (using the column specified by the "query_column") as an "Ends With" condition.
- 	 * <br> @version 4.3
-	 * @type int
-	 */
-	this.CONTACTS_QUERY_CONDITION_ENDSWITH = 2;
-	
-	/**
-	 * Defines the condition used to match contacts (using the column specified by the "query_column") as a "Contains" condition.
- 	 * <br> @version 4.3
-	 * @type int
-	 */
-	this.CONTACTS_QUERY_CONDITION_CONTAINS = 3;
-	
-	/**
-	 * Applications should override/implement this method to get the contacts from the phone agenda and should perform the desired javascript code on this case.
-	 * <br> For further information see, {@link Appverse.Pim.ContactLite ContactLite}.
-	 * <br> @version 4.3
-	 * @method
-	 * @param {Appverse.Pim.ContactLite[]} contacts An array of ContactLite objects successfully retrieved from the device local agenda.
-	 * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
-	 */
-	this.onListContactsEnd = function(contacts){};
-	
+    /**
+     * Pim service name (as configured on Platform Service Locator).
+     * <br> @version 1.0
+     * @type String
+     */
+    this.serviceName = "pim";
+    /**
+     * Other Number Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NUMBERTYPE_OTHER = 0;
+    /**
+     * Mobile Number Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NUMBERTYPE_MOBILE = 1;
+    /**
+     * Fixed Line Number Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NUMBERTYPE_FIXED_LINE = 2;
+    /**
+     * Work Number Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NUMBERTYPE_WORK = 3;
+    /**
+     * Home Fax Number Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NUMBERTYPE_HOME_FAX = 4;
+    /**
+     * WorkFax Number Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NUMBERTYPE_WORK_FAX = 5;
+    /**
+     * Pager Number Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.NUMBERTYPE_PAGER = 6;
+    /**
+     * Other Disposition Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.DISPOSITIONTYPE_OTHER = 0;
+    /**
+     * Personal Disposition Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.DISPOSITIONTYPE_PERSONAL = 1;
+    /**
+     * Work Disposition Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.DISPOSITIONTYPE_WORK = 2;
+    /**
+     * HomeOffice Disposition Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.DISPOSITIONTYPE_HOME_OFFICE = 3;
+    /**
+     * Other Calendar Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.CALENDARTYPE_OTHER = 0;
+    /**
+     * Birthday Calendar Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.CALENDARTYPE_BIRTHDAY = 1;
+    /**
+     * Calendaring Extensions to WebDAV (CalDAV) Calendar Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.CALENDARTYPE_CALDAV = 2;
+    /**
+     * Exchange Calendar Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.CALENDARTYPE_EXCHANGE = 3;
+    /**
+     * IMAP Calendar Type.
+     * @type int
+     * <br> @version 1.0
+     */
+    this.CALENDARTYPE_IMAP = 4;
+    /**
+     * Local Calendar Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.CALENDARTYPE_LOCAL = 5;
+    /**
+     * Subscription Calendar Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.CALENDARTYPE_SUBSCRIPTION = 6;
+    /**
+     * 'Needs Action' Attendee Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.ATTENDEESTATUS_NeedsAction = 0;
+    /**
+     * 'Accepted' Attendee Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.ATTENDEESTATUS_ACCEPTED = 1;
+    /**
+     * 'Declined' Attendee Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.ATTENDEESTATUS_DECLINED = 2;
+    /**
+     * 'Tentative' Attendee Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.ATTENDEESTATUS_TENTATIVE = 3;
+    /**
+     * Display Alarm Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.ALARM_DISPAY = 0;
+    /**
+     * Email Alarm Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.ALARM_EMAIL = 1;
+    /**
+     * Sound Alarm Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.ALARM_SOUND = 2;
+    /**
+     * Weekly Recurrence Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RECURRENCE_WEEKLY = 0;
+    /**
+     * Fortnightly Recurrence Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RECURRENCE_FORTNIGHTLY = 1;
+    /**
+     * FourWeekly Recurrence Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RECURRENCE_FOURWEEKLY = 2;
+    /**
+     * Montly Recurrence Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RECURRENCE_MONTLY = 3;
+    /**
+     * Yearly Recurrence Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RECURRENCE_YEARLY = 4;
+    /**
+     * None Relationship Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RELATIONSHIP_NONE = 0;
+    /**
+     * Brother Relationship Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RELATIONSHIP_BROTHER = 1;
+    /**
+     * Sister Relationship Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RELATIONSHIP_SISTER = 2;
+    /**
+     * Parent Relationship Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RELATIONSHIP_PARENT = 3;
+    /**
+     * Child Relationship Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RELATIONSHIP_CHILD = 4;
+    /**
+     * Friend Relationship Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RELATIONSHIP_FRIEND = 5;
+    /**
+     * Partner Relationship Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RELATIONSHIP_PARTNER = 6;
+    /**
+     * Relative Relationship Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RELATIONSHIP_RELATIVE = 7;
+    /**
+     * Spouse Relationship Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.RELATIONSHIP_SPOUSE = 8;
+
+    /*
+     this.CONTACTS_QUERY_PARAM_NAME = "name";
+     this.CONTACTS_QUERY_PARAM_GROUP = "group";
+     */
+
+    /**
+     * Defines the column used to search contacts as the "ID" column (contact identifier: string or number, depending on the platform).
+     * <br> @version 4.3
+     * @type int
+     */
+    this.CONTACTS_QUERY_COLUMN_ID = 0;
+
+    /**
+     * Defines the column used to search contacts as the "name" column (display name in most platforms).
+     * <br> @version 4.3
+     * @type int
+     */
+    this.CONTACTS_QUERY_COLUMN_NAME = 1;
+
+    /**
+     * Defines the column used to search contacts by the "phone" column 
+     * <br> ATTENTION: at this moment, only the {@link Appverse.Pim#CONTACTS_QUERY_CONDITION_AVAILABLE CONTACTS_QUERY_CONDITION_AVAILABLE} condition could be used in conjunction with this CONTACTS_QUERY_COLUMN_PHONE column in the same ContactQuery.
+     * <br> This means that you could query the contacts that have at least 1 phone available (contacts without phone informed are not returned) by using this pair (column==Phone AND condition==Available)
+     * <br> @version 4.5
+     * @type int
+     */
+    this.CONTACTS_QUERY_COLUMN_PHONE = 2;
+
+    /**
+     * Defines the condition used to match contacts (using the column specified by the "query_column") as an "Equals" condition.
+     * <br> @version 4.3
+     * @type int
+     */
+    this.CONTACTS_QUERY_CONDITION_EQUALS = 0;
+
+    /**
+     * Defines the condition used to match contacts (using the column specified by the "query_column") as a "Starts With" condition.
+     * <br> @version 4.3
+     * @type int
+     */
+    this.CONTACTS_QUERY_CONDITION_STARTSWITH = 1;
+
+    /**
+     * Defines the condition used to match contacts (using the column specified by the "query_column") as an "Ends With" condition.
+     * <br> @version 4.3
+     * @type int
+     */
+    this.CONTACTS_QUERY_CONDITION_ENDSWITH = 2;
+
+    /**
+     * Defines the condition used to match contacts (using the column specified by the "query_column") as a "Contains" condition.
+     * <br> @version 4.3
+     * @type int
+     */
+    this.CONTACTS_QUERY_CONDITION_CONTAINS = 3;
+
+    /**
+     * Defines the column used to search contacts by the "phone" column 
+     * <br> ATTENTION: at this moment, only the  condition could be used in conjunction with this CONTACTS_QUERY_COLUMN_PHONE column in the same ContactQuery.
+     * <br> @version 4.5
+     * @type int
+     */
+    /**
+     * Defines the condition used to match contacts as an "is available" condition.
+     * <br> At this moment, used ONLY with the column specified by the {@link Appverse.Pim#CONTACTS_QUERY_COLUMN_PHONE CONTACTS_QUERY_COLUMN_PHONE}) 
+     * <br> This means that you could query the contacts that have at least 1 phone available (contacts without phone informed are not returned) by using this pair (column==Phone AND condition==Available)
+     * <br> @version 4.5
+     * @type int
+     */
+    this.CONTACTS_QUERY_CONDITION_AVAILABLE = 4;
+
+    /**
+     * @event onListContactsEnd Fired when the list of contacts (retrieved from the phone address book) is returned to the javascript application.
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * <br> For further information see, {@link Appverse.Pim.ContactLite ContactLite}.
+     * @aside guide application_listeners
+     * <br> @version 4.3
+     * @param {Appverse.Pim.ContactLite[]} contacts An array of ContactLite objects successfully retrieved from the device local agenda.
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     */
+    this.onListContactsEnd = function(contacts) {
+    };
+
 }
 
 Appverse.Pim = new Pim();
 
 /**
  * List of stored phone contacts that match given query. <br/>For further information see, {@link Appverse.Pim.ContactLite ContactLite}.
+ * <br> Data is returned via the proper event handled by the "Appverse.Pim.onListContactsEnd" method; please, override to handle the event.
  * <br> @version 4.3
  * @param {Appverse.Pim.ContactQuery} query The search query object. Optional parameter.<pre>null value for all contact returned.</pre>
- * @return {Appverse.Pim.ContactLite[]} List of contacts.
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
  */
 Pim.prototype.ListContacts = function(query)
 {
-	if(query == null) {
-		 post_to_url(Appverse.Pim.serviceName, "ListContacts",  null, "POST");
-	} else {
-		post_to_url(Appverse.Pim.serviceName, "ListContacts",  get_params([query]), "POST");
-	}
+    if (query == null) {
+        post_to_url_async(Appverse.Pim.serviceName, "ListContacts", null, null, null);
+    } else {
+        post_to_url_async(Appverse.Pim.serviceName, "ListContacts", get_params([query]), null, null);
+    }
 };
 
 /**
@@ -4379,7 +4378,7 @@ Pim.prototype.ListContacts = function(query)
  */
 Pim.prototype.GetContact = function(id)
 {
-        return post_to_url(Appverse.Pim.serviceName, "GetContact",  get_params([id]), "POST");	
+    return post_to_url(Appverse.Pim.serviceName, "GetContact", get_params([id]), "POST");
 };
 
 
@@ -4393,7 +4392,7 @@ Pim.prototype.GetContact = function(id)
  */
 Pim.prototype.CreateContact = function(contact)
 {
-	return post_to_url(Appverse.Pim.serviceName, "CreateContact",  get_params([contact]), "POST");
+    return post_to_url(Appverse.Pim.serviceName, "CreateContact", get_params([contact]), "POST");
 };
 
 /**
@@ -4407,7 +4406,7 @@ Pim.prototype.CreateContact = function(contact)
  */
 Pim.prototype.UpdateContact = function(contactId, newContactData)
 {
-	return post_to_url(Appverse.Pim.serviceName, "UpdateContact",  get_params([contactId,newContactData]), "POST");
+    return post_to_url(Appverse.Pim.serviceName, "UpdateContact", get_params([contactId, newContactData]), "POST");
 };
 
 /**
@@ -4420,7 +4419,7 @@ Pim.prototype.UpdateContact = function(contactId, newContactData)
  */
 Pim.prototype.DeleteContact = function(contact)
 {
-	return post_to_url(Appverse.Pim.serviceName, "DeleteContact",  get_params([contact]), "POST");
+    return post_to_url(Appverse.Pim.serviceName, "DeleteContact", get_params([contact]), "POST");
 };
 
 /**
@@ -4433,7 +4432,7 @@ Pim.prototype.DeleteContact = function(contact)
  */
 Pim.prototype.ListCalendarEntriesByDate = function(date)
 {
-	return post_to_url(Appverse.Pim.serviceName, "ListCalendarEntries",  get_params([date]), "POST");
+    return post_to_url(Appverse.Pim.serviceName, "ListCalendarEntries", get_params([date]), "POST");
 };
 
 /**
@@ -4447,7 +4446,7 @@ Pim.prototype.ListCalendarEntriesByDate = function(date)
  */
 Pim.prototype.ListCalendarEntriesByDateRange = function(startDate, endDate)
 {
-	return post_to_url(Appverse.Pim.serviceName, "ListCalendarEntries",  get_params([startDate,endDate]), "POST");
+    return post_to_url(Appverse.Pim.serviceName, "ListCalendarEntries", get_params([startDate, endDate]), "POST");
 };
 
 /**
@@ -4460,7 +4459,7 @@ Pim.prototype.ListCalendarEntriesByDateRange = function(startDate, endDate)
  */
 Pim.prototype.CreateCalendarEntry = function(entry)
 {
-	return post_to_url(Appverse.Pim.serviceName, "CreateCalendarEntry",  get_params([entry]), "POST");
+    return post_to_url(Appverse.Pim.serviceName, "CreateCalendarEntry", get_params([entry]), "POST");
 };
 
 /**
@@ -4473,7 +4472,7 @@ Pim.prototype.CreateCalendarEntry = function(entry)
  */
 Pim.prototype.DeleteCalendarEntry = function(entry)
 {
-	return post_to_url(Appverse.Pim.serviceName, "DeleteCalendarEntry",  get_params([entry]), "POST");
+    return post_to_url(Appverse.Pim.serviceName, "DeleteCalendarEntry", get_params([entry]), "POST");
 };
 
 /**
@@ -4488,7 +4487,7 @@ Pim.prototype.DeleteCalendarEntry = function(entry)
  */
 Pim.prototype.MoveCalendarEntry = function(entry, startDate, endDate)
 {
-	return post_to_url(Appverse.Pim.serviceName, "MoveCalendarEntry",  get_params([entry,startDate,endDate]), "POST");
+    return post_to_url(Appverse.Pim.serviceName, "MoveCalendarEntry", get_params([entry, startDate, endDate]), "POST");
 };
 
 /*
@@ -4506,72 +4505,72 @@ Pim.prototype.MoveCalendarEntry = function(entry, startDate, endDate)
  * @return {Appverse.Telephony} A new Telephony interface.
  */
 Telephony = function() {
-	/**
-	 * Telephony service name (as configured on Platform Service Locator).
-	 * <br> @version 1.0
-	 * @type String
-	 */
-	this.serviceName = "phone";
-	/**
-	 * Dialing Call Status.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.STATUS_DIALING = 0;
-	/**
-	 * Establishing Call Status.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.STATUS_ESTABLISHING = 1; 
-	/**
-	 * Established Call Status.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.STATUS_ESTABLISHED = 2;
-	/**
-	 * Dropped Call Status.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.STATUS_DROPPED = 3;
-	/**
-	 * Failed Call Status.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.STATUS_FAILED = 4;
-	/**
-	 * Busy Call Status.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.STATUS_BUSY = 5;
-	/**
-	 * Finished Call Status.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.STATUS_FINISHED = 6;
-	/**
-	 * Voice Call Type.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.CALLTYPE_VOICE = 0;
-	/**
-	 * Fax Call Type.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.CALLTYPE_FAX = 1;
-	/**
-	 * Dial Up Call Type.
-	 * <br> @version 1.0
-	 * @type int
-	 */
-	this.CALLTYPE_DIALUP = 2;
+    /**
+     * Telephony service name (as configured on Platform Service Locator).
+     * <br> @version 1.0
+     * @type String
+     */
+    this.serviceName = "phone";
+    /**
+     * Dialing Call Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.STATUS_DIALING = 0;
+    /**
+     * Establishing Call Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.STATUS_ESTABLISHING = 1;
+    /**
+     * Established Call Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.STATUS_ESTABLISHED = 2;
+    /**
+     * Dropped Call Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.STATUS_DROPPED = 3;
+    /**
+     * Failed Call Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.STATUS_FAILED = 4;
+    /**
+     * Busy Call Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.STATUS_BUSY = 5;
+    /**
+     * Finished Call Status.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.STATUS_FINISHED = 6;
+    /**
+     * Voice Call Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.CALLTYPE_VOICE = 0;
+    /**
+     * Fax Call Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.CALLTYPE_FAX = 1;
+    /**
+     * Dial Up Call Type.
+     * <br> @version 1.0
+     * @type int
+     */
+    this.CALLTYPE_DIALUP = 2;
 }
 
 Appverse.Telephony = new Telephony();
@@ -4591,7 +4590,7 @@ Appverse.Telephony = new Telephony();
  */
 Telephony.prototype.Call = function(number, callType)
 {
-	return post_to_url(Appverse.Telephony.serviceName, "Call",  get_params([number,callType]), "POST");
+    return post_to_url(Appverse.Telephony.serviceName, "Call", get_params([number, callType]), "POST");
 };
 
 /*
@@ -4609,12 +4608,12 @@ Telephony.prototype.Call = function(number, callType)
  * @return {Appverse.I18N} A new I18N interface.
  */
 I18N = function() {
-	/**
-	 * I18N service name (as configured on Platform Service Locator).
-	 * @type String
-	 * <br> @version 1.0
-	 */
-	this.serviceName = "i18n";
+    /**
+     * I18N service name (as configured on Platform Service Locator).
+     * @type String
+     * <br> @version 1.0
+     */
+    this.serviceName = "i18n";
 }
 
 Appverse.I18N = new I18N();
@@ -4630,7 +4629,7 @@ Appverse.I18N = new I18N();
  */
 I18N.prototype.GetLocaleSupported = function()
 {
-	return post_to_url(Appverse.I18N.serviceName, "GetLocaleSupported",  null, "POST");
+    return post_to_url(Appverse.I18N.serviceName, "GetLocaleSupported", null, "POST");
 };
 
 /**
@@ -4643,7 +4642,7 @@ I18N.prototype.GetLocaleSupported = function()
  */
 I18N.prototype.GetLocaleSupportedDescriptors = function()
 {
-	return post_to_url(Appverse.I18N.serviceName, "GetLocaleSupportedDescriptors",  null, "POST");
+    return post_to_url(Appverse.I18N.serviceName, "GetLocaleSupportedDescriptors", null, "POST");
 };
 
 /**
@@ -4658,11 +4657,11 @@ I18N.prototype.GetLocaleSupportedDescriptors = function()
  */
 I18N.prototype.GetResourceLiteral = function(key, locale)
 {
-	if(locale == null) {
-		return post_to_url(Appverse.I18N.serviceName, "GetResourceLiteral",  get_params([key]), "POST");
-	} else {
-		return post_to_url(Appverse.I18N.serviceName, "GetResourceLiteral",  get_params([key,locale]), "POST");
-	}
+    if (locale == null) {
+        return post_to_url(Appverse.I18N.serviceName, "GetResourceLiteral", get_params([key]), "POST");
+    } else {
+        return post_to_url(Appverse.I18N.serviceName, "GetResourceLiteral", get_params([key, locale]), "POST");
+    }
 };
 
 /**
@@ -4676,11 +4675,11 @@ I18N.prototype.GetResourceLiteral = function(key, locale)
  */
 I18N.prototype.GetResourceLiterals = function(locale)
 {
-	if(locale == null) {
-		return post_to_url(Appverse.I18N.serviceName, "GetResourceLiterals",  null, "POST");
-	} else {
-		return post_to_url(Appverse.I18N.serviceName, "GetResourceLiterals",  get_params([locale]), "POST");
-	}
+    if (locale == null) {
+        return post_to_url(Appverse.I18N.serviceName, "GetResourceLiterals", null, "POST");
+    } else {
+        return post_to_url(Appverse.I18N.serviceName, "GetResourceLiterals", get_params([locale]), "POST");
+    }
 };
 
 /*
@@ -4698,12 +4697,12 @@ I18N.prototype.GetResourceLiterals = function(locale)
  * @return {Appverse.Log} A new Log interface.
  */
 Log = function() {
-	/**
-	 * Log service name (as configured on Platform Service Locator).
-	 * @type String
-	 * <br> @version 1.0
-	 */
-	this.serviceName = "log";
+    /**
+     * Log service name (as configured on Platform Service Locator).
+     * @type String
+     * <br> @version 1.0
+     */
+    this.serviceName = "log";
 }
 
 Appverse.Log = new Log();
@@ -4719,11 +4718,11 @@ Appverse.Log = new Log();
  */
 Log.prototype.Log = function(message, level)
 {
-	if(level == null) {
-		return post_to_url(Appverse.Log.serviceName, "Log",  get_params([message]), "POST");
-	} else {
-		return post_to_url(Appverse.Log.serviceName, "Log",  get_params([message,level]), "POST");
-	}
+    if (level == null) {
+        return post_to_url(Appverse.Log.serviceName, "Log", get_params([message]), "POST");
+    } else {
+        return post_to_url(Appverse.Log.serviceName, "Log", get_params([message, level]), "POST");
+    }
 };
 
 /*
@@ -4740,12 +4739,12 @@ Log.prototype.Log = function(message, level)
  * @constructor Constructs a new Analytics interface.
  * @return {Appverse.Analytics} A new Analytics interface.
  */
-Analytics = function(){
-        /**
-	 * Analytics service name (as configured on Platform Service Locator).
-	 * @type String
-	 * <br> @version 3.0
-	 */
+Analytics = function() {
+    /**
+     * Analytics service name (as configured on Platform Service Locator).
+     * @type String
+     * <br> @version 3.0
+     */
     this.serviceName = "analytics";
 };
 
@@ -4759,8 +4758,8 @@ Appverse.Analytics = new Analytics();
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Analytics.prototype.StartTracking = function (webPropertyID){
-    return post_to_url(Appverse.Analytics.serviceName, "StartTracking", get_params([webPropertyID]),"POST");
+Analytics.prototype.StartTracking = function(webPropertyID) {
+    return post_to_url(Appverse.Analytics.serviceName, "StartTracking", get_params([webPropertyID]), "POST");
 };
 
 /**
@@ -4771,8 +4770,8 @@ Analytics.prototype.StartTracking = function (webPropertyID){
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Analytics.prototype.StopTracking = function (){
-    return post_to_url(Appverse.Analytics.serviceName, "StopTracking", null,"POST");
+Analytics.prototype.StopTracking = function() {
+    return post_to_url(Appverse.Analytics.serviceName, "StopTracking", null, "POST");
 };
 
 /**
@@ -4786,8 +4785,8 @@ Analytics.prototype.StopTracking = function (){
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Analytics.prototype.TrackEvent = function (group, action, label, value){
-    return post_to_url(Appverse.Analytics.serviceName, "TrackEvent", get_params([group,action,label, value]),"POST");
+Analytics.prototype.TrackEvent = function(group, action, label, value) {
+    return post_to_url(Appverse.Analytics.serviceName, "TrackEvent", get_params([group, action, label, value]), "POST");
 };
 
 /**
@@ -4798,8 +4797,8 @@ Analytics.prototype.TrackEvent = function (group, action, label, value){
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
  */
-Analytics.prototype.TrackPageView = function (relativeUrl){
-    return post_to_url(Appverse.Analytics.serviceName, "TrackPageView", get_params([relativeUrl]),"POST");
+Analytics.prototype.TrackPageView = function(relativeUrl) {
+    return post_to_url(Appverse.Analytics.serviceName, "TrackPageView", get_params([relativeUrl]), "POST");
 };
 
 /*
@@ -4817,12 +4816,12 @@ Analytics.prototype.TrackPageView = function (relativeUrl){
  * @return {Appverse.Security} A new Security interface.
  */
 Security = function() {
-	/**
-	 * Security service name (as configured on Platform Service Locator).
-	 * @type String
-	 * <br> @version 3.7
-	 */
-	this.serviceName = "security";
+    /**
+     * Security service name (as configured on Platform Service Locator).
+     * @type String
+     * <br> @version 3.7
+     */
+    this.serviceName = "security";
 }
 
 Appverse.Security = new Security();
@@ -4837,7 +4836,7 @@ Appverse.Security = new Security();
  */
 Security.prototype.IsDeviceModified = function()
 {
-	return post_to_url(Appverse.Security.serviceName, "IsDeviceModified", null,"POST");
+    return post_to_url(Appverse.Security.serviceName, "IsDeviceModified", null, "POST");
 };
 
 /**
@@ -4850,7 +4849,7 @@ Security.prototype.IsDeviceModified = function()
  */
 Security.prototype.StoreKeyValuePair = function(keyPair)
 {
-	post_to_url(Appverse.Security.serviceName, "StoreKeyValuePair", get_params([keyPair]), "POST");
+    post_to_url(Appverse.Security.serviceName, "StoreKeyValuePair", get_params([keyPair]), "POST");
 };
 
 /**
@@ -4863,7 +4862,7 @@ Security.prototype.StoreKeyValuePair = function(keyPair)
  */
 Security.prototype.StoreKeyValuePairs = function(keyPairs)
 {
-	post_to_url(Appverse.Security.serviceName, "StoreKeyValuePairs", get_params([keyPairs]), "POST");
+    post_to_url(Appverse.Security.serviceName, "StoreKeyValuePairs", get_params([keyPairs]), "POST");
 };
 
 /**
@@ -4876,7 +4875,7 @@ Security.prototype.StoreKeyValuePairs = function(keyPairs)
  */
 Security.prototype.GetStoredKeyValuePair = function(key)
 {
-	post_to_url(Appverse.Security.serviceName, "GetStoredKeyValuePair", get_params([key]), "POST");
+    post_to_url(Appverse.Security.serviceName, "GetStoredKeyValuePair", get_params([key]), "POST");
 };
 
 /**
@@ -4889,7 +4888,7 @@ Security.prototype.GetStoredKeyValuePair = function(key)
  */
 Security.prototype.GetStoredKeyValuePairs = function(keys)
 {
-	post_to_url(Appverse.Security.serviceName, "GetStoredKeyValuePairs", get_params([keys]), "POST");
+    post_to_url(Appverse.Security.serviceName, "GetStoredKeyValuePairs", get_params([keys]), "POST");
 };
 
 /**
@@ -4902,7 +4901,7 @@ Security.prototype.GetStoredKeyValuePairs = function(keys)
  */
 Security.prototype.RemoveStoredKeyValuePair = function(key)
 {
-	post_to_url(Appverse.Security.serviceName, "RemoveStoredKeyValuePair", get_params([key]), "POST");
+    post_to_url(Appverse.Security.serviceName, "RemoveStoredKeyValuePair", get_params([key]), "POST");
 };
 
 /**
@@ -4915,101 +4914,105 @@ Security.prototype.RemoveStoredKeyValuePair = function(key)
  */
 Security.prototype.RemoveStoredKeyValuePairs = function(keys)
 {
-	post_to_url(Appverse.Security.serviceName, "RemoveStoredKeyValuePairs", get_params([keys]), "POST");
+    post_to_url(Appverse.Security.serviceName, "RemoveStoredKeyValuePairs", get_params([keys]), "POST");
 };
 
+/** 
+ * @class Appverse.Security.Async 
+ * Invokes all Security API methods asynchronously.
+ * <br>
+ * Callback function name and callback identifier are passed to the methods (last arguments) to handle the result object when it is received from appverse runtime.
+ * <pre>Usage:
+ * <br> var myCallbackFn = function(result, id){ <br>	...//code here your custom functionality to handle the result... <br>}
+ * <br>Appverse.Security.<b>Async</b>.StoreKeyValuePair({"Key":"myKey","Value":"myValue"}, 'myCallbackFn', 'myId').
+ * </pre>
+ */
 Security.prototype.Async = {
+    /**
+     * Adds or updates  - if already exists - a given key/value pair into the device local secure storage in ASYNC mode.
+     * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsStoreCompleted
+     * <br> @version 4.3
+     * @method
+     * @param {Appverse.Security.KeyPair} keyPair A key/value pair to store
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     */
+    StoreKeyValuePair: function(keyPair, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Security.serviceName, "StoreKeyValuePair", get_params([keyPair]), callbackFunctionName, callbackId);
+    },
+    /**
+     * Adds or updates - if already exists - a given list of key/value pairs into/to the device local secure storage in ASYNC mode.
+     * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsStoreCompleted
+     * <br> @version 4.3
+     * @param {Appverse.Security.KeyPair[]} keyPair A list of key/value pairs to store
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * @method
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     */
+    StoreKeyValuePairs: function(keyPairs, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Security.serviceName, "StoreKeyValuePairs", get_params([keyPairs]), callbackFunctionName, callbackId);
+    },
+    /**
+     * 	Returns a previously stored key/value pair from the device local secure storage in ASYNC mode.
+     * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsFound
+     * <br> @version 4.3
+     * @method
+     * @param {String} key Name of the key to be returned
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     */
 
-/**
- * Adds or updates  - if already exists - a given key/value pair into the device local secure storage in ASYNC mode.
- * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsStoreCompleted
- * <br> @version 4.3
- * @method
- * @param {Appverse.Security.KeyPair} keyPair A key/value pair to store
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
- */
-StoreKeyValuePair : function(keyPair, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Security.serviceName, "StoreKeyValuePair",  get_params([keyPair]), callbackFunctionName, callbackId);
-},
-
-/**
- * Adds or updates - if already exists - a given list of key/value pairs into/to the device local secure storage in ASYNC mode.
- * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsStoreCompleted
- * <br> @version 4.3
- * @param {Appverse.Security.KeyPair[]} keyPair A list of key/value pairs to store
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-StoreKeyValuePairs : function(keyPairs, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Security.serviceName, "StoreKeyValuePairs",  get_params([keyPairs]), callbackFunctionName, callbackId);
-},
-
-/**
- * 	Returns a previously stored key/value pair from the device local secure storage in ASYNC mode.
- * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsFound
- * <br> @version 4.3
- * @method
- * @param {String} key Name of the key to be returned
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
- */
- 
-GetStoredKeyValuePair : function(key, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Security.serviceName, "GetStoredKeyValuePair",  get_params([key]), callbackFunctionName, callbackId);
-},
-
-/**
- * 	Returns a list of previously stored key/value pairs from the device local secure storage in ASYNC mode
- * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsFound
- * <br> @version 4.3
- * @method
- * @param {String[]} keys Array of Strings containing the keys to be returned
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
- */
-GetStoredKeyValuePairs : function(keys, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Security.serviceName, "GetStoredKeyValuePairs",  get_params([keys]), callbackFunctionName, callbackId);
-},
-
-/**
- *	Removes - if already exists - a given key/value pair from the device local secure storage in ASYNC mode
- * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsRemoveCompleted
- * <br> @version 4.3
- * @method
- * @param {String} key Name of the key to be removed
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
- */
-RemoveStoredKeyValuePair : function(key, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Security.serviceName, "RemoveStoredKeyValuePair",  get_params([key]), callbackFunctionName, callbackId);
-},
-
-/**
- *	Removes - if already exists - a given list of key/value pairs from the device local secure storage in ASYNC mode
- * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsRemoveCompleted
- * <br> @version 4.3
- * @method
- * @param {String[]} keys Array of Strings containing the keys to be removed
- * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
- * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
- */
-RemoveStoredKeyValuePairs : function(keys, callbackFunctionName, callbackId)
-{
-	post_to_url_async(Appverse.Security.serviceName, "RemoveStoredKeyValuePairs",  get_params([keys]), callbackFunctionName, callbackId);
-}
+    GetStoredKeyValuePair: function(key, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Security.serviceName, "GetStoredKeyValuePair", get_params([key]), callbackFunctionName, callbackId);
+    },
+    /**
+     * 	Returns a list of previously stored key/value pairs from the device local secure storage in ASYNC mode
+     * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsFound
+     * <br> @version 4.3
+     * @method
+     * @param {String[]} keys Array of Strings containing the keys to be returned
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     */
+    GetStoredKeyValuePairs: function(keys, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Security.serviceName, "GetStoredKeyValuePairs", get_params([keys]), callbackFunctionName, callbackId);
+    },
+    /**
+     *	Removes - if already exists - a given key/value pair from the device local secure storage in ASYNC mode
+     * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsRemoveCompleted
+     * <br> @version 4.3
+     * @method
+     * @param {String} key Name of the key to be removed
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     */
+    RemoveStoredKeyValuePair: function(key, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Security.serviceName, "RemoveStoredKeyValuePair", get_params([key]), callbackFunctionName, callbackId);
+    },
+    /**
+     *	Removes - if already exists - a given list of key/value pairs from the device local secure storage in ASYNC mode
+     * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnKeyValuePairsRemoveCompleted
+     * <br> @version 4.3
+     * @method
+     * @param {String[]} keys Array of Strings containing the keys to be removed
+     * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
+     * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     */
+    RemoveStoredKeyValuePairs: function(keys, callbackFunctionName, callbackId)
+    {
+        post_to_url_async(Appverse.Security.serviceName, "RemoveStoredKeyValuePairs", get_params([keys]), callbackFunctionName, callbackId);
+    }
 };
 
 /*
@@ -5026,139 +5029,139 @@ RemoveStoredKeyValuePairs : function(keys, callbackFunctionName, callbackId)
  * @constructor Constructs a new Webtrekk interface.
  * @return {Appverse.Webtrekk} A new Webtrekk interface.
  */
-Webtrekk = function(){
-        /**
-	 * Webtrekk service name (as configured on Platform Service Locator).
-	 * @type String
-	 * <br> @version 3.8
-	 */
+Webtrekk = function() {
+    /**
+     * Webtrekk service name (as configured on Platform Service Locator).
+     * @type String
+     * <br> @version 3.8
+     */
     this.serviceName = "webtrekk";
 
     /**
      * Country code of the client's language settings (e.g 'de').
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.COUNTRY_CODE = "la";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.COUNTRY_CODE = "la";
 
-	/**
+    /**
      * Order value.
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.ORDER_VALUE = "ov";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.ORDER_VALUE = "ov";
 
-	/**
+    /**
      * Order ID.
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.ORDER_ID = "oi";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.ORDER_ID = "oi";
 
-	/**
+    /**
      * Products in shopping basket.
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.SHOPPING_BASKET = "ba";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.SHOPPING_BASKET = "ba";
 
-	/**
+    /**
      * Product costs.
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.PRODUCTS_COSTS = "co";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.PRODUCTS_COSTS = "co";
 
-	/**
+    /**
      * Number of products.
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.NUMBER_OF_PRODUCTS = "qn";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.NUMBER_OF_PRODUCTS = "qn";
 
-	/**
+    /**
      * Product category. Value is 'ca1' but you can add more categories by using 'ca2', 'ca3', etc...
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.PRODUCT_CATEGORY_1 = "ca1";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.PRODUCT_CATEGORY_1 = "ca1";
 
-	/**
+    /**
      * Status of the shopping basket (add|conf|view).
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.STATUS_SHOPPING_BASKET = "st";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.STATUS_SHOPPING_BASKET = "st";
 
-	/**
+    /**
      * Customer ID
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.CUSTOMER_ID = "cd";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.CUSTOMER_ID = "cd";
 
-	/**
+    /**
      * Search term of internal search function.
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.SEARCH_TERM = "is";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.SEARCH_TERM = "is";
 
-	/**
+    /**
      * Campaign ID consistinf od media code parameter and value ('wt_mc=newsletter')
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.CAMPAIGN_ID = "mc";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.CAMPAIGN_ID = "mc";
 
-	/**
+    /**
      * Content Group. Value is 'cg1' but you can add more categories by using 'cg2', 'cg3', etc...
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.CONTENT_GROUP = "cg1";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.CONTENT_GROUP = "cg1";
 
-	/**
+    /**
      * Page parameter. Value is 'cp1' but you can add more categories by using 'cp2', 'cp3', etc...
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.PAGE_PARAMETER = "cp1";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.PAGE_PARAMETER = "cp1";
 
-	/**
+    /**
      * Session parameter. Value is 'cs1' but you can add more categories by using 'cs2', 'cs3', etc...
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.SESSION_PARAMETER = "cs1";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.SESSION_PARAMETER = "cs1";
 
-	/**
+    /**
      * Action parameter. Value is 'ck1' but you can add more categories by using 'ck2', 'ck3', etc...
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.ACTION_PARAMETER = "ck1";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.ACTION_PARAMETER = "ck1";
 
-	/**
+    /**
      * Independent parameter. Value is 'ce1' but you can add more categories by using 'ce2', 'ce3', etc...
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.INDEPENDENT_PARAMETER = "ce1";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.INDEPENDENT_PARAMETER = "ce1";
 
-	/**
+    /**
      * Campaign parameter. Value is 'cc1' but you can add more categories by using 'cc2', 'cc3', etc...
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.CAMPAIGN_PARAMETER = "cc1";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.CAMPAIGN_PARAMETER = "cc1";
 
-	/**
+    /**
      * E-commerce parameter. Value is 'cb1' but you can add more categories by using 'cb2', 'cb3', etc...
-	 * <br> @version 3.8
-	 * @type string
-	 */
-	this.ECOMMERCE_PARAMETER = "cb1";
+     * <br> @version 3.8
+     * @type string
+     */
+    this.ECOMMERCE_PARAMETER = "cb1";
 };
 
 Appverse.Webtrekk = new Webtrekk();
@@ -5181,11 +5184,11 @@ Appverse.Webtrekk = new Webtrekk();
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
  */
-Webtrekk.prototype.StartTracking = function (webServerUrl, trackId, samplingRate){
-	if(samplingRate == null){
-    	return post_to_url(Appverse.Webtrekk.serviceName, "StartTracking", get_params([webServerUrl,trackId]),"POST");
-    }else{
-    	return post_to_url(Appverse.Webtrekk.serviceName, "StartTracking", get_params([webServerUrl,trackId,samplingRate]),"POST");
+Webtrekk.prototype.StartTracking = function(webServerUrl, trackId, samplingRate) {
+    if (samplingRate == null) {
+        return post_to_url(Appverse.Webtrekk.serviceName, "StartTracking", get_params([webServerUrl, trackId]), "POST");
+    } else {
+        return post_to_url(Appverse.Webtrekk.serviceName, "StartTracking", get_params([webServerUrl, trackId, samplingRate]), "POST");
     }
 };
 
@@ -5196,8 +5199,8 @@ Webtrekk.prototype.StartTracking = function (webServerUrl, trackId, samplingRate
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
  */
-Webtrekk.prototype.StopTracking = function (){
-    return post_to_url(Appverse.Webtrekk.serviceName, "StopTracking", null,"POST");
+Webtrekk.prototype.StopTracking = function() {
+    return post_to_url(Appverse.Webtrekk.serviceName, "StopTracking", null, "POST");
 };
 
 /**
@@ -5226,11 +5229,11 @@ Webtrekk.prototype.StopTracking = function (){
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
  */
-Webtrekk.prototype.TrackClick = function (clickId, contentId, additionalParameters){
-	if(additionalParameters == null){
-    	return post_to_url(Appverse.Webtrekk.serviceName, "TrackClick", get_params([clickId,contentId]),"POST");
-    }else{
-    	return post_to_url(Appverse.Webtrekk.serviceName, "TrackClick", get_params([clickId,contentId,additionalParameters]),"POST");
+Webtrekk.prototype.TrackClick = function(clickId, contentId, additionalParameters) {
+    if (additionalParameters == null) {
+        return post_to_url(Appverse.Webtrekk.serviceName, "TrackClick", get_params([clickId, contentId]), "POST");
+    } else {
+        return post_to_url(Appverse.Webtrekk.serviceName, "TrackClick", get_params([clickId, contentId, additionalParameters]), "POST");
     }
 };
 
@@ -5260,11 +5263,11 @@ Webtrekk.prototype.TrackClick = function (clickId, contentId, additionalParamete
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
  */
-Webtrekk.prototype.TrackContent = function (contentId, additionalParameters){
-	if(additionalParameters == null){
-    	return post_to_url(Appverse.Webtrekk.serviceName, "TrackContent", get_params([contentId]),"POST");
-    }else{
-    	return post_to_url(Appverse.Webtrekk.serviceName, "TrackContent", get_params([contentId,additionalParameters]),"POST");
+Webtrekk.prototype.TrackContent = function(contentId, additionalParameters) {
+    if (additionalParameters == null) {
+        return post_to_url(Appverse.Webtrekk.serviceName, "TrackContent", get_params([contentId]), "POST");
+    } else {
+        return post_to_url(Appverse.Webtrekk.serviceName, "TrackContent", get_params([contentId, additionalParameters]), "POST");
     }
 };
 
@@ -5281,8 +5284,8 @@ Webtrekk.prototype.TrackContent = function (contentId, additionalParameters){
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
  */
-Webtrekk.prototype.SetRequestInterval = function (intervalInSeconds){
-    return post_to_url(Appverse.Webtrekk.serviceName, "SetRequestInterval", get_params([intervalInSeconds]),"POST");
+Webtrekk.prototype.SetRequestInterval = function(intervalInSeconds) {
+    return post_to_url(Appverse.Webtrekk.serviceName, "SetRequestInterval", get_params([intervalInSeconds]), "POST");
 };
 
 /*
@@ -5300,35 +5303,37 @@ Webtrekk.prototype.SetRequestInterval = function (intervalInSeconds){
  * @return {Appverse.AppLoader} A new AppLoader interface.
  */
 AppLoader = function() {
-	/**
-	 * AppLoader service name (as configured on Platform Service Locator).
-	 * @type String
-	 * <br> @version 4.0
-	 */
-	this.serviceName = "loader";
-	
-	/**
-     * @event onUpdateModulesFinished Fired when the applications loader has finished to download (update) modules 
-	 * (after calling either the {@link Appverse.AppLoader.UpdateModules UpdateModules} method or the {@link Appverse.AppLoader.UpdateModule UpdateModule} method), 
-	 * <br>Method to be overrided by JS applications, to handle this event.
-	 * @aside guide application_listeners
+    /**
+     * AppLoader service name (as configured on Platform Service Locator).
+     * @type String
      * <br> @version 4.0
-	 * @param {Appverse.AppLoader.Module[]} successUpdates The list of successful updated modules.
-     * @param {Appverse.AppLoader.Module[]} failedUpdates The list of failed updated modules.
-	 * @param {String} callbackId The callback id (provided by when calling UpdateModule/s method) that identifies this event listener (callback) with the calling request.
-	 */
-    this.onUpdateModulesFinished = function(successUpdates, failedUpdates, callbackId){};
+     */
+    this.serviceName = "loader";
 
-	/**
-     * @event onDeleteModulesFinished Fired when the applications loader has finished to delete modules 
-	 * (after calling the {@link Appverse.AppLoader.DeleteModules DeleteModules} method), 
-	 * <br>Method to be overrided by JS applications, to handle this event.
-	 * @aside guide application_listeners
+    /**
+     * @event onUpdateModulesFinished Fired when the applications loader has finished to download (update) modules 
+     * (after calling either the {@link Appverse.AppLoader.UpdateModules UpdateModules} method or the {@link Appverse.AppLoader.UpdateModule UpdateModule} method), 
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
      * <br> @version 4.0
-	 * @param {Appverse.AppLoader.Module[]} successDeletes The list of successful deleted modules.
+     * @param {Appverse.AppLoader.Module[]} successUpdates The list of successful updated modules.
+     * @param {Appverse.AppLoader.Module[]} failedUpdates The list of failed updated modules.
+     * @param {String} callbackId The callback id (provided by when calling UpdateModule/s method) that identifies this event listener (callback) with the calling request.
+     */
+    this.onUpdateModulesFinished = function(successUpdates, failedUpdates, callbackId) {
+    };
+
+    /**
+     * @event onDeleteModulesFinished Fired when the applications loader has finished to delete modules 
+     * (after calling the {@link Appverse.AppLoader.DeleteModules DeleteModules} method), 
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 4.0
+     * @param {Appverse.AppLoader.Module[]} successDeletes The list of successful deleted modules.
      * @param {Appverse.AppLoader.Module[]} failedDeletes The list of failed deleted modules.
-	 */
-    this.onDeleteModulesFinished = function(successDeletes, failedDeletes){};
+     */
+    this.onDeleteModulesFinished = function(successDeletes, failedDeletes) {
+    };
 }
 
 Appverse.AppLoader = new AppLoader();
@@ -5342,7 +5347,7 @@ Appverse.AppLoader = new AppLoader();
  */
 AppLoader.prototype.InitializeModuleContext = function(context)
 {
-	post_to_url(Appverse.AppLoader.serviceName, "InitializeModuleContext",  get_params([context]), "POST");
+    post_to_url(Appverse.AppLoader.serviceName, "InitializeModuleContext", get_params([context]), "POST");
 };
 
 /**
@@ -5353,7 +5358,7 @@ AppLoader.prototype.InitializeModuleContext = function(context)
  */
 AppLoader.prototype.ListInstalledModules = function()
 {
-	return post_to_url(Appverse.AppLoader.serviceName, "ListInstalledModules",  null, "POST");
+    return post_to_url(Appverse.AppLoader.serviceName, "ListInstalledModules", null, "POST");
 };
 
 /**
@@ -5365,8 +5370,9 @@ AppLoader.prototype.ListInstalledModules = function()
  */
 AppLoader.prototype.UpdateModules = function(modules, callbackId)
 {
-	if(!callbackId) callbackId = "";
-	post_to_url(Appverse.AppLoader.serviceName, "UpdateModules",  get_params([modules,callbackId]), "POST");
+    if (!callbackId)
+        callbackId = "";
+    post_to_url(Appverse.AppLoader.serviceName, "UpdateModules", get_params([modules, callbackId]), "POST");
 };
 
 /**
@@ -5378,8 +5384,9 @@ AppLoader.prototype.UpdateModules = function(modules, callbackId)
  */
 AppLoader.prototype.UpdateModule = function(module, callbackId)
 {
-	if(!callbackId) callbackId = "";
-	post_to_url(Appverse.AppLoader.serviceName, "UpdateModule",  get_params([module,callbackId]), "POST");
+    if (!callbackId)
+        callbackId = "";
+    post_to_url(Appverse.AppLoader.serviceName, "UpdateModule", get_params([module, callbackId]), "POST");
 };
 
 /**
@@ -5390,7 +5397,7 @@ AppLoader.prototype.UpdateModule = function(module, callbackId)
  */
 AppLoader.prototype.DeleteModules = function(modules)
 {
-	post_to_url(Appverse.AppLoader.serviceName, "DeleteModules",  get_params([modules]), "POST");
+    post_to_url(Appverse.AppLoader.serviceName, "DeleteModules", get_params([modules]), "POST");
 };
 
 /**
@@ -5403,12 +5410,124 @@ AppLoader.prototype.DeleteModules = function(modules)
  */
 AppLoader.prototype.LoadModule = function(module, parameters, autoUpdate)
 {
-	if(autoUpdate == null || autoUpdate == false) {
-		post_to_url(Appverse.AppLoader.serviceName, "LoadModule",  get_params([module,parameters]), "POST");
-	} else {
-		post_to_url(Appverse.AppLoader.serviceName, "LoadModule",  get_params([module,parameters,autoUpdate]), "POST");
-	}
+    if (autoUpdate == null || autoUpdate == false) {
+        post_to_url(Appverse.AppLoader.serviceName, "LoadModule", get_params([module, parameters]), "POST");
+    } else {
+        post_to_url(Appverse.AppLoader.serviceName, "LoadModule", get_params([module, parameters, autoUpdate]), "POST");
+    }
 };
+
+
+
+/*
+ * Beacon INTERFACES
+ */
+
+/**
+ * @class Appverse.Beacon 
+ * Singleton class field to listen Beacon events.  
+ * <br>This interface provides features for beacons handling. JUST AVAILABLE FOR ANDROID DEVICES.<br>
+ * <br> @version 4.7
+ * <pre>Usage: Appverse.Beacon.&lt;metodName&gt;([params]).<br>Example: Appverse.Beacon.StartMonitoringRegion('xxx-xxxx-xxxx').</pre>
+ * @singleton
+ * @constructor Constructs a new Beacon interface.
+ * @return {Appverse.Beacon} A new Beacon interface.
+ */
+Beacon = function() {
+    /**
+     * @event Beacon service name (as configured on Platform Service Locator).
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @type String
+     * <br> @version 4.7
+     */
+    this.serviceName = "beacon";
+
+    /**
+     * @event Event when called when a previously detected beacon is found again.
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+	 * @param {Appverse.Beacon.Beacon[]} beacons
+     * @aside guide application_listeners
+     * <br> @version 4.7
+	 */
+    this.OnEntered = function(beacons) {
+    };
+
+    /**
+     * @event Event when called when a previously detected beacon is not found.
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+	 * @param {Appverse.Beacon.Beacon[]} beacons
+     * @aside guide application_listeners
+     * <br> @version 4.7
+     */
+    this.OnExited = function(beacons) {
+    };
+
+    /**
+     * @event Event called when a new beacon is found.
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+     * @param {Appverse.Beacon.Beacon[]} beacons
+     * @aside guide application_listeners
+     * <br> @version 4.7
+     */
+    this.OnDiscover = function(beacons) {
+    };
+    /**
+     * @event Event called when the distance to the known beacon changed.
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+	 * @param {Appverse.Beacon.Beacon} beacon
+     * @param {double} from
+     * @param {double} to
+     * @aside guide application_listeners
+     * <br> @version 4.7
+     */
+    this.OnUpdateProximity = function(beacon, from, to) {
+    };
+
+
+}
+
+Appverse.Beacon = new Beacon();
+
+
+            
+/**
+ * Start monitoring a region looking for beacons with an UUID
+ * <br> @version 4.7
+ * @param {String} id of the region
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+ */
+Beacon.prototype.StartMonitoringRegion = function(id)
+{
+    post_to_url(Appverse.Beacon.serviceName, "StartMonitoringRegion", get_params([id]), "POST");
+};
+
+/**
+ * Start monitoring looking for all the beacons
+ * <br> @version 4.7 
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+ */
+Beacon.prototype.StartMonitoringAllRegions = function()
+{
+    post_to_url(Appverse.Beacon.serviceName, "StartMonitoringAllRegions", null, "POST");
+};
+
+/**
+ * Stop monitoring for beacons
+ * <br> @version 4.7
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+ */
+Beacon.prototype.StopMonitoringBeacons = function() {
+    post_to_url(Appverse.Beacon.serviceName, "StopMonitoringBeacons", null, "POST");
+};
+
+
 
 /*
  * COMMON FUNCTIONS
@@ -5424,29 +5543,29 @@ AppLoader.prototype.LoadModule = function(module, parameters, autoUpdate)
  */
 function get_params(paramsArray)
 {
-	var params = null;
-	
-	if(paramsArray != null &&  paramsArray.length>0) {
-		params = "{";
-		for(var i=0; i<paramsArray.length; i++)
-		{
-			if(paramsArray[i]==null) {
-				if(i>0) {
-					params = params + ",";
-				}
-				params = params + '"param' + (i+1) + '":null';
-			}
-			
-			if(paramsArray[i]!=null) { // [fix-01062011:MAPS:in some cases we need to upload empty objects, like on the SendEmail method)]  //&& JSON.stringify(paramsArray[i])!='{}') {
-				if(i>0) {
-					params = params + ",";
-				}
-				params = params + '"param' + (i+1) + '":' + JSON.stringify(paramsArray[i]);
-			}
-		}
-		params = params + "}";
-	}
-	return params;
+    var params = null;
+
+    if (paramsArray != null && paramsArray.length > 0) {
+        params = "{";
+        for (var i = 0; i < paramsArray.length; i++)
+        {
+            if (paramsArray[i] == null) {
+                if (i > 0) {
+                    params = params + ",";
+                }
+                params = params + '"param' + (i + 1) + '":null';
+            }
+
+            if (paramsArray[i] != null) { // [fix-01062011:MAPS:in some cases we need to upload empty objects, like on the SendEmail method)]  //&& JSON.stringify(paramsArray[i])!='{}') {
+                if (i > 0) {
+                    params = params + ",";
+                }
+                params = params + '"param' + (i + 1) + '":' + JSON.stringify(paramsArray[i]);
+            }
+        }
+        params = params + "}";
+    }
+    return params;
 }
 
 /**
@@ -5460,205 +5579,217 @@ function get_params(paramsArray)
  * @return {Object} Service invocation returned object (javacript object).
  */
 function post_to_url(serviceName, methodName, params, method, returnAsString) {
-	method = method || "POST"; // Set method to post by default, if not specified.
+    method = method || "POST"; // Set method to post by default, if not specified.
 
-	var path = Appverse.SERVICE_URI + serviceName + "/" + methodName;
-	
-	if(Appverse.isBackground()) {
-		// socket is closed, do not call appverse services
-		console.log("Application is on background. Internal Appverse Socket is closed. Call to '" + path + "' has been stopped.");
-		return null;
-	}
-	
-	var xhr = new XMLHttpRequest(); 
-	/* ASYNCHRONOUS OPTION	
-	xhr.onreadystatechange  = function()
-    { 
-         if(xhr.readyState  == 4)  //The 4 state means for the response is ready and sent by the server. 
-         {
-              if(xhr.status  == 200)  //This status means ok, otherwise some error code is returned, 404 for example.
-                  alert("Received:"  + xhr.responseText); 
-              else 
-                 alert("Error code " + xhr.status);
-         }
-    }; 
-	xhr.open( method, path, true); 
-	*/
+    var path = Appverse.SERVICE_URI + serviceName + "/" + methodName;
 
-	/* SYNCHRONOUS OPTION*/
-	xhr.open( method, path, false); 
-	xhr.setRequestHeader("Content-type", "application/json");
-	var reqData = null;
-	if(params!=null) {
-		if(Appverse.unescapeNextRequestData) {
-			reqData = "json=" + unescape(params);
-		} else {
-			reqData = "json=" + params; // we don't unscape parameters if configured
-			Appverse.unescapeNextRequestData = true; // returning to default configuration value
-		} 
-	}
-	try {
-		xhr.send(reqData);
-	} catch (e) {
-		return null;
-	}
+    if (Appverse.isBackground()) {
+        // socket is closed, do not call appverse services
+        console.log("Application is on background. Internal Appverse Socket is closed. Call to '" + path + "' has been stopped.");
+        return null;
+    }
 
-	var responseText = null;
-	if(xhr.status  == 200)  { //This status means ok, otherwise some error code is returned, 404 for example.
-	  responseText = xhr.responseText; 
-	}
+    var xhr = new XMLHttpRequest();
+    /* ASYNCHRONOUS OPTION	
+     xhr.onreadystatechange  = function()
+     { 
+     if(xhr.readyState  == 4)  //The 4 state means for the response is ready and sent by the server. 
+     {
+     if(xhr.status  == 200)  //This status means ok, otherwise some error code is returned, 404 for example.
+     alert("Received:"  + xhr.responseText); 
+     else 
+     alert("Error code " + xhr.status);
+     }
+     }; 
+     xhr.open( method, path, true); 
+     */
+
+    /* SYNCHRONOUS OPTION*/
+    xhr.open(method, path, false);
+    xhr.setRequestHeader("Content-type", "application/json");
+    var reqData = null;
+    if (params != null) {
+        if (Appverse.unescapeNextRequestData) {
+            reqData = "json=" + unescape(params);
+        } else {
+            reqData = "json=" + params; // we don't unscape parameters if configured
+            Appverse.unescapeNextRequestData = true; // returning to default configuration value
+        }
+    }
+    try {
+        xhr.send(reqData);
+    } catch (e) {
+        return null;
+    }
+
+    var responseText = null;
+    if (xhr.status == 200) { //This status means ok, otherwise some error code is returned, 404 for example.
+        responseText = xhr.responseText;
+    }
     else {
-		//alert("Error code " + xhr.status);
-		// TODO: handle error
-	}
-	
-	if(responseText!=null && responseText != '') { // [fix-01062011:MAPS:added checking for empty string, in Android platform void methods return empty strings, and the eval raise an exception]
-		if(returnAsString) 
-		{
-			responseText = '"' + responseText + '"';	// eval response text as string, do conversions on required methods
-		}
-		try {
-			return  eval('(' + responseText + ')');
-		} catch(e){
-			console.log("wrong responseText received from Appverse calls: " + responseText);
-			return null;
-		}
-	} else {
-		return null;
-	}
+        //alert("Error code " + xhr.status);
+        // TODO: handle error
+    }
+
+    if (responseText != null && responseText != '') { // [fix-01062011:MAPS:added checking for empty string, in Android platform void methods return empty strings, and the eval raise an exception]
+        if (returnAsString)
+        {
+            responseText = '"' + responseText + '"';	// eval response text as string, do conversions on required methods
+        }
+        try {
+            //return  eval('(' + responseText + ')');
+            //Javascript Injection via Response
+            return  JSON.parse(responseText);
+        } catch (e) {
+            console.log("wrong responseText received from Appverse calls: " + responseText);
+            return null;
+        }
+    } else {
+        return null;
+    }
 }
 
 
 function post_to_url_async(serviceName, methodName, params, callBackFuncName, callbackId) {
     method = "POST"; // Set method to post by default, if not specified.
 
-	var path = Appverse.SERVICE_ASYNC_URI + serviceName + "/" + methodName;
-	
-	if(Appverse.isBackground()) {
-		// socket is closed, do not call appverse services
-		console.log("Application is on background. Internal Appverse Socket is closed. Call to '" + path + "' has been stopped.");
-		return null;
-	}
-	
-	var xhr = new XMLHttpRequest(); 
-	xhr.open( method, path, false); 
-	xhr.setRequestHeader("Content-type", "application/json");
-	var reqData = "";
-	if(callBackFuncName != null) {
-		reqData = reqData + "callback=" + callBackFuncName;
-	} else {
-		reqData = reqData + "callback=callback";
-	}
-	if(callbackId != null) {
-		reqData = reqData + "&callbackid=" + callbackId;
-	} else {
-	    reqData = reqData + "&callbackid=callbackid";
-	}
-	
-	if(params!=null) {
-		if(Appverse.unescapeNextRequestData) {
-			reqData = reqData + "&json=" + unescape(params);
-		} else {
-			reqData = reqData + "&json=" + params; // we don't unscape parameters if configured
-			Appverse.unescapeNextRequestData = true; // returning to default configuration value
-		}
-	}
-	try {
-		xhr.send(reqData);
-	} catch (e) {
-        console.dir("error sending data async: " + reqData);
-		var callbackfn = window[callBackFuncName];
-		if(callbackfn) callbackfn(null, callbackId);
+    var path = Appverse.SERVICE_ASYNC_URI + serviceName + "/" + methodName;
+
+    if (Appverse.isBackground()) {
+        // socket is closed, do not call appverse services
+        console.log("Application is on background. Internal Appverse Socket is closed. Call to '" + path + "' has been stopped.");
+        return null;
     }
-	// nothing to return, callback function will be called with result data
+
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, path, false);
+    xhr.setRequestHeader("Content-type", "application/json");
+    var reqData = "";
+    if (callBackFuncName != null) {
+        reqData = reqData + "callback=" + callBackFuncName;
+    } else {
+        reqData = reqData + "callback=NULL";
+    }
+    if (callbackId != null) {
+        reqData = reqData + "&callbackid=" + callbackId;
+    } else {
+        reqData = reqData + "&callbackid=callbackid";
+    }
+
+    if (params != null) {
+        if (Appverse.unescapeNextRequestData) {
+            reqData = reqData + "&json=" + unescape(params);
+        } else {
+            reqData = reqData + "&json=" + params; // we don't unscape parameters if configured
+            Appverse.unescapeNextRequestData = true; // returning to default configuration value
+        }
+    }
+    try {
+        xhr.send(reqData);
+    } catch (e) {
+        console.dir("error sending data async: " + reqData);
+        //Javascript Injection via Request 
+        var patt = new RegExp(/^[a-z_][\w_]*$/i);    
+        if(!patt.test(callBackFuncName)) {
+            console.log("********************** UNSAFE CALL ***************");
+            return;
+        }
+        var callbackfn = window[callBackFuncName];
+        if (callbackfn)
+            callbackfn(null, callbackId);
+    }
+    // nothing to return, callback function will be called with result data
 }
 
 function post_to_url_async_emu(serviceName, methodName, params, callBackFuncName, callbackId) {
     method = "POST"; // Set method to post by default, if not specified.
 
-	//var path = Appverse.SERVICE_ASYNC_URI + serviceName + "/" + methodName;
-	// on emulator, async call will be simulated, not fully async mode (so we could still use developer tools on external browsers)
-	var path = Appverse.SERVICE_URI + serviceName + "/" + methodName;
-	
-	if(Appverse.isBackground()) {
-		// socket is closed, do not call appverse services
-		console.log("Application is on background. Internal Appverse Socket is closed. Call to '" + path + "' has been stopped.");
-		return null;
-	}
-	
-	var xhr = new XMLHttpRequest(); 
-	xhr.open( method, path, false); 
-	xhr.setRequestHeader("Content-type", "application/json");
-	var reqData = "";
-	/*
-	if(callBackFuncName != null) {
-		reqData = reqData + "callback=" + callBackFuncName;
-	} else {
-		reqData = reqData + "callback=callback";
-	}
-	if(callbackId != null) {
-		reqData = reqData + "&callbackid=" + callbackId;
-	}else {
-	    reqData = reqData + "&callbackid=callbackid";
-	}
-	*/
-	if(params!=null) {
-		//reqData = reqData + "&json=" + unescape(params);
-		if(Appverse.unescapeNextRequestData) {
-			reqData = reqData + "json=" + unescape(params);
-		} else {
-			reqData = reqData + "json=" + params; // we don't unscape parameters if configured
-			Appverse.unescapeNextRequestData = true; // returning to default configuration value
-		}
-	}
-	
-	var callbackfn = window[callBackFuncName];
-	if(!callbackfn) {
-		try {
-			callbackfn = eval('('+callBackFuncName+ ')');
-		} catch(e){
-			console.log("please define the callback function as a global variable. Error while evaluating function: " + e);
-		}
-	}
-	try {
-		xhr.send(reqData);
-	} catch (e) {
-        console.dir("error sending data async: " + reqData);
-		if(callbackfn) callbackfn(null, callbackId);
+    //var path = Appverse.SERVICE_ASYNC_URI + serviceName + "/" + methodName;
+    // on emulator, async call will be simulated, not fully async mode (so we could still use developer tools on external browsers)
+    var path = Appverse.SERVICE_URI + serviceName + "/" + methodName;
+
+    if (Appverse.isBackground()) {
+        // socket is closed, do not call appverse services
+        console.log("Application is on background. Internal Appverse Socket is closed. Call to '" + path + "' has been stopped.");
+        return null;
     }
-	
-	var responseText = null;
-	if(xhr.status  == 200)  { //This status means ok, otherwise some error code is returned, 404 for example.
-	  responseText = xhr.responseText; 
-	}
+
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, path, false);
+    xhr.setRequestHeader("Content-type", "application/json");
+    var reqData = "";
+    /*
+     if(callBackFuncName != null) {
+     reqData = reqData + "callback=" + callBackFuncName;
+     } else {
+     reqData = reqData + "callback=NULL";
+     }
+     if(callbackId != null) {
+     reqData = reqData + "&callbackid=" + callbackId;
+     }else {
+     reqData = reqData + "&callbackid=callbackid";
+     }
+     */
+    if (params != null) {
+        //reqData = reqData + "&json=" + unescape(params);
+        if (Appverse.unescapeNextRequestData) {
+            reqData = reqData + "json=" + unescape(params);
+        } else {
+            reqData = reqData + "json=" + params; // we don't unscape parameters if configured
+            Appverse.unescapeNextRequestData = true; // returning to default configuration value
+        }
+    }
+
+    var callbackfn = window[callBackFuncName];
+    if (!callbackfn) {
+        try {
+            callbackfn = eval('(' + callBackFuncName + ')');
+        } catch (e) {
+            console.log("please define the callback function as a global variable. Error while evaluating function: " + e);
+        }
+    }
+    try {
+        xhr.send(reqData);
+    } catch (e) {
+        console.dir("error sending data async: " + reqData);
+        if (callbackfn)
+            callbackfn(null, callbackId);
+    }
+
+    var responseText = null;
+    if (xhr.status == 200) { //This status means ok, otherwise some error code is returned, 404 for example.
+        responseText = xhr.responseText;
+    }
     else {
-		console.dir("Error code " + xhr.status);
-		// TODO: handle error
-	}
-	
-	if(responseText!=null && responseText != '') { // [fix-01062011:MAPS:added checking for empty string, in Android platform void methods return empty strings, and the eval raise an exception]
-		//console.log(responseText);
-		var success = false;
-		try {
-			var responseObject = eval('(' + responseText + ')');
-			success = true;
-		} catch(e){
-			console.log("wrong responseText received from Appverse calls: " + e);
-			success = false;
-			if(callbackfn) callbackfn(null, callbackId);
-		}
-		try {
-			if(callbackfn && success) callbackfn(responseObject, callbackId);
-		} catch(e){
-			console.log("error calling callback function [" + callBackFuncName + "]: " + e);
-		}
-	} else {
-		console.log("responseText is null for callbackid : " + callbackId);
-		if(callbackfn) callbackfn(null, callbackId);
-	}
-	
-	
-	// nothing to return, callback function will be called with result data
+        console.dir("Error code " + xhr.status);
+        // TODO: handle error
+    }
+
+    if (responseText != null && responseText != '') { // [fix-01062011:MAPS:added checking for empty string, in Android platform void methods return empty strings, and the eval raise an exception]
+        //console.log(responseText);
+        var success = false;
+        try {
+            var responseObject = eval('(' + responseText + ')');
+            success = true;
+        } catch (e) {
+            console.log("wrong responseText received from Appverse calls: " + e);
+            success = false;
+            if (callbackfn)
+                callbackfn(null, callbackId);
+        }
+        try {
+            if (callbackfn && success)
+                callbackfn(responseObject, callbackId);
+        } catch (e) {
+            console.log("error calling callback function [" + callBackFuncName + "]: " + e);
+        }
+    } else {
+        console.log("responseText is null for callbackid : " + callbackId);
+        if (callbackfn)
+            callbackfn(null, callbackId);
+    }
+
+    // nothing to return, callback function will be called with result data
 }
 
 /**
@@ -5668,12 +5799,12 @@ function post_to_url_async_emu(serviceName, methodName, params, callBackFuncName
  * <br> @version 1.0
  * <pre>Usage: JSON.stringify(&lt;Object&gt;).<br>Example: JSON.stringify(myObject).</pre>
  * @singleton
- */ 
+ */
 JSON = new function() {
-	// javadoc utility to show singleton classes.
-	return JSON || {};  
-	// this allows including already specified JSON utilities (for example, the ones implemented by Sencha or PastryKit JS frameworks)
-	// if JSON utilities are not already implemented, below "stringify" function is used.
+    // javadoc utility to show singleton classes.
+    return JSON || {};
+    // this allows including already specified JSON utilities (for example, the ones implemented by Sencha or PastryKit JS frameworks)
+    // if JSON utilities are not already implemented, below "stringify" function is used.
 };
 
 var JSON = JSON || {};
@@ -5691,38 +5822,44 @@ JSON.stringify = JSON.stringify || JSON.toJSONString;
  * @param {Object} obj Object to be converted to JSON string format. See <a href="http://www.json.org/example.html">JSON (JavaScript Object Notation)</a>  for JSON format examples.
  * @return {String} The JSON string that represents the given object.
  * @method
- */	
-JSON.toJSONString = function(obj) { 
-	var t = typeof (obj);
-    if (t != "object" || obj === null) { 
+ */
+JSON.toJSONString = function(obj) {
+    var t = typeof (obj);
+    if (t != "object" || obj === null) {
         // simple data type 
-        if (t == "string") obj = '"'+obj+'"'; 
-        return String(obj); 
-    } 
-    else { 
+        if (t == "string")
+            obj = '"' + obj + '"';
+        return String(obj);
+    }
+    else {
         // recurse array or object 
-        var n, v, json = [], arr = (obj && obj.constructor == Array); 
-        for (n in obj) { 
-            v = obj[n]; t = typeof(v); 
-            if (t == "string") v = '"'+v+'"'; 
-            else if (t == "object" && v !== null) v = JSON.stringify(v); 
-            json.push((arr ? "" : '"' + n + '":') + String(v)); 
-        } 
-        return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}"); 
-    } 
-}; 
+        var n, v, json = [], arr = (obj && obj.constructor == Array);
+        for (n in obj) {
+            v = obj[n];
+            t = typeof(v);
+            if (t == "string")
+                v = '"' + v + '"';
+            else if (t == "object" && v !== null)
+                v = JSON.stringify(v);
+            json.push((arr ? "" : '"' + n + '":') + String(v));
+        }
+        return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");
+    }
+};
 
 /**
  * @ignore
  * Replaces {0},{1},{n} with the given arguments.
  * <br> @version 1.0
  * @return {String} The formatted result string.
- */	
-String.prototype.format = function() {  
+ */
+String.prototype.format = function() {
     var pattern = /\{\d+\}/g;
     var args = arguments;
-    return this.replace(pattern, function(capture){ return args[capture.match(/\d+/)]; });
-} 
+    return this.replace(pattern, function(capture) {
+        return args[capture.match(/\d+/)];
+    });
+}
 
 
 /*
@@ -5733,6 +5870,6 @@ Appverse.init();
 
 // to keep compatibility (just for 4.3 version). Should be DEPRECATED in next releases.
 Unity = new function() {
-	console.warn('%c The Unity namespace has been DEPRECATED, and it won\'t be valid on future releases. Please, start using the new Appverse namespace. ', 'background: #222; color: orange');
-	return Appverse;
+    console.warn('%c The Unity namespace has been DEPRECATED, and it won\'t be valid on future releases. Please, start using the new Appverse namespace. ', 'background: #222; color: orange');
+    return Appverse;
 };

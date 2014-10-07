@@ -26,6 +26,7 @@ using Unity.Core.System.Service;
 using MonoTouch.Foundation;
 using Unity.Core.System;
 using MonoTouch.UIKit;
+using Unity.Core.System.Server.Net;
 
 namespace Unity.Platform.IPhone
 {
@@ -34,6 +35,32 @@ namespace Unity.Platform.IPhone
 		public IPhoneServiceURIHandler (IServiceLocator _serviceLocator) : base(_serviceLocator)
 		{
 		}
+
+		/// <summary>
+		/// Process the specified server, request and response. Overrides CORE ServiceURIHandler superclass
+		/// </summary>
+		/// <param name="server">Server.</param>
+		/// <param name="request">Request.</param>
+		/// <param name="response">Response.</param>
+		public override bool Process (HttpServer server, HttpRequest request, HttpResponse response) {
+
+			bool isServiceProtocol = request.Url.StartsWith (ServiceURIHandler.SERVICE_URI) || request.Url.StartsWith (ServiceURIHandler.SERVICE_ASYNC_URI);
+
+			bool isManagedService = IPhoneServiceLocator.consumeManagedService (request.Url);
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, " ############## Managed Service? " + isManagedService);
+
+			if (isServiceProtocol) {
+
+				if(isManagedService) return base.Process (server, request, response);
+
+				SystemLogger.Log (SystemLogger.Module .PLATFORM, "**** WARNING: Anonymous service call, not managed by Appverse !!!");
+				return false;
+			} 
+
+			SystemLogger.Log (SystemLogger.Module .PLATFORM, "Non service protocol. Continue to next handler...");
+			return false;
+		}
+
 
 		/// <summary>
 		/// Processes the service asynchronously. Using NSAutoreleasePool monotouch class.
@@ -76,9 +103,13 @@ namespace Unity.Platform.IPhone
 		/// </param>
 		protected override void SendBackResult(string callbackFunction, string id, string jsonResultString) {
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				SystemLogger.Log (SystemLogger.Module.PLATFORM , " ############## sending back result to callback fn [" + callbackFunction+ "] and id [" + id+ "]: " +
-				                  (jsonResultString!=null?jsonResultString.Length:0));
-				IPhoneUtils.GetInstance().ExecuteJavascriptCallback(callbackFunction, id, jsonResultString);
+				if(callbackFunction==null || callbackFunction.Equals("NULL")){
+					SystemLogger.Log (SystemLogger.Module.PLATFORM , " ############## There is no callback defined for sending back result to javascript app"); 
+				} else {
+					SystemLogger.Log (SystemLogger.Module.PLATFORM , " ############## sending back result to callback fn [" + callbackFunction+ "] and id [" + id+ "]: " +
+									  (jsonResultString!=null?jsonResultString.Length:0));
+					IPhoneUtils.GetInstance().ExecuteJavascriptCallback(callbackFunction, id, jsonResultString);
+				}
 			});
 		}
 	}

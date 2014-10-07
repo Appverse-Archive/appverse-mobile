@@ -45,12 +45,6 @@ namespace Unity.Platform.IPhone
 		}
 		protected EKEventStore eventStore;
 
-
-		/// <summary>
-		/// The EKEventStore is intended to be long-lived. It's expensive to new it up
-		/// and can be thought of as a database, so we create a single instance of it
-		/// and reuse it throughout the app
-		/// </summary>
 		public ABAddressBook AddressBook
 		{
 			get { return addressBook; }
@@ -58,16 +52,7 @@ namespace Unity.Platform.IPhone
 		protected ABAddressBook addressBook;
 
 	
-		public IPhoneUIApplicationDelegate () : base()
-		{
-			#if DEBUG
-			log ("IPhoneUIApplicationDelegate constructor default");
-			#endif
-			IPhoneServiceLocator.CurrentDelegate = this;
-			#if DEBUG
-			log ("IPhoneUIApplicationDelegate creating event store instance");
-			#endif
-			eventStore = new EKEventStore ( );
+		public void ReloadAddressBook() {
 			#if DEBUG
 			log ("IPhoneUIApplicationDelegate creating address book instance");
 			#endif
@@ -80,6 +65,20 @@ namespace Unity.Platform.IPhone
 			} else {
 				addressBook = new ABAddressBook();
 			}
+		}
+
+		public IPhoneUIApplicationDelegate () : base()
+		{
+			#if DEBUG
+			log ("IPhoneUIApplicationDelegate constructor default");
+			#endif
+			IPhoneServiceLocator.CurrentDelegate = this;
+			#if DEBUG
+			log ("IPhoneUIApplicationDelegate creating event store instance");
+			#endif
+			eventStore = new EKEventStore ( );
+			// creating address book instance
+			ReloadAddressBook ();
 			#if DEBUG
 			log ("IPhoneUIApplicationDelegate constructor successfully ended");
 			#endif

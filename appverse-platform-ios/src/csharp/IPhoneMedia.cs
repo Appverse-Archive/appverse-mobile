@@ -445,7 +445,14 @@ namespace Unity.Platform.IPhone
 			if(!File.Exists(absolutePath)) {
 				// file path was not under application bundle path
 				// try to find it under Documents folder
-				absolutePath = Path.Combine(IPhoneFileSystem.DEFAULT_ROOT_PATH, filePath);
+				if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+					var documents = NSFileManager.DefaultManager.GetUrls (NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomain.User) [0].Path;
+					absolutePath = Path.Combine(documents, filePath);
+				} else {
+					var documents = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+					absolutePath = Path.Combine(documents, filePath);
+				};
+				//absolutePath = Path.Combine(IPhoneFileSystem.DEFAULT_ROOT_PATH, filePath);
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Media file does not exist on bundle path, checking under application documents: " + absolutePath);
 			}
 			
