@@ -58,7 +58,7 @@ public class ServerSocketEndPoint implements EndPoint, Runnable {
     protected Server server;
     protected String endpointName;
     protected boolean resolveHostName;
-    protected boolean socketListening = false;
+    private static boolean socketListening = false;
 
     public ServerSocketEndPoint() {
         this.factory = ServerSocketFactory.getDefault();
@@ -94,6 +94,8 @@ public class ServerSocketEndPoint implements EndPoint, Runnable {
             thread.start();
         } catch (IOException e) {
             LOGGER.logError("start", "IOException ignored", e);
+            e.printStackTrace();
+            socketListening = false;
         } catch (NumberFormatException e) {
             LOGGER.logError("start", "NumberFormatException ignored", e);
         }
@@ -106,7 +108,11 @@ public class ServerSocketEndPoint implements EndPoint, Runnable {
         
         //ServerSocket socket = factory.createServerSocket(port, 100, localhostAddress); 
         ServerSocket socket = factory.createServerSocket();
-        socket.setReuseAddress(true);
+        
+        // DO NOT REUSE ADDRESS TO ALLOW THROWING IOException (adress already in use),
+        // AND CHECK THAT SOCKET IS NOT REALLY LISTENING
+        // socket.setReuseAddress(true);
+        
         socket.bind(socketAddress,100);
         
         
@@ -165,7 +171,7 @@ public class ServerSocketEndPoint implements EndPoint, Runnable {
         if (socket != null) {
             try {
                 socket.close();
-                socketListening = false;
+                
                 socket = null;
                 LOGGER.logInfo("shutdown", "SHUTDOWN: "
                         + this.getClass().getName() + " executed correctly.");
@@ -178,10 +184,15 @@ public class ServerSocketEndPoint implements EndPoint, Runnable {
             socket = null;
             System.gc();
         }
+        socketListening = false;
     }
     
     @Override
     public boolean isListening() {
         return this.socketListening;
+    }
+    
+    public static boolean isSocketListening() {
+        return socketListening;
     }
 }
