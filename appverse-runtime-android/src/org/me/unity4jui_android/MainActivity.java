@@ -145,7 +145,7 @@ public class MainActivity extends Activity {
 		}
 
 		appView = new WebView(this);
-		appView.enablePlatformNotifications();
+		//appView.enablePlatformNotifications();
 		setGlobalProxy();
 
 		appView.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,
