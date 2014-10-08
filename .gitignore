@@ -11,3 +11,11 @@ obj
 /appverse-runtime-android-zxing/gen/
 /appverse-samples/AppverseRss_NetBeans/nbandroid/
 /appverse-runtime-android-zxing/nbandroid/
+/appverse-runtime-android/gen/
+/appverse-runtime-android/nbandroid/
+appverse-runtime-android/local.properties
+appverse-runtime-android/libs/AppverseCoreJava.jar
+appverse-runtime-android/libs/AppversePlatformAndroid.jar
+appverse-runtime-android-zxing/local.properties
+appverse-platform-android/lib/AppverseCoreJava.jar
+appverse-platform-android/lib/AppverseCoreJava.jar
