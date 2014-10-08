@@ -73,6 +73,22 @@ public interface INet {
      * otherwise.
      */
     public boolean OpenBrowser(String title, String buttonText, String url);
+    
+    /**
+     * Opens the native Browser as a modal application view, and loads inside it
+     * the given url path. This native view should have a top header with a
+     * customizable title, and a close button (with a customizable label inside)
+     * to close the view and return to the application that fired it. No native
+     * browser toolbars should be added. File Extensions in the passed object 
+     * will be parsed and urls that expect a file with those extensions will be
+     * handled by the Operating System
+     *
+     * @param browserOptions Title, button text, url and file extensions 
+     * contained in a single object.
+     * @return <CODE>true</CODE> if browser could be opened, <CODE>false</CODE>
+     * otherwise.
+     */
+    public boolean OpenBrowserWithOptions(SecondaryBrowserOptions browserOptions);
 
     /**
      * Opens the native Browser as a modal application view, and loads inside it
@@ -91,6 +107,21 @@ public interface INet {
      * otherwise.
      */
     public boolean ShowHtml(String title, String buttonText, String html);
+    
+    /**
+     * Opens the native Browser as a modal application view, and loads inside it
+     * the given HTML code. This native view should have a top header with a
+     * customizable title, and a close button (with a customizable label inside)
+     * to close the view and return to the application that fired it. No native
+     * browser toolbars should be added. Any URLS that request a file which
+     * extension is passed in the object with be handled natively by the 
+     * operating system
+     *
+     * @param browserOptions Title, button text, html code and file extensions 
+     * @return <CODE>true</CODE> if browser could be opened, <CODE>false</CODE>
+     * otherwise.
+     */
+    public boolean ShowHtmlWithOptions(SecondaryBrowserOptions browserOptions);
 
     /**
      * Downloads the given url file by using the default native handler.
