@@ -48,11 +48,17 @@ public abstract class AbstractNet implements INet {
     @Override
     public abstract boolean OpenBrowser(String title, String buttonText,
             String url);
+    
+    @Override
+    public abstract boolean OpenBrowserWithOptions(SecondaryBrowserOptions browserOptions);
 
     @Override
     public abstract boolean ShowHtml(String title, String buttonText,
             String html);
 
+    @Override
+    public abstract boolean ShowHtmlWithOptions(SecondaryBrowserOptions browserOptions);
+    
     @Override
     public abstract boolean DownloadFile(String url);
     
