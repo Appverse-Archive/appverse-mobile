@@ -29,8 +29,10 @@ using System.Threading;
 using System.Collections.Generic;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
+using Unity.Core.Security;
 using Unity.Core.Notification;
 using Unity.Core.System;
+using Unity.Core.System.Launch;
 using Unity.Core.System.Resource;
 using Unity.Core.System.Server.Net;
 using Unity.Core.System.Service;
@@ -51,6 +53,13 @@ namespace UnityUI.iOS
                 
         private static string NOT_IMPORTANT_VARIABLE = "$replace_me$";
 		private bool disableThumbnails = false;
+		private bool blockRooted = false;
+		private bool securityChecksPerfomed = false;
+		private bool securityChecksPassed = false;
+		private static string DEFAULT_LOCKED_HTML = "app/config/error_rooted.html";
+
+		private List<LaunchData> launchData = null;
+		private bool handledOpenUrl = false;
 
 		// class-level declarations
 		UIWindow window;
@@ -128,12 +137,17 @@ namespace UnityUI.iOS
 			try {
 				var disableThumbnailskey = NSBundle.MainBundle.ObjectForInfoDictionary("Unity_DisableThumbnails");
 				disableThumbnails = Convert.ToBoolean(Convert.ToInt32(""+disableThumbnailskey));
+
+				var blockRootedkey = NSBundle.MainBundle.ObjectForInfoDictionary("Appverse_BlockRooted");
+				blockRooted = Convert.ToBoolean(Convert.ToInt32(""+blockRootedkey));
+
 #if DEBUG
 				log ("Disable Background Snapshot? " + disableThumbnails);
+				log ("Should block jailbroken device? " + blockRooted);
 #endif
 			} catch(Exception ex) {
 #if DEBUG
-				log ("Exception getting 'Unity_DisableThumbnails' from application preferences: " + ex.Message);
+				log ("Exception getting application preferences: " + ex.Message);
 #endif
 			}
 		
@@ -159,7 +173,7 @@ namespace UnityUI.iOS
 			InitializeUnity ();
 		}
 
-		public override bool FinishedLaunching (UIApplication application, NSDictionary launcOptions)
+		public override bool FinishedLaunching (UIApplication application, NSDictionary launchOptions)
 		{
 			#if DEBUG
 			log ("FinishedLaunching with NSDictionary");
@@ -190,10 +204,28 @@ namespace UnityUI.iOS
 				// The NSDictionary options variable would contain any notification data if the user clicked the 'view' button on the notification
 				// to launch the application. 
 				// This method processes these options from the FinishedLaunching, as well as the ReceivedRemoteNotification methods.
-				processNotification(launcOptions, true, applicationState);
+				processNotification(launchOptions, true, applicationState);
+			
+				// Processing extra data received when launched externally (using custom scheme url)
+				processLaunchData();
+
 			};
 
 			return true;
+		}
+
+		/// <summary>
+		/// Processes the launch data received when launched externally (using custom scheme url).
+		/// </summary>
+		void processLaunchData() {
+#if DEBUG
+			log ("************** processLaunchData... should handle open url? : " + handledOpenUrl + ", launchedData?: " + launchData);
+#endif
+			if(handledOpenUrl && launchData != null && launchData.Count > 0) {
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnExternallyLaunched", launchData);
+				handledOpenUrl = false;
+				launchData = null;
+			}
 		}
 
 		/// <summary>
@@ -205,28 +237,34 @@ namespace UnityUI.iOS
 		void processNotification(NSDictionary options, bool fromFinishedLaunching, UIApplicationState applicationState)
 		{
 
-#if DEBUG
-			log ("******* PROCESSING NOTIFICATION fromFinishedLaunching="+fromFinishedLaunching+". application state: "+ applicationState);
-#endif
-			if(options != null) {
-
-				// LOCAL NOTIFICATIONS
-
-				UILocalNotification localNotif = (UILocalNotification) options.ObjectForKey(UIApplication.LaunchOptionsLocalNotificationKey);
-				this.ProcessLocalNotification(applicationState, localNotif);
-
-				// REMOTE NOTIFICATIONS
-				if(fromFinishedLaunching) {
-					NSDictionary remoteNotif = (NSDictionary) options.ObjectForKey(UIApplication.LaunchOptionsRemoteNotificationKey);
-					this.ProcessRemoteNotification(remoteNotif, fromFinishedLaunching, applicationState);
+			try {
+				#if DEBUG
+				log ("******* PROCESSING NOTIFICATION fromFinishedLaunching="+fromFinishedLaunching+". application state: "+ applicationState);
+				#endif
+				if (options != null) {
+	
+					// LOCAL NOTIFICATIONS
+	
+					UILocalNotification localNotif = (UILocalNotification)options.ObjectForKey (UIApplication.LaunchOptionsLocalNotificationKey);
+					this.ProcessLocalNotification (applicationState, localNotif);
+	
+					// REMOTE NOTIFICATIONS
+					if (fromFinishedLaunching) {
+						NSDictionary remoteNotif = (NSDictionary)options.ObjectForKey (UIApplication.LaunchOptionsRemoteNotificationKey);
+						this.ProcessRemoteNotification (remoteNotif, fromFinishedLaunching, applicationState);
+					} else {
+						this.ProcessRemoteNotification (options, fromFinishedLaunching, applicationState);
+					}
+	
 				} else {
-					this.ProcessRemoteNotification(options, fromFinishedLaunching, applicationState);
+					#if DEBUG
+					log ("******* NO launch options");
+					#endif
 				}
-
-			} else {
-#if DEBUG
-				log ("******* NO launch options");
-#endif
+			} catch (System.Exception ex) {
+				#if DEBUG
+				log ("******* Unhandled exception when trying to process notification. fromFinishedLaunching[" + fromFinishedLaunching + "]. Exception message: " + ex.Message);
+				#endif
 			}
 
 		}
@@ -239,89 +277,108 @@ namespace UnityUI.iOS
 #if DEBUG
 				log (" ******* PROCESSING REMOTE NOTIFICATION Notification Payload received");
 #endif
-				
-				//Get the aps dictionary
-				NSDictionary aps = options.ObjectForKey(new NSString("aps")) as NSDictionary;
-				
+				NotificationData notificationData = new NotificationData ();
 				string alert = string.Empty;
 				string sound = string.Empty;
 				int badge = -1;
-				
-				//Extract the alert text
-				//NOTE: Just for the simple alert specified by "  aps:{alert:"alert msg here"}  "
-				//      For complex alert with Localization keys, etc., the "alert" object from the aps dictionary
-				//      will be another NSDictionary... Basically the json gets dumped right into a NSDictionary, so keep that in mind
-				if (aps.ContainsKey(new NSString("alert"))) {
-					alert = (aps[new NSString("alert")] as NSString).ToString();
-#if DEBUG
-					log ("******* PROCESSING NOTIFICATION Notification Payload contains an alert message");
-#endif
-				}
-				
-				//Extract the sound string
-				if (aps.ContainsKey(new NSString("sound"))) {
-					sound = (aps[new NSString("sound")] as NSString).ToString();
-#if DEBUG
-					log ("******* PROCESSING NOTIFICATION Notification Payload contains sound");
-#endif
-				}
-				
-				//Extract the badge
-				if (aps.ContainsKey(new NSString("badge")))
-				{
-					string badgeStr = (aps[new NSString("badge")] as NSObject).ToString();
-					int.TryParse(badgeStr, out badge);
-#if DEBUG
-					log ("******* PROCESSING NOTIFICATION Notification Payload contains a badge number: " + badge);
-#endif
-				}
-				
-				//If this came from the ReceivedRemoteNotification while the app was running,
-				// we of course need to manually process things like the sound, badge, and alert.
-				if (!fromFinishedLaunching && applicationState == UIApplicationState.Active)
-				{
+
+				try {
+					//Get the aps dictionary
+					NSDictionary aps = options.ObjectForKey (new NSString ("aps")) as NSDictionary;
 					
-#if DEBUG
-					log ("******* PROCESSING NOTIFICATION app was running, so manually showing notification");
-#endif
+
+					//Extract the alert text
+					//NOTE: Just for the simple alert specified by "  aps:{alert:"alert msg here"}  "
+					//      For complex alert with Localization keys, etc., the "alert" object from the aps dictionary
+					//      will be another NSDictionary... Basically the json gets dumped right into a NSDictionary, so keep that in mind
+					if (aps.ContainsKey (new NSString ("alert"))) {
+						string alertType = "undefined";
+						if (aps[new NSString ("alert")].GetType () == typeof(NSString)) {
+							alert = (aps [new NSString ("alert")] as NSString).ToString ();
+							alertType = "NSString";
+						} else if (aps [new NSString ("alert")].GetType () == typeof(NSDictionary)) {
+							NSDictionary alertNSDictionary = aps.ObjectForKey (new NSString ("alert")) as NSDictionary;
+							alertType = "NSDictionary";
+							// We only get "body" key from that dictionary
+							if (alertNSDictionary.ContainsKey (new NSString ("body")) 
+							    	&& (alertNSDictionary[new NSString ("body")].GetType () == typeof(NSString))) {
+								alert = (alertNSDictionary [new NSString ("body")] as NSString).ToString ();
+							}
+						}
 					
-					UIRemoteNotificationType enabledRemoteNotificationTypes = UIApplication.SharedApplication.EnabledRemoteNotificationTypes;
-					
-					bool alertEnabled = ((enabledRemoteNotificationTypes & UIRemoteNotificationType.Alert) == UIRemoteNotificationType.Alert);
-					bool soundEnabled = ((enabledRemoteNotificationTypes & UIRemoteNotificationType.Sound) == UIRemoteNotificationType.Sound);
-					bool badgeEnabled = ((enabledRemoteNotificationTypes & UIRemoteNotificationType.Badge) == UIRemoteNotificationType.Badge);
-					
-#if DEBUG
-					log ("******* PROCESSING NOTIFICATION types enabled: alert[" + alertEnabled+"], sound[" + soundEnabled + "], badge[" + badgeEnabled+ "]");
-#endif
-					//Manually set the badge in case this came from a remote notification sent while the app was open
-					if (badgeEnabled) {
-						this.UpdateApplicationIconBadgeNumber(badge);
+						#if DEBUG
+						log ("******* PROCESSING NOTIFICATION Notification Payload contains an alert message. Type [" + alertType + "]");
+						#endif
 					}
 					
-					//Manually play the sound
-					if (soundEnabled)
-					{
-						this.PlayNotificationSound(sound);
+					//Extract the sound string
+					if (aps.ContainsKey (new NSString ("sound")) && (aps [new NSString ("sound")].GetType() == typeof(NSString))) {
+						sound = (aps [new NSString ("sound")] as NSString).ToString ();
+						#if DEBUG
+						log ("******* PROCESSING NOTIFICATION Notification Payload contains sound");
+						#endif
 					}
 					
-					//Manually show an alert
-					if (alertEnabled)
-					{
-						this.ShowNotificationAlert("Notification", alert);
+					//Extract the badge
+					if (aps.ContainsKey (new NSString ("badge")) && (aps [new NSString ("badge")].GetType() == typeof(NSObject))) {
+						string badgeStr = (aps [new NSString ("badge")] as NSObject).ToString ();
+						int.TryParse (badgeStr, out badge);
+						#if DEBUG
+						log ("******* PROCESSING NOTIFICATION Notification Payload contains a badge number: " + badge);
+						#endif
 					}
+					
+					//If this came from the ReceivedRemoteNotification while the app was running,
+					// we of course need to manually process things like the sound, badge, and alert.
+					if (!fromFinishedLaunching && applicationState == UIApplicationState.Active) {
+						
+						#if DEBUG
+						log ("******* PROCESSING NOTIFICATION app was running, so manually showing notification");
+						#endif
+						
+						UIRemoteNotificationType enabledRemoteNotificationTypes = UIApplication.SharedApplication.EnabledRemoteNotificationTypes;
+						
+						bool alertEnabled = ((enabledRemoteNotificationTypes & UIRemoteNotificationType.Alert) == UIRemoteNotificationType.Alert);
+						bool soundEnabled = ((enabledRemoteNotificationTypes & UIRemoteNotificationType.Sound) == UIRemoteNotificationType.Sound);
+						bool badgeEnabled = ((enabledRemoteNotificationTypes & UIRemoteNotificationType.Badge) == UIRemoteNotificationType.Badge);
+						
+						#if DEBUG
+						log ("******* PROCESSING NOTIFICATION types enabled: alert[" + alertEnabled+"], sound[" + soundEnabled + "], badge[" + badgeEnabled+ "]");
+						#endif
+						//Manually set the badge in case this came from a remote notification sent while the app was open
+						if (badgeEnabled) {
+							this.UpdateApplicationIconBadgeNumber (badge);
+						}
+						
+						//Manually play the sound
+						if (soundEnabled) {
+							this.PlayNotificationSound (sound);
+						}
+						
+						//Manually show an alert
+						if (alertEnabled) {
+							this.ShowNotificationAlert ("Notification", alert);
+						}
+					}
+					
+
+					Dictionary<String,Object> customDic = IPhoneUtils.GetInstance ().ConvertToDictionary (new NSMutableDictionary (options));
+					customDic.Remove ("aps"); // it is not needed to pass the "aps" (notification iOS data) inside the "custom data json string"
+					notificationData.CustomDataJsonString = IPhoneUtils.GetInstance ().JSONSerialize (customDic);
+					
+
+				} catch (System.Exception ex) {
+					#if DEBUG
+					log (" ******* Unhanlded exception processing notification payload received. Exception message: " + ex.Message);
+					#endif
+				} finally {
+
+					notificationData.AlertMessage = alert;
+					notificationData.Badge = badge;
+					notificationData.Sound = sound;
+
+					IPhoneUtils.GetInstance ().FireUnityJavascriptEvent ("Unity.OnRemoteNotificationReceived", notificationData);
 				}
-				
-				NotificationData notificationData = new NotificationData();
-				notificationData.AlertMessage = alert;
-				notificationData.Badge = badge;
-				notificationData.Sound = sound;
-				
-				Dictionary<String,Object> customDic = IPhoneUtils.GetInstance().ConvertToDictionary(new NSMutableDictionary(options));
-				customDic.Remove ("aps"); // it is not needed to pass the "aps" (notification iOS data) inside the "custom data json string"
-				notificationData.CustomDataJsonString = IPhoneUtils.GetInstance().JSONSerialize(customDic);
-				
-				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnRemoteNotificationReceived", notificationData);
 				
 			} else {
 #if DEBUG
@@ -436,22 +493,26 @@ namespace UnityUI.iOS
 #if DEBUG
 			log ("Success registering for Remote Notifications");
 #endif
+			// ****** REMOVED "lastDeviceToken storage" feature. Marga 06/08/2013 . Platform will always call the JS listener; same behavior in all platforms ******
 
 			// First, get the last device token we know of
-			string lastDeviceToken = NSUserDefaults.StandardUserDefaults.StringForKey("deviceToken");
+			// string lastDeviceToken = NSUserDefaults.StandardUserDefaults.StringForKey("deviceToken");
 			
 			//There's probably a better way to do this
 			NSString strFormat = new NSString("%@");
-			NSString newDeviceToken = new NSString(MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr_IntPtr(new MonoTouch.ObjCRuntime.Class("NSString").Handle, new MonoTouch.ObjCRuntime.Selector("stringWithFormat:").Handle, strFormat.Handle, deviceToken.Handle));
+			NSString newToken = new NSString(MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr_IntPtr(new MonoTouch.ObjCRuntime.Class("NSString").Handle, new MonoTouch.ObjCRuntime.Selector("stringWithFormat:").Handle, strFormat.Handle, deviceToken.Handle));
+			
+			var newDeviceToken = newToken.ToString().Replace("<", "").Replace(">", "").Replace(" ", "");
 #if DEBUG
-			log ("New device token: " + newDeviceToken);
+			log ("Device token: " + newDeviceToken);
 #endif
 			// We only want to send the device token to the server if it hasn't changed since last time
 			// no need to incur extra bandwidth by sending the device token every time
-			if (!newDeviceToken.Equals(lastDeviceToken))
-			{
+			// if (!newDeviceToken.Equals(lastDeviceToken))
+			//{
 				// Send the new device token to your application server
-
+				// ****** REMOVED "lastDeviceToken storage" feature. Marga 06/08/2013 . Platform will always call the JS listener; same behavior in all platforms ******
+				
 				RegitrationToken registrationToken = new RegitrationToken();
 				registrationToken.StringRepresentation = newDeviceToken;
 				byte[] buffer = new byte[deviceToken.Length];
@@ -460,8 +521,8 @@ namespace UnityUI.iOS
 				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnRegisterForRemoteNotificationsSuccess", registrationToken);
 
 				//Save the new device token for next application launch
-				NSUserDefaults.StandardUserDefaults.SetString(newDeviceToken, "deviceToken");
-			}
+				// NSUserDefaults.StandardUserDefaults.SetString(newDeviceToken, "deviceToken");
+			//}
 		}
 
 		/// <summary>
@@ -514,12 +575,98 @@ namespace UnityUI.iOS
 		//[Export("InitializeUnity")]
 		private void InitializeUnity ()
 		{
-			using (var pool = new NSAutoreleasePool ()) {
-				Thread thread = new Thread (InitializeUnityServer as ThreadStart);
-				thread.Priority = ThreadPriority.BelowNormal;
-				thread.Start ();
+
+			if (performSecurityChecks ()) {
+
+				#if DEBUG
+				log ("Security checks passed... initializing Appverse...");
+				#endif
+
+				using (var pool = new NSAutoreleasePool ()) {
+
+					ThreadStart initServer = new ThreadStart (InitializeUnityServer);
+					Thread thread = new Thread (initServer);
+					thread.Priority = ThreadPriority.AboveNormal;
+					thread.Start ();
 				
+				}
 			}
+		}
+
+		private bool performSecurityChecks() {
+
+
+			if (securityChecksPerfomed) {
+				#if DEBUG
+				log ("security checks already performed");
+				#endif
+				return securityChecksPassed; // if security checks already performed, return
+			}
+
+			#if DEBUG
+			log ("performing security checks...");
+			#endif
+
+			//  initialize variable
+			securityChecksPassed = false;
+
+			if (blockRooted) {
+
+				#if DEBUG
+				log ("Checking device jailbroken (this app is not allowed to run in those devices)... ");
+				#endif
+
+				ISecurity securityService = (ISecurity)IPhoneServiceLocator.GetInstance ().GetService ("security");
+				bool IsDeviceModified = securityService.IsDeviceModified ();
+
+				if (IsDeviceModified) {
+
+					#if DEBUG
+					log ("Device is jailbroken. Application is blocked as per build configuration demand");
+					#endif
+
+					UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+
+						#if DEBUG
+						log ("Loading error page...");
+						#endif
+						try {
+
+							string htmlErrorPageFile = IPhoneUtils.GetInstance().GetFileFullPath(DEFAULT_LOCKED_HTML);
+							byte[] htmlErrorPageBytes = IPhoneUtils.GetInstance().GetResourceAsBinary(htmlErrorPageFile, true);
+
+							NSData htmlErrorPageData = NSData.FromArray(htmlErrorPageBytes);
+							string mimeType = "text/html";
+							string textEncodingName = "UTF-8";
+
+							MainViewController ().loadWebViewData(htmlErrorPageData, mimeType, textEncodingName, new NSUrl("/"));
+
+						} catch (Exception ex) {
+							#if DEBUG
+							log ("Unable to load error page on Appverse WebView. Exception message: " + ex.Message);
+							#endif
+						}
+
+					});
+
+					this.DismissSplashScreen();
+
+				} else {
+					securityChecksPassed = true;
+					#if DEBUG
+					log ("Device is NOT jailbroken.");
+					#endif
+				}
+
+			} else { 
+				securityChecksPassed = true;
+				#if DEBUG
+				log ("This app could be used in jailbroken devices");
+				#endif
+			}
+
+			securityChecksPerfomed = true;
+			return securityChecksPassed;
 		}
 
 		[Export("InitializeUnityServer")]
@@ -530,8 +677,10 @@ namespace UnityUI.iOS
 				openSocketListener (settings);
 				//InitializeUnityView ();
 			using (var pool = new NSAutoreleasePool ()) {	
-				Thread thread = new Thread (InitializeUnityView as ThreadStart);
-				thread.Priority = ThreadPriority.AboveNormal;
+				ThreadStart initUnityView = new ThreadStart (InitializeUnityView);
+				Thread thread = new Thread (initUnityView);
+				thread.Priority = ThreadPriority.BelowNormal;
+				Thread.Sleep (100); // testing race condition when starting server and view load threads
 				thread.Start ();
 			}
 		}
@@ -539,40 +688,47 @@ namespace UnityUI.iOS
 		[Export("NotifyEnterForeground")]
 		private void NotifyEnterForeground ()
 		{
-			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
-				string script = "try{Unity._toForeground()}catch(e){}";
-				#if DEBUG
-				log ("NotifyJavascript: " + script);
-				#endif
-				try {
-					MainViewController ().webView.EvaluateJavascript(script);
-				} catch (Exception ex) {
+			if (performSecurityChecks ()) { // do not execute javascript on foreground if security checks failed
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+					string script = "try{Unity._toForeground()}catch(e){}";
 					#if DEBUG
-					log ("NotifyEnterForeground: Unable to execute javascript code: " + ex.Message);
+				log ("NotifyJavascript: " + script);
 					#endif
-				}
+					try {
+						MainViewController ().webView.EvaluateJavascript (script);
+					} catch (Exception ex) {
+						#if DEBUG
+					log ("NotifyEnterForeground: Unable to execute javascript code: " + ex.Message);
+						#endif
+					}
+
+					// Processing extra data received when launched externally (using custom scheme url)
+					processLaunchData ();
 				
-			});
+				});
+			}
 			
 		}
 		
 		[Export("NotifyEnterBackground")]
 		private void NotifyEnterBackground ()
 		{
-			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
-				string script = "try{Unity._toBackground()}catch(e){}";
-				#if DEBUG
-				log ("NotifyJavascript: " + script);
-				#endif
-				try {
-					MainViewController ().webView.EvaluateJavascript(script);
-				} catch (Exception ex) {
+			if (performSecurityChecks ()) { // do not execute javascript on background if security checks failed
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
+					string script = "try{Unity._toBackground()}catch(e){}";
 					#if DEBUG
-					log ("NotifyEnterBackground: Unable to execute javascript code: " + ex.Message);
+				log ("NotifyJavascript: " + script);
 					#endif
-				}
+					try {
+						MainViewController ().webView.EvaluateJavascript (script);
+					} catch (Exception ex) {
+						#if DEBUG
+					log ("NotifyEnterBackground: Unable to execute javascript code: " + ex.Message);
+						#endif
+					}
 				
-			});
+				});
+			}
 			
 		}
 		
@@ -581,7 +737,7 @@ namespace UnityUI.iOS
 			#if DEBUG
 			log ("OnActivated");
 			#endif
-			if (httpServer == null) {
+			if (httpServer == null && performSecurityChecks()) {  // do not open socket listener on foreground if security checks failed
 				NSDictionary settings = loadSettings ();
 				openSocketListener (settings);
 			}
@@ -616,7 +772,9 @@ namespace UnityUI.iOS
 				this.ShowSplashScreen(orientation);
 			}
 			using (var pool = new NSAutoreleasePool ()) {
-				Thread thread = new Thread (NotifyEnterBackground as ThreadStart);
+
+				ThreadStart enterBackground = new ThreadStart (NotifyEnterBackground);
+				Thread thread = new Thread (enterBackground);
 				thread.Priority = ThreadPriority.BelowNormal;
 				thread.Start ();
 				
@@ -641,28 +799,68 @@ namespace UnityUI.iOS
 			}
 			
 			using (var pool = new NSAutoreleasePool ()) {
-				Thread thread = new Thread (NotifyEnterForeground as ThreadStart);
+				ThreadStart start = new ThreadStart (NotifyEnterForeground);
+				Thread thread = new Thread (start);
 				thread.Priority = ThreadPriority.BelowNormal;
 				thread.Start ();
 				
 			}
 		}
-		
-		/* TODO :: latest monotouch version does not have the same method signature, please review
-		public override void HandleOpenURL (UIApplication application, NSUrl url)
+
+		public override bool HandleOpenURL (UIApplication application, NSUrl url)
 		{
+			if (url == null) {
+				#if DEBUG
+				log ("************************ HandleOpenURL without NULL .... resetting launch data");
+				#endif
+				handledOpenUrl = false;
+				launchData = null;
+				return false;
+			}
+
 			#if DEBUG
-			log ("HandleOpenURL -> " + url.AbsoluteString);
+			log ("************************ HandleOpenURL -> " + url.AbsoluteString);
 			#endif
+
+			handledOpenUrl = true;
+
+			launchData = new List<LaunchData>();
+
+			#if DEBUG
+			log ("host: " + url.Host);
+			log ("query: " + url.Query);
+
+			// other possible parameters
+			//log ("path: " + url.Path);
+			//log ("parameter string: " + url.ParameterString);
+			//log ("fragment: " + url.Fragment);
+
+			#endif
+
+			if (url.Host != null) {
+				launchData.Add (new LaunchData (LaunchConstants.LAUNCH_DATA_URI_SCHEME_PATH, url.Host));
+			}
+
+			if (url.Query != null) {
+				string[] parts = url.Query.Split (new char[] { '&' });
+				//log ("parts: " + parts.Length);
+				for (var i=0; i<parts.Length; i++) {
+					string[] parameters = parts[i].Split (new char[] { '=' });
+					/*
+					log ("parameters: " + parameters.Length);
+					log ("parameter.Name: " + parameters[0]);
+					log ("parameter.Value: " + parameters[1]);
+					*/
+					launchData.Add (new LaunchData (parameters[0], parameters[1]));
+				}
+			}
+
+			if (launchData.Count <= 0) {
+				launchData = null;
+			}
+
+			return true;
 		}
-                */
-		/*
-             * Here we will check what URL scheme is being requested.
-             * if mailto: -> forward to operating system
-             * if sms: -> forward to operating system
-             * ...
-             * if unity: -> keep the URL and load from the listener.
-             */
 
 		public override void ReceiveMemoryWarning (UIApplication application)
 		{
