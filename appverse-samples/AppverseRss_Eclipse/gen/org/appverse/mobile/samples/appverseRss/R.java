@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package org.appverse.mobile.samples.appverseRss;
+package org.appverse.mobile.samples.appverserss;
 
 public final class R {
     public static final class array {
@@ -123,9 +123,8 @@ public final class R {
         public static final int beep=0x7f050000;
     }
     public static final class string {
-        public static final int Unity_DisableThumbnails=0x7f0a0080;
-        public static final int Unity_HoldSplashScreenOnStartup=0x7f0a007f;
-        public static final int app_main_name=0x7f0a007d;
+        public static final int Unity_DisableThumbnails=0x7f0a007f;
+        public static final int Unity_HoldSplashScreenOnStartup=0x7f0a007e;
         public static final int app_name=0x7f0a0000;
         public static final int app_picker_name=0x7f0a0001;
         public static final int bookmark_picker_name=0x7f0a0002;
@@ -248,7 +247,7 @@ public final class R {
         public static final int result_uri=0x7f0a0077;
         public static final int result_wifi=0x7f0a0078;
         public static final int sbc_name=0x7f0a0079;
-        public static final int toast_create_contact=0x7f0a007e;
+        public static final int toast_create_contact=0x7f0a007d;
         public static final int wifi_changing_network=0x7f0a007a;
         public static final int wifi_ssid_label=0x7f0a007b;
         public static final int wifi_type_label=0x7f0a007c;
