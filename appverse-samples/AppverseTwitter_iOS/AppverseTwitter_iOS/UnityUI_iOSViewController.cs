@@ -96,8 +96,8 @@ namespace UnityUI.iOS
 						if (("UIInterfaceOrientation" + UIInterfaceOrientation.LandscapeRight.ToString ()) == mySupportedOrientation.ToString ()) {
 							orientationSupportedLandscapeRight = true;
 						}
-		}
-		
+					}
+					
 				} 
 			}
 		}
@@ -179,11 +179,15 @@ namespace UnityUI.iOS
 				SystemLogger.Log (SystemLogger.Module.GUI, "ViewController: " + message);
 			}
 		}
-		
+
 		public void loadWebView (string urlPath)
 		{
 			NSUrl url = new NSUrl (urlPath);
-			NSUrlRequest request = new NSUrlRequest (url, NSUrlRequestCachePolicy.ReturnCacheDataElseLoad, 3600.0);
+			//NSUrlRequest request = new NSUrlRequest(url, NSUrlRequestCachePolicy.ReturnCacheDataElseLoad, 3600.0);
+			// FIX (16-09-2013) - testing iOS 7 apps; resources are not refreshed when installing a new app version on the top of a previous one
+			// We need to remove the cache data loaded
+			NSUrlRequest request = new NSUrlRequest(url		, NSUrlRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData, 3600.0);
+
 			if (webView != null) {
 				this.webView.LoadRequest (request);
 			} else {
@@ -191,6 +195,15 @@ namespace UnityUI.iOS
 			}
 			
 		}
+
+		public void loadWebViewData(NSData data, string mimeType, string textEncodingName, NSUrl baseUrl) {
+			if (webView != null) {
+				this.webView.LoadData(data, mimeType, textEncodingName, baseUrl);
+			} else {
+				log ("WebView is null. Data could not be loaded");
+			}
+		}
+
 #endregion
 		
 		/// DEPRECATED for iOS 6 and later, but needed for iOS 5 and earlier to support additional orientations
@@ -201,15 +214,15 @@ namespace UnityUI.iOS
 			if (shouldAutorotate) {
 				// Check supported orientations
 				if (supportedOrientations != null) {
-						bool orientationSupported = false;
-						for (uint index = 0; index < supportedOrientations.Count; index++) {
-							NSString mySupportedOrientation = new NSString (supportedOrientations.ValueAt (index));
-							if (("UIInterfaceOrientation" + toInterfaceOrientation.ToString ()) == mySupportedOrientation.ToString ()) {
-								orientationSupported = true;
-								break;
-							}
+					bool orientationSupported = false;
+					for (uint index = 0; index < supportedOrientations.Count; index++) {
+						NSString mySupportedOrientation = new NSString (supportedOrientations.ValueAt (index));
+						if (("UIInterfaceOrientation" + toInterfaceOrientation.ToString ()) == mySupportedOrientation.ToString ()) {
+							orientationSupported = true;
+							break;
 						}
-						shouldAutorotate = orientationSupported;
+					}
+				    shouldAutorotate = orientationSupported;
 				} else {
 					log ("Supported orientations not configured. All orientations are supported by default");
 				}
@@ -235,6 +248,16 @@ namespace UnityUI.iOS
 			}
 		
 			log("ShouldAutorotate? " + shouldAutorotate);
+			if (shouldAutorotate) {
+				if(this.splashscreenShownOnStartupTime) {
+					UIInterfaceOrientation currentOrientation = UIApplication.SharedApplication.StatusBarOrientation;
+					if (this.splashView != null) {
+						log ("Adjusting splashscreen to current orientation: " + currentOrientation);
+						this.splashView.SetSplashViewForOrientation (currentOrientation);
+					}
+				}
+			}
+
 			return shouldAutorotate;
 		}
 		
@@ -251,7 +274,7 @@ namespace UnityUI.iOS
 				}
 				
 				if(orientationSupportedPortrait && !orientationSupportedLandscapeLeft && !orientationSupportedLandscapeRight && orientationSupportedPortraitUpsideDown) {
-					supportedOrientationMask = UIInterfaceOrientationMask.Portrait;
+					supportedOrientationMask = UIInterfaceOrientationMask.Portrait | UIInterfaceOrientationMask.PortraitUpsideDown;
 				}
 				
 				if(!orientationSupportedPortrait && !orientationSupportedLandscapeLeft && !orientationSupportedLandscapeRight && orientationSupportedPortraitUpsideDown) {
@@ -267,7 +290,27 @@ namespace UnityUI.iOS
 				}
 				
 				if(!orientationSupportedPortrait && orientationSupportedLandscapeLeft && orientationSupportedLandscapeRight && !orientationSupportedPortraitUpsideDown) {
-					supportedOrientationMask = UIInterfaceOrientationMask.Landscape;
+					supportedOrientationMask = UIInterfaceOrientationMask.LandscapeLeft | UIInterfaceOrientationMask.LandscapeRight;
+				}
+
+
+				if(orientationSupportedPortrait && orientationSupportedLandscapeLeft && !orientationSupportedLandscapeRight && !orientationSupportedPortraitUpsideDown) {
+					supportedOrientationMask = UIInterfaceOrientationMask.LandscapeLeft | UIInterfaceOrientationMask.Portrait;
+				}
+
+
+				if(orientationSupportedPortrait && !orientationSupportedLandscapeLeft && orientationSupportedLandscapeRight && !orientationSupportedPortraitUpsideDown) {
+					supportedOrientationMask = UIInterfaceOrientationMask.Portrait | UIInterfaceOrientationMask.LandscapeRight;
+				}
+
+
+				if(!orientationSupportedPortrait && orientationSupportedLandscapeLeft && !orientationSupportedLandscapeRight && orientationSupportedPortraitUpsideDown) {
+					supportedOrientationMask = UIInterfaceOrientationMask.LandscapeLeft | UIInterfaceOrientationMask.PortraitUpsideDown;
+				}
+
+
+				if(!orientationSupportedPortrait && !orientationSupportedLandscapeLeft && orientationSupportedLandscapeRight && orientationSupportedPortraitUpsideDown) {
+					supportedOrientationMask = UIInterfaceOrientationMask.PortraitUpsideDown | UIInterfaceOrientationMask.LandscapeRight;
 				}
 			}
 			
@@ -346,11 +389,11 @@ namespace UnityUI.iOS
 				this.isTopController = true;
 			}
 		}
-
+		
 		public void SetAsTopController(bool topController) {
 			this.isTopController = topController; 
 		}
-
+		
 		public override void DidReceiveMemoryWarning ()
 		{
 			// Releases the view if it doesn't have a superview.
@@ -379,6 +422,67 @@ namespace UnityUI.iOS
 			ReleaseDesignerOutlets ();
 		}
 		*/
+
+
+		public override UIStatusBarStyle PreferredStatusBarStyle ()
+		{
+			UIStatusBarStyle statusBarStyle = UIStatusBarStyle.Default;
+
+			try {
+				var myStatusBarStyle = NSBundle.MainBundle.ObjectForInfoDictionary("Appverse_StatusBarStyle");
+				NSString myStatusBarStyleNSString = new NSString("dark");
+				if(myStatusBarStyle!=null) {
+					if(myStatusBarStyle is NSString) {
+						myStatusBarStyleNSString = (NSString) myStatusBarStyle;
+
+						#if DEBUG
+						log ("Preferred StatusBar Style: " + myStatusBarStyleNSString);
+						#endif
+					}
+					if(myStatusBarStyleNSString!=null && myStatusBarStyleNSString.Equals(new NSString("light"))) {
+						#if DEBUG
+						log ("Preferred StatusBar Style: " + myStatusBarStyleNSString + ", applying light content status bar style");
+						#endif
+						statusBarStyle = UIStatusBarStyle.LightContent;  // Content in the status bar is drawn with light values. Preferable for use wth darker-colored content views.
+					} else {
+						#if DEBUG
+						log ("Preferred StatusBar Style: " + myStatusBarStyleNSString + ", applying default status bar style (dark)");
+						#endif
+					}
+				}
+			} catch(Exception ex) {
+				#if DEBUG
+				log ("Exception getting 'Appverse_StatusBarStyle' from application preferences: " + ex.Message);
+				#endif
+			}
+
+			return statusBarStyle;
+		
+		}
+
+		public override bool PrefersStatusBarHidden ()
+		{
+
+			bool hideStatusBar = false;
+			try {
+				var myStatusBarHidden = NSBundle.MainBundle.ObjectForInfoDictionary("Appverse_StatusBarHidden");
+				if(myStatusBarHidden!=null) {
+					hideStatusBar = Convert.ToBoolean(Convert.ToInt32(""+myStatusBarHidden));
+				}
+			} catch(Exception ex) {
+				#if DEBUG
+				log ("Exception getting 'Appverse_StatusBarHidden' from application preferences: " + ex.Message);
+				#endif
+			}
+
+			#if DEBUG
+			log ("Preferred StatusBar Hidden: " + hideStatusBar);
+			#endif
+
+			return hideStatusBar;
+		}
+
+
 	}
 }
 
