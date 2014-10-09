@@ -5,5 +5,5 @@
     <string name="toast_create_contact">Contact created successfully!</string>
 	<string name="Unity_HoldSplashScreenOnStartup">true</string>
 	<string name="Unity_DisableThumbnails">false</string>
-	
+	<string name="Appverse_BlockRooted">true</string>
 </resources>

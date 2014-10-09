@@ -82,6 +82,7 @@ import com.gft.unity.core.system.DisplayOrientation;
 import com.gft.unity.core.system.SystemLogger.Module;
 import com.gft.unity.core.system.launch.LaunchData;
 import com.gft.unity.core.system.log.LogManager;
+import com.gft.unity.core.security.ISecurity;
 
 public class MainActivity extends Activity {
 
@@ -93,6 +94,11 @@ public class MainActivity extends Activity {
 
 	private static final String SERVER_PROPERTIES = "Settings.bundle/Root.properties";
 	private static final String SERVER_PORT_PROPERTY = "IPC_DefaultPort";
+	
+	private boolean blockRooted = false;
+	private boolean securityChecksPerfomed = false;
+	private boolean securityChecksPassed = false;
+	private static final String DEFAULT_LOCKED_HTML = "file:///android_asset/app/config/error_rooted.html";
 
 	private WebView appView;
 	private WebChromeClient webChromeClient;
@@ -129,6 +135,7 @@ public class MainActivity extends Activity {
 				WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
 
 		disableThumbnails = checkUnityProperty("Unity_DisableThumbnails");
+		blockRooted = checkUnityProperty("Appverse_BlockRooted");
 
 		// security reasons; don't allow screen shots while this window is
 		// displayed
@@ -139,6 +146,7 @@ public class MainActivity extends Activity {
 		}
 
 		appView = new WebView(this);
+                //Platforms notification are enable by default.
 		//appView.enablePlatformNotifications();
 		setGlobalProxy();
 
@@ -220,40 +228,99 @@ public class MainActivity extends Activity {
 				AndroidServiceLocator.SERVICE_ANDROID_ASSET_MANAGER);
 		serviceLocator.RegisterService(activityManager,
 				AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		startServer();
+		
+		if(performSecurityChecks(serviceLocator))  {
 
-		/*
-		 * THIS COULD NOT BE CHECKED ON API LEVEL < 11; NO suchmethodexception
-		 * boolean hwAccelerated = appView.isHardwareAccelerated();
-		 * if(hwAccelerated)
-		 * LOG.Log(Module.GUI,"Application View is HARDWARE ACCELERATED"); else
-		 * LOG.Log(Module.GUI,"Application View is NOT hardware accelerated");
-		 */
-
-		final IntentFilter actionFilter = new IntentFilter();
-		actionFilter
-				.addAction(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
-		// actionFilter.addAction("android.intent.action.SERVICE_STATE");
-		registerReceiver(new AndroidNetworkReceiver(appView), actionFilter);
-
-		final Activity currentContext = this;
-		new Thread(new Runnable() {
-			public void run() {
-				currentContext.runOnUiThread(new Runnable() {
-					public void run() {
-						appView.loadUrl(WEBVIEW_MAIN_URL);
-
-					}
-				});
-			}
-		}).start();
+			LOG.Log(Module.GUI, "Security checks passed... initializing Appverse...");
+			
+	
+			startServer();
+	
+			/*
+			 * THIS COULD NOT BE CHECKED ON API LEVEL < 11; NO suchmethodexception
+			 * boolean hwAccelerated = appView.isHardwareAccelerated();
+			 * if(hwAccelerated)
+			 * LOG.Log(Module.GUI,"Application View is HARDWARE ACCELERATED"); else
+			 * LOG.Log(Module.GUI,"Application View is NOT hardware accelerated");
+			 */
+	
+			final IntentFilter actionFilter = new IntentFilter();
+			actionFilter
+					.addAction(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
+			// actionFilter.addAction("android.intent.action.SERVICE_STATE");
+			registerReceiver(new AndroidNetworkReceiver(appView), actionFilter);
+	
+			final Activity currentContext = this;
+			new Thread(new Runnable() {
+				public void run() {
+					currentContext.runOnUiThread(new Runnable() {
+						public void run() {
+							appView.loadUrl(WEBVIEW_MAIN_URL);
+	
+						}
+					});
+				}
+			}).start();
+		}
 
 		holdSplashScreenOnStartup = checkUnityProperty("Unity_HoldSplashScreenOnStartup");
 		hasSplash = activityManager.showSplashScreen(appView);
+		
 		RemoteNotificationIntentService.loadNotificationOptions(getResources(),
 				appView, this);
 		LocalNotificationReceiver.initialize(appView, this);
 	}
+	
+	
+	private boolean performSecurityChecks(AndroidServiceLocator serviceLocator) {
+		
+		if (securityChecksPerfomed) {
+			return securityChecksPassed; // if security checks already performed, return
+		}
+
+		//  initialize variable
+		securityChecksPassed = false;
+		
+		if (blockRooted) {
+			LOG.Log(Module.GUI, "checking device rooted");
+			
+			ISecurity securityService = (ISecurity)serviceLocator.GetService(
+					AndroidServiceLocator.SERVICE_TYPE_SECURITY);
+			boolean IsDeviceModified = securityService.IsDeviceModified ();
+
+			if (IsDeviceModified) {
+
+				LOG.Log(Module.GUI, "Device is rooted. Application is blocked as per build configuration demand");
+				
+				try {
+					LOG.Log(Module.GUI, "Loading error page...");
+					
+					final Activity currentContext = this;
+					new Thread(new Runnable() {
+						public void run() {
+							currentContext.runOnUiThread(new Runnable() {
+								public void run() {
+									appView.loadUrl(DEFAULT_LOCKED_HTML);
+									activityManager.dismissSplashScreen();
+								}
+							});
+						}
+					}).start();
+
+				} catch (Exception ex) {
+					LOG.Log(Module.GUI, "Unable to load error page on Appverse WebView. Exception message: " + ex.getMessage());
+				}
+
+			} else {
+				securityChecksPassed = true;
+				LOG.Log(Module.GUI, "Device is NOT rooted.");
+			}
+		}
+
+		securityChecksPerfomed = true;
+		return securityChecksPassed;
+	}
+	
 
 	private boolean checkUnityProperty(String propertyName) {
 		int resourceIdentifier = getResources().getIdentifier(propertyName,
@@ -341,6 +408,11 @@ public class MainActivity extends Activity {
 		 * activityManager.dismissSplashScreen(); splashShownOnBackground =
 		 * false; }
 		 */
+		
+		if(!performSecurityChecks((AndroidServiceLocator) AndroidServiceLocator.GetInstance())) return;
+
+		LOG.Log(Module.GUI, "Security checks passed... beaking up Appverse...");
+		
 		// Start HTTP server
 		startServer();
 
@@ -371,7 +443,7 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		LOG.Log(Module.GUI, "onDestroy");
+		LOG.Log(Module.GUI, "onDestroy");		
 		
 		try{
 			AndroidBeacon beacon = (AndroidBeacon) AndroidServiceLocator
@@ -380,7 +452,7 @@ public class MainActivity extends Activity {
 			
 			beacon.StopMonitoringBeacons();
 		} catch (Exception e) {
-			LOG.Log(Module.GUI, "Exception checking NFC feature enabled. Exception: " + e.getMessage());
+			LOG.Log(Module.GUI, "Exception checking BLE feature enabled. Exception: " + e.getMessage());
 		}
 		// Stop HTTP server
 		stopServer();

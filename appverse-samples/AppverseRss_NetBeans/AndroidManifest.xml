@@ -95,8 +95,7 @@
 			</intent-filter>			
 		</activity>
                 
-		<activity 
-                    android:name="org.appverse.mobile.android.ui.BrowserActivity" 
+		<activity android:name="org.appverse.mobile.android.ui.BrowserActivity" 
                     android:hardwareAccelerated="true"
                     android:exported="false">
 			<intent-filter>
@@ -104,7 +103,7 @@
 				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
 		</activity>
-		<!-- $START_TOKEN_QR_CODE$
+		<!-- $START_TOKEN_QR_CODE$-->
 		<activity android:name="com.google.zxing.client.android.CaptureActivity"
 		   android:screenOrientation="landscape"
 		   android:configChanges="orientation|keyboardHidden"
@@ -125,7 +124,7 @@
 		      <action android:name="android.intent.action.VIEW"/>
 		      <category android:name="android.intent.category.DEFAULT"/>
 		   </intent-filter>
-		</activity> -->
+		</activity>
 		<!-- $END_TOKEN_QR_CODE$-->
 
 		<!-- $START_TOKEN_REMOTE_NOTIFICATIONS$
