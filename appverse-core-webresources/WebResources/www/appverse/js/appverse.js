@@ -5441,9 +5441,37 @@ Beacon = function() {
      * <br> @version 4.7
      */
     this.serviceName = "beacon";
-
-    /**
-     * @event Event when called when a previously detected beacon is found again.
+	
+	/**
+     * Distance Type as Immediate.
+     * <br> @version 4.7
+     * @type int
+     */
+    this.IMMEDIATE = 0;
+	
+	/**
+     * Distance Type as Near.
+     * <br> @version 4.7
+     * @type int
+     */
+    this.NEAR = 1;
+	
+	/**
+     * Distance Type as Far.
+     * <br> @version 4.7
+     * @type int
+     */
+    this.FAR = 2;
+	
+	/**
+     * Distance Type as Unknown.
+     * <br> @version 4.7
+     * @type int
+     */
+    this.UNKNOWN = 3;
+	
+	/**
+     * @event OnEntered Event when called when a previously detected beacon is found again.
      * <br>Method to be overrided by JS applications, to handle this event.
      * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
 	 * @param {Appverse.Beacon.Beacon[]} beacons
@@ -5454,7 +5482,7 @@ Beacon = function() {
     };
 
     /**
-     * @event Event when called when a previously detected beacon is not found.
+     * @event OnExited Event when called when a previously detected beacon is not found.
      * <br>Method to be overrided by JS applications, to handle this event.
      * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
 	 * @param {Appverse.Beacon.Beacon[]} beacons
@@ -5465,7 +5493,7 @@ Beacon = function() {
     };
 
     /**
-     * @event Event called when a new beacon is found.
+     * @event OnDiscover Event called when a new beacon is found.
      * <br>Method to be overrided by JS applications, to handle this event.
      * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
      * @param {Appverse.Beacon.Beacon[]} beacons
@@ -5474,8 +5502,9 @@ Beacon = function() {
      */
     this.OnDiscover = function(beacons) {
     };
+	
     /**
-     * @event Event called when the distance to the known beacon changed.
+     * @event OnUpdateProximity Event called when the distance to the known beacon changed.
      * <br>Method to be overrided by JS applications, to handle this event.
      * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
 	 * @param {Appverse.Beacon.Beacon} beacon
@@ -5486,7 +5515,6 @@ Beacon = function() {
      */
     this.OnUpdateProximity = function(beacon, from, to) {
     };
-
 
 }
 
