@@ -16,6 +16,8 @@ The following modules are contained within this repository:
 * **About this project**: <http://appverse.github.com/appverse-mobile>
 * **About licenses & groups**: <http://appverse.github.com>
 * **About The Appverse Project**: <http://appverse.org>
+* **[Appverse Mobile Security](SECURITY.md)**
+
 
 ## License
 
