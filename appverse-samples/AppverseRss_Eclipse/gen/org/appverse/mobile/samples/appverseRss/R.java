@@ -26,6 +26,7 @@ public final class R {
         public static final int browserlayout=0x7f030000;
     }
     public static final class string {
+        public static final int Appverse_BlockRooted=0x7f040004;
         public static final int Unity_DisableThumbnails=0x7f040003;
         public static final int Unity_HoldSplashScreenOnStartup=0x7f040002;
         public static final int app_name=0x7f040000;
