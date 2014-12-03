@@ -23,8 +23,8 @@ In addition the framework is protected against Unintended Data Leakage, Malinten
 ## More Information
 
 * **[About this project](README.md)**
-* **About licenses & groups**: <http://appverse.github.com>
-* **About The Appverse Project**: <http://appverse.org>
+* **[About licenses & groups](http://appverse.github.com)**
+* **[About The Appverse Project](http://appverse.org)**
 
 ## License
 
