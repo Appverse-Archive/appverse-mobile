@@ -1,6 +1,7 @@
 # Appverse Mobile
 
-##### Current Version: 4.7 (9th October 2014)
+
+##### Current Version: 4.8.2 (23th Apr 2014)
 
 This repository contains the Java, C# and HTML implementations for the core interfaces, platform specific code and runtime of the Appverse Mobile platform. Appverse Mobile is a multi-platform mobile development framework allows developers to use HTML5, JavaScript, CSS3 and to leverage native functionalities of a mobile device to build apps from a common codebase.
 
@@ -19,6 +20,14 @@ The following modules are contained within this repository:
 * **[About licenses & groups](http://appverse.github.com)**
 * **[About Appverse Project](http://appverse.org)**
 * **[Appverse Mobile Security](SECURITY.md)**
+
+**This is a Legacy Branch.**
+
+There is a latest stable release of the platform in the [master](https://github.com/Appverse/appverse-mobile/tree/master) with all the new features from Appverse:
+
++ All the framework is now Async
++ Now the framework have been modularized
++ Support for iOS 64bits compilation
 
 
 ## License
