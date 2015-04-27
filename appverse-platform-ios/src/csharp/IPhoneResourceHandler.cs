@@ -27,10 +27,11 @@ using Unity.Core.System;
 using Unity.Core.System.Resource;
 using Unity.Core.System.Server.Net;
 using System;
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
+using Foundation;
+using UIKit;
 using System.Runtime.InteropServices;
-using MonoTouch.AssetsLibrary;
+using AssetsLibrary;
+using System.Reflection;
 
 namespace Unity.Platform.IPhone
 {
@@ -117,6 +118,71 @@ namespace Unity.Platform.IPhone
 			} else {
 				return base.Process (server, request, response);
 			}
+		}
+
+		public NSData ProcessWebResource(string resourcePath) {
+			//SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneResourceHandler. Processing web resource path: " + resourcePath);
+			string fn = this.GetResourceFilePath (resourcePath);
+			if (!FileExists (fn)) {
+				SystemLogger.Log (SystemLogger.Module .PLATFORM, "# IPhoneResourceHandler. Error getting response content for [" + fn + "]: File Not Found");
+				return NSData.FromString ("MANAGED WEB RESOURCE: 404 - File not found");
+			}
+
+			try {
+				return NSData.FromArray(GetRawContentFromFileStream (fn));
+
+			} catch (Exception e) {
+				SystemLogger.Log (SystemLogger.Module .PLATFORM, "# IPhoneResourceHandler. Error getting response content for [" + fn + "]", e);
+				return NSData.FromString ("MANAGED WEB RESOURCE: 500 - Error reading file: " + e);
+			}
+		}
+
+		public NSData ProcessDocumentResource(string resourcePath) {
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneResourceHandler. Processing document resource path: " + resourcePath);
+
+			// url should be escaped to reach the real filesystem path for the requested file.
+			resourcePath = Uri.UnescapeDataString(resourcePath);
+
+			// Getting Root Directory for Files in this platform.
+			IFileSystem fileSystemService = (IFileSystem)IPhoneServiceLocator.GetInstance ().GetService ("file");
+			DirectoryData rootDir = fileSystemService.GetDirectoryRoot ();
+			resourcePath = Path.Combine (rootDir.FullName, resourcePath);
+
+			// Get Resources as Binary Data and Write them to the server response
+			return NSData.FromArray(IPhoneUtils.GetInstance ().GetResourceAsBinary (resourcePath, false));
+		}
+
+		public String GetWebResourceMimeType (string resourcePath, bool webResource) {
+			string fn = resourcePath;
+			if(webResource) fn = this.GetResourceFilePath (resourcePath);
+
+			string ext = Path.GetExtension (fn);
+			string mime = (string)MimeTypes [ext];
+			if (mime == null)
+				mime = "application/octet-stream";
+
+			return mime;
+		}
+
+		private string GetResourceFilePath (string resourcePath)
+		{
+			if (resourcePath != null && !resourcePath.StartsWith ("/"))
+				resourcePath = "/" + resourcePath; 
+			string s = Assembly.GetEntryAssembly ().Location;
+			string defaultBasePath = s;
+			if (s != null) {
+				int n = s.Length;
+				int a = s.IndexOf (".app/");  
+				if(a>=0) { // applied only for special binaries
+					defaultBasePath = s.Substring (0, (a + ".app/".Length));
+				}
+			}
+			string dn = Path.GetDirectoryName (defaultBasePath);
+			if (resourcePath == "/")
+				return dn + "/index.html";
+			else
+				return dn + resourcePath;
+
 		}
 		
 	}

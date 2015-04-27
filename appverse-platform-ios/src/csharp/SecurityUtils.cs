@@ -37,21 +37,46 @@ using Org.BouncyCastle.Utilities.Collections;
 using Org.BouncyCastle.X509.Store;
 using System.Collections;
 using Unity.Core.System;
-using MonoTouch.Security;
+using Security;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.X509.Extension;
 using Org.BouncyCastle.Ocsp;
 
+using W = System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
+
 namespace Unity.Platform.IPhone
 {
 	public static class SecurityUtils
 	{
+
+		private static string _VALIDATEFINGERPRINTS = "$ValidateFingerprints$";
 		private static Dictionary<int, DateTime> myCertificateList = new Dictionary<int, DateTime>();
 
+		/// <summary>
+		/// Remove spaces to match the thumbprint.
+		/// </summary>
+		/// <returns>The thumbprint.</returns>
+		/// <param name="s">Original string</param>
+		private static string ToThumbprint ( string s){
+			List<char> result = s.ToList();
+			result.RemoveAll(c => c == ' ');
+			return new string(result.ToArray()).ToUpper();
+		}
 
-		private static String _VALIDROOTAUTHORITIES = "VeriSign;";
-
+		/// <summary>
+		/// Gets a value indicating whether this <see cref="Unity.Platform.IPhone.SecurityUtils"/> validate fingerprints.
+		/// </summary>
+		/// <value><c>true</c> if validate fingerprints; otherwise, <c>false</c>.</value>
+		public static bool ValidateFingerprints{
+			get{
+				bool bResult;
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Should validate fingerprints for remote servers? " + SecurityUtils._VALIDATEFINGERPRINTS);
+				Boolean.TryParse(SecurityUtils._VALIDATEFINGERPRINTS, out bResult);
+				return bResult;
+			}
+		}
 
 		/// <summary>
 		/// Validates the web certificates.
@@ -74,6 +99,8 @@ namespace Unity.Platform.IPhone
 		public static bool ValidateWebCertificates (Object sender, System.Security.Cryptography.X509Certificates.X509Certificate endCert, System.Security.Cryptography.X509Certificates.X509Chain chain, SslPolicyErrors Errors)
 		{
 
+			var request = sender as WebRequest;
+			string requestUri = request.RequestUri.ToString();
 
 
 			SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation");
@@ -90,7 +117,25 @@ namespace Unity.Platform.IPhone
 						}else
 							SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation. Chain Element count: " + chain.ChainElements.Count);
 
-						foreach (System.Security.Cryptography.X509Certificates.X509ChainElement cert in chain.ChainElements) {
+						if(CertIsSelfSigned(BCCert)){
+							SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation. End Certificate is Self Signed");
+							bErrorsFound = true;
+						}else
+							SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation. End Certificate NOT Self Signed");
+
+
+						if(ValidateFingerprints){ 
+							SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation. VALIDATING Fingerprint");
+							if(!VerifyFingerprint(endCert, requestUri)){
+								SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation. Invalid Fingerprint");
+								bErrorsFound = true;
+							}else
+								SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation. Valid Fingerprint");
+						}else{
+							SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation. DO NOT validate Fingerprint");
+						}
+
+						/*foreach (System.Security.Cryptography.X509Certificates.X509ChainElement cert in chain.ChainElements) {
 							X509Certificate BCCerto = Org.BouncyCastle.Security.DotNetUtilities.FromX509Certificate (cert.Certificate);
 							if(CertIsSelfSigned(BCCerto)){
 								SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** SELF SIGNED Certificate: CERT NAME " + BCCerto.SubjectDN.ToString() + " ;ID = " + BCCerto.SerialNumber);
@@ -115,7 +160,7 @@ namespace Unity.Platform.IPhone
 							}
 
 							if(!CertIsValidNow(BCCerto)) bErrorsFound = true;
-						}
+						}*/
 							
 							//if (chain.ChainElements.Count > 1 && !VerifyCertificateOCSP(chain)) bCertIsOk = true;
 
@@ -136,6 +181,24 @@ namespace Unity.Platform.IPhone
 					
 					}else if(Errors.Equals(SslPolicyErrors.RemoteCertificateChainErrors)){
 						SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation: Errors found in the certificate chain.");
+
+						SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation: Checking chain status information for each element in the chain");
+						foreach (System.Security.Cryptography.X509Certificates.X509ChainElement element in chain.ChainElements)
+						{
+							SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation: Checking chain element... " + element.Information);
+
+							if (chain.ChainStatus!=null && chain.ChainStatus.Length >= 0)
+							{
+								SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation: Chain Status array is not empty");
+								for (int index = 0; index < element.ChainElementStatus.Length; index++)
+								{
+									SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation: chain element status: " 
+										+ element.ChainElementStatus[index].Status);
+									SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation: chain element status information: " 
+										+ element.ChainElementStatus[index].StatusInformation);
+								}
+							}
+						}
 					}
 					else if(Errors.Equals(SslPolicyErrors.RemoteCertificateNameMismatch)){
 						SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation: The certificate contains errors.");
@@ -155,6 +218,52 @@ namespace Unity.Platform.IPhone
 				return false;
 			}
 		}
+
+		/// <summary>
+		/// Verifies the certificate fingerprint against the expected one
+		/// </summary>
+		/// <returns>
+		/// <c>true</c>, if certificate fingerprint is the expected, <c>false</c> otherwise.
+		/// </returns>
+		/// <param name='endCert'>
+		/// The last certificate of the chain.
+		/// </param>
+		private static bool VerifyFingerprint(System.Security.Cryptography.X509Certificates.X509Certificate endCert, String requestUri){
+			//SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation for requestUri "+ requestUri);
+
+
+			string[] fingerprints = null;
+			foreach(KeyValuePair<string, string[]> entry in IPhoneIO.fingerprints)
+			{
+				if(requestUri.StartsWith(entry.Key)) {
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "*** found fingerprint to check for requestUri: ["+requestUri+"]");
+
+					fingerprints = new string[entry.Value.Length];
+					int i = 0;
+					foreach (string fprint in entry.Value) {
+						fingerprints[i] = ToThumbprint (fprint);
+					}
+				}
+			}
+
+			if (fingerprints != null) {
+
+				W.X509Certificate2 certificateThumb = new W.X509Certificate2 (endCert);
+				//SystemLogger.Log (SystemLogger.Module.PLATFORM, "**************** Certificate Validation Thumbprint: [" + certificateThumb.Thumbprint + "]");
+				//SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation fingerprint: [" + string.Join(",", fingerprints) + "]");
+				if (!fingerprints.Contains (certificateThumb.Thumbprint)) {
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** Certificate Validation fingerprint ERROR!!!");
+					return false;
+				} 
+			} else {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** WARNING!! Certificate Validation fingerprint NOT FOUND!!! (you should provide a valid fingerprint in your io-sevices-config.xml file in order to validate HTTPS web certificates)");
+				return false;
+			}
+
+			return true;
+		
+		}
+
 
 		/// <summary>
 		/// Verifies the certificate chain via OCSP

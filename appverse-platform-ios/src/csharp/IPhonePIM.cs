@@ -25,15 +25,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using MonoTouch.AddressBook;
-using MonoTouch.AddressBookUI;
-using MonoTouch.Foundation;
+using AddressBook;
+using AddressBookUI;
+using Foundation;
 using Unity.Core.Pim;
 using Unity.Core.System;
 using System.Threading;
-using MonoTouch.UIKit;
-using MonoTouch.EventKit;
-using MonoTouch.EventKitUI;
+using UIKit;
+using EventKit;
+using EventKitUI;
 using System.Text;
 using System.Linq;
 using Unity.Core.Notification;
@@ -106,10 +106,19 @@ namespace Unity.Platform.IPhone
 		/// Notifies the denied access to contacts.
 		/// </summary>
 		private void NotifyDeniedAccessToContacts() {
+			/* Removed native alert
 			INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
 			if (notificationService != null) {
 				notificationService.StartNotifyAlert ("Access Denied", "User Denied Access to Contacts. Go to Privacy Settings to change it.", "OK");
 			}
+			*/
+
+			// Send back this information to the app via JS listener
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "WARNING !!!! User denied Access to Contacts for this app. Application is informed via the appropriate JS listener");
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Pim.onAccessToContactsDenied", null);
+			});
+
 		}
 
 		/// <summary>
@@ -180,22 +189,22 @@ namespace Unity.Platform.IPhone
 		void HandleBackButtonItemClicked (object sender, EventArgs e)
 		{
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
+				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewController(true);
 			});
 		}
 
 		private class UnknownPersonViewControllerDelegate : ABUnknownPersonViewControllerDelegate {
 			
-			public override void DidResolveToPerson (ABUnknownPersonViewController personViewController, IntPtr person)
+			public override void DidResolveToPerson (ABUnknownPersonViewController personViewController, ABPerson person)
 			{
 				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 					SystemLogger.Log(SystemLogger.Module.PLATFORM, "On UnknownPersonViewControllerDelegate::DidResolveToPerson");
-					personViewController.DismissModalViewControllerAnimated(true);
-					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
+					personViewController.DismissModalViewController(true);
+					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewController(true);
 				});
 			}
 
-			public override bool ShouldPerformDefaultActionForPerson (ABUnknownPersonViewController personViewController, IntPtr person, int propertyId, int identifier)
+			public override bool ShouldPerformDefaultActionForPerson (ABUnknownPersonViewController personViewController, ABPerson person, int propertyId, int identifier)
 			{
 				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 					SystemLogger.Log(SystemLogger.Module.PLATFORM, "On UnknownPersonViewControllerDelegate::ShouldPerformDefaultActionForPerson");
@@ -208,7 +217,7 @@ namespace Unity.Platform.IPhone
 		{
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "On HandleUnknownPersonCreated: " + e.Person);
-				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
+				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewController(true);
 			});
 		}
 
@@ -232,66 +241,86 @@ namespace Unity.Platform.IPhone
 		/// <returns>
 		/// A <see cref="Contact"/>
 		/// </returns>
-		public override Contact GetContact (string id)
+		public override void GetContact (string id)
 		{
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "Getting all contact info by ID...");
+			if (UIDevice.CurrentDevice.CheckSystemVersion (6, 0)) {
+				RequestAccessToContacts (() => { LaunchGetContact (id); });
+			} else {
+				LaunchGetContact (id);
+			}
+		}
 
-			ABAddressBook addressBook = IPhoneServiceLocator.CurrentDelegate.AddressBook;
-			// Gets all people in the address book
-			ABPerson[] people = addressBook.GetPeople();
+		private void LaunchGetContact (string id) {
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "Querying address book to get contact with id: " + id);
+			Contact contact = null;
 
 
-			if(people != null) {
-				// sort list by FirstName (default)
-				Array.Sort(people, delegate(ABPerson person1, ABPerson person2) {
-					return person1.CompareTo(person2, DEFAULT_CONTACTS_LIST_SORT);
-				});
+			try {
+				IPhoneServiceLocator.CurrentDelegate.ReloadAddressBook ();  // getting an updated AddressBook instance
+				ABAddressBook addressBook = IPhoneServiceLocator.CurrentDelegate.AddressBook;
+				// Gets all people in the address book
+				ABPerson[] people = addressBook.GetPeople();
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "all people found: " + people.Length);
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "getting contact for ID: " + id);
 
-				ABPerson person = people.First (x => x.Id.ToString() == id);
-			
-				if(person!=null){
-					Contact contact = new Contact();
+				if(people != null) {
+					// sort list by FirstName (default)
+					Array.Sort(people, delegate(ABPerson person1, ABPerson person2) {
+						return person1.CompareTo(person2, DEFAULT_CONTACTS_LIST_SORT);
+					});
 
-					// Basic Info
-					contact.ID = "" + person.Id;
-					contact.Name = person.FirstName;
-					contact.Firstname = person.MiddleName;
-					contact.Lastname = person.LastName;
-					contact.DisplayName = person.Nickname;
-					contact.Notes = person.Note;
+					ABPerson person = people.First (x => x.Id.ToString() == id);
+				
+					if(person!=null){
+						contact = new Contact();
 
-					// TODO how to get the group(s) this person belongs to
-					contact.Group = person.Organization;
+						// Basic Info
+						contact.ID = "" + person.Id;
+						contact.Name = person.FirstName;
+						contact.Firstname = person.MiddleName;
+						contact.Lastname = person.LastName;
+						contact.DisplayName = person.Nickname;
+						contact.Notes = person.Note;
 
-					// Work info
-					contact.Company = person.Organization;
-					contact.JobTitle = person.JobTitle;
-					contact.Department = person.Department;
+						// TODO how to get the group(s) this person belongs to
+						contact.Group = person.Organization;
 
-					// Addresses
-					contact.Addresses = this.GetContactAdresses(person);
+						// Work info
+						contact.Company = person.Organization;
+						contact.JobTitle = person.JobTitle;
+						contact.Department = person.Department;
 
-					// Phones
-					contact.Phones = this.GetContactPhones(person);
+						// Addresses
+						contact.Addresses = this.GetContactAdresses(person);
 
-					// Emails
-					contact.Emails = this.GetContactEmails(person);
+						// Phones
+						contact.Phones = this.GetContactPhones(person);
 
-					// Websites
-					contact.WebSites = this.GetContactWebsites(person);
+						// Emails
+						contact.Emails = this.GetContactEmails(person);
 
-					// Photo
-					if(person.HasImage) {
-						contact.Photo = this.GetContactBinaryPhoto(person.Image);
+						// Websites
+						contact.WebSites = this.GetContactWebsites(person);
+
+						// Photo
+						if(person.HasImage) {
+							contact.Photo = this.GetContactBinaryPhoto(person.Image);
+						}
+
+						// Relationship
+						// TODO contact.Relationship =
 					}
-
-					// Relationship
-					// TODO contact.Relationship =
-
-					return contact;
 				}
+			} catch(Exception ex) {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "Exception while getting contact information for id [" + id + "]. Exception message: " + ex.Message);
 			}
 
-			return null;
+			if(contact ==null) SystemLogger.Log(SystemLogger.Module.PLATFORM, "Contact not found with the given id: " + id);
+
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Pim.onContactFound", contact);
+			});
 		}
 
 
@@ -434,7 +463,6 @@ namespace Unity.Platform.IPhone
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Pim.onListContactsEnd", contactList);
 			});
-			//return contactList.ToArray();
 		
 		}
 
@@ -589,14 +617,14 @@ namespace Unity.Platform.IPhone
 			List<ContactAddress> contactAddressList = new List<ContactAddress>();
 			
 			if(person != null) {
-				ABMultiValue<NSDictionary> addresses = person.GetAddresses();
+				ABMultiValue<PersonAddress> addresses = person.GetAllAddresses();
 				if(addresses!=null) {
 					
 					IEnumerator enumerator = addresses.GetEnumerator();
 					while(enumerator.MoveNext()){
 						object currentAddress = enumerator.Current;
-						string label = ((ABMultiValueEntry<NSDictionary>)currentAddress).Label;
-						NSDictionary addressDictionary = ((ABMultiValueEntry<NSDictionary>)currentAddress).Value;
+						string label = ((ABMultiValueEntry<PersonAddress>)currentAddress).Label;
+						PersonAddress personAddress = ((ABMultiValueEntry<PersonAddress>)currentAddress).Value;
 						
 						ContactAddress contactAddress = new ContactAddress();
 
@@ -607,7 +635,8 @@ namespace Unity.Platform.IPhone
 						} else if (label == ABLabel.Other) {
 							contactAddress.Type = DispositionType.Other;
 						} 
-						
+
+						/* old API
 						NSObject[] keys = addressDictionary.Keys;
 						
 						foreach(NSObject key in keys) {
@@ -629,6 +658,11 @@ namespace Unity.Platform.IPhone
 								}
 							}
 						}
+						*/
+						contactAddress.Address =  personAddress.Street;
+						contactAddress.City = personAddress.City;
+						contactAddress.Country = personAddress.Country;
+						contactAddress.PostCode = personAddress.Zip;
 						
 						contactAddressList.Add(contactAddress);
 					}
@@ -993,8 +1027,8 @@ namespace Unity.Platform.IPhone
 				calendarEvent.Notes = entry.Notes;
 				calendarEvent.Location = entry.Location;
 				calendarEvent.AllDay = entry.IsAllDayEvent;
-				calendarEvent.StartDate = entry.StartDate;
-				calendarEvent.EndDate = entry.EndDate;
+				calendarEvent.StartDate = IPhoneUtils.DateTimeToNSDate(entry.StartDate);
+				calendarEvent.EndDate = IPhoneUtils.DateTimeToNSDate(entry.EndDate);
 				
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Creating Calendar Event: " + calendarEvent.Title);
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Default Calendar: " + calendar.Title);
@@ -1015,7 +1049,7 @@ namespace Unity.Platform.IPhone
 				if(entry.Alarms != null && entry.Alarms.Length >0) {
 					foreach(CalendarAlarm alarm in entry.Alarms) {
 						EKAlarm eventAlarm = new EKAlarm();
-						eventAlarm.AbsoluteDate = alarm.Trigger;
+						eventAlarm.AbsoluteDate = IPhoneUtils.DateTimeToNSDate(alarm.Trigger);
 						// TODO: how to manage "action", "sound" and "emailaddress"
 						calendarEvent.AddAlarm(eventAlarm);
 					}
@@ -1044,7 +1078,7 @@ namespace Unity.Platform.IPhone
 						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence EndDate (requested): " + entry.Recurrence.EndDate.ToString());
 						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence number: " + entry.RecurrenceNumber);
 						if(entry.Recurrence.EndDate.CompareTo(entry.EndDate)>0) {
-							recurrenceEnd = EKRecurrenceEnd.FromEndDate(entry.Recurrence.EndDate);
+							recurrenceEnd = EKRecurrenceEnd.FromEndDate(IPhoneUtils.DateTimeToNSDate(entry.Recurrence.EndDate));
 							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Recurrence EndDate (applied): " + recurrenceEnd.EndDate.ToString());
 						} else if(entry.RecurrenceNumber > 0) {
 							recurrenceEnd = EKRecurrenceEnd.FromOccurrenceCount((int)entry.RecurrenceNumber);
@@ -1080,7 +1114,7 @@ namespace Unity.Platform.IPhone
 							notificationService.StartNotifyAlert ("Calendar Alert", "Calendar Entry Saved", "OK");
 						}
 					}
-					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
+					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewController(true);
 				});
 			};
 			
@@ -1106,11 +1140,11 @@ namespace Unity.Platform.IPhone
 		{
 			throw new System.NotImplementedException();
 		}
-		
-		public override CalendarEntry[] ListCalendarEntries (DateTime date)
+
+		public override void ListCalendarEntries (DateTime date)
 		{
 			// list calendar entries fro the same start and end dates.
-			return ListCalendarEntries(date, date);
+			ListCalendarEntries(date, date);
 		}
 		
 		/// <summary>
@@ -1120,103 +1154,112 @@ namespace Unity.Platform.IPhone
 		protected void GetEventsViaQuery (DateTime startDate, DateTime endDate)
 		{
 			List<CalendarEntry> eventsList = new List<CalendarEntry>();
-			EKEventStore store = new EKEventStore();
-			EKCalendar calendar = store.DefaultCalendarForNewEvents;
-			
-			// Query the event
-			if (calendar != null)
-			{
-				// Searches for every event in the range of given dates
-				NSPredicate predicate = store.PredicateForEvents(startDate,endDate,new EKCalendar[] {calendar});
-				store.EnumerateEvents(predicate, delegate(EKEvent currentEvent, ref bool stop)
-				                      {
-					// Perform your check for an event type
-					CalendarEntry entry = new CalendarEntry();
-					entry.Uid = currentEvent.EventIdentifier;
-					entry.Title = currentEvent.Title;
-					entry.Notes = currentEvent.Notes;
-					entry.Location = currentEvent.Location;
-					entry.IsAllDayEvent = currentEvent.AllDay;
-					entry.StartDate = currentEvent.StartDate;
-					entry.EndDate = currentEvent.EndDate;
-					
-					// TODO: locate how to translate this features
-					// entry.Type (birthday, exchange, etc)
-					//calendarEvent.  = entry.IsEditable
-					
-					// Attendees
-					if(currentEvent.Attendees != null && currentEvent.Attendees.Length>0) {
-						int attendeesNum = currentEvent.Attendees.Length;
-						entry.Attendees = new CalendarAttendee[attendeesNum];
-						int index = 0;
-						foreach(EKParticipant participant in currentEvent.Attendees) {
-							CalendarAttendee attendee = new CalendarAttendee();
-							attendee.Name = participant.Name;
-							attendee.Address = participant.Url.AbsoluteString;
-							if(participant.ParticipantStatus == EKParticipantStatus.Unknown || participant.ParticipantStatus == EKParticipantStatus.Pending) {
-								attendee.Status = AttendeeStatus.NeedsAction;
-							}
-							entry.Attendees[index] = attendee;
-							index++;
-						}
-					}
-					
-					
-					// Alarms
-					if(currentEvent.HasAlarms && currentEvent.Alarms != null && currentEvent.Alarms.Length >0) {
-						int alarmsNum = currentEvent.Alarms.Length;
-						entry.Alarms = new CalendarAlarm[alarmsNum];
-						int index = 0;
-						foreach(EKAlarm alarm in currentEvent.Alarms) {
-							CalendarAlarm eventAlarm = new CalendarAlarm();
-							eventAlarm.Trigger = alarm.AbsoluteDate;
-							// TODO: how to manage "action", "sound" and "emailaddress"
-							entry.Alarms[index] = eventAlarm;
-							index++;
-						}
-					}
-					
-					// Recurrence Rules (pick only the first one)
-					if(currentEvent.HasRecurrenceRules && currentEvent.RecurrenceRules != null && currentEvent.RecurrenceRules.Length >0) {
-						entry.IsRecurrentEvent = true;
-						EKRecurrenceRule rule = currentEvent.RecurrenceRules[0];
-						if(rule != null) {
-							entry.Recurrence = new CalendarRecurrence();
-							if(rule.Frequency == EKRecurrenceFrequency.Weekly) {
-								entry.Recurrence.Type = RecurrenceType.Weekly;
-							} else if(rule.Frequency == EKRecurrenceFrequency.Monthly) {
-								entry.Recurrence.Type = RecurrenceType.Montly;
-							} else if(rule.Frequency == EKRecurrenceFrequency.Yearly) {
-								entry.Recurrence.Type = RecurrenceType.Yearly;
-							}
-							if(rule.RecurrenceEnd != null) {
-								entry.Recurrence.EndDate = rule.RecurrenceEnd.EndDate;
-								entry.Recurrence.Interval = rule.Interval;
-								entry.RecurrenceNumber = rule.RecurrenceEnd.OccurrenceCount;
-							}
-						}
-					}
-					
-					eventsList.Add(entry);
-				});
+			try {
+				EKEventStore store = new EKEventStore();
+				EKCalendar calendar = store.DefaultCalendarForNewEvents;
 				
+				// Query the event
+				if (calendar != null)
+				{
+					// Searches for every event in the range of given dates
+					NSPredicate predicate = store.PredicateForEvents(IPhoneUtils.DateTimeToNSDate(startDate),IPhoneUtils.DateTimeToNSDate(endDate),new EKCalendar[] {calendar});
+					store.EnumerateEvents(predicate, delegate(EKEvent currentEvent, ref bool stop)
+					                      {
+						// Perform your check for an event type
+						CalendarEntry entry = new CalendarEntry();
+						entry.Uid = currentEvent.EventIdentifier;
+						entry.Title = currentEvent.Title;
+						entry.Notes = currentEvent.Notes;
+						entry.Location = currentEvent.Location;
+						entry.IsAllDayEvent = currentEvent.AllDay;
+						entry.StartDate = IPhoneUtils.NSDateToDateTime(currentEvent.StartDate);
+						entry.EndDate = IPhoneUtils.NSDateToDateTime(currentEvent.EndDate);
+
+						try {
+						
+							// TODO: locate how to translate this features
+							// entry.Type (birthday, exchange, etc)
+							//calendarEvent.  = entry.IsEditable
+							
+							// Attendees
+							if(currentEvent.Attendees != null && currentEvent.Attendees.Length>0) {
+								int attendeesNum = currentEvent.Attendees.Length;
+								entry.Attendees = new CalendarAttendee[attendeesNum];
+								int index = 0;
+								foreach(EKParticipant participant in currentEvent.Attendees) {
+									CalendarAttendee attendee = new CalendarAttendee();
+									attendee.Name = participant.Name;
+									attendee.Address = participant.Url.AbsoluteString;
+									if(participant.ParticipantStatus == EKParticipantStatus.Unknown || participant.ParticipantStatus == EKParticipantStatus.Pending) {
+										attendee.Status = AttendeeStatus.NeedsAction;
+									}
+									entry.Attendees[index] = attendee;
+									index++;
+								}
+							}
+							
+							
+							// Alarms
+							if(currentEvent.HasAlarms && currentEvent.Alarms != null && currentEvent.Alarms.Length >0) {
+								int alarmsNum = currentEvent.Alarms.Length;
+								entry.Alarms = new CalendarAlarm[alarmsNum];
+								int index = 0;
+								foreach(EKAlarm alarm in currentEvent.Alarms) {
+									CalendarAlarm eventAlarm = new CalendarAlarm();
+									eventAlarm.Trigger = IPhoneUtils.NSDateToDateTime(alarm.AbsoluteDate);
+									// TODO: how to manage "action", "sound" and "emailaddress"
+									entry.Alarms[index] = eventAlarm;
+									index++;
+								}
+							}
+							
+							// Recurrence Rules (pick only the first one)
+							if(currentEvent.HasRecurrenceRules && currentEvent.RecurrenceRules != null && currentEvent.RecurrenceRules.Length >0) {
+								entry.IsRecurrentEvent = true;
+								EKRecurrenceRule rule = currentEvent.RecurrenceRules[0];
+								if(rule != null) {
+									entry.Recurrence = new CalendarRecurrence();
+									if(rule.Frequency == EKRecurrenceFrequency.Weekly) {
+										entry.Recurrence.Type = RecurrenceType.Weekly;
+									} else if(rule.Frequency == EKRecurrenceFrequency.Monthly) {
+										entry.Recurrence.Type = RecurrenceType.Montly;
+									} else if(rule.Frequency == EKRecurrenceFrequency.Yearly) {
+										entry.Recurrence.Type = RecurrenceType.Yearly;
+									}
+									if(rule.RecurrenceEnd != null) {
+										entry.Recurrence.EndDate = IPhoneUtils.NSDateToDateTime(rule.RecurrenceEnd.EndDate);
+										entry.Recurrence.Interval = (int)rule.Interval;
+										entry.RecurrenceNumber = rule.RecurrenceEnd.OccurrenceCount;
+									}
+								}
+							}
+						
+
+						} catch (Exception ex) {
+								SystemLogger.Log(SystemLogger.Module.PLATFORM, "Unhandled exception while getting calendar entry information (event_id=" + entry.Uid +"). Exception message: " + ex.Message);
+						}
+						
+						eventsList.Add(entry);
+					});
+					
+				}
+			} catch (Exception ex) {
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Unhandled exception while getting calendar entries. Exception message: " + ex.Message);
 			}
 
-			// TODO :: this API could no longer be invoked in this way.
-			// the list of entries must be queried after checking access --> so, process has to send data via callback
-			
-			// return eventsList.ToArray();
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "eventsList: " + eventsList.Count);
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Pim.onListCalendarEntriesEnd", eventsList);
+			});
 		}
 		
-		public override CalendarEntry[] ListCalendarEntries (DateTime startDate, DateTime endDate)
+		public override void ListCalendarEntries (DateTime startDate, DateTime endDate)
 		{
 			if (UIDevice.CurrentDevice.CheckSystemVersion (6, 0)) {
 				RequestAccessToCalendar (EKEntityType.Event, () => { GetEventsViaQuery (startDate, endDate); } );
 			} else {
 				GetEventsViaQuery (startDate, endDate);
 			}
-			// TODO provide a way to send back the query result data
-			return null;
 		}
 
 #endregion

@@ -24,8 +24,8 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
+using Foundation;
+using UIKit;
 using Unity.Core.IO.ScriptSerialization;
 using Unity.Core.System;
 using System.Threading;
@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using System.Reflection;
 
 namespace Unity.Platform.IPhone
 {
@@ -65,6 +66,7 @@ namespace Unity.Platform.IPhone
 		}
 
 		private void LoadZippedFile() {
+
 			Stopwatch stopwatch = new Stopwatch();
 			stopwatch.Start();
 
@@ -145,6 +147,7 @@ namespace Unity.Platform.IPhone
 
 			stopwatch.Stop();
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "# Time elapsed loading zipped file: "+ stopwatch.Elapsed);
+
 		}
 		
 		public static IPhoneUtils GetInstance() {
@@ -190,6 +193,7 @@ namespace Unity.Platform.IPhone
 			} else {
 				return File.Exists(resourcePath);
 			}
+			
 		}
 
 		private bool ResourceFromZippedExists(string resourcePath) {
@@ -438,7 +442,7 @@ namespace Unity.Platform.IPhone
 						if(dicValue is NSString) {
 							prunedDictionary.Add (key.ToString(), ((NSString)dicValue).Description);
 						} else if(dicValue is NSNumber) {
-							prunedDictionary.Add (key.ToString(), ((NSNumber)dicValue).IntValue);
+							prunedDictionary.Add (key.ToString(), ((NSNumber)dicValue).Int16Value);
 						} else if(dicValue is NSArray) {
 							prunedDictionary.Add (key.ToString(), ConvertToArray((NSArray)dicValue));
 						} else {
@@ -480,7 +484,7 @@ namespace Unity.Platform.IPhone
 		private Object[] ConvertToArray(NSArray nsArray) {
 			Object[] arr = new Object[nsArray.Count];
 			for (uint i = 0; i < nsArray.Count; i++) {
-				var o = MonoTouch.ObjCRuntime.Runtime.GetNSObject(nsArray.ValueAt(i));
+				var o = ObjCRuntime.Runtime.GetNSObject(nsArray.ValueAt(i));
 				if(o is NSArray) {
 					arr[i] = ConvertToArray((o as NSArray));
 				} else if (o is NSDictionary) {
@@ -490,7 +494,7 @@ namespace Unity.Platform.IPhone
 				} if(o is NSString) {
 					arr[i] = (o as NSString).Description;
 				} else if(o is NSNumber) {
-					arr[i] = (o as NSNumber).IntValue;
+					arr[i] = (o as NSNumber).Int16Value;
 				}
 			}
 
@@ -511,6 +515,20 @@ namespace Unity.Platform.IPhone
 			return null;
 		}
 
+
+		public String JSONSerializeObjectData(object data) {
+			try {
+				string dataJSONString = Serialiser.Serialize (data);
+				if (data is String) {
+					dataJSONString = "'"+ (data as String) +"'";
+				}
+				return dataJSONString;
+			} catch (Exception ex) {
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error trying to serialize object to JSON. Message; " + ex.Message );
+			}
+			return null;
+		}
+
 		public T JSONDeserialize<T> (string json) {
 			try {
 				return Serialiser.Deserialize<T>(json);
@@ -522,46 +540,81 @@ namespace Unity.Platform.IPhone
 
 		public void FireUnityJavascriptEvent (string method, object data)
 		{
-			string dataJSONString = Serialiser.Serialize (data);
-			if (data is String) {
-				dataJSONString = "'"+ (data as String) +"'";
+			string dataJSONString = "null";
+			if (data != null) {
+				dataJSONString = Serialiser.Serialize (data);
+				if (data is String) {
+					dataJSONString = "'" + (data as String) + "'";
+				}
 			}
 			string jsCallbackFunction = "if("+method+"){"+method+"("+dataJSONString+");}";
-			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript (single object): " + method + ", dataJSONString: " + dataJSONString);
-			IPhoneServiceLocator.CurrentDelegate.MainUIWebView().EvaluateJavascript(jsCallbackFunction);
-			SystemLogger.Log (SystemLogger.Module.PLATFORM, "NotifyJavascript EVALUATED");
+			//only for testing //SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript (single object): " + method + ", dataJSONString: " + dataJSONString);
+			IPhoneServiceLocator.CurrentDelegate.EvaluateJavascript(jsCallbackFunction);
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "NotifyJavascript EVALUATED (" +  method +")");
 		}
 
 		public void FireUnityJavascriptEvent (string method, object[] dataArray)
 		{
-			StringBuilder builder = new StringBuilder();
-			int numObjects = 0;
-			foreach(object data in dataArray) {
-				if(numObjects>0) {
-					builder.Append(",");
+			string dataJSONString = "null";
+			if (dataArray != null) {
+				StringBuilder builder = new StringBuilder ();
+				int numObjects = 0;
+				foreach (object data in dataArray) {
+					if (numObjects > 0) {
+						builder.Append (",");
+					}
+					if (data == null) {
+						builder.Append ("null");
+					}
+					if (data is String) {
+						builder.Append ("'" + (data as String) + "'");
+					} else {
+						builder.Append (Serialiser.Serialize (data));
+					}
+					numObjects++;
 				}
-				if (data == null) {
-					builder.Append("null");
-				}
-				if (data is String) {
-					builder.Append("'"+ (data as String) +"'");
-				} else {
-					builder.Append(Serialiser.Serialize (data));
-				}
-				numObjects++;
+				dataJSONString = builder.ToString ();
 			}
-			string dataJSONString = builder.ToString();
-
 			string jsCallbackFunction = "if("+method+"){"+method+"("+dataJSONString+");}";
-			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript (array object): " + method + ", dataJSONString: " + dataJSONString); // + ",jsCallbackFunction="+ jsCallbackFunction 
-			IPhoneServiceLocator.CurrentDelegate.MainUIWebView().EvaluateJavascript(jsCallbackFunction);
-			SystemLogger.Log (SystemLogger.Module.PLATFORM, "NotifyJavascript EVALUATED");
+			//only for testing //SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript (array object): " + method + ", dataJSONString: " + dataJSONString); // + ",jsCallbackFunction="+ jsCallbackFunction 
+			IPhoneServiceLocator.CurrentDelegate.EvaluateJavascript(jsCallbackFunction);
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "NotifyJavascript EVALUATED (" +  method +")");
 		}
 
 		public void ExecuteJavascriptCallback(string callbackFunction, string id, string jsonResultString) {
 			string jsCallbackFunction = "try{if("+callbackFunction+"){"+callbackFunction+"("+jsonResultString+", '"+ id +"');}}catch(e) {console.log('error executing javascript callback: ' + e)}";
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "ExecuteJavascriptCallback: " + callbackFunction);
-			IPhoneServiceLocator.CurrentDelegate.MainUIWebView().EvaluateJavascript(jsCallbackFunction);
+			IPhoneServiceLocator.CurrentDelegate.EvaluateJavascript(jsCallbackFunction);
+		}
+
+		public string GetDefaultBasePath ()
+		{
+			string s = Assembly.GetEntryAssembly ().Location;
+			string defaultBasePath = s;
+			if (s != null) {
+				int n = s.Length;
+				int a = s.IndexOf (".app/");  
+				if(a>=0) { // applied only for special binaries
+					defaultBasePath = s.Substring (0, (a + ".app/".Length));
+				}
+			}
+			return Path.GetDirectoryName (defaultBasePath);
+		}
+
+
+		public static DateTime NSDateToDateTime(NSDate date)
+		{
+			DateTime reference = TimeZone.CurrentTimeZone.ToLocalTime( 
+				new DateTime(2001, 1, 1, 0, 0, 0) );
+			return reference.AddSeconds(date.SecondsSinceReferenceDate);
+		}
+
+		public static NSDate DateTimeToNSDate(DateTime date)
+		{
+			DateTime reference = TimeZone.CurrentTimeZone.ToLocalTime(
+				new DateTime(2001, 1, 1, 0, 0, 0) );
+			return NSDate.FromTimeIntervalSinceReferenceDate(
+				(date - reference).TotalSeconds);
 		}
 	}
 }

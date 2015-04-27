@@ -28,16 +28,16 @@ using System.Reflection;
 using System.Text;
 using Unity.Core.Storage.FileSystem;
 using Unity.Core.System;
-using MonoTouch.Foundation;
+using Foundation;
 using System.Runtime.InteropServices;
-using MonoTouch.UIKit;
+using UIKit;
 
 namespace Unity.Platform.IPhone
 {
     public class IPhoneFileSystem : AbstractFileSystem
     {
 		// Root path is the "Documents" folder on the application root path on device.
-		//public static string DEFAULT_ROOT_PATH = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+		public static string DEFAULT_ROOT_PATH = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 		
 		// Path to the "Resources" folder on the application root path on device.
 		public static string DEFAULT_RESOURCES_PATH = "WebResources/";
@@ -51,16 +51,16 @@ namespace Unity.Platform.IPhone
         public override DirectoryData GetDirectoryRoot()
         {
 
-			if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+			/*if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
 				var documents = NSFileManager.DefaultManager.GetUrls (NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomain.User) [0];
 				Console.WriteLine ("JAVIIIIII 8 : "+documents.ToString());
-				return new DirectoryData(documents.ToString());
+				return documents; // new DirectoryData(documents.ToString());
 			} else {
 				var documents = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 				Console.WriteLine ("JAVIIIIII 7: "+documents);
 				return new DirectoryData(documents);
-			};
-            //return new DirectoryData(DEFAULT_ROOT_PATH);
+			};*/
+            return new DirectoryData(DEFAULT_ROOT_PATH);
         }
 		
 		/// <summary>

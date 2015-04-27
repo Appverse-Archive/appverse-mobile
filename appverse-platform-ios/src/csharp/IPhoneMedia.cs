@@ -25,20 +25,19 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
-using MonoTouch.AVFoundation;
-using MonoTouch.Foundation;
-using MonoTouch.MediaPlayer;
-using MonoTouch.MessageUI;
-using MonoTouch.UIKit;
+using AVFoundation;
+using Foundation;
+using MediaPlayer;
+using MessageUI;
+using UIKit;
 using Unity.Core.Media;
 using Unity.Core.Notification;
 using Unity.Core.System;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using Unity.Core.Storage.FileSystem;
-using ZXing.Mobile;
-using ZXing.Client.Result;
 using System.Drawing;
+using CoreGraphics;
 
 namespace Unity.Platform.IPhone
 {
@@ -65,111 +64,7 @@ namespace Unity.Platform.IPhone
             return this.State;
         }
 
-		public override void DetectQRCode (bool autoHandleQR)
-		{
-			String returnValue = String.Empty;
-			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				MobileBarcodeScanner scanner = new MobileBarcodeScanner(IPhoneServiceLocator.CurrentDelegate.MainUIViewController());
-				scanner.Scan().ContinueWith(t => {   
-					if (t.Result != null){
-						MediaQRContent resultQRContent = new MediaQRContent(t.Result.Text, ZxingToBarcode(t.Result.BarcodeFormat), getQRTypeFromCode(t.Result));
-						//SystemLogger.Log(SystemLogger.Module.PLATFORM, "QR CODE returnValue: " + resultQRContent);
 
-						UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-							IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.Media.onQRCodeDetected", resultQRContent);
-							if(autoHandleQR) HandleQRCode(resultQRContent);
-						});
-					}
-				});
-				IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
-			});
-		}
-
-		private BarCodeType ZxingToBarcode (ZXing.BarcodeFormat format){
-			foreach(BarCodeType type in Enum.GetValues(typeof(BarCodeType))){
-				if(format.ToString().Equals(type.ToString())) return type;
-			}
-			return BarCodeType.DEFAULT;
-		}
-
-		private ZXing.BarcodeFormat BarcodeToZxing (BarCodeType format){
-			foreach(ZXing.BarcodeFormat type in Enum.GetValues(typeof(ZXing.BarcodeFormat))){
-				if(format.ToString().Equals(type.ToString())) return type;
-			}
-			return ZXing.BarcodeFormat.QR_CODE;
-		}
-
-		private QRType getQRTypeFromCode (ZXing.Result readQRCode){
-			ParsedResult parsed = ResultParser.parseResult(readQRCode);
-			switch(parsed.Type){
-				case ParsedResultType.ADDRESSBOOK:
-				return QRType.ADDRESSBOOK;
-				break;
-				case ParsedResultType.CALENDAR:
-				return QRType.CALENDAR;
-				break;
-				case ParsedResultType.EMAIL_ADDRESS:
-				return QRType.EMAIL_ADDRESS;
-				break;
-				case ParsedResultType.GEO:
-				return QRType.GEO;
-				break;
-				case ParsedResultType.ISBN:
-				return QRType.ISBN;
-				break;
-				case ParsedResultType.PRODUCT:
-				return QRType.PRODUCT;
-				break;
-				case ParsedResultType.SMS:
-				return QRType.SMS;
-				break;
-				case ParsedResultType.TEL:
-				return QRType.TEL;
-				break;
-				case ParsedResultType.URI:
-				return QRType.URI;
-				break;
-				case ParsedResultType.WIFI:
-				return QRType.WIFI;
-				break;
-				case ParsedResultType.TEXT:
-				default:
-				return QRType.TEXT;
-				break;
-			}
-		}
-
-		public override QRType HandleQRCode (MediaQRContent mediaQRContent)
-		{
-			if (mediaQRContent != null && mediaQRContent.QRType!=null) {
-				INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");
-				NSUrl param = new NSUrl (mediaQRContent.Text);
-
-				switch (mediaQRContent.QRType) {
-					case QRType.EMAIL_ADDRESS:
-					if ((UIApplication.SharedApplication.CanOpenUrl (param) )&& (MFMailComposeViewController.CanSendMail)) {
-							UIApplication.SharedApplication.OpenUrl (param);
-						}else if (notificationService != null) notificationService.StartNotifyAlert ("Mail Alert", "Sending of mail messages is not enabled or supported on this device.", "OK");
-						break;
-					case QRType.TEL:
-						if (UIApplication.SharedApplication.CanOpenUrl (param)) {
-							UIApplication.SharedApplication.OpenUrl (param);
-						}else if (notificationService != null) notificationService.StartNotifyAlert ("Phone Alert", "Establishing voice calls is not enabled or supported on this device.", "OK");
-						break;
-					case QRType.URI:
-						if (UIApplication.SharedApplication.CanOpenUrl (param)) {
-							UIApplication.SharedApplication.OpenUrl (param);
-						}else if (notificationService != null) notificationService.StartNotifyAlert ("Browser Alert", "The requested URL could not be automatically opened.", "OK");
-						break;
-					default:
-						if (notificationService != null)
-							notificationService.StartNotifyAlert ("QR Alert", "The QR Code " + mediaQRContent.QRType.ToString() + " cannot be processed automatically.", "OK");
-						break;
-				}
-				return mediaQRContent.QRType;
-			}
-			return QRType.TEXT;
-		}
 		
 		public override MediaMetadata GetMetadata (string filePath)
 		{
@@ -249,8 +144,8 @@ namespace Unity.Platform.IPhone
 						// in iPad, the UIImagePickerController should be presented inside a UIPopoverController, otherwise and exception is raised
 						popover = new UIPopoverController(imagePickerController);
 						UIView view = IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().View;
-						//RectangleF frame = new RectangleF(new PointF(0,0),new SizeF(view.Frame.Size.Width, view.Frame.Size.Height));
-						RectangleF frame = new RectangleF(new PointF(0,0),new SizeF(0,0));
+						//CGRect frame = new CGRect(new PointF(0,0),new SizeF(view.Frame.Size.Width, view.Frame.Size.Height));
+						CGRect frame = new CGRect(new PointF(0,0),new SizeF(0,0));
 						popover.PresentFromRect(frame, view, UIPopoverArrowDirection.Up, true); 
 					
 					}catch(Exception ex) {
@@ -274,11 +169,12 @@ namespace Unity.Platform.IPhone
 		{
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Canceled picking image ");
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Media.onFinishedPickingImage", null);
 				if(popover != null && popover.PopoverVisible) {
 					popover.Dismiss(true);
         			popover.Dispose();
 				} else {
-					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
+					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewController(true);
 				}
 			});
 		}
@@ -286,7 +182,7 @@ namespace Unity.Platform.IPhone
 		void HandleCameraFinishedPickingMedia (object sender, UIImagePickerMediaPickedEventArgs e)
 		{
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
+				IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewController(true);
 			});
 			
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "Camera FinishedPickingMedia " + e.Info);
@@ -323,7 +219,7 @@ namespace Unity.Platform.IPhone
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error when extracting information from media file: " + ex.Message, ex);
 			}
 			
-			IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.Media.onFinishedPickingImage", mediaData);
+			IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Media.onFinishedPickingImage", mediaData);
 		}
 
 		void HandleImagePickerControllerFinishedPickingMedia (object sender, UIImagePickerMediaPickedEventArgs e)
@@ -333,7 +229,7 @@ namespace Unity.Platform.IPhone
 					popover.Dismiss(true);
         			popover.Dispose();
 				} else {
-					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
+					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewController(true);
 				}
 			});
 			
@@ -382,7 +278,7 @@ namespace Unity.Platform.IPhone
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error when extracting information from media file: " + ex.Message, ex);
 			}
 			
-			IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.Media.onFinishedPickingImage", mediaData);
+			IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Media.onFinishedPickingImage", mediaData);
 		}
 		
 		private string GetImageMediaTitle(string assetUrl) {
@@ -421,7 +317,7 @@ namespace Unity.Platform.IPhone
 		{
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "FinishedPickingImage " + e.Image);
-				IPhoneServiceLocator.CurrentDelegate.MainUIViewController().DismissModalViewControllerAnimated(true);
+				IPhoneServiceLocator.CurrentDelegate.MainUIViewController().DismissModalViewController(true);
 			});
 		}
 		
@@ -626,7 +522,7 @@ namespace Unity.Platform.IPhone
 					currentMedia.Type = MediaType.NotSupported;
 				}
 				
-				AVUrlAsset urlAsset = AVUrlAsset.FromUrl(nsUrl, new NSDictionary());
+				AVUrlAsset urlAsset = AVUrlAsset.Create(nsUrl, new AVUrlAssetOptions());
 				if(urlAsset != null) {
 					currentMedia.Duration = urlAsset.Duration.Value;
 					if(urlAsset.Duration.TimeScale != 0) { // TimeScale could be null in some devices

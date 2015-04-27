@@ -25,11 +25,14 @@ using System;
 using System.IO;
 using System.Collections.Specialized;
 using Unity.Core.Security;
-using MonoTouch.Security;
-using MonoTouch.Foundation;
+using Security;
+using Foundation;
 using Unity.Core.System;
 using System.Collections.Generic;
-using MonoTouch.UIKit;
+using UIKit;
+using LocalAuthentication;
+using System.Xml.Serialization;
+using System.ComponentModel.Design.Serialization;
 
 
 namespace Unity.Platform.IPhone
@@ -69,6 +72,23 @@ namespace Unity.Platform.IPhone
 			scPermissionPaths.Add("/private/");
 		}
 
+		/// <summary>
+		/// Method overrided, to use NSData to get stream from file resource inside application. 
+		/// </summary>
+		/// <returns>
+		/// A <see cref="Stream"/>
+		/// </returns>
+		public override byte[] GetConfigFileBinaryData ()
+		{
+			return IPhoneUtils.GetInstance().GetResourceAsBinary(this.SecurityConfigFile, true);
+		}
+
+
+		public override string SecurityConfigFile { 
+			get {
+				return IPhoneUtils.GetInstance().GetFileFullPath(base.SecurityConfigFile);
+			} 
+		}
 
 		/// <summary>
 		/// Checks if the device has been modified
@@ -156,6 +176,18 @@ namespace Unity.Platform.IPhone
 				if (sAccessGroup != null)
 					srNewEntry.AccessGroup = sAccessGroup;
 
+
+				if (this.GetPasscodeProtectedKeys ().Contains (kp.Key)) {
+					if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+						SystemLogger.Log (SystemLogger.Module.PLATFORM, 
+							"StoreKeyValuePairs - Passcode protection applied to this keychain item (as configured in security-config.xml)");
+						srNewEntry.AccessControl = new SecAccessControl (SecAccessible.WhenPasscodeSetThisDeviceOnly, SecAccessControlCreateFlags.UserPresence);
+					} else {
+						SystemLogger.Log (SystemLogger.Module.PLATFORM, 
+							"StoreKeyValuePairs - Passcode protection is requested for this keychain item, but protection couldn't be applied due to device is iOS<8");
+					}
+				}
+
 				SecStatusCode code = SecKeyChain.Add (srNewEntry);
 				if (code == SecStatusCode.DuplicateItem) {
 					SecRecord srDeleteExistingEntry = new SecRecord (SecKind.GenericPassword){
@@ -177,7 +209,7 @@ namespace Unity.Platform.IPhone
 
 			SystemLogger.Log(SystemLogger.Module.PLATFORM,"StoreKeyValuePairs - Success: " + successfullKeyPairs.Count + ", Failed: " + failedKeyPairs.Count);
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {		
-				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnKeyValuePairsStoreCompleted", new object[]{successfullKeyPairs, failedKeyPairs});
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.OnKeyValuePairsStoreCompleted", new object[]{successfullKeyPairs, failedKeyPairs});
 			});
 		}
 
@@ -209,7 +241,7 @@ namespace Unity.Platform.IPhone
 
 				SystemLogger.Log(SystemLogger.Module.PLATFORM,"GetStoredKeyValuePairs - Found: " + foundKeyPairs.Count);
 
-				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnKeyValuePairsFound", foundKeyPairs);
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.OnKeyValuePairsFound", foundKeyPairs);
 			});
 		}
 
@@ -241,8 +273,29 @@ namespace Unity.Platform.IPhone
 				}
 				SystemLogger.Log(SystemLogger.Module.PLATFORM,"RemoveStoredKeyValuePair - Success: " + successfullKeyPairs.Count + ", Failed: " + failedKeyPairs.Count);
 					
-				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.OnKeyValuePairsRemoveCompleted", new object[]{successfullKeyPairs, failedKeyPairs});
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.OnKeyValuePairsRemoveCompleted", new object[]{successfullKeyPairs, failedKeyPairs});
 			});	
+		}
+
+		/// <summary>
+		/// Starts local authentication operation displaying Touch ID screen.
+		/// </summary>
+		/// <param name="reason">A reason to explain why authentication is needed. This helps to build trust with the user.</param>
+		public override void StartLocalAuthenticationWithTouchID (string reason) {
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "StartLocalAuthenticationWithTouchID - starting authentication using Touch ID..."); 
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "StartLocalAuthenticationWithTouchID - checking Touch ID available in this device"); 
+
+				bool available = this.CanEvaluatePolicy();
+				if(available) {
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "StartLocalAuthenticationWithTouchID - start device owner authenticaiton using biometrics");
+					this.EvaluatePolicy(reason);
+				} else {
+					IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Security.onTouchIDNotAvailable", null);
+				}
+
+			});
 		}
 
 		#endregion
@@ -259,6 +312,72 @@ namespace Unity.Platform.IPhone
 			}
 			return null;
 		}
+
+		#endregion
+
+		#region LOCAL AUTHENTICATION WITH TOUCH ID private methods
+
+		private bool CanEvaluatePolicy ()
+		{
+			if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+				var context = new LAContext ();
+				string message = string.Empty;
+				NSError error;
+				bool success = context.CanEvaluatePolicy (LAPolicy.DeviceOwnerAuthenticationWithBiometrics, out error);
+
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "CanEvaluatePolicy - " + (success ? "Touch ID is available" : "Touch ID is not available"));
+				return success;
+			} else {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "CanEvaluatePolicy - device OS is under iOS 8 - touch ID not available");
+				return false;
+			}
+
+		}
+
+		private void EvaluatePolicy (string reason)
+		{
+			if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+				var context = new LAContext ();
+				context.EvaluatePolicy (LAPolicy.DeviceOwnerAuthenticationWithBiometrics, reason, HandleLAContextReplyHandler);
+			} else {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "EvaluatePolicy - device OS is under iOS 8 - touch ID not available");
+			}
+		}
+
+		private void HandleLAContextReplyHandler (bool success, NSError error)
+		{
+			string message = success ? "EvaluatePolicy success" : string.Format ("EvaluatePolicy: failed with error: {0}", error.LocalizedDescription);
+			string errorDescription = "Authentication Success";
+			LocalAuthenticationStatus status = LocalAuthenticationStatus.Success;
+
+			if (!success) {
+				errorDescription = error.LocalizedDescription;
+				switch (error.Code) {
+				case 0:	
+					status = LocalAuthenticationStatus.Success;
+					break;
+				case -1:
+					status = LocalAuthenticationStatus.RetryExceeded;
+					break;
+				case -2:
+					status = LocalAuthenticationStatus.UserCancel;
+					break;
+				case -3:
+					status = LocalAuthenticationStatus.UserFallback;
+					break;
+				default:
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "HandleLAContextReplyHandler - found not handled error code: " + error.Code);
+					break;
+				} 
+			}
+
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "HandleLAContextReplyHandler - " + message);
+
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {		
+				IPhoneUtils.GetInstance ().FireUnityJavascriptEvent ("Appverse.Security.onLocalAuthenticationWithTouchIDReply", new object[]{ status, errorDescription});
+			});
+		}
+
 		#endregion
 	}
 }

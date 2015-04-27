@@ -21,12 +21,12 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-using MonoTouch.AudioToolbox;
+using AudioToolbox;
 using System;
 using Unity.Core.Notification;
 using System.Threading;
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
+using Foundation;
+using UIKit;
 using System.Drawing;
 using Unity.Core.System;
 using System.Collections.Generic;
@@ -41,16 +41,6 @@ namespace Unity.Platform.IPhone
 		private bool AUDIOSESSION_ACTIVE = false;
 		
 		private LoadingView loadingView = new LoadingView();
-		private static IDictionary<RemoteNotificationType, UIRemoteNotificationType> rnTypes = 
-								new Dictionary<RemoteNotificationType, UIRemoteNotificationType> ();
-
-		static IPhoneNotification() {
-			rnTypes[RemoteNotificationType.NONE] = UIRemoteNotificationType.None;
-			rnTypes[RemoteNotificationType.ALERT] = UIRemoteNotificationType.Alert;
-			rnTypes[RemoteNotificationType.BADGE] = UIRemoteNotificationType.Badge;
-			rnTypes[RemoteNotificationType.SOUND] = UIRemoteNotificationType.Sound;
-			rnTypes[RemoteNotificationType.CONTENT_AVAILABILITY] = UIRemoteNotificationType.NewsstandContentAvailability;
-		}
 
 		public override bool StartNotifyBeep ()
 		{
@@ -209,10 +199,10 @@ namespace Unity.Platform.IPhone
 				JsCallBackFunctions = javascriptCallBackFunctions;
 			}
 			
-			public override void Clicked(UIActionSheet actionSheet, int index) {
+			public override void Clicked(UIActionSheet actionSheet, nint index) {
 				UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
 					if(JsCallBackFunctions != null && JsCallBackFunctions.Length>0 && JsCallBackFunctions.Length>=index) {
-						IPhoneServiceLocator.CurrentDelegate.MainUIWebView().EvaluateJavascript(JsCallBackFunctions[index]);
+						IPhoneServiceLocator.CurrentDelegate.EvaluateJavascript(JsCallBackFunctions[index]);
 					}
 				});
 			}
@@ -265,7 +255,7 @@ namespace Unity.Platform.IPhone
 				
 				// Show loadind indicator inside
 				_activityView = new UIActivityIndicatorView(UIActivityIndicatorViewStyle.WhiteLarge);
-				_activityView.Frame = new RectangleF((Bounds.Width / 2) - 15, Bounds.Height - 50, 30, 30);
+				_activityView.Frame = new CoreGraphics.CGRect((((nfloat)Bounds.Width) / 2) - 15, ((nfloat)Bounds.Height) - 50, 30, 30);
 				_activityView.StartAnimating();
     			AddSubview(_activityView);
 			}
@@ -320,40 +310,6 @@ namespace Unity.Platform.IPhone
 
 
 
-		public override void RegisterForRemoteNotifications (string senderId, RemoteNotificationType[] types)
-		{
-			SystemLogger.Log(SystemLogger.Module.PLATFORM,"Registering senderId ["+ senderId +"] for receiving  push notifications");
-
-			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				UIRemoteNotificationType notificationTypes = UIRemoteNotificationType.None;
-				try {
-					if(types != null) {
-						SystemLogger.Log(SystemLogger.Module.PLATFORM,"Remote Notifications types enabled #num : " + types.Length);
-						foreach(RemoteNotificationType notificationType in types) {
-							notificationTypes = notificationTypes | rnTypes[notificationType] ;
-						}
-					}
-
-					SystemLogger.Log(SystemLogger.Module.PLATFORM,"Remote Notifications types enabled: " + notificationTypes);
-
-					//This tells our app to go ahead and ask the user for permission to use Push Notifications
-					// You have to specify which types you want to ask permission for
-					// Most apps just ask for them all and if they don't use one type, who cares
-					UIApplication.SharedApplication.RegisterForRemoteNotificationTypes(notificationTypes);
-				} catch(Exception e) {
-					SystemLogger.Log(SystemLogger.Module.PLATFORM,"Exception ocurred: " + e.Message);
-				}
-			});
-		}
-
-
-		public override void UnRegisterForRemoteNotifications ()
-		{
-			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				UIApplication.SharedApplication.UnregisterForRemoteNotifications();
-			});
-		}
-
 		public override void SetApplicationIconBadgeNumber (int badge) {
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
 				UIApplication.SharedApplication.ApplicationIconBadgeNumber = badge;
@@ -362,14 +318,14 @@ namespace Unity.Platform.IPhone
 		
 		public override void IncrementApplicationIconBadgeNumber () {
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
-				int currentBadge = UIApplication.SharedApplication.ApplicationIconBadgeNumber;
+				nint currentBadge = UIApplication.SharedApplication.ApplicationIconBadgeNumber;
 				UIApplication.SharedApplication.ApplicationIconBadgeNumber = currentBadge + 1 ;
 			});
 		}
 		
 		public override void DecrementApplicationIconBadgeNumber () {
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
-				int currentBadge = UIApplication.SharedApplication.ApplicationIconBadgeNumber;
+				nint currentBadge = UIApplication.SharedApplication.ApplicationIconBadgeNumber;
 				UIApplication.SharedApplication.ApplicationIconBadgeNumber = currentBadge - 1 ;
 			});
 		}
@@ -402,7 +358,7 @@ namespace Unity.Platform.IPhone
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
 				if(notification!=null) {
 					UILocalNotification localNotification = this.PrepareLocalNotification(notification);
-					UIApplication.SharedApplication.PresentLocationNotificationNow(localNotification);
+					UIApplication.SharedApplication.PresentLocalNotificationNow(localNotification);
 				} else {
 					SystemLogger.Log(SystemLogger.Module.PLATFORM,"No suitable data object received for presenting local notification");
 				}
@@ -427,7 +383,7 @@ namespace Unity.Platform.IPhone
 				if(notification!=null) {
 					UILocalNotification localNotification = this.PrepareLocalNotification(notification);
 					if(schedule != null) {
-						localNotification.FireDate = DateTime.SpecifyKind(schedule.FireDate, DateTimeKind.Local);
+						localNotification.FireDate = IPhoneUtils.DateTimeToNSDate(DateTime.SpecifyKind(schedule.FireDate, DateTimeKind.Local));
 						SystemLogger.Log(SystemLogger.Module.PLATFORM,"Scheduling local notification at " 
 						                 + schedule.FireDate.ToLongTimeString() + ", with a repeat interval of: " + schedule.RepeatInterval);
 						NSCalendarUnit repeatInterval = 0; // The default value is 0, which means don't repeat.
@@ -463,7 +419,7 @@ namespace Unity.Platform.IPhone
 					SystemLogger.Log(SystemLogger.Module.PLATFORM,"No scheduled local notifications found. It is not possible to cancel the one requested");
 				} else {
 					SystemLogger.Log(SystemLogger.Module.PLATFORM, "(1) Current scheduled #num of local notifications: " + numScheduledLocalNotifications);
-					NSDate fireDateNS = DateTime.SpecifyKind(fireDate, DateTimeKind.Local);
+					NSDate fireDateNS = IPhoneUtils.DateTimeToNSDate(DateTime.SpecifyKind(fireDate, DateTimeKind.Local));
 					SystemLogger.Log(SystemLogger.Module.PLATFORM, "Checking local notification to be cancelled, scheduled at " + fireDateNS.ToString());
 					foreach(UILocalNotification notification in UIApplication.SharedApplication.ScheduledLocalNotifications) {
 						if(notification.FireDate.SecondsSinceReferenceDate == fireDateNS.SecondsSinceReferenceDate) {

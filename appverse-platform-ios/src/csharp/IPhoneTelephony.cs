@@ -23,8 +23,8 @@
  */
 using System;
 using Unity.Core.Telephony;
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
+using UIKit;
+using Foundation;
 using System.Threading;
 using Unity.Core.Notification;
 using System.Text;
@@ -35,7 +35,7 @@ namespace Unity.Platform.IPhone
 
 	public class IPhoneTelephony : AbstractTelephony
 	{
-		public override ICallControl Call (string phoneNumber, CallType type)
+		public override void Call (string phoneNumber, CallType type)
 		{
 			if (CallType.Voice.Equals (type)) {
 				using (var pool = new NSAutoreleasePool ()) {
@@ -58,7 +58,6 @@ namespace Unity.Platform.IPhone
 					notificationService.StartNotifyAlert ("Phone Alert", "The requested call type is not enabled or supported on this device.", "OK");
 				}
 			}
-			return null;
 		}
 
 		[Export("InitiateCall")]
