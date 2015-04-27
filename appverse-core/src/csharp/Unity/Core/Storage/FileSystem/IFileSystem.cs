@@ -21,10 +21,14 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Storage.FileSystem
 {
-	public interface IFileSystem
-	{
+    public interface IFileSystem
+    {
+#if !WP8
 
 		/// <summary>
 		/// Creates a file under the given directory.
@@ -169,8 +173,152 @@ namespace Unity.Core.Storage.FileSystem
 		/// File data.
 		/// </param>
 		string StoreFile (string directoryPath, string fileName, byte[] fileData);
+#else
+        /// <summary>
+        /// Creates a file under the given directory.
+        /// </summary>
+        /// <param name="baseDirectory">The base Directory to create file under it.</param>
+        /// <param name="fileName">The file name.</param>
+        /// <returns>The file created, or null if file cannot be created.</returns>
+        Task<FileData> CreateFile(string fileName, DirectoryData baseDirectory);
 
+        /// <summary>
+        /// Creates a file under the root directory.
+        /// </summary>
+        /// <param name="fileName">The file name.</param>
+        /// <returns>The file created, or null if file cannot be created.</returns>
+        Task<FileData> CreateFile(string fileName);
 
-	}//end IFileSystem
+        /// <summary>
+        /// Creates a directory under the given base directory.
+        /// </summary>
+        /// <param name="baseDirectory">>The base Directory to create directory under it.</param>
+        /// <param name="directoryName">The directory name.</param>
+        /// <returns>The directory created, or null if file cannot be created.</returns>
+        Task<DirectoryData> CreateDirectory(string directoryName, DirectoryData baseDirectory);
+
+        /// <summary>
+        /// Creates a directory under the root directory.
+        /// </summary>
+        /// <param name="directoryName">The directory name.</param>
+        /// <returns>The directory created, or null if file cannot be created.</returns>
+        Task<DirectoryData> CreateDirectory(string directoryName);
+
+        /// <summary>
+        /// Deletes a file.
+        /// </summary>
+        /// <param name="file">The file to be deleted.</param>
+        /// <returns>True on successful deletion.</returns>
+        Task<bool> DeleteFile(FileData file);
+
+        /// <summary>
+        /// Deletes a directory (deleting first all its children).
+        /// </summary>
+        /// <param name="directory">The directory to be deleted.</param>
+        /// <returns>True on successful deletion.</returns>
+        Task<bool> DeleteDirectory(DirectoryData directory);
+
+        /// <summary>
+        /// List all files under given directory.
+        /// </summary>
+        /// <param name="directory">The directry to list files under it.</param>
+        /// <returns>List of files.</returns>
+        Task<FileData[]> ListFiles(DirectoryData directory);
+
+        /// <summary>
+        /// List all directories under given directory.
+        /// </summary>
+        /// <param name="directory">The directry to list files under it.</param>
+        /// <returns>List of directories.</returns>
+        Task<DirectoryData[]> ListDirectories(DirectoryData directory);
+
+        /// <summary>
+        /// List all directories under root directory.
+        /// </summary>
+        /// <returns>List of directories.</returns>
+        Task<DirectoryData[]> ListDirectories();
+
+        /// <summary>
+        /// Get configured root directory.
+        /// </summary>
+        /// <returns>Root directory.</returns>
+        Task<DirectoryData> GetDirectoryRoot();
+
+        /// <summary>
+        /// Reads file on given path.
+        /// </summary>
+        /// <param name="path">The file path, including file name.</param>
+        /// <returns>Readed bytes.</returns>
+        Task<byte[]> ReadFile(FileData file);
+
+        /// <summary>
+        /// Writes contents to file on given path.
+        /// </summary>
+        /// <param name="file">The file to add/append contents to.</param>
+        /// <param name="contents">Data to be written to file.</param>
+        /// <param name="append">True if data should be appended to previous file data.</param>
+        Task<bool> WriteFile(FileData file, byte[] contents, bool append);
+
+        /// <summary>
+        /// Checks if given file exists.
+        /// </summary>
+        /// <param name="file">The file to be checked.</param>
+        /// <returns>True if file exists.</returns>
+        Task<bool> ExistsFile(FileData file);
+
+        /// <summary>
+        /// Checks if given directory exists.
+        /// </summary>
+        /// <param name="directory">The directory to be checked.</param>
+        /// <returns>True if directory exists.</returns>
+        Task<bool> ExistsDirectory(DirectoryData directory);
+
+        /// <summary>
+        /// Copies the given file on "fromPath" to the "toPath". 
+        /// </summary>
+        /// <param name="fromPath">Relative path under configured application "resources" directory.
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <param name="toPath">Relative path under configured application "documents" directory. See GetDirectoryRoot().
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        Task<bool> CopyFromResources(string fromPath, string toPath);
+
+        /// <summary>
+        /// Copies the given remote file on "url" to the local path "toPath". 
+        /// </summary>
+        /// <param name="url">Remote url to get the file.
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <param name="toPath">Relative path under configured application "documents" directory. See GetDirectoryRoot().
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        Task<bool> CopyFromRemote(string url, string toPath);
+
+        /// <summary>
+        /// Stores the file, under the given directory, with the given contents.
+        /// </summary>
+        /// <returns>
+        /// The file. The file contents are overwritten if it already exists.
+        /// </returns>
+        /// <param name='directoryPath'>
+        /// Directory path. The directory is created if it does not exist.
+        /// </param>
+        /// <param name='fileName'>
+        /// File name.
+        /// </param>
+        /// <param name='fileData'>
+        /// File data.
+        /// </param>
+        Task<string> StoreFile(string directoryPath, string fileName, byte[] fileData);
+#endif
+
+    }//end IFileSystem
 
 }//end namespace FileSystem

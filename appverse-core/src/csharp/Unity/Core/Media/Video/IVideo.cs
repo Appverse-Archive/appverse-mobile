@@ -21,23 +21,41 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Media.Video
 {
-	public interface IVideo : IMediaOperations
-	{
-		/// <summary>
-		/// Start recording video to destination path.
-		/// </summary>
-		/// <param name="outputFilePath">The destination file path.</param>
-		/// <returns>True if video could be recorded.</returns>
-		bool StartVideoRecording (string outputFilePath);
+    public interface IVideo : IMediaOperations
+    {
+#if !WP8
+        /// <summary>
+        /// Start recording video to destination path.
+        /// </summary>
+        /// <param name="outputFilePath">The destination file path.</param>
+        /// <returns>True if video could be recorded.</returns>
+        bool StartVideoRecording(string outputFilePath);
 
-		/// <summary>
-		/// Stop recording video.
-		/// </summary>
-		/// <returns>True if video recording could be stopped.</returns>
-		bool StopVideoRecording ();
+        /// <summary>
+        /// Stop recording video.
+        /// </summary>
+        /// <returns>True if video recording could be stopped.</returns>
+        bool StopVideoRecording();
+#else
+        /// <summary>
+        /// Start recording video to destination path.
+        /// </summary>
+        /// <param name="outputFilePath">The destination file path.</param>
+        /// <returns>True if video could be recorded.</returns>
+        Task<bool> StartVideoRecording(string outputFilePath);
 
-	}//end IVideo
+        /// <summary>
+        /// Stop recording video.
+        /// </summary>
+        /// <returns>True if video recording could be stopped.</returns>
+        Task<bool> StopVideoRecording();
+#endif
+
+    }//end IVideo
 
 }//end namespace Video

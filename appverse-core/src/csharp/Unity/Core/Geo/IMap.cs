@@ -21,80 +21,154 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Geo
 {
-	public interface IMap
-	{
+    public interface IMap
+    {
+#if !WP8
+        /// <summary>
+        /// List of POIs for the current location, given a radius (bounding box).
+        /// </summary>
+        /// <param name="location">Map location point to search nearest POIs.</param>
+        /// <param name="radius">The radius around location to search POIs in.</param>
+        /// <returns>Points of Interest for location, ordered by distance.</returns>
+        POI[] GetPOIList(LocationCoordinate location, float radius);
 
-		/// <summary>
-		/// List of POIs for the current location, given a radius (bounding box).
-		/// </summary>
-		/// <param name="location">Map location point to search nearest POIs.</param>
-		/// <param name="radius">The radius around location to search POIs in.</param>
-		/// <returns>Points of Interest for location, ordered by distance.</returns>
-		POI[] GetPOIList (LocationCoordinate location, float radius);
+        /// <summary>
+        /// List of POIs for the current location, given a radius (bounding box), that match given query.
+        /// </summary>
+        /// <param name="location">Map location point to search nearest POIs.</param>
+        /// <param name="radius">The radius around location to search POIs in.</param>
+        /// <param name="queryText">The query to search POIs.</param>
+        /// <returns>Points of Interest for location, ordered by distance.</returns>
+        POI[] GetPOIList(LocationCoordinate location, float radius, string queryText);
 
-		/// <summary>
-		/// List of POIs for the current location, given a radius (bounding box), that match given query.
-		/// </summary>
-		/// <param name="location">Map location point to search nearest POIs.</param>
-		/// <param name="radius">The radius around location to search POIs in.</param>
-		/// <param name="queryText">The query to search POIs.</param>
-		/// <returns>Points of Interest for location, ordered by distance.</returns>
-		POI[] GetPOIList (LocationCoordinate location, float radius, string queryText);
+        /// <summary>
+        /// List of POIs for the current location, given a radius (bounding box), that match given query and category.
+        /// </summary>
+        /// <param name="location">Map location point to search nearest POIs.</param>
+        /// <param name="radius">The radius around location to search POIs in.</param>
+        /// <param name="queryText">The query to search POIs.</param>
+        /// <param name="category">The category that should map listed POIs.</param>
+        /// <returns>Points of Interest for location, ordered by distance.</returns>
+        POI[] GetPOIList(LocationCoordinate location, float radius, string queryText, LocationCategory category);
 
-		/// <summary>
-		/// List of POIs for the current location, given a radius (bounding box), that match given query and category.
-		/// </summary>
-		/// <param name="location">Map location point to search nearest POIs.</param>
-		/// <param name="radius">The radius around location to search POIs in.</param>
-		/// <param name="queryText">The query to search POIs.</param>
-		/// <param name="category">The category that should map listed POIs.</param>
-		/// <returns>Points of Interest for location, ordered by distance.</returns>
-		POI[] GetPOIList (LocationCoordinate location, float radius, string queryText, LocationCategory category);
+        /// <summary>
+        /// ist of POIs for the current location, given a radius (bounding box), that match given category.
+        /// </summary>
+        /// <param name="location">Map location point to search nearest POIs.</param>
+        /// <param name="radius">The radius around location to search POIs in.</param>
+        /// <param name="category">The category that should map listed POIs.</param>
+        /// <returns>Points of Interest for location, ordered by distance.</returns>
+        POI[] GetPOIList(LocationCoordinate location, float radius, LocationCategory category);
 
-		/// <summary>
-		/// ist of POIs for the current location, given a radius (bounding box), that match given category.
-		/// </summary>
-		/// <param name="location">Map location point to search nearest POIs.</param>
-		/// <param name="radius">The radius around location to search POIs in.</param>
-		/// <param name="category">The category that should map listed POIs.</param>
-		/// <returns>Points of Interest for location, ordered by distance.</returns>
-		POI[] GetPOIList (LocationCoordinate location, float radius, LocationCategory category);
-        
-		/// <summary>
-		/// Get POI by given id.
-		/// </summary>
-		/// <param name="id">POI identifier.</param>
-		/// <returns>POI</returns>
-		POI GetPOI (string id);
+        /// <summary>
+        /// Get POI by given id.
+        /// </summary>
+        /// <param name="id">POI identifier.</param>
+        /// <returns>POI</returns>
+        POI GetPOI(string id);
 
-		/// <summary>
-		/// Moves POI - given its id - to target location.
-		/// </summary>
-		/// <param name="id">POI identifier.</param>
-		/// <param name="target">Target LocationCoordinate</param>
-		/// <returns>true if the operation completes successfully</returns>
-		bool UpdatePOI (POI poi);
+        /// <summary>
+        /// Moves POI - given its id - to target location.
+        /// </summary>
+        /// <param name="id">POI identifier.</param>
+        /// <param name="target">Target LocationCoordinate</param>
+        /// <returns>true if the operation completes successfully</returns>
+        bool UpdatePOI(POI poi);
 
-		/// <summary>
-		/// Removes POI from map given its id.
-		/// </summary>
-		/// <param name="id">POI identifier.</param>
-		/// <returns>true if the operation completes successfully</returns>
-		bool RemovePOI (string id);
+        /// <summary>
+        /// Removes POI from map given its id.
+        /// </summary>
+        /// <param name="id">POI identifier.</param>
+        /// <returns>true if the operation completes successfully</returns>
+        bool RemovePOI(string id);
 
-		/// <summary>
-		/// Shows Map on screen.
-		/// </summary>
-		void GetMap ();
+        /// <summary>
+        /// Shows Map on screen.
+        /// </summary>
+        void GetMap();
 
-		/// <summary>
-		/// Specifies current map scale and bounding box radius.
-		/// </summary>
-		/// <param name="scale">Map scale.</param>
-		/// <param name="boundingBox">Map bounding box.</param>
-		void SetMapSettings (float scale, float boundingBox);
-	}//end IMap
+        /// <summary>
+        /// Specifies current map scale and bounding box radius.
+        /// </summary>
+        /// <param name="scale">Map scale.</param>
+        /// <param name="boundingBox">Map bounding box.</param>
+        void SetMapSettings(float scale, float boundingBox);
+#else
+        /// <summary>
+        /// List of POIs for the current location, given a radius (bounding box).
+        /// </summary>
+        /// <param name="location">Map location point to search nearest POIs.</param>
+        /// <param name="radius">The radius around location to search POIs in.</param>
+        /// <returns>Points of Interest for location, ordered by distance.</returns>
+        Task<POI[]> GetPOIList(LocationCoordinate location, float radius);
+
+        /// <summary>
+        /// List of POIs for the current location, given a radius (bounding box), that match given query.
+        /// </summary>
+        /// <param name="location">Map location point to search nearest POIs.</param>
+        /// <param name="radius">The radius around location to search POIs in.</param>
+        /// <param name="queryText">The query to search POIs.</param>
+        /// <returns>Points of Interest for location, ordered by distance.</returns>
+        Task<POI[]> GetPOIList(LocationCoordinate location, float radius, string queryText);
+
+        /// <summary>
+        /// List of POIs for the current location, given a radius (bounding box), that match given query and category.
+        /// </summary>
+        /// <param name="location">Map location point to search nearest POIs.</param>
+        /// <param name="radius">The radius around location to search POIs in.</param>
+        /// <param name="queryText">The query to search POIs.</param>
+        /// <param name="category">The category that should map listed POIs.</param>
+        /// <returns>Points of Interest for location, ordered by distance.</returns>
+        Task<POI[]> GetPOIList(LocationCoordinate location, float radius, string queryText, LocationCategory category);
+
+        /// <summary>
+        /// ist of POIs for the current location, given a radius (bounding box), that match given category.
+        /// </summary>
+        /// <param name="location">Map location point to search nearest POIs.</param>
+        /// <param name="radius">The radius around location to search POIs in.</param>
+        /// <param name="category">The category that should map listed POIs.</param>
+        /// <returns>Points of Interest for location, ordered by distance.</returns>
+        Task<POI[]> GetPOIList(LocationCoordinate location, float radius, LocationCategory category);
+
+        /// <summary>
+        /// Get POI by given id.
+        /// </summary>
+        /// <param name="id">POI identifier.</param>
+        /// <returns>POI</returns>
+        Task<POI> GetPOI(string id);
+
+        /// <summary>
+        /// Moves POI - given its id - to target location.
+        /// </summary>
+        /// <param name="id">POI identifier.</param>
+        /// <param name="target">Target LocationCoordinate</param>
+        /// <returns>true if the operation completes successfully</returns>
+        Task<bool> UpdatePOI(POI poi);
+
+        /// <summary>
+        /// Removes POI from map given its id.
+        /// </summary>
+        /// <param name="id">POI identifier.</param>
+        /// <returns>true if the operation completes successfully</returns>
+        Task<bool> RemovePOI(string id);
+
+        /// <summary>
+        /// Shows Map on screen.
+        /// </summary>
+        Task GetMap();
+
+        /// <summary>
+        /// Specifies current map scale and bounding box radius.
+        /// </summary>
+        /// <param name="scale">Map scale.</param>
+        /// <param name="boundingBox">Map bounding box.</param>
+        Task SetMapSettings(float scale, float boundingBox);
+#endif
+    }//end IMap
 
 }//end namespace Geo

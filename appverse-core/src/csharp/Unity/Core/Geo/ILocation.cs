@@ -21,11 +21,14 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Geo
 {
-	public interface ILocation
-	{
-
+    public interface ILocation
+    {
+#if !WP8
 		/// <summary>
 		/// Gets the current device acceleration (measured in meters/second/second).
 		/// </summary>
@@ -118,7 +121,101 @@ namespace Unity.Core.Geo
 		/// <c>true</c> if the GPS service is enabled; otherwise, <c>false</c>.
 		/// </returns>
 		bool IsGPSEnabled ();
+#else
+        /// <summary>
+        /// Gets the current device acceleration (measured in meters/second/second).
+        /// </summary>
+        /// <returns>Current acceleration.</returns>
+        Task<Acceleration> GetAcceleration();
 
-	}//end ILocation
+        /// <summary>
+        /// The heading relative to the magnetic noth pole (default).
+        /// Measured in degrees, minutes and seconds.
+        /// </summary>
+        /// <returns>Current heading.</returns>
+        Task<float> GetHeading();
+
+        /// <summary>
+        /// The heading relative to the given north (magnetic or true north pole).
+        /// Measured in degrees, minutes and seconds.
+        /// </summary>
+        /// <param name="type">Type of north to measured orientation relative to it.</param>
+        /// <returns>Current heading.</returns>
+        Task<float> GetHeading(NorthType type);
+
+        /// <summary>
+        /// The orientation relative to the magnetic noth pole (default).
+        /// Measured in degrees, minutes and seconds.
+        /// </summary>
+        /// <returns>Current orientation.</returns>
+        Task<DeviceOrientation> GetDeviceOrientation();
+
+        /// <summary>
+        /// Gets the current device location coordinates.
+        /// </summary>
+        /// <returns>Current location.</returns>
+        Task<LocationCoordinate> GetCoordinates();
+
+        /// <summary>
+        /// Gets the current device velocity (in meters/second).
+        /// </summary>
+        /// <returns>Device speed.</returns>
+        Task<float> GetVelocity();
+
+        /// <summary>
+        /// Starts the location services of the mobile device (lonfitude, latitude, altitude, speed, etc.).
+        /// </summary>
+        /// <returns>True if the location services could be started</returns>
+        Task<bool> StartUpdatingLocation();
+
+        /// <summary>
+        /// Stops the location services of the mobile device (lonfitude, latitude, altitude, speed, etc.).
+        /// </summary>
+        /// <returns>True if the location services could be stopped</returns>
+        Task<bool> StopUpdatingLocation();
+
+        /// <summary>
+        /// Starts the heading services of the mobile device (heading, accuracy, ...).
+        /// </summary>
+        /// <returns>True if the location services could be started</returns>
+        Task<bool> StartUpdatingHeading();
+
+        /// <summary>
+        /// Stops the heading services of the mobile device (heading, accurary, ...).
+        /// </summary>
+        /// <returns>True if the location services could be stopped</returns>
+        Task<bool> StopUpdatingHeading();
+
+        /// <summary>
+        /// Gets GeoDecoder values like street, country, postal code, ... from the current longitude and latitude
+        /// </summary>
+        /// <returns>Reverse geocoder attributes</returns>
+        Task<GeoDecoderAttributes> GetGeoDecoder();
+
+        /// <summary>
+        /// The proximity sensor detects an object or person which is closed to the device
+        /// and then the display screen is disabled.
+        /// </summary>
+        /// <returns>True if the proximity sensor has been enabled properly</returns>		
+        Task<bool> StartProximitySensor();
+
+        /// <summary>
+        /// The proximity sensor detects an object or person which is closed to the device
+        /// and then the display screen is disabled. Stopping the proximity sensor, the
+        /// screen is not disabled when an object is closed to the proximity sensor.
+        /// </summary>
+        /// <returns>True if the proximity sensor has been disabled properly</returns>				
+        Task<bool> StopProximitySensor();
+
+        /// <summary>
+        /// Determines whether the Location Services (GPS) is enabled.
+        ///  </summary>
+        /// <returns>
+        /// <c>true</c> if the GPS service is enabled; otherwise, <c>false</c>.
+        /// </returns>
+        Task<bool> IsGPSEnabled();
+#endif
+
+    }//end ILocation
 
 }//end namespace Geo

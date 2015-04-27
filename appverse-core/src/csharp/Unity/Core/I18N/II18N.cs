@@ -21,68 +21,128 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
+using Unity.Core.System;
 namespace Unity.Core.I18N
 {
-	public interface II18N
-	{
+    public interface II18N
+    {
+#if !WP8
+        /// <summary>
+        /// List of supported locales for the application.
+        /// </summary>
+        /// <returns>List of locales.</returns>
+        Locale[] GetLocaleSupported();
 
-		/// <summary>
-		/// List of supported locales for the application.
-		/// </summary>
-		/// <returns>List of locales.</returns>
-		Locale[] GetLocaleSupported ();
-
-		/// <summary>
-		/// List of supported locales for the application.
-		/// </summary>
-		/// <returns>List of locales.</returns>
-		string[] GetLocaleSupportedDescriptors ();
-
-
-		/// <summary>
-		/// Get literal for default locale.
-		/// </summary>
-		/// <param name="key">The key to search for literal.</param>
-		/// <returns>Resource literal</returns>
-		string GetResourceLiteral (string key);
-
-		/// <summary>
-		/// Get literal for given locale.
-		/// </summary>
-		/// <param name="key">The key to search for literal.</param>
-		/// <param name="locale">The locale.</param>
-		/// <returns>Resource literal</returns>
-		string GetResourceLiteral (string key, Locale locale);
-
-		/// <summary>
-		/// Get literal for a given locale.
-		/// </summary>
-		/// <param name="key">The key to convert to a literal.</param>
-		/// <param name="localeDescriptor">String with the locale identifier.</param>
-		/// <returns>Resource literal</returns>
-		string GetResourceLiteral (string key, string localeDescriptor);
-		
-		/// <summary>
-		/// Get all literals for default locale.
-		/// </summary>
-		/// <returns>IDictionary containing all the resource literals.</returns>
-		ResourceLiteralDictionary GetResourceLiterals ();
-		
-		/// <summary>
-		/// Get all literals for a given locale.
-		/// </summary>
-		/// <returns>IDictionary containing all the resource literals.</returns>
-		/// <param name="locale">The locale.</param>
-		ResourceLiteralDictionary GetResourceLiterals (Locale locale);
-		
-		/// <summary>
-		/// Get all literals for a given locale.
-		/// </summary>
-		/// <returns>IDictionary containing all the resource literals.</returns>
-		/// <param name='"localeDescriptor">String with the locale identifier.</param>
-		ResourceLiteralDictionary GetResourceLiterals (string localeDescriptor);
+        /// <summary>
+        /// List of supported locales for the application.
+        /// </summary>
+        /// <returns>List of locales.</returns>
+        string[] GetLocaleSupportedDescriptors();
 
 
-	}//end II18N
+        /// <summary>
+        /// Get literal for default locale.
+        /// </summary>
+        /// <param name="key">The key to search for literal.</param>
+        /// <returns>Resource literal</returns>
+        string GetResourceLiteral(string key);
+
+        /// <summary>
+        /// Get literal for given locale.
+        /// </summary>
+        /// <param name="key">The key to search for literal.</param>
+        /// <param name="locale">The locale.</param>
+        /// <returns>Resource literal</returns>
+        string GetResourceLiteral(string key, Locale locale);
+
+        /// <summary>
+        /// Get literal for a given locale.
+        /// </summary>
+        /// <param name="key">The key to convert to a literal.</param>
+        /// <param name="localeDescriptor">String with the locale identifier.</param>
+        /// <returns>Resource literal</returns>
+        string GetResourceLiteral(string key, string localeDescriptor);
+
+        /// <summary>
+        /// Get all literals for default locale.
+        /// </summary>
+        /// <returns>IDictionary containing all the resource literals.</returns>
+        ResourceLiteralDictionary GetResourceLiterals();
+
+        /// <summary>
+        /// Get all literals for a given locale.
+        /// </summary>
+        /// <returns>IDictionary containing all the resource literals.</returns>
+        /// <param name="locale">The locale.</param>
+        ResourceLiteralDictionary GetResourceLiterals(Locale locale);
+
+        /// <summary>
+        /// Get all literals for a given locale.
+        /// </summary>
+        /// <returns>IDictionary containing all the resource literals.</returns>
+        /// <param name='"localeDescriptor">String with the locale identifier.</param>
+        ResourceLiteralDictionary GetResourceLiterals(string localeDescriptor);
+#else
+        /// <summary>
+        /// List of supported locales for the application.
+        /// </summary>
+        /// <returns>List of locales.</returns>
+        Task<Locale[]> GetLocaleSupported();
+
+        /// <summary>
+        /// List of supported locales for the application.
+        /// </summary>
+        /// <returns>List of locales.</returns>
+        Task<string[]> GetLocaleSupportedDescriptors();
+
+
+        /// <summary>
+        /// Get literal for default locale.
+        /// </summary>
+        /// <param name="key">The key to search for literal.</param>
+        /// <returns>Resource literal</returns>
+        Task<string> GetResourceLiteral(string key);
+
+        /// <summary>
+        /// Get literal for given locale.
+        /// </summary>
+        /// <param name="key">The key to search for literal.</param>
+        /// <param name="locale">The locale.</param>
+        /// <returns>Resource literal</returns>
+        Task<string> GetResourceLiteral(string key, Locale locale);
+
+        /// <summary>
+        /// Get literal for a given locale.
+        /// </summary>
+        /// <param name="key">The key to convert to a literal.</param>
+        /// <param name="localeDescriptor">String with the locale identifier.</param>
+        /// <returns>Resource literal</returns>
+        Task<string> GetResourceLiteral(string key, string localeDescriptor);
+
+        /// <summary>
+        /// Get all literals for default locale.
+        /// </summary>
+        /// <returns>IDictionary containing all the resource literals.</returns>
+        Task<ResourceLiteralDictionary> GetResourceLiterals();
+
+        /// <summary>
+        /// Get all literals for a given locale.
+        /// </summary>
+        /// <returns>IDictionary containing all the resource literals.</returns>
+        /// <param name="locale">The locale.</param>
+        Task<ResourceLiteralDictionary> GetResourceLiterals(Locale locale);
+
+        /// <summary>
+        /// Get all literals for a given locale.
+        /// </summary>
+        /// <returns>IDictionary containing all the resource literals.</returns>
+        /// <param name='"localeDescriptor">String with the locale identifier.</param>
+        Task<ResourceLiteralDictionary> GetResourceLiterals(string localeDescriptor);
+#endif
+
+    }//end II18N
 
 }//end namespace I18N

@@ -30,10 +30,10 @@ using System.Threading;
 
 namespace Unity.Core.System.Service
 {
-	public class ServiceURIHandler : IHttpHandler
-	{
+    public class ServiceURIHandler : IHttpHandler
+    {
+#if !WP8
 		protected static string SERVICE_URI = "/service/";
-		protected static string SERVICE_ASYNC_URI = "/service-async/";
 		private static string CACHE_CONTROL_HEADER = "Cache-Control";
 		private static string DEFAULT_CACHE_CONTROL = "no-cache";
 		private IServiceLocator serviceLocator = null;
@@ -48,7 +48,7 @@ namespace Unity.Core.System.Service
 		}
 
 
-		private void ProcessAsyncPOSTResult(IInvocationManager invocationManager, Object service, string methodName, string query) {
+		public void ProcessAsyncPOSTResult(IInvocationManager invocationManager, Object service, string methodName, string query) {
 	
 			SystemLogger.Log (SystemLogger.Module .CORE, "Processing result asynchronously");
 			SystemLogger.Log (SystemLogger.Module .CORE, "query: " + query);
@@ -139,8 +139,10 @@ namespace Unity.Core.System.Service
 
 			byte[] result = this.ProcessPOSTResult(invocationManager, service, methodName, query);
 			string jsonResultString = null;
-			if(result!=null) {
-				jsonResultString = Encoding.UTF8.GetString(result);
+			if (result != null && result.Length > 0) {
+				jsonResultString = Encoding.UTF8.GetString (result);
+			} else {
+				jsonResultString = "null"; // in order to send null values as a result for async callbacks
 			}
 
 			this.SendBackResult(callbackFunction, id, jsonResultString);
@@ -171,15 +173,11 @@ namespace Unity.Core.System.Service
 		public virtual bool Process (HttpServer server, HttpRequest request, HttpResponse response)
 		{
 			SystemLogger.Log (SystemLogger.Module .CORE, " ############## " + this.GetType () + " -> " + request.Url);
-			if (request.Url.StartsWith (SERVICE_URI) || request.Url.StartsWith (SERVICE_ASYNC_URI)) {
+			if (request.Url.StartsWith (SERVICE_URI)) {
 				SystemLogger.Log (SystemLogger.Module .CORE, "Service protocol.");
 
-				bool asyncmode = false;
+				bool asyncmode = true;  // PLATFORM won't have anymore the sync mode for services.
 				int serviceUriLength = SERVICE_URI.Length;
-				if(request.Url.StartsWith (SERVICE_ASYNC_URI)) {
-					asyncmode = true;
-					serviceUriLength = SERVICE_ASYNC_URI.Length;
-				}
 
 				if(response.Header == null) {
 					response.Header = new Hashtable();
@@ -291,5 +289,7 @@ namespace Unity.Core.System.Service
 				return new ResourceInvocationManager ();
 			}
 		}
-	}
+#else
+#endif
+    }
 }

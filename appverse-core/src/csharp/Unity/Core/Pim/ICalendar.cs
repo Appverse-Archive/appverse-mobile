@@ -22,26 +22,27 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Unity.Core.Pim
 {
-	public interface ICalendar
-	{
-
+    public interface ICalendar
+    {
+#if !WP8
 		/// <summary>
 		/// Lists calendar entries for given date.
 		/// </summary>
 		/// <param name="date">Date to match calendar entries.</param>
-		/// <returns>List of calendar entries.</returns>
-		CalendarEntry[] ListCalendarEntries (DateTime date);
+		void ListCalendarEntries (DateTime date);
 
 		/// <summary>
 		/// Lists calendar entries between given start and end dates.
 		/// </summary>
 		/// <param name="startDate">Start date to match calendar entries.</param>
 		/// <param name="endDate">End date to match calendar entries.</param>
-		/// <returns>List of calendar entries.</returns>
-		CalendarEntry[] ListCalendarEntries (DateTime startDate, DateTime endDate);
+		void ListCalendarEntries (DateTime startDate, DateTime endDate);
 
 		/// <summary>
 		/// Creates a calendar entry.
@@ -65,8 +66,45 @@ namespace Unity.Core.Pim
 		/// <param name="newEndDate">New end date for calendar entry.</param>
 		/// <returns>True on successful relocation.</returns>
 		bool MoveCalendarEntry (CalendarEntry entry, DateTime newStartDate, DateTime newEndDate);
-        
+#else
+        /// <summary>
+        /// Lists calendar entries for given date.
+        /// </summary>
+        /// <param name="date">Date to match calendar entries.</param>
+        Task ListCalendarEntries(DateTime date);
 
-	}//end ICalendar
+        /// <summary>
+        /// Lists calendar entries between given start and end dates.
+        /// </summary>
+        /// <param name="startDate">Start date to match calendar entries.</param>
+        /// <param name="endDate">End date to match calendar entries.</param>
+        Task ListCalendarEntries(DateTime startDate, DateTime endDate);
+
+        /// <summary>
+        /// Creates a calendar entry.
+        /// </summary>
+        /// <param name="entry">Calendar entry to be created.</param>
+        /// <returns>Created calendar entry.</returns>
+        Task<CalendarEntry> CreateCalendarEntry(CalendarEntry entry);
+
+        /// <summary>
+        /// Deletes the given calendar entry.
+        /// </summary>
+        /// <param name="entry">>Calendar entry to be deleted.</param>
+        /// <returns>True on successful deletion.</returns>
+        Task<bool> DeleteCalendarEntry(CalendarEntry entry);
+
+        /// <summary>
+        /// Moves the given calendar entry to the new start and end dates.
+        /// </summary>
+        /// <param name="entry">Calendar entry to be moved.</param>
+        /// <param name="newStartDate">New start date for calendar entry.</param>
+        /// <param name="newEndDate">New end date for calendar entry.</param>
+        /// <returns>True on successful relocation.</returns>
+        Task<bool> MoveCalendarEntry(CalendarEntry entry, DateTime newStartDate, DateTime newEndDate);
+
+#endif
+
+    }//end ICalendar
 
 }//end namespace Pim

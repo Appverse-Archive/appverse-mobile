@@ -28,11 +28,15 @@ using Unity.Core.Storage.FileSystem;
 using Unity.Core.Notification;
 using Unity.Core.System;
 using System.Collections.Generic;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Unity.Core.AppLoader
 {
-	public abstract class AbstractLoader : ILoader
-	{
+    public abstract class AbstractLoader : ILoader
+    {
+#if !WP8
 		private static char MODULES_VERSION_SEPARATOR = '.';
 		private ModuleContext _context = null;
 		public static string MODULES_PATH = "apps";
@@ -53,7 +57,7 @@ namespace Unity.Core.AppLoader
 		{
 		}
 
-		#region ILoader implementation
+        #region ILoader implementation
 
 		/// <summary>
 		/// Initializes the module context.
@@ -85,7 +89,7 @@ namespace Unity.Core.AppLoader
 
 		public abstract void LoadModule (Module module, ModuleParam[] moduleParams, bool autoUpdate);
 
-		#endregion
+        #endregion
 
 		/// <summary>
 		/// Gets the service from URL.
@@ -214,6 +218,17 @@ namespace Unity.Core.AppLoader
 		public abstract INotification GetNotificationService();
 
 		public abstract bool StoreModuleZipFile(Module module, string tempFile);
-	}
+
+#else
+        public abstract Task InitializeModuleContext(ModuleContext context);
+        public abstract Task<Module[]> ListInstalledModules();
+        public abstract Task UpdateModules(Module[] modules, string callbackId);
+        public abstract Task UpdateModule(Module module, string callbackId);
+        public abstract Task DeleteModules(Module[] modules);
+        public abstract Task LoadModule(Module module, ModuleParam[] moduleParams);
+        public abstract Task LoadModule(Module module, ModuleParam[] moduleParams, bool autoUpdate);
+#endif
+
+    }
 }
 

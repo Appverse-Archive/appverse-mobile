@@ -21,13 +21,20 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
+
 namespace Unity.Core.Telephony
 {
-	public interface ITelephony
-	{
+    public interface ITelephony
+    {
+#if !WP8
+		void Call (string number, CallType type);
+#else
+        Task Call(string number, CallType type);
+#endif
 
-		ICallControl Call (string number, CallType type);
-
-	}//end ITelephony
+    }//end ITelephony
 
 }//end namespace Telephony

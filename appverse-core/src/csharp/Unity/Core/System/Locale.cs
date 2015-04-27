@@ -28,66 +28,80 @@ using System.Globalization;
 
 namespace Unity.Core.System
 {
-	public class Locale : IComparable<Locale>
-	{
-		public string Language { get; set; }
+    public class Locale : IComparable<Locale>
+    {
+        public string Language { get; set; }
 
-		public string Country { get; set; }
+        public string Country { get; set; }
 
-		public Locale ()
-		{
-		}
-		
-		public Locale (string localeDescriptor)
-		{ 
-			if (localeDescriptor != null) {
-				string[] localeData = localeDescriptor.Split ('-');
-				if (localeData.Length > 0) {
-					this.Language = localeData [0];	
-				}
-				if (localeData.Length > 1) {
-					this.Country = localeData [1];
-				}
-			}
-		}
+        public Locale()
+        {
+        }
 
-		/// <summary>
-		/// DO NOT USE THIS METHOD, COUNTRY IS NOT BEING PROVIDED. 
-		/// </summary>
-		/// <param name="ci">
-		/// A <see cref="CultureInfo"/>
-		/// </param>
-		public Locale (CultureInfo ci)
-		{
-			if (ci != null) {
-				this.Language = ci.TwoLetterISOLanguageName;
-				if (!ci.IsNeutralCulture) {
+        public Locale(string localeDescriptor)
+        {
+            if (localeDescriptor != null)
+            {
+                string[] localeData = localeDescriptor.Split('-');
+                if (localeData.Length > 0)
+                {
+                    this.Language = localeData[0];
+                }
+                if (localeData.Length > 1)
+                {
+                    this.Country = localeData[1];
+                }
+            }
+        }
 
-					try {
-						RegionInfo ri = new RegionInfo (ci.LCID);
-						// Bug:: "TwoLetterISORegionName" is always empty.
-						this.Country = ri.TwoLetterISORegionName;
-					} catch (Exception) {
-						//throw;
-					}
-				}
-			}
-		}
+        /// <summary>
+        /// DO NOT USE THIS METHOD, COUNTRY IS NOT BEING PROVIDED. 
+        /// </summary>
+        /// <param name="ci">
+        /// A <see cref="CultureInfo"/>
+        /// </param>
+        public Locale(CultureInfo ci)
+        {
+            if (ci != null)
+            {
+                this.Language = ci.TwoLetterISOLanguageName;
+                if (!ci.IsNeutralCulture)
+                {
 
-		public override string ToString ()
-		{
-			string localeString = "";
+                    try
+                    {
+#if !WP8
+                        RegionInfo ri = new RegionInfo(ci.LCID);
+#else
+                        RegionInfo ri = new RegionInfo(ci.TwoLetterISOLanguageName);
+#endif
+                        // Bug:: "TwoLetterISORegionName" is always empty.
+                        this.Country = ri.TwoLetterISORegionName;
+                    }
+                    catch (Exception)
+                    {
+                        //throw;
+                    }
+                }
+            }
+        }
 
-			if (this.Language != null && this.Language.Length > 0) {
-				localeString = localeString + this.Language;
-			}
+        public override string ToString()
+        {
+            string localeString = "";
 
-			if (this.Country != null && this.Country.Length > 0) {
-				localeString = localeString + "-" + this.Country;
-			}
+            if (this.Language != null && this.Language.Length > 0)
+            {
+                localeString = localeString + this.Language;
+            }
 
-			return localeString;
-		}
+            if (this.Country != null && this.Country.Length > 0)
+            {
+                localeString = localeString + "-" + this.Country;
+            }
+
+            return localeString;
+        }
 
         #region Miembros de IComparable<Locale>
 

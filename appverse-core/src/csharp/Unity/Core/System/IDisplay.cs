@@ -21,12 +21,15 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.System
 {
-	public interface IDisplay
-	{
+    public interface IDisplay
+    {
 
-
+#if !WP8
 		/// <summary>
 		/// Provides the current orientation of the primary display - the primary display is 1.
 		/// </summary>
@@ -115,8 +118,97 @@ namespace Unity.Core.System
 		/// The splash screen.
 		/// </returns>
 		bool DismissSplashScreen ();
-   
-		
-	}//end IDisplay
+#else
+        /// <summary>
+        /// Provides the current orientation of the primary display - the primary display is 1.
+        /// </summary>
+        /// <returns>Display orientation.</returns>
+        Task<DisplayOrientation> GetOrientationCurrent();
+
+        /// <summary>
+        /// Provides the current orientation of the given display number, 1 being the primary display.
+        /// </summary>
+        /// <param name="displayNumber">Screen identifier.</param>
+        /// <returns>Display orientation.</returns>
+        Task<DisplayOrientation> GetOrientation(int displayNumber);
+
+        /// <summary>
+        /// Provides the list of supported orientations for the device.
+        /// </summary>
+        /// <returns>List of supported orientations.</returns>
+        Task<DisplayOrientation[]> GetOrientationSupported();
+
+        /// <summary>
+        /// Provides the list of supported orientations for the given display number.
+        /// </summary>
+        /// <param name="displayNumber">Screen identifier.</param>
+        /// <returns>List of supported orientations.</returns>
+        Task<DisplayOrientation[]> GetOrientationSupported(int displayNumber);
+
+        /// <summary>
+        /// Provides the number of screens connected to the device. Display 1 is the primary.
+        /// </summary>
+        /// <returns>The number of displays connected to the device.</returns>
+        Task<int> GetDisplays();
+
+        /// <summary>
+        /// Provides information about the primary display.
+        /// </summary>
+        /// <returns>Display information.</returns>
+        Task<DisplayInfo> GetDisplayInfo();
+
+        /// <summary>
+        /// Provides information about the display number.
+        /// </summary>
+        /// <param name="displayNumber">The display number.</param>
+        /// <returns>Display information.</returns>
+        Task<DisplayInfo> GetDisplayInfo(int displayNumber);
+
+        /// <summary>
+        /// Sets whether the current application should autorotate or not.
+        /// If value is set to 'false', application's orientation will be set to the given orientation.
+        /// </summary>
+        /// <param name="lockOrientation">
+        /// A <see cref="System.Boolean"/> value indicating whether the application view should autorotate; 'true' to remain on the specified orientation
+        /// </param>
+        /// <param name="orientation">
+        /// A <see cref="DisplayOrientation"/> the orientation enum constant that the application should be locked, if lock is false this value is ignored
+        /// </param>
+        Task LockOrientation(bool lockOrientation, DisplayOrientation orientation);
+
+        /// <summary>
+        /// Indicates whether the current application if currently configured to autorotate or not.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.Boolean"/> If returned value is 'false', application remains on the default screen mode (portrait, in the iOS default case)
+        /// </returns>
+        Task<bool> IsOrientationLocked();
+
+        /// <summary>
+        /// Getter for the current locked orientation
+        /// </summary>
+        /// <returns>
+        /// A <see cref="DisplayOrientation"/> the locked orientation
+        /// </returns>
+        Task<DisplayOrientation> GetLockedOrientation();
+
+        /// <summary>
+        /// Shows the splash screen.
+        /// </summary>
+        /// <returns>
+        /// The splash screen.
+        /// </returns>
+        Task<bool> ShowSplashScreen();
+
+        /// <summary>
+        /// Dismisses the splash screen.
+        /// </summary>
+        /// <returns>
+        /// The splash screen.
+        /// </returns>
+        Task<bool> DismissSplashScreen();
+#endif
+
+    }//end IDisplay
 
 }//end namespace System

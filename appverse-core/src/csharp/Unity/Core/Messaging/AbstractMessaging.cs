@@ -24,19 +24,30 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+#if WP8
+using System.Threading.Tasks;
+#endif
+
 
 namespace Unity.Core.Messaging
 {
-	public abstract class AbstractMessaging : IMessaging
-	{
+    public abstract class AbstractMessaging : IMessaging
+    {
         #region Miembros de IMessaging
+#if !WP8
+        public abstract bool SendMessageSMS(string phoneNumber, string text);
 
-		public abstract bool SendMessageSMS (string phoneNumber, string text);
+        public abstract bool SendMessageMMS(string phoneNumber, string text, AttachmentData attachment);
 
-		public abstract bool SendMessageMMS (string phoneNumber, string text, AttachmentData attachment);
-
-		public abstract bool SendEmail (EmailData emailData);
+        public abstract bool SendEmail(EmailData emailData);
+#else
+        public abstract Task<bool> SendMessageSMS(string phoneNumber, string text);
+        public abstract Task<bool> SendMessageMMS(string phoneNumber, string text, AttachmentData attachment);
+        public abstract Task<bool> SendEmail(EmailData emailData);
+#endif
 
         #endregion
-	}
+
+
+    }
 }

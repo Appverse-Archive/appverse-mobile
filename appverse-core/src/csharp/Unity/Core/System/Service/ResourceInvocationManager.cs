@@ -26,8 +26,9 @@ using Unity.Core.IO;
 
 namespace Unity.Core.System.Service
 {
-	public class ResourceInvocationManager : AbstractInvocationManager
-	{
+    public class ResourceInvocationManager : AbstractInvocationManager
+    {
+#if !WP8
 		public ResourceInvocationManager ()
 		{
 		}
@@ -74,6 +75,8 @@ namespace Unity.Core.System.Service
 			// return original object, no conversions apply here.
 			return rawObject;
 		}
-	}
+#else
+#endif
+    }
 }
 

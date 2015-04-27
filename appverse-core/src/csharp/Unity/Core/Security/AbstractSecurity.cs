@@ -21,11 +21,97 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+using Unity.Core.System;
+using System.IO;
+using System.Xml.Serialization;
+using System;
+using Unity.Core.IO;
+using System.Collections.Generic;
+
+
+#if WP8
+using System.Threading.Tasks;
+#endif
+
 namespace Unity.Core.Security
 {
-	public abstract class AbstractSecurity : ISecurity
-	{
-		#region ISecurity implementation
+    public abstract class AbstractSecurity : ISecurity
+    {
+
+		private static string SECURITY_CONFIG_FILE = "app/config/security-config.xml";
+		private string _securityConfigFile = SECURITY_CONFIG_FILE;
+		private SecurityConfig securityConfig = new SecurityConfig();  // empty configuration
+
+		public virtual string SecurityConfigFile
+		{
+			get
+			{
+				return this._securityConfigFile;
+			}
+			set
+			{
+				this._securityConfigFile = value;
+			}
+		}
+
+
+		public AbstractSecurity() {
+			#if !WP8			
+			this.LoadConfiguration();
+			#endif
+		}
+
+		public List<String> GetPasscodeProtectedKeys() {
+			return this.securityConfig.ProtectedKeys;
+		}
+
+		/// <summary>
+		/// Load security-config.xml
+		/// </summary>
+		protected void LoadConfiguration()
+		{
+			try
+			{   // FileStream to read the XML document.
+				byte[] configFileRawData = GetConfigFileBinaryData();
+				if (configFileRawData != null)
+				{
+					XmlSerializer serializer = new XmlSerializer(typeof(SecurityConfig));
+					securityConfig = (SecurityConfig)serializer.Deserialize(new MemoryStream(configFileRawData));
+				}
+			}
+			catch (Exception e)
+			{
+				//if(!(e is FileNotFoundException))
+					SystemLogger.Log(SystemLogger.Module.CORE, "Error when loading services configuration", e);
+				securityConfig = new SecurityConfig(); // reset services config mapping when the services could not be loaded for any reason
+			}
+
+			SystemLogger.Log (SystemLogger.Module.CORE, "# Security config passcode protected keys #" + securityConfig.ProtectedKeys.Count);
+		}
+
+		/// <summary>
+		/// Default method, to be overrided by platform implementation. 
+		/// </summary>
+		/// <returns>
+		/// A <see cref="Stream"/>
+		/// </returns>
+		public virtual byte[] GetConfigFileBinaryData()
+		{
+			SystemLogger.Log(SystemLogger.Module.CORE, "# Loading Security Configuration from file: " + SecurityConfigFile);
+
+			Stream fs = new FileStream(SecurityConfigFile, FileMode.Open);
+			if (fs != null)
+			{
+				return ((MemoryStream)fs).GetBuffer();
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+        #region ISecurity implementation
+#if !WP8
 		public abstract bool IsDeviceModified ();
 
         public abstract void StoreKeyValuePair(KeyPair keypair);
@@ -39,6 +125,20 @@ namespace Unity.Core.Security
         public abstract void RemoveStoredKeyValuePair(string KeyName);
 
         public abstract void RemoveStoredKeyValuePairs(string[] KeyNames);
-		#endregion
-	}
+
+		public abstract void StartLocalAuthenticationWithTouchID (string reason);
+
+#else
+        public abstract Task<bool> IsDeviceModified();
+        public abstract Task StoreKeyValuePair(KeyPair keypair);
+        public abstract Task StoreKeyValuePairs(KeyPair[] keypairs);
+        public abstract Task GetStoredKeyValuePair(string keyName);
+        public abstract Task GetStoredKeyValuePairs(string[] keyNames);
+        public abstract Task RemoveStoredKeyValuePair(string keyName);
+        public abstract Task RemoveStoredKeyValuePairs(string[] keyNames);
+#endif
+        #endregion
+
+
+    }
 }

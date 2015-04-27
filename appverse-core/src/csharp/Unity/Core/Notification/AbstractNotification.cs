@@ -24,21 +24,24 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Unity.Core.Notification
 {
-	public abstract class AbstractNotification : INotification
-	{
-		protected bool PLAYING_BEEP = false;
-		protected int BEEP_FREQUENCY = 2000;  // in millisecons (a beep every 2 seconds)
-		
-		protected bool PLAYING_VIBRATION = false;
-		protected int VIBRATION_FREQUENCY = 2000;  // in millisecons (a beep every 2 seconds)
-		
-		private static string DEFAULT_LOADING_TEXT = "Loading...";
-        
-        #region Miembros de INotification
+    public abstract class AbstractNotification : INotification
+    {
+        protected bool PLAYING_BEEP = false;
+        protected int BEEP_FREQUENCY = 2000;  // in millisecons (a beep every 2 seconds)
 
+        protected bool PLAYING_VIBRATION = false;
+        protected int VIBRATION_FREQUENCY = 2000;  // in millisecons (a beep every 2 seconds)
+
+        private static string DEFAULT_LOADING_TEXT = "Loading...";
+
+        #region Miembros de INotification
+#if !WP8
 		public abstract bool StartNotifyActivity ();
 
 		public abstract bool StopNotifyActivity ();
@@ -78,10 +81,6 @@ namespace Unity.Core.Notification
 
 		public abstract bool StopNotifyBlink ();
 		
-		public abstract void RegisterForRemoteNotifications (string senderId, RemoteNotificationType[] types);
-
-		public abstract void UnRegisterForRemoteNotifications ();
-
 		public abstract void SetApplicationIconBadgeNumber (int badge);
 
 		public abstract void IncrementApplicationIconBadgeNumber ();
@@ -95,7 +94,35 @@ namespace Unity.Core.Notification
 		public abstract void CancelLocalNotification(DateTime fireDate);
 
 		public abstract void CancelAllLocalNotifications();
-
+#else
+        public abstract Task<bool> StartNotifyActivity();
+        public abstract Task<bool> StopNotifyActivity();
+        public abstract Task<bool> IsNotifyActivityRunning();
+        public abstract Task<bool> StartNotifyBeep();
+        public abstract Task<bool> StopNotifyBeep();
+        public abstract Task<bool> StartNotifyVibrate();
+        public abstract Task<bool> StopNotifyVibrate();
+        public abstract Task<bool> StartNotifyLoading();
+        public abstract Task<bool> StartNotifyLoading(string loadingText);
+        public abstract Task UpdateNotifyLoading(float progress);
+        public abstract Task<bool> StopNotifyLoading();
+        public abstract Task<bool> IsNotifyLoadingRunning();
+        public abstract Task<bool> StartNotifyAlert(string message);
+        public abstract Task<bool> StartNotifyAlert(string title, string message, string buttonText);
+        public abstract Task<bool> StartNotifyActionSheet(string title, string[] buttons, string[] javascriptCallBackFunctions);
+        public abstract Task<bool> StopNotifyAlert();
+        public abstract Task<bool> StartNotifyBlink();
+        public abstract Task<bool> StopNotifyBlink();
+        public abstract Task SetApplicationIconBadgeNumber(int badge);
+        public abstract Task IncrementApplicationIconBadgeNumber();
+        public abstract Task DecrementApplicationIconBadgeNumber();
+        public abstract Task PresentLocalNotificationNow(NotificationData notification);
+        public abstract Task ScheduleLocalNotification(NotificationData notification, SchedulingData schedule);
+        public abstract Task CancelLocalNotification(DateTime fireDate);
+        public abstract Task CancelAllLocalNotifications();
+#endif
         #endregion
-	}
+
+
+    }
 }

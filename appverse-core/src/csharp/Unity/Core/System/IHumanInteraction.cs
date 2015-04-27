@@ -21,59 +21,109 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.System
 {
-	public interface IHumanInteraction
-	{
+    public interface IHumanInteraction
+    {
+#if !WP8
+        /// <summary>
+        /// List of configured Locales for the device.
+        /// </summary>
+        /// <returns>List of locales.</returns>
+        Locale[] GetLocaleSupported();
 
-		/// <summary>
-		/// List of configured Locales for the device.
-		/// </summary>
-		/// <returns>List of locales.</returns>
-		Locale[] GetLocaleSupported ();
+        /// <summary>
+        /// Current locale of the device.
+        /// </summary>
+        /// <returns>Locale info.</returns>
+        Locale GetLocaleCurrent();
 
-		/// <summary>
-		/// Current locale of the device.
-		/// </summary>
-		/// <returns>Locale info.</returns>
-		Locale GetLocaleCurrent ();
+        /// <summary>
+        /// Currently active input method.
+        /// </summary>
+        /// <returns>Input method.</returns>
+        InputCapability GetInputMethodCurrent();
 
-		/// <summary>
-		/// Currently active input method.
-		/// </summary>
-		/// <returns>Input method.</returns>
-		InputCapability GetInputMethodCurrent ();
+        /// <summary>
+        /// Supported input methods.
+        /// </summary>
+        /// <returns>List of input methods supported by the device.</returns>
+        InputCapability[] GetInputMethods();
 
-		/// <summary>
-		/// Supported input methods.
-		/// </summary>
-		/// <returns>List of input methods supported by the device.</returns>
-		InputCapability[] GetInputMethods ();
+        /// <summary>
+        /// List of gestures supported natively by the device.
+        /// </summary>
+        /// <returns>List of gestures.</returns>
+        InputGesture[] GetInputGestures();
 
-		/// <summary>
-		/// List of gestures supported natively by the device.
-		/// </summary>
-		/// <returns>List of gestures.</returns>
-		InputGesture[] GetInputGestures ();
+        /// <summary>
+        /// List of hardware buttons provided by the device.
+        /// </summary>
+        /// <returns>List of buttons.</returns>
+        InputButton[] GetInputButtons();
 
-		/// <summary>
-		/// List of hardware buttons provided by the device.
-		/// </summary>
-		/// <returns>List of buttons.</returns>
-		InputButton[] GetInputButtons ();
-		
-		/// <summary>
-		/// Copies a specified text to device clipboard.
-		/// </summary>
-		/// <returns>
-		/// TRUE if the text was successfully copied to Clipboard, esle FALSE
-		/// </returns>
-		/// <param name='text'>
-		/// Text to copy to the Clipboard
-		/// </param>
-		bool CopyToClipboard (string text);
+        /// <summary>
+        /// Copies a specified text to device clipboard.
+        /// </summary>
+        /// <returns>
+        /// TRUE if the text was successfully copied to Clipboard, esle FALSE
+        /// </returns>
+        /// <param name='text'>
+        /// Text to copy to the Clipboard
+        /// </param>
+        bool CopyToClipboard(string text);
+#else
+        /// <summary>
+        /// List of configured Locales for the device.
+        /// </summary>
+        /// <returns>List of locales.</returns>
+        Task<Locale[]> GetLocaleSupported();
 
+        /// <summary>
+        /// Current locale of the device.
+        /// </summary>
+        /// <returns>Locale info.</returns>
+        Task<Locale> GetLocaleCurrent();
 
-	}//end IHumanInteraction
+        /// <summary>
+        /// Currently active input method.
+        /// </summary>
+        /// <returns>Input method.</returns>
+        Task<InputCapability> GetInputMethodCurrent();
+
+        /// <summary>
+        /// Supported input methods.
+        /// </summary>
+        /// <returns>List of input methods supported by the device.</returns>
+        Task<InputCapability[]> GetInputMethods();
+
+        /// <summary>
+        /// List of gestures supported natively by the device.
+        /// </summary>
+        /// <returns>List of gestures.</returns>
+        Task<InputGesture[]> GetInputGestures();
+
+        /// <summary>
+        /// List of hardware buttons provided by the device.
+        /// </summary>
+        /// <returns>List of buttons.</returns>
+        Task<InputButton[]> GetInputButtons();
+
+        /// <summary>
+        /// Copies a specified text to device clipboard.
+        /// </summary>
+        /// <returns>
+        /// TRUE if the text was successfully copied to Clipboard, esle FALSE
+        /// </returns>
+        /// <param name='text'>
+        /// Text to copy to the Clipboard
+        /// </param>
+        Task<bool> CopyToClipboard(string text);
+#endif
+
+    }//end IHumanInteraction
 
 }//end namespace System

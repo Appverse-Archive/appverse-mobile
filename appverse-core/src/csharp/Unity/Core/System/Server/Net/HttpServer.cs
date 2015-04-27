@@ -89,7 +89,16 @@ namespace Unity.Core.System.Server.Net
 		/// <returns>Current execution path.</returns>
 		public string GetDefaultBasePath ()
 		{
-			return Path.GetDirectoryName (Assembly.GetEntryAssembly ().Location);
+			string s = Assembly.GetEntryAssembly ().Location;
+			string defaultBasePath = s;
+			if (s != null) {
+				int n = s.Length;
+				int a = s.IndexOf (".app/");  
+				if(a>=0) { // applied only for special binaries
+					defaultBasePath = s.Substring (0, (a + ".app/".Length));
+				}
+			}
+			return Path.GetDirectoryName (defaultBasePath);
 		}
 
 		/// <summary>

@@ -25,13 +25,16 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Core.System;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Unity.Core.Net
 {
-	public abstract class AbstractNet : INet
-	{
-		#region Miembros de INet
-
+    public abstract class AbstractNet : INet
+    {
+        #region Miembros de INet
+#if !WP8
 		public abstract NetworkType[] GetNetworkTypeSupported ();
 
 		private static long LASTURL_TIMEOUT = 60 * 1000; // 60.000 ticks == 6 milliseconds (10.000 tick == 1 millisecond)
@@ -96,7 +99,20 @@ namespace Unity.Core.Net
 		public abstract bool DownloadFile (string url);
 
 		public abstract NetworkData GetNetworkData();
-		
-		#endregion
-	}
+#else
+        public abstract Task<NetworkType[]> GetNetworkTypeSupported();
+        public abstract Task<bool> IsNetworkReachable(string url);
+        public abstract Task<NetworkType> GetNetworkTypeReachable(string url);
+        public abstract Task<NetworkType[]> GetNetworkTypeReachableList(string url);
+        public abstract Task<bool> OpenBrowser(string title, string buttonText, string url);
+        public abstract Task<bool> OpenBrowserWithOptions(SecondaryBrowserOptions browserOptions);
+        public abstract Task<bool> ShowHtml(string title, string buttonText, string html);
+        public abstract Task<bool> ShowHtmlWithOptions(SecondaryBrowserOptions browserOptions);
+        public abstract Task<bool> DownloadFile(string url);
+        public abstract Task<NetworkData> GetNetworkData();
+#endif
+        #endregion
+
+
+    }
 }

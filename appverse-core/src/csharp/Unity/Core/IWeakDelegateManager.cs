@@ -1,8 +1,8 @@
-/*
+﻿/*
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (“APL v2.0”).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  ("APL v2.0").  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -22,27 +22,16 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
+using UIKit;
+using Foundation;
 
-namespace Unity.Core.Media
+namespace Unity.Core
 {
-	public class MediaQRContent
+	public interface IWeakDelegateManager
 	{
-		public string Text { get; set; }
-		public BarCodeType BarcodeType { get; set; }
-		public QRType QRType {get;set;}
+		void InitializeWeakDelegate();
 
-		public MediaQRContent ()
-		{
-			Text = String.Empty;
-			BarcodeType = BarCodeType.QR_CODE;
-			QRType = QRType.TEXT;
-		}
-		public MediaQRContent (string text, BarCodeType barcodeType, QRType qrType)
-		{
-			Text = text;
-			BarcodeType=barcodeType;
-			QRType = qrType;
-		}
+		void WebViewLoadingFinished (UIApplicationState applicationState, NSDictionary options);
 	}
 }
 
