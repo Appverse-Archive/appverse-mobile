@@ -8,11 +8,11 @@ using Foundation;
 
 namespace UnityUI.iOS
 {
-	[Register ("UnityUI_iOSViewController")]
-	partial class UnityUI_iOSViewController
+	[Register ("UnityUI_iOSViewController_WKWebView")]
+	partial class UnityUI_iOSViewController_WKWebView
 	{
 		[Outlet]
-		public MonoTouch.UIKit.UIWebView webView { get; set; }
+		public WebKit.WKWebView webView { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
