@@ -25,10 +25,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Core.System;
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
+using UIKit;
+using Foundation;
 using System.Runtime.InteropServices;
 using Unity.Core.System.Launch;
+using ObjCRuntime;
 
 namespace Unity.Platform.IPhone
 {
@@ -370,7 +371,7 @@ namespace Unity.Platform.IPhone
 			
 			UIDevice uiDevice = UIDevice.CurrentDevice; 
 			hi.Name = uiDevice.Name;
-			hi.UUID = uiDevice.UniqueIdentifier;
+			hi.UUID = uiDevice.IdentifierForVendor.AsString();
 			hi.Vendor = "Apple Inc.";
 			hi.Version = DeviceHardware.Version.ToString();  // uiDevice.Model  (not enough info)
 			
@@ -494,11 +495,16 @@ namespace Unity.Platform.IPhone
 			iPhone4_Verizon,
 			iPhone4S,
 			iPhone5,
+			iPhone5C,
+			iPhone5S,
+			iPhone6Plus,
+			iPhone6,
 			iPod,
 			iPod1G,
 			iPod2G,
 			iPod3G,
 			iPod4G,
+			iPod5G,
 			iPad,
 			iPad1,
 			iPad1Wifi,
@@ -507,12 +513,29 @@ namespace Unity.Platform.IPhone
 			iPad2Wifi,
 			iPad2GSM,
 			iPad2CDMA,
-			iPad3,
+			iPad3Wifi,
+			iPad3GSM,
+			iPad3Global,
+			iPad4Wifi,
+			iPad4GSM,
+			iPad4Global,
+			iPadAirWifi,
+			iPadAirCellular,
+			iPadAir2Wifi,
+			iPadAir2Cellular,
+			iPadMini1GWifi,
+			iPadMini1GGSM,
+			iPadMini1GGlobal,
+			iPadMini2Wifi,
+			iPadMini2Cellular,
+			iPadMini3Wifi,
+			iPadMini3Cellular,
+			iPadMini3A1601,
 			Simulator,
 			Unknown
 		}
 		
-		[DllImport(MonoTouch.Constants.SystemLibrary)]
+		[DllImport(Constants.SystemLibrary)]
 		internal static extern int sysctlbyname( [MarshalAs(UnmanagedType.LPStr)] string property, // name of the property
 		                                        IntPtr output, // output
 		                                        IntPtr oldLen, // IntPtr.Zero
@@ -546,13 +569,14 @@ namespace Unity.Platform.IPhone
 				var ret = HardwareVersion.Unknown;
 				//SystemLogger.Log(SystemLogger.Module.PLATFORM, hardwareStr);
 				// determine which hardware we are running
+				// matching source: https://github.com/monospacecollective/UIDevice-Hardware/blob/master/UIDevice-Hardware.m
 				if (hardwareStr == "iPhone1,1")
 					ret = HardwareVersion.iPhone1G;
 				else if (hardwareStr == "iPhone1,2")
 					ret = HardwareVersion.iPhone3G;
 				else if (hardwareStr == "iPhone2,1")
 					ret = HardwareVersion.iPhone3GS;
-				else if (hardwareStr == "iPhone3,1")    
+				else if (hardwareStr == "iPhone3,1")
 					ret = HardwareVersion.iPhone4;
 				else if (hardwareStr == "iPhone3,3")
 					ret = HardwareVersion.iPhone4_Verizon;
@@ -562,6 +586,18 @@ namespace Unity.Platform.IPhone
 					ret = HardwareVersion.iPhone5;
 				else if (hardwareStr == "iPhone5,2")
 					ret = HardwareVersion.iPhone5;
+				else if (hardwareStr == "iPhone5,3")
+					ret = HardwareVersion.iPhone5C;
+				else if (hardwareStr == "iPhone5,4")
+					ret = HardwareVersion.iPhone5C;
+				else if (hardwareStr == "iPhone6,1")
+					ret = HardwareVersion.iPhone5S;
+				else if (hardwareStr == "iPhone6,2")
+					ret = HardwareVersion.iPhone5S;
+				else if (hardwareStr == "iPhone7,1")
+					ret = HardwareVersion.iPhone6Plus;
+				else if (hardwareStr == "iPhone7,2")
+					ret = HardwareVersion.iPhone6;
 				else if (hardwareStr.IndexOf("iPhone")==0)
 					ret = HardwareVersion.iPhone;  // if details could not be obtained, at least check for model (iPhone, iPad, iPod)
 				else if (hardwareStr == "iPod1,1")
@@ -572,6 +608,8 @@ namespace Unity.Platform.IPhone
 					ret = HardwareVersion.iPod3G;
 				else if (hardwareStr == "iPod4,1")
 					ret = HardwareVersion.iPod4G;
+				else if (hardwareStr == "iPod5,1")
+					ret = HardwareVersion.iPod5G;
 				else if (hardwareStr.IndexOf("iPod")==0)
 					ret = HardwareVersion.iPod;  // if details could not be obtained, at least check for model (iPhone, iPad, iPod)
 				else if (hardwareStr == "iPad1,1")      
@@ -586,12 +624,48 @@ namespace Unity.Platform.IPhone
 					ret = HardwareVersion.iPad2GSM;
 				else if (hardwareStr == "iPad2,3")      
 					ret = HardwareVersion.iPad2CDMA;
+				else if (hardwareStr == "iPad2,5")      
+					ret = HardwareVersion.iPadMini1GWifi;
+				else if (hardwareStr == "iPad2,6")      
+					ret = HardwareVersion.iPadMini1GGSM;
+				else if (hardwareStr == "iPad2,7")      
+					ret = HardwareVersion.iPadMini1GGlobal;
 				else if (hardwareStr.IndexOf("iPad2")==0)
 					ret = HardwareVersion.iPad2;
-				else if (hardwareStr.IndexOf("iPad3")==0)      
-					ret = HardwareVersion.iPad3;
+				else if (hardwareStr == "iPad3,1")      
+					ret = HardwareVersion.iPad3Wifi;
+				else if (hardwareStr == "iPad3,2")      
+					ret = HardwareVersion.iPad3GSM;
+				else if (hardwareStr == "iPad3,3")      
+					ret = HardwareVersion.iPad3Global;
+				else if (hardwareStr == "iPad3,4")      
+					ret = HardwareVersion.iPad4Wifi;
+				else if (hardwareStr == "iPad3,5")      
+					ret = HardwareVersion.iPad4GSM;
+				else if (hardwareStr == "iPad3,6")      
+					ret = HardwareVersion.iPad4Global;
+				else if (hardwareStr == "iPad4,1")      
+					ret = HardwareVersion.iPadAirWifi;
+				else if (hardwareStr == "iPad4,2")      
+					ret = HardwareVersion.iPadAirCellular;
+				else if (hardwareStr == "iPad5,3")      
+					ret = HardwareVersion.iPadAir2Wifi;
+				else if (hardwareStr == "iPad4,4")      
+					ret = HardwareVersion.iPadAir2Cellular;
+				else if (hardwareStr == "iPad4,4")      
+					ret = HardwareVersion.iPadMini2Wifi;
+				else if (hardwareStr == "iPad4,5")      
+					ret = HardwareVersion.iPadMini2Cellular;
+				else if (hardwareStr == "iPad4,7")      
+					ret = HardwareVersion.iPadMini3Wifi;
+				else if (hardwareStr == "iPad4,8")      
+					ret = HardwareVersion.iPadMini3Cellular;
+				else if (hardwareStr == "iPad4,9")      
+					ret = HardwareVersion.iPadMini3A1601;
 				else if (hardwareStr.IndexOf("iPad")==0)
 					ret = HardwareVersion.iPad;  // if details could not be obtained, at least check for model (iPhone, iPad, iPod)
+				else if (hardwareStr == "x86")       
+					ret = HardwareVersion.Simulator;
 				else if (hardwareStr == "x86_64")       
 					ret = HardwareVersion.Simulator;
 				else if (hardwareStr == "i386")

@@ -22,11 +22,11 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using Unity.Core.Messaging;
-using MonoTouch.MessageUI;
+using MessageUI;
 using System.Threading;
-using MonoTouch.Foundation;
+using Foundation;
 using Unity.Core.Notification;
-using MonoTouch.UIKit;
+using UIKit;
 using System;
 using Unity.Core.System;
 using System.Text;
@@ -151,7 +151,7 @@ namespace Unity.Platform.IPhone
 				// method reviewed (15 April 2014).
 				e.Controller.DismissViewController(true, null);
 
-				// deprecated --> e.Controller.DismissModalViewControllerAnimated (true);
+				// deprecated --> e.Controller.DismissModalViewController (true);
 			});
 		}
 
@@ -214,7 +214,7 @@ namespace Unity.Platform.IPhone
 
 					// Present the modal view controller for sending messages
 					vcMessage.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
-					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentViewController(vcMessage, true, null);
+					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().PresentViewController(vcMessage, false, null);
 
 				} else {
 					INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance ().GetService ("notify");

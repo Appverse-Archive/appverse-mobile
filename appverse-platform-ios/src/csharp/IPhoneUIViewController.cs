@@ -22,10 +22,11 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-using MonoTouch.UIKit;
+using UIKit;
 using System.Drawing;
-using MonoTouch.Foundation;
+using Foundation;
 using Unity.Core.System;
+using CoreGraphics;
 
 namespace Unity.Platform.IPhone
 {
@@ -37,7 +38,7 @@ namespace Unity.Platform.IPhone
 		{
 			
 			contentView = new UIView();
-			contentView.Frame = new RectangleF(new PointF(0,0),new SizeF(this.View.Frame.Size.Width, this.View.Frame.Size.Height));
+			contentView.Frame = new CGRect(new CGPoint(0,0),new CGSize(this.View.Frame.Size.Width, this.View.Frame.Size.Height));
 			contentView.BackgroundColor = UIColor.White;
 			contentView.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 			
@@ -54,7 +55,7 @@ namespace Unity.Platform.IPhone
 							webView.LoadHtmlString("<html></html>", new NSUrl("/")); 						
 						}
 					}
-					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewControllerAnimated(true);
+					IPhoneServiceLocator.CurrentDelegate.MainUIViewController ().DismissModalViewController(true);
 				});
 			};
 			
@@ -62,7 +63,7 @@ namespace Unity.Platform.IPhone
 			navItem.LeftBarButtonItem = backButton;
 			
 			UINavigationBar toolBar = new UINavigationBar();
-			toolBar.Frame = new RectangleF(new PointF(0,0), new SizeF(this.View.Frame.Size.Width, this.GetNavigationBarHeight()));
+			toolBar.Frame = new CGRect(new CGPoint(0,0), new CGSize(this.View.Frame.Size.Width, this.GetNavigationBarHeight()));
 			toolBar.PushNavigationItem(navItem, false);
 			toolBar.AutoresizingMask = UIViewAutoresizing.FlexibleWidth;
 			contentView.AddSubview(toolBar);     
@@ -83,7 +84,7 @@ namespace Unity.Platform.IPhone
 		public void AddInnerView(UIView view) {
 			view.BackgroundColor = UIColor.White;
 			float navigationBarHeight = this.GetNavigationBarHeight ();
-			view.Frame = new RectangleF(new PointF(0,navigationBarHeight), new SizeF(this.View.Bounds.Width, this.View.Bounds.Height-navigationBarHeight));
+			view.Frame = new CGRect(new CGPoint(0,navigationBarHeight), new CGSize(this.View.Bounds.Width, this.View.Bounds.Height-navigationBarHeight));
 			view.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 			this.View.AddSubview(view);
 		}
@@ -154,7 +155,8 @@ namespace Unity.Platform.IPhone
 				//this.log ("os_major_version: " + os_major_version);
 				if(os_major_version>=7) {
 					// when using landscape the width should be used, for portrait the height value
-					statusBarHeight = Math.Min(UIApplication.SharedApplication.StatusBarFrame.Height, UIApplication.SharedApplication.StatusBarFrame.Width);
+					statusBarHeight = Math.Min((float)UIApplication.SharedApplication.StatusBarFrame.Height, 
+						(float)UIApplication.SharedApplication.StatusBarFrame.Width);
 					//this.log ("statusBarHeight: " + statusBarHeight);
 				} 
 			} 

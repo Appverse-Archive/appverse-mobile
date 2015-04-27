@@ -26,19 +26,115 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using Unity.Core.Net;
-using MonoTouch.SystemConfiguration;
+using SystemConfiguration;
 using System.Net;
-using MonoTouch.Foundation;
+using Foundation;
 using System.Threading;
-using MonoTouch.UIKit;
+using UIKit;
 using Unity.Core.Notification;
 using Unity.Core.System;
 using System.Net.NetworkInformation;
+
+using SystemConfiguration;
+using CoreFoundation;
+using Foundation;
+
 
 namespace Unity.Platform.IPhone
 {
     public class IPhoneNet : AbstractNet
     {
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Unity.Platform.IPhone.IPhoneNet"/> class.
+		/// </summary>
+		public IPhoneNet ()
+		{
+
+			//CheckConnectivity ();
+		
+		}
+		private int NetStatus;
+
+		public int getNetStatus(){ return NetStatus;}
+
+		/// <summary>
+		/// Updates the status.
+		/// </summary>
+		void UpdateStatus ()
+		{
+
+
+			SystemLogger.Log(SystemLogger.Module.PLATFORM,"UpdateStatus");
+			var type = NetworkType.Unknown;
+
+			try{
+
+				var remoteHostStatus = Reachability.RemoteHostStatus ();
+				var internetStatus = Reachability.InternetConnectionStatus ();
+				var localWifiStatus = Reachability.LocalWifiConnectionStatus ();
+
+				SystemLogger.Log(SystemLogger.Module.PLATFORM,"remoteHostStatus: "+remoteHostStatus);
+				SystemLogger.Log(SystemLogger.Module.PLATFORM,"internetStatus: "+internetStatus);
+				SystemLogger.Log(SystemLogger.Module.PLATFORM,"localWifiStatus: "+localWifiStatus);
+
+
+				if(remoteHostStatus == NetworkStatus.ReachableViaCarrierDataNetwork){
+					type = NetworkType.Carrier_3G;
+				}
+				if(remoteHostStatus == NetworkStatus.ReachableViaWiFiNetwork && internetStatus == NetworkStatus.ReachableViaWiFiNetwork){
+					type = NetworkType.Wifi;
+
+					NSDictionary dict;
+
+					var status = CaptiveNetwork.TryCopyCurrentNetworkInfo ("en0", out dict);
+
+					/*SystemLogger.Log (SystemLogger.Module.PLATFORM, "wifi status "+status);
+					if (status != null && status != StatusCode.NoKey) {
+				
+						var ssid = dict [CaptiveNetwork.NetworkInfoKeySSID];
+
+						SystemLogger.Log (SystemLogger.Module.PLATFORM, "SSID: " + ssid.ToString ());
+					}*/
+				}
+
+				SystemLogger.Log(SystemLogger.Module.PLATFORM,"type: "+type);
+				/*
+				switch(type){
+				case NetworkType.Wifi:
+					NetStatus = 6;
+					break;
+				case NetworkType.Carrier_3G:
+					NetStatus = 5;
+					break;
+				default:
+					NetStatus = 0;
+					break;
+				}
+				*
+				*/
+				NetStatus = (int) type;
+
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+					if(IPhoneServiceLocator.CurrentDelegate != null)
+						IPhoneServiceLocator.CurrentDelegate.EvaluateJavascript("if(Appverse&&Appverse.Net){ Appverse.Net.NetworkStatus ="+NetStatus+"; window.localStorage.setItem('_NetworkStatus',Appverse.Net.NetworkStatus);}");
+					if(IPhoneUtils.GetInstance() != null)
+						IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Net.onConnectivityChange", NetStatus);
+				});
+			}catch(Exception ex){SystemLogger.Log (SystemLogger.Module.PLATFORM, "UpdateStatus Appverse.Net.onConnectivityChange EXCEPTION; "+ex.ToString());}
+
+		
+		}
+    	
+		/// <summary>
+		/// Checks connectivity Changes.
+		/// </summary>
+		public void CheckConnectivity()
+		{
+			UpdateStatus ();
+			Reachability.ReachabilityChanged += (object sender, EventArgs e) =>  { UpdateStatus (); };
+		}
+
+
 		private const string NETWORKINTERFACE_3G = "pdp_ip0";
 		private const string NETWORKINTERFACE_WIFI = "en0";
 		/// <summary>
@@ -188,7 +284,8 @@ namespace Unity.Platform.IPhone
 			if (defaultRouteReachability.TryGetFlags (out flags))
 			    return false;
 			return IsReachable (flags) && IsNoConnectionRequired(flags);  // is reachable without requiring connection.
-		}	
+		}
+
 		
 		/// <summary>
 		/// 
@@ -400,18 +497,35 @@ namespace Unity.Platform.IPhone
 				//IF NO EXTENSIONS ARE USED THEN PARSE THE URL FILE EXTENSION
 				if(browserOptions.BrowserFileExtensions!=null && browserOptions.BrowserFileExtensions.Length>0){
 					webView.ShouldStartLoad = delegate (UIWebView view, NSUrlRequest req, UIWebViewNavigationType nav){
-						if(req!=null && req.Url!=null && req.Url.Path.LastIndexOf(".") != -1){
-							string sFileExtension = req.Url.Path.Substring(req.Url.Path.LastIndexOf("."));
-							if(browserOptions.BrowserFileExtensions.Contains(sFileExtension)){
+
+						SystemLogger.Log(SystemLogger.Module.PLATFORM,"OpenBrowserWithOptionsOnThread - WebView ShouldStartLoad: " + req);
+
+						if(req!=null && req.Url!=null && req.Url.Path!=null && req.Url.Path.LastIndexOf(".") != -1){
+							SystemLogger.Log(SystemLogger.Module.PLATFORM,"OpenBrowserWithOptionsOnThread - request path: " + req.Url.Path);
+							string sFileExtensionPath = req.Url.Path.Substring(req.Url.Path.LastIndexOf("."));
+							if(browserOptions.BrowserFileExtensions.Contains(sFileExtensionPath)){
+								SystemLogger.Log(SystemLogger.Module.PLATFORM,"OpenBrowserWithOptionsOnThread - WebView ShouldStartLoad: Handled by system (file extension matching by Path)");
 								//HANDLE URL LIKE SYSTEM DOES
-								DownloadFile(req.Url.ToString());
+								DownloadFile(Uri.UnescapeDataString(req.Url.ToString()));
 								//RETURN FALSE TO NOT LOAD THE URL ON OUR WEBVIEW
 								return false;
-							}else{
-								//LOAD URL
-								return true;
 							}
 						}
+						// extensions could also be received as Query parameters
+						if(req!=null && req.Url!=null && req.Url.Query!=null && req.Url.Query.LastIndexOf(".") != -1){
+							SystemLogger.Log(SystemLogger.Module.PLATFORM,"OpenBrowserWithOptionsOnThread - request query: " + req.Url.Query);
+							string sFileExtensionQuery = req.Url.Query.Substring(req.Url.Query.LastIndexOf("."));
+							if(browserOptions.BrowserFileExtensions.Contains(sFileExtensionQuery)){
+								//HANDLE URL LIKE SYSTEM DOES
+								SystemLogger.Log(SystemLogger.Module.PLATFORM,"OpenBrowserWithOptionsOnThread - WebView ShouldStartLoad: Handled by system (file extension matching by Query)");
+								DownloadFile(Uri.UnescapeDataString(req.Url.ToString()));
+								//RETURN FALSE TO NOT LOAD THE URL ON OUR WEBVIEW
+								return false;
+							}
+						}
+						
+						SystemLogger.Log(SystemLogger.Module.PLATFORM,"OpenBrowserWithOptionsOnThread - WebView ShouldStartLoad: Loaded into WebView (not Path or Query match provided extensions)");
+
 						return true;
 					};
 				}
@@ -438,4 +552,155 @@ namespace Unity.Platform.IPhone
 			});
 		}
     }
+
+	public enum NetworkStatus
+	{
+		NotReachable,
+		ReachableViaCarrierDataNetwork,
+		ReachableViaWiFiNetwork
+	}
+
+	public static class Reachability
+	{
+		public static string HostName = "www.google.com";
+
+		public static bool IsReachableWithoutRequiringConnection(NetworkReachabilityFlags flags)
+		{
+			// Is it reachable with the current network configuration?
+			bool isReachable = (flags & NetworkReachabilityFlags.Reachable) != 0;
+
+			// Do we need a connection to reach it?
+			bool noConnectionRequired = (flags & NetworkReachabilityFlags.ConnectionRequired) == 0;
+
+			// Since the network stack will automatically try to get the WAN up,
+			// probe that
+			if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
+				noConnectionRequired = true;
+
+			return isReachable && noConnectionRequired;
+		}
+
+		// Is the host reachable with the current network configuration
+		public static bool IsHostReachable(string host)
+		{
+			if (string.IsNullOrEmpty(host))
+				return false;
+
+			using (var r = new NetworkReachability(host))
+			{
+				NetworkReachabilityFlags flags;
+
+				if (r.TryGetFlags(out flags))
+				{
+					return IsReachableWithoutRequiringConnection(flags);
+				}
+			}
+			return false;
+		}
+
+		//
+		// Raised every time there is an interesting reachable event,
+		// we do not even pass the info as to what changed, and
+		// we lump all three status we probe into one
+		//
+		public static event EventHandler ReachabilityChanged;
+
+		static void OnChange(NetworkReachabilityFlags flags)
+		{
+			var h = ReachabilityChanged;
+			if (h != null)
+				h(null, EventArgs.Empty);
+		}
+
+		//
+		// Returns true if it is possible to reach the AdHoc WiFi network
+		// and optionally provides extra network reachability flags as the
+		// out parameter
+		//
+		static NetworkReachability adHocWiFiNetworkReachability;
+
+		public static bool IsAdHocWiFiNetworkAvailable(out NetworkReachabilityFlags flags)
+		{
+			if (adHocWiFiNetworkReachability == null)
+			{
+				adHocWiFiNetworkReachability = new NetworkReachability(new IPAddress(new byte [] { 169, 254, 0, 0 }));
+				adHocWiFiNetworkReachability.SetNotification(OnChange);
+				adHocWiFiNetworkReachability.Schedule(CFRunLoop.Current, CFRunLoop.ModeDefault);
+			}
+
+			return adHocWiFiNetworkReachability.TryGetFlags(out flags) && IsReachableWithoutRequiringConnection(flags);
+		}
+
+		static NetworkReachability defaultRouteReachability;
+
+		static bool IsNetworkAvailable(out NetworkReachabilityFlags flags)
+		{
+			if (defaultRouteReachability == null)
+			{
+				defaultRouteReachability = new NetworkReachability(new IPAddress(0));
+				defaultRouteReachability.SetNotification(OnChange);
+				defaultRouteReachability.Schedule(CFRunLoop.Current, CFRunLoop.ModeDefault);
+			}
+			return defaultRouteReachability.TryGetFlags(out flags) && IsReachableWithoutRequiringConnection(flags);
+		}
+
+		static NetworkReachability remoteHostReachability;
+
+		public static NetworkStatus RemoteHostStatus()
+		{
+			NetworkReachabilityFlags flags;
+			bool reachable;
+
+			if (remoteHostReachability == null)
+			{
+				remoteHostReachability = new NetworkReachability(HostName);
+
+				// Need to probe before we queue, or we wont get any meaningful values
+				// this only happens when you create NetworkReachability from a hostname
+				reachable = remoteHostReachability.TryGetFlags(out flags);
+
+				remoteHostReachability.SetNotification(OnChange);
+				remoteHostReachability.Schedule(CFRunLoop.Current, CFRunLoop.ModeDefault);
+			}
+			else
+				reachable = remoteHostReachability.TryGetFlags(out flags);			
+
+			if (!reachable)
+				return NetworkStatus.NotReachable;
+
+			if (!IsReachableWithoutRequiringConnection(flags))
+				return NetworkStatus.NotReachable;
+
+			if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
+				return NetworkStatus.ReachableViaCarrierDataNetwork;
+
+			return NetworkStatus.ReachableViaWiFiNetwork;
+		}
+
+		public static NetworkStatus InternetConnectionStatus()
+		{
+			NetworkReachabilityFlags flags;
+			bool defaultNetworkAvailable = IsNetworkAvailable(out flags);
+			if (defaultNetworkAvailable && ((flags & NetworkReachabilityFlags.IsDirect) != 0))
+			{
+				return NetworkStatus.NotReachable;
+			}
+			else if ((flags & NetworkReachabilityFlags.IsWWAN) != 0)
+				return NetworkStatus.ReachableViaCarrierDataNetwork;
+			else if (flags == 0)
+				return NetworkStatus.NotReachable;
+			return NetworkStatus.ReachableViaWiFiNetwork;
+		}
+
+		public static NetworkStatus LocalWifiConnectionStatus()
+		{
+			NetworkReachabilityFlags flags;
+			if (IsAdHocWiFiNetworkAvailable(out flags))
+			{
+				if ((flags & NetworkReachabilityFlags.IsDirect) != 0)
+					return NetworkStatus.ReachableViaWiFiNetwork;
+			}
+			return NetworkStatus.NotReachable;
+		}
+	}
 }

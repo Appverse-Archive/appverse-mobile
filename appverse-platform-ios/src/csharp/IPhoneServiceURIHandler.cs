@@ -23,9 +23,9 @@
  */
 using System;
 using Unity.Core.System.Service;
-using MonoTouch.Foundation;
+using Foundation;
 using Unity.Core.System;
-using MonoTouch.UIKit;
+using UIKit;
 using Unity.Core.System.Server.Net;
 
 namespace Unity.Platform.IPhone
@@ -44,17 +44,23 @@ namespace Unity.Platform.IPhone
 		/// <param name="response">Response.</param>
 		public override bool Process (HttpServer server, HttpRequest request, HttpResponse response) {
 
-			bool isServiceProtocol = request.Url.StartsWith (ServiceURIHandler.SERVICE_URI) || request.Url.StartsWith (ServiceURIHandler.SERVICE_ASYNC_URI);
+			bool isServiceProtocol = request.Url.StartsWith (ServiceURIHandler.SERVICE_URI);
 
+			/* TO BE REMOVED - 5.0.6 [AMOB-30]
 			bool isManagedService = IPhoneServiceLocator.consumeManagedService (request.Url);
 			SystemLogger.Log (SystemLogger.Module.PLATFORM, " ############## Managed Service? " + isManagedService);
+			*/
 
 			if (isServiceProtocol) {
 
+				/* TO BE REMOVED - 5.0.6 [AMOB-30]
 				if(isManagedService) return base.Process (server, request, response);
 
 				SystemLogger.Log (SystemLogger.Module .PLATFORM, "**** WARNING: Anonymous service call, not managed by Appverse !!!");
 				return false;
+				*/
+
+				return base.Process (server, request, response);
 			} 
 
 			SystemLogger.Log (SystemLogger.Module .PLATFORM, "Non service protocol. Continue to next handler...");

@@ -22,10 +22,11 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-using MonoTouch.UIKit;
+using UIKit;
 using System.Drawing;
 using Unity.Core.System;
 using System.Collections.Generic;
+using CoreGraphics;
 
 namespace Unity.Platform.IPhone
 {
@@ -42,10 +43,13 @@ namespace Unity.Platform.IPhone
 			// portrait
 			availableSplashScreens.Add (320, 	 							@"Default");					// iPhone 3-3GS  / iPhone 4-4S (@2x)
 			availableSplashScreens.Add (320*IPHONE5_HEIGHT_RESOLUTION, 		@"Default-568h");				// iPhone 5
+			availableSplashScreens.Add (375, 	 							@"Default-667h");  			// iPhone 6
+			availableSplashScreens.Add (414, 	 							@"Default-736h");  			// iPhone 6 Plus
 			availableSplashScreens.Add (768, 	 							@"Default-Portrait");  			// iPad / iPad Retina (@2x)
 
 			// landscape
 			availableSplashScreens.Add (1024,	 							@"Default-Landscape");			// iPad / iPad Retina (@2x)
+			availableSplashScreens.Add (736, 	 							@"Default-414h");  			// iPhone 6 Plus
 		}
 		
 		public SplashScreenView (UIInterfaceOrientation orientation)
@@ -71,11 +75,11 @@ namespace Unity.Platform.IPhone
 		
 		private void SetSplashViewImage(UIInterfaceOrientation orientation) {
 			UIScreen screen = UIScreen.MainScreen;
-			float statusBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
+			nfloat statusBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
 			log("bounds width " + screen.Bounds.Width);
 			log("bounds height " + screen.Bounds.Height);
 			log("status bar height " + statusBarHeight);
-			float screenScale = screen.Scale;
+			nfloat screenScale = screen.Scale;
 			log("scale " + screenScale);
 
 			string splashScreenImage = "";
@@ -93,29 +97,29 @@ namespace Unity.Platform.IPhone
 			if (orientation == UIInterfaceOrientation.LandscapeRight || orientation == UIInterfaceOrientation.LandscapeLeft)  
 		    {   
 				if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
-					float boundsHeight = screen.Bounds.Width;
-					if (availableSplashScreens.ContainsKey (boundsHeight))
-						splashScreenImage = availableSplashScreens [boundsHeight];
-					splashview.Frame = new RectangleF (0, -statusBarHeight, screen.Bounds.Width, screen.Bounds.Height);
+					nfloat boundsHeight = screen.Bounds.Width;
+					if (availableSplashScreens.ContainsKey ((float)boundsHeight))
+						splashScreenImage = availableSplashScreens [(float)boundsHeight];
+					splashview.Frame = new CGRect (0, -statusBarHeight, screen.Bounds.Width, screen.Bounds.Height);
 					log ("loading splashscreen on landscape [key=" + boundsHeight + "]");
 				} else {
-					float boundsHeight = screen.Bounds.Height;
-					if (availableSplashScreens.ContainsKey (boundsHeight))
-						splashScreenImage = availableSplashScreens [boundsHeight];
-					splashview.Frame = new RectangleF (0, -statusBarHeight, screen.Bounds.Height, screen.Bounds.Width);
+					nfloat boundsHeight = screen.Bounds.Height;
+					if (availableSplashScreens.ContainsKey ((float)boundsHeight))
+						splashScreenImage = availableSplashScreens [(float)boundsHeight];
+					splashview.Frame = new CGRect (0, -statusBarHeight, screen.Bounds.Height, screen.Bounds.Width);
 					log ("loading splashscreen on landscape [key=" + boundsHeight + "]");
 				}
 
 			} 
 			else if (orientation == UIInterfaceOrientation.Portrait || orientation == UIInterfaceOrientation.PortraitUpsideDown) 
 		    {
-				float boundsWidth = screen.Bounds.Width;
+				nfloat boundsWidth = screen.Bounds.Width;
 				if(screen.Bounds.Height == IPHONE5_HEIGHT_RESOLUTION) {
 					boundsWidth = screen.Bounds.Width * IPHONE5_HEIGHT_RESOLUTION;
 				}
-				if(availableSplashScreens.ContainsKey(boundsWidth))
-					splashScreenImage = availableSplashScreens[boundsWidth];
-				splashview.Frame = new RectangleF(0, -statusBarHeight, screen.Bounds.Width, screen.Bounds.Height);
+				if(availableSplashScreens.ContainsKey((float)boundsWidth))
+					splashScreenImage = availableSplashScreens[(float)boundsWidth];
+				splashview.Frame = new CGRect(0, -statusBarHeight, screen.Bounds.Width, screen.Bounds.Height);
 				log("loading splashscreen on portrait [key=" + boundsWidth + "]");
 			}
 			log("loading splashscreen image " + splashScreenImage);

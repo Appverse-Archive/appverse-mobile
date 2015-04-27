@@ -35,7 +35,34 @@ namespace Unity.Platform.IPhone
     {   
 		
 		private static string _VALIDATECERTIFICATES = "$ValidateCertificates$";
-		
+
+		public static IDictionary<string, string[]> fingerprints; 
+
+		public IPhoneIO()
+		{
+			IPhoneIO.fingerprints = GetFingerprints ();
+		}
+
+		public IDictionary<string, string[]> GetFingerprints (){
+			Dictionary<string, string[]> result = new Dictionary<string, string[]> ();
+			foreach(IOService serv in GetServices()){
+				if (serv.Endpoint.Fingerprint != null) {
+					string requestUriString = String.Format ("{0}:{1}{2}", serv.Endpoint.Host, serv.Endpoint.Port, serv.Endpoint.Path);
+					if (serv.Endpoint.Port == 0) 
+					{
+						requestUriString = String.Format ("{0}{1}", serv.Endpoint.Host, serv.Endpoint.Path);
+					}
+					result.Add(requestUriString, serv.Endpoint.Fingerprint.Split(new char[]{','}));
+					//SystemLogger.Log (SystemLogger.Module.CORE, "*************** serv fingerprint: " + requestUriString + " : " + serv.Endpoint.Fingerprint);
+				}
+
+			}
+
+			removeFingerprints ();
+
+			return result;
+		}
+
 		public bool ValidateCertificates{
 			get{
 				bool bResult;
@@ -66,9 +93,10 @@ namespace Unity.Platform.IPhone
 	    {
 	    	return IPhoneUtils.GetInstance().GetResourceAsBinary(this.ServicesConfigFile, true);
 	    }
-    	
+
 		public override bool ValidateWebCertificates (object sender, System.Security.Cryptography.X509Certificates.X509Certificate certificate, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
 		{
+		
 			if (this.ValidateCertificates) {
 				SystemLogger.Log (SystemLogger.Module.PLATFORM, "*************** On ServerCertificateValidationCallback: Validate web certificates");
 				return SecurityUtils.ValidateWebCertificates (sender, certificate, chain, sslPolicyErrors);
@@ -89,6 +117,7 @@ namespace Unity.Platform.IPhone
 		/// </returns>
 		public override IOResponse InvokeService (IORequest request, IOService service)
 		{
+
 			this.IOUserAgent = IPhoneUtils.GetInstance().GetUserAgent();
 			INotification notificationService = (INotification)IPhoneServiceLocator.GetInstance().GetService("notify");
 			try { 
@@ -96,7 +125,6 @@ namespace Unity.Platform.IPhone
 			} catch(Exception e) {
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Cannot StartNotifyActivity. Message: " + e.Message);
 			}
-			
 			IOResponse response = base.InvokeService (request, service);
 			
 			try { 
