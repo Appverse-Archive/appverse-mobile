@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (“APL v2.0”).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  ("APL v2.0").  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -20,28 +20,32 @@
  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT(INCLUDING NEGLIGENCE OR OTHERWISE) 
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
- */package com.gft.unity.core.beacon;
+ */
+package com.gft.unity.core.json;
 
-import java.io.Serializable;
-
-public interface IBeacon{
+/**
+ * The JSONException is thrown by the JSON.org classes when things are amiss.
+ * @author JSON.org
+ * @version 2010-12-24
+ */
+public class JSONException extends Exception {
+	private static final long serialVersionUID = 0;
+	private Throwable cause;
 
     /**
-     * Start Looking for beacons
-     *     
+     * Constructs a JSONException with an explanatory message.
+     * @param message Detail about the reason for the exception.
      */
-    public void StartMonitoringAllRegions();
+    public JSONException(String message) {
+        super(message);
+    }
 
-    /**
-     * Start monitoring a region for beacons
-     * 
-     * @param UUID region to look for    
-     */
-    public void StartMonitoringRegion(String UUID);
-    
-    /**     
-     * Stop monitoring for beacons
-     */
-    public void StopMonitoringBeacons();
-    
+    public JSONException(Throwable cause) {
+        super(cause.getMessage());
+        this.cause = cause;
+    }
+
+    public Throwable getCause() {
+        return this.cause;
+    }
 }

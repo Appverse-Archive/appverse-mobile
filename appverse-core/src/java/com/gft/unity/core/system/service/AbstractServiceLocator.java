@@ -23,14 +23,16 @@
  */
 package com.gft.unity.core.system.service;
 
+import com.gft.unity.core.IAppDelegate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AbstractServiceLocator implements IServiceLocator {
 
     public static final String SERVICES_CONFIG_FILE = "app/config/services-config.xml";
     public static final String IO_SERVICES_CONFIG_FILE = "app/config/io-services-config.xml";
-    public static final String SERVICE_TYPE_ANALYTICS = "analytics";
     public static final String SERVICE_TYPE_DATABASE = "db";
     public static final String SERVICE_TYPE_FILESYSTEM = "file";
     public static final String SERVICE_TYPE_GEO = "geo";
@@ -46,9 +48,11 @@ public class AbstractServiceLocator implements IServiceLocator {
     public static final String SERVICE_TYPE_SHARE = "share";
     public static final String SERVICE_TYPE_SYSTEM = "system";
     public static final String SERVICE_TYPE_TELEPHONY = "phone";
-    public static final String SERVICE_TYPE_WEBTREKK = "webtrekk";
     public static final String SERVICE_TYPE_APPLOADER = "loader";
-    public static final String SERVICE_TYPE_BEACON = "beacon";
+    
+    // TODO: services from modules should be included dynamically
+    public static final String SERVICE_TYPE_PUSH = "push";
+    
     protected static IServiceLocator singletonServiceLocator = null;
     private Map<String, Object> services = new HashMap<String, Object>();
 
@@ -63,4 +67,14 @@ public class AbstractServiceLocator implements IServiceLocator {
     public final void RegisterService(Object service, String key) {
         services.put(key, service);
     }
+    
+    public IAppDelegate[] getAppDelegateServices() {
+        List<IAppDelegate> appDelegates = new ArrayList<IAppDelegate>();
+        for (Map.Entry<String, Object> serviceEntry : services.entrySet()) {
+            Object service = serviceEntry.getValue();
+            if(service instanceof IAppDelegate) appDelegates.add((IAppDelegate) service);
+        }
+        return (IAppDelegate[]) appDelegates.toArray(new IAppDelegate[appDelegates.size()]);
+    }
+    
 }

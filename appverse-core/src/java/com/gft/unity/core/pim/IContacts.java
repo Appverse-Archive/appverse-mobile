@@ -45,8 +45,6 @@ public interface IContacts {
     /**
      * List of stored phone contacts. 
      * Only a lite information of the contact is returned: id, name, firstname, lastname, group, display, emails and phone lists.
-     *
-     * @return List of contacts.
      */
     public void ListContacts();
 
@@ -54,7 +52,6 @@ public interface IContacts {
      * List of stored phone contacts that match given query.
      * Only a lite information of the contact is returned: id, name, firstname, lastname, group, display, emails and phone lists.
      * @param query Search Object.
-     * @return List of contacts.
      */
     public void ListContacts(ContactQuery query);
     
@@ -62,9 +59,8 @@ public interface IContacts {
     /**
      * Gets the full contact information for the given contact id.
      * @param id The contact identifier
-     * @return The contact data.
      */
-    public Contact GetContact(String id);
+    public void GetContact(String id);
     
 
     /**

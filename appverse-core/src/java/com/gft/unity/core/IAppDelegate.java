@@ -21,37 +21,42 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-package com.gft.unity.core.io;
+package com.gft.unity.core;
 
-public class IOHeader {
-
-    private String name;
-    private String value;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("IOHeader [name=");
-        builder.append(name);
-        builder.append(", value=");
-        builder.append(value);
-        builder.append("]");
-        return builder.toString();
-    }
+/**
+ * Application Delegate interface to be implemented 
+ * @author maps
+ */
+public interface IAppDelegate {
+    
+    public static String ACTIVITY_RESULT_CODE_BUNDLE_KEY = "appverse-result-receiver-activity-result-code";
+    
+    /**
+     * Called on build time that aware the delegate about the build mode used
+     * @param debuggable 
+     */
+    public void buildMode(boolean debuggable);
+    
+    /**
+     * Called on application pause (application goes to background by the user or OS)
+     */
+    public void onPause();
+    
+    /**
+     * Called on application resume (application comes to foreground by the user or OS)
+     */
+    public void onResume();
+    
+    /**
+     * Called on application stop (application is no longer visible)
+     */
+    public void onStop();
+    
+    /**
+     * Called on application destroy (application is finished by the OS)
+     */
+    public void onDestroy();
+    
+    
+    
 }
