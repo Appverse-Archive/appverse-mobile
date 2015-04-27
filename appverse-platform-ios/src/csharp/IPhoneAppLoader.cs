@@ -31,17 +31,20 @@ using Unity.Core.IO;
 using ICSharpCode.SharpZipLib.Zip;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Core;
-using MonoTouch.Foundation;
+using Foundation;
 using System.Runtime.InteropServices;
 using Unity.Core.Notification;
-using MonoTouch.UIKit;
+using UIKit;
 using System.Text;
 
 namespace Unity.Platform.IPhone
 {
 	public class IPhoneAppLoader : AbstractLoader
 	{
-		private static string DOCUMENTS_URI = "http://127.0.0.1:8080/documents";
+		/* TO BE REMOVED - 5.0.6 [AMOB-30]
+		private static string DOCUMENTS_URI = "http://127.0.0.1:{0}/documents";
+		*/
+		private static string DOCUMENTS_URI = "https://appverse/documents";
 
 		// PLATFORM SERVICES DEPENDENCIES
 		private IFileSystem _fileSystemService = null;
@@ -114,7 +117,7 @@ namespace Unity.Platform.IPhone
 			}
 
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.AppLoader.onUpdateModulesFinished", 
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.AppLoader.onUpdateModulesFinished", 
 				                                                   new object []{successlist.ToArray(), failedlist.ToArray(), callbackId});
 			});
 
@@ -149,7 +152,7 @@ namespace Unity.Platform.IPhone
 			}
 
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.AppLoader.onUpdateModulesFinished", 
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.AppLoader.onUpdateModulesFinished", 
 				                                                   new object []{successlist.ToArray(), failedlist.ToArray(), callbackId});
 			});
 
@@ -199,7 +202,7 @@ namespace Unity.Platform.IPhone
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Exception when deleting modules: " + ex.Message);
 			}
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Unity.AppLoader.onDeleteModulesFinished", 
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.AppLoader.onDeleteModulesFinished", 
 				                                                   new object []{successlist.ToArray(), failedlist.ToArray()});
 			});
 
@@ -252,6 +255,9 @@ namespace Unity.Platform.IPhone
 						string location = this.GetModuleLocation(module, true);
 						string directoryName = Path.Combine (this.GetFileSystemService().GetDirectoryRoot().FullName, location);
 
+						/* TO BE REMOVED - 5.0.6 [AMOB-30]
+						string path = Path.Combine (String.Format(DOCUMENTS_URI,IPhoneServiceLocator.CurrentDelegate.GetListeningPort()), location, DEFAULT_HOME_PAGE);
+						*/
 						string path = Path.Combine (DOCUMENTS_URI, location, DEFAULT_HOME_PAGE);
 
 						if(Directory.Exists(directoryName)) {
@@ -277,7 +283,7 @@ namespace Unity.Platform.IPhone
 							NSUrl nsUrl = new NSUrl(Uri.EscapeUriString(path));
 							NSUrlRequest request = new NSUrlRequest (nsUrl, NSUrlRequestCachePolicy.ReturnCacheDataElseLoad, 3600.0);
 
-							IPhoneServiceLocator.CurrentDelegate.MainUIWebView().LoadRequest(request);
+							IPhoneServiceLocator.CurrentDelegate.LoadRequest(request);
 						} else {
 							this.GetNotificationService().StartNotifyAlert(this.GetLocalizedMessage(DEFAULT_ALERT_MESSAGE_TITLE),  
 							                                               this.GetLocalizedMessage(DEFAULT_ALERT_MESSAGE_LOAD_MODULE_ERROR), "OK");

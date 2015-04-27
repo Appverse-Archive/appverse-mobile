@@ -22,12 +22,12 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
+using UIKit;
+using Foundation;
 using Unity.Platform.IPhone;
 using Unity.Core.System;
-using MonoTouch.EventKit;
-using MonoTouch.AddressBook;
+using EventKit;
+using AddressBook;
 
 namespace Unity.Platform.IPhone
 {
@@ -101,7 +101,7 @@ namespace Unity.Platform.IPhone
 				addressBook = new ABAddressBook();
 			}
 		}
-
+		/* deprecated
 		public IPhoneUIApplicationDelegate (NSCoder coder) : base(coder)
 		{
 			#if DEBUG
@@ -119,6 +119,7 @@ namespace Unity.Platform.IPhone
 				addressBook = new ABAddressBook();
 			}
 		}
+		*/
 
 		public IPhoneUIApplicationDelegate (NSObjectFlag flag) : base(flag)
 		{
@@ -138,7 +139,7 @@ namespace Unity.Platform.IPhone
 			}
 		}
 
-		public abstract UIWindow MainAppWindow ();
+		//not used :: public abstract UIWindow MainAppWindow ();
 
 		public abstract UIViewController MainUIViewController ();
 
@@ -146,9 +147,17 @@ namespace Unity.Platform.IPhone
 
 		public abstract bool DismissSplashScreen ();
 
-		public abstract UIWebView MainUIWebView () ;
+		//public abstract UIWebView MainUIWebView () ;
+		public abstract void EvaluateJavascript (string jsStringToEvaluate);
+		public abstract void LoadRequest (NSUrlRequest request);
+
+		public abstract bool ShouldActivateManagedServices (); 
 
 		public abstract void SetMainUIViewControllerAsTopController(bool topController);
+
+		public abstract bool SecurityChecksPassed();
+
+		public abstract int GetListeningPort ();
 		
 		#if DEBUG
 		private void log (string message)

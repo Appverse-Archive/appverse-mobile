@@ -26,7 +26,7 @@ using System.IO;
 using Unity.Core.I18N;
 using System.Collections.Generic;
 using Unity.Core.System;
-using MonoTouch.Foundation;
+using Foundation;
 using System.Xml;
 
 namespace Unity.Platform.IPhone

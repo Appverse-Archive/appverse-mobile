@@ -30,10 +30,10 @@ using Unity.Core.System;
 using Unity.Core.Storage;
 using Unity.Core.Storage.Database;
 using System.Collections.Generic;
-using MonoTouch.CoreLocation;
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
-using MonoTouch.MapKit;
+using CoreLocation;
+using Foundation;
+using UIKit;
+using MapKit;
 
 namespace Unity.Platform.IPhone
 {
@@ -276,7 +276,7 @@ namespace Unity.Platform.IPhone
 
 		public override CLLocationCoordinate2D Coordinate {
 			get { return coordinate; }
-			set { coordinate = value; }
+			// MKAnnotation.Coordinate is now read-only   // set { coordinate = value; }
 		}
 
 		public override string Title {
@@ -314,7 +314,7 @@ namespace Unity.Platform.IPhone
 		{
 			this.ShowsUserLocation = true;
 			// shows the "blue dot" user location (if available)
-			this.MapType = MonoTouch.MapKit.MKMapType.Standard;
+			this.MapType = MapKit.MKMapType.Standard;
 			// Hybrid | Satellite
 			this.ZoomEnabled = true;
 			// if false, cannot zoom
@@ -716,7 +716,7 @@ namespace Unity.Platform.IPhone
 		{
 			//Adding all the annotation points to the map
 			foreach (KeyValuePair<string, UnityAnnotation> pair in annotationPins) {
-				unityMapView.AddAnnotationObject (pair.Value);
+				unityMapView.AddAnnotation (pair.Value);
 			}
 		}
 

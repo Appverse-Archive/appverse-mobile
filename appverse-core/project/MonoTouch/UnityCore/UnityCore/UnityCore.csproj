@@ -241,6 +241,7 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\SecondaryBrowserOptions.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\SecurityConfig.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\SecurityEnumerations.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\IWeakDelegateManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\Analytics\" />
