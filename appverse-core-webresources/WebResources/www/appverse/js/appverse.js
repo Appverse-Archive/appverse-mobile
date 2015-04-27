@@ -16,8 +16,17 @@ Appverse = new function() {
     // javadoc utility to show singleton classes.
 };
 
+// Specific Appverse Emulator settings, not applied in real device platforms
+AppverseEmulator = {
+    queuedMessagesCount: 0,
+    pollEnabled: true,
+    pollingInterval: 50, // milliseconds
+    pollingTotalTimeout: 10000, // 10 seconds //check if it is required to be used
+    eventListenersRegistered: {}
+};
+
 Appverse = {
-    version: "4.7",
+    version: "4.8",
     /**
      * Boolean to indicate if the next request send to the platform (using any Appverse.<API_serviceName>.<API_serviceMethod>() call) should unscape or not the data send.
      * <br>By default platform will unscape any data send. In some cases, scaped characters (for example, the %20 encoded characters in a URL) need to arrive to the service without being unscaped.
@@ -31,7 +40,95 @@ Appverse = {
      * Initialization function
      */
     init: function() {
-        this.is = post_to_url(Appverse.System.serviceName, "GetUnityContext", null, "POST");        
+        this.is = post_to_url(Appverse.System.serviceName, "GetUnityContext", null, "POST");
+        if (typeof(this.is.Emulator) != "undefined" && this.is.Emulator == true) {
+            console.log("platform is EMULATOR");
+            if (this.is.iOS) {
+                console.log("setting orientation to: " + this.is.EmulatorOrientation);
+                window.orientation = this.is.EmulatorOrientation;
+                if (Appverse.is.Tablet) {
+                    window.deviceType = 'iPad'; // used by some JS frameworks to determine device type (phone/tablet) in iOS.
+                    console.log("setting window.deviceType to: iPad");
+                }
+                if (typeof(this.is.EmulatorScreen) != "undefined") {
+                    try {
+                        window.screen = eval('(' + this.is.EmulatorScreen + ')');
+                        console.log("setting window.screen", window.screen);
+                    } catch (e) {
+                        console.log("error setting window.screen", e);
+                    }
+                }
+            }
+            post_to_url_async = post_to_url_async_emu;
+
+            // ********************** enable JS queued messages for emulator [MOBDEVKIT-85]
+
+            // polling for queued message each polling interval
+            AppverseEmulator.appversePollingTimerFunc = function() {
+                if (AppverseEmulator.pollEnabled) {
+                    AppverseEmulator.appversePollOnce();
+                    if (AppverseEmulator.queuedMessagesCount > 0) {
+                        console.log("keep processing messages...");
+                        setTimeout(AppverseEmulator.appversePollingTimerFunc, AppverseEmulator.pollingInterval);
+                    }
+                }
+            };
+
+            AppverseEmulator.appversePollOnce = function() {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', "/!appverse_emulator_poll?" + (+new Date()), false);
+
+                try {
+                    xhr.send(null);
+                } catch (e) {
+                    console.log("Error polling Appverse emulator queued messages..." + e);
+                }
+
+                if (xhr.status == 200) {  //This status means ok, otherwise some error code is returned, 404 for example.
+                    responseText = xhr.responseText;
+
+                    try {
+                        var xhrResponse = null;
+                        if (responseText != null && responseText != '') {
+                            console.log("processing queued message... ");
+                            xhrResponse = eval(responseText); // evaluate JS code, not JSON (no enclosing brackets are needed here)
+                            AppverseEmulator.queuedMessagesCount--;
+                        }
+                    } catch (e) {
+                        console.log("Error parsing Appverse emulator queued message..." + e + " - Response received: " + responseText);
+                    }
+                }
+                else {
+                    console.log("Error polling Appverse emulator  queued messages. Error code: " + xhr.status);
+                }
+            };
+
+            // list of events that messages could be enqueued 
+            AppverseEmulator.eventListenersRegistered["ListContacts"] = Appverse.Pim.onListContactsEnd;
+            AppverseEmulator.eventListenersRegistered["GetSnapshot"] = Appverse.Media.onFinishedPickingImage;
+            AppverseEmulator.eventListenersRegistered["TakeSnapshot"] = Appverse.Media.onFinishedPickingImage;
+            AppverseEmulator.eventListenersRegistered["UpdateModule"] = Appverse.AppLoader.onUpdateModulesFinished;
+            AppverseEmulator.eventListenersRegistered["UpdateModules"] = Appverse.AppLoader.onUpdateModulesFinished;
+            AppverseEmulator.eventListenersRegistered["DeleteModules"] = Appverse.AppLoader.onDeleteModulesFinished;
+            AppverseEmulator.eventListenersRegistered["GetStoredKeyValuePair"] = Appverse.OnKeyValuePairsFound;
+            AppverseEmulator.eventListenersRegistered["GetStoredKeyValuePairs"] = Appverse.OnKeyValuePairsFound;
+            AppverseEmulator.eventListenersRegistered["StoreKeyValuePair"] = Appverse.OnKeyValuePairsStoreCompleted;
+            AppverseEmulator.eventListenersRegistered["StoreKeyValuePairs"] = Appverse.OnKeyValuePairsStoreCompleted;
+            AppverseEmulator.eventListenersRegistered["RemoveStoredKeyValuePair"] = Appverse.OnKeyValuePairsRemoveCompleted;
+            AppverseEmulator.eventListenersRegistered["RemoveStoredKeyValuePairs"] = Appverse.OnKeyValuePairsRemoveCompleted;
+            AppverseEmulator.eventListenersRegistered["RegisterForRemoteNotifications"] = Appverse.OnRegisterForRemoteNotificationsSuccess; // also failure will be queued
+            AppverseEmulator.eventListenersRegistered["UnRegisterForRemoteNotifications"] = Appverse.OnUnRegisterForRemoteNotificationsSuccess;
+            AppverseEmulator.eventListenersRegistered["StartNFCPaymentEngine"] = Appverse.NFC.onEngineStartError; // also success will be queued
+            AppverseEmulator.eventListenersRegistered["StartNFCPayment"] = Appverse.NFC.onPaymentStarted; // also success, countDowntUpdated, countDowntFinished and failed will be queued
+            AppverseEmulator.eventListenersRegistered["CancelNFCPayment"] = Appverse.NFC.onPaymentCanceled;
+            
+            AppverseEmulator.eventListenersRegistered["StartMonitoringRegion"] = Appverse.Beacon.OnEntered;
+            AppverseEmulator.eventListenersRegistered["StartMonitoringAllRegions"] = Appverse.Beacon.OnDiscover;
+            
+
+            // override "post_to_url" function for special behaviour in Emulator
+            post_to_url = post_to_url_emu;
+        }
     }
 };
 
@@ -109,7 +206,7 @@ Appverse._background = false;
  * <br> @version 2.0
  * @method
  * @return {Boolean} True if application has been set to background.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Appverse.isBackground = function() {
@@ -121,7 +218,7 @@ Appverse.isBackground = function() {
  * @aside guide application_listeners
  * <br> @version 2.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Appverse.backgroundApplicationListener = function() {
@@ -131,7 +228,7 @@ Appverse.backgroundApplicationListener = function() {
  * Applications should override/implement this method to be aware of application coming back from background, and should perform the desired javascript code on this case.
  * <br> @version 2.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * @aside guide application_listeners
  */
 Appverse.foregroundApplicationListener = function() {
@@ -142,7 +239,7 @@ Appverse.foregroundApplicationListener = function() {
  * @aside guide application_listeners
  * <br> @version 3.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Appverse.backButtonListener = function() {
@@ -155,7 +252,7 @@ Appverse.backButtonListener = function() {
  * <br> @version 3.9
  * @method
  * @param {Appverse.Notiticaton.NotificationData} notificationData The notification data received (visual data and custom provider data)
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Appverse.OnRemoteNotificationReceived = function(notificationData) {
@@ -168,7 +265,7 @@ Appverse.OnRemoteNotificationReceived = function(notificationData) {
  * <br> @version 3.9
  * @method
  * @param {Appverse.Notification.NotificationData} notificationData The notification data received (visual data and custom provider data)
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Appverse.OnLocalNotificationReceived = function(notificationData) {
@@ -181,7 +278,7 @@ Appverse.OnLocalNotificationReceived = function(notificationData) {
  * <br> @version 3.9
  * @method
  * @param {Appverse.Notification.RegistrationToken} registrationToken The registration token ("device token" for iOS or "registration ID" for Android) data received from the Notifications Service (APNs for iOS or GMC for Android).
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Appverse.OnRegisterForRemoteNotificationsSuccess = function(registrationToken) {
@@ -194,7 +291,7 @@ Appverse.OnRegisterForRemoteNotificationsSuccess = function(registrationToken) {
  * <br> @version 3.9
  * @method
  * @param {Appverse.Notification.RegistrationError} registrationError The registration error data received from the Notifications Service (APNs for iOS or GMC for Android).
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Appverse.OnRegisterForRemoteNotificationsFailure = function(registrationError) {
@@ -205,7 +302,7 @@ Appverse.OnRegisterForRemoteNotificationsFailure = function(registrationError) {
  * @aside guide application_listeners
  * <br> @version 4.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Appverse.OnUnRegisterForRemoteNotificationsSuccess = function() {
@@ -219,7 +316,7 @@ Appverse.OnUnRegisterForRemoteNotificationsSuccess = function() {
  * @method
  * @param {Appverse.Security.KeyPair[]} storedKeyPairs An array of KeyPair objects successfully stored in the device local secure storage.
  * @param {Appverse.Security.KeyPair[]} failedKeyPairs An array of KeyPair objects that could not be successfully stored in the device local secure storage.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Appverse.OnKeyValuePairsStoreCompleted = function(storedKeyPairs, failedKeyPairs) {
 };
@@ -231,7 +328,7 @@ Appverse.OnKeyValuePairsStoreCompleted = function(storedKeyPairs, failedKeyPairs
  * <br> @version 4.2
  * @method
  * @param {Appverse.Security.KeyPair[]} foundKeyPairs An array of KeyPair objects found in the device local secure storage.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Appverse.OnKeyValuePairsFound = function(foundKeyPairs) {
 };
@@ -244,7 +341,7 @@ Appverse.OnKeyValuePairsFound = function(foundKeyPairs) {
  * @method
  * @param {Appverse.Security.KeyPair[]} removedKeyPairs An array of KeyPair objects successfully removed from the device local secure storage.
  * @param {Appverse.Security.KeyPair[]} failedKeyPairs An array of KeyPair objects that could not be removed from the device local secure storage.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Appverse.OnKeyValuePairsRemoveCompleted = function(removedKeyPairs, failedKeyPairs) {
 };
@@ -258,7 +355,7 @@ Appverse.OnKeyValuePairsRemoveCompleted = function(removedKeyPairs, failedKeyPai
  * <br> @version 4.2
  * @method
  * @param {Appverse.System.LaunchData[]} launchData The launch data received.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
  * 
  */
 Appverse.OnExternallyLaunched = function(launchData) {
@@ -439,9 +536,11 @@ Appverse.Net = new Net();
  * Detects if network is reachable or not.
  * <br> @version 1.0
  * @param {String} url The host url to check for reachability.
+ * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For iOS</b>: only the hostname is allowed as the URL to check reachability. For example: "www.google.com". Otherwise, the method will return always false.
+ * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For Android</b>: you could specifiy a more complete URL. For example: "http://www.google.com", "https://www.dropbox.com/", etc. If scheme is not provided, the platform will check first HTTP and then HTTPS to check reachability agaisnt the given URL.
  * @return {Boolean} True/false if reachable. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.IsNetworkReachable = function(url)
 {
@@ -453,7 +552,7 @@ Net.prototype.IsNetworkReachable = function(url)
  * <br> @version 3.8.5
  * @return {Appverse.Net.NetworkData} NetworkData object. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.GetNetworkData = function()
 {
@@ -473,7 +572,7 @@ Net.prototype.GetNetworkData = function()
  * & {@link Appverse.Net#NETWORKTYPE_WIFI NETWORKTYPE_WIFI}
  * @return {int[]} Array of supported network types. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.GetNetworkTypeSupported = function()
 {
@@ -492,9 +591,11 @@ Net.prototype.GetNetworkTypeSupported = function()
  * {@link Appverse.Net#NETWORKTYPE_3G NETWORKTYPE_3G},
  * & {@link Appverse.Net#NETWORKTYPE_WIFI NETWORKTYPE_WIFI}
  * @param {String} url The host url to check for reachability.
+ * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For iOS</b>: only the hostname is allowed as the URL to check reachability. For example: "www.google.com". Otherwise, the method will return always false.
+ * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For Android</b>: you could specifiy a more complete URL. For example: "http://www.google.com", "https://www.dropbox.com/", etc. If scheme is not provided, the platform will check first HTTP and then HTTPS to check reachability agaisnt the given URL.
  * @return {int[]} Array of network types from which given url host is reachable. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.GetNetworkTypeReachableList = function(url)
 {
@@ -513,9 +614,11 @@ Net.prototype.GetNetworkTypeReachableList = function(url)
  * {@link Appverse.Net#NETWORKTYPE_3G NETWORKTYPE_3G},
  * & {@link Appverse.Net#NETWORKTYPE_WIFI NETWORKTYPE_WIFI}
  * @param {String} url The host url to check for reachability.
+ * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For iOS</b>: only the hostname is allowed as the URL to check reachability. For example: "www.google.com". Otherwise, the method will return always false.
+ * <br> <img src="resources/images/warning.png"/> &nbsp; <b>For Android</b>: you could specifiy a more complete URL. For example: "http://www.google.com", "https://www.dropbox.com/", etc. If scheme is not provided, the platform will check first HTTP and then HTTPS to check reachability agaisnt the given URL.
  * @return {int} Prefered network type from which given url host is reachable. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.GetNetworkTypeReachable = function(url)
 {
@@ -535,7 +638,7 @@ Net.prototype.GetNetworkTypeReachable = function(url)
  * @param {String} url The url to be opened.
  * @return {Boolean} True on successful 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.OpenBrowser = function(title, buttonText, url)
 {
@@ -553,7 +656,7 @@ Net.prototype.OpenBrowser = function(title, buttonText, url)
  * @param {SecondaryBrowserOptions} Object containing options like title, url, html content, close button text and a list of file extensions the browser will handle like the operating system
  * @return {Boolean} True on successful 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.OpenBrowserWithOptions = function(secondaryBrowserOptions)
 {
@@ -568,7 +671,7 @@ Net.prototype.OpenBrowserWithOptions = function(secondaryBrowserOptions)
  * @param {String} htmls The html string to be rendered.
  * @return {Boolean} True on successful 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.ShowHtml = function(title, buttonText, html)
 {
@@ -581,7 +684,7 @@ Net.prototype.ShowHtml = function(title, buttonText, html)
  * @param {SecondaryBrowserOptions} Object containing options like title, url, html content, close button text and a list of file extensions the browser will handle like the operating system
  * @return {Boolean} True on successful 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.ShowHtmlWithOptions = function(secondaryBrowserOptions)
 {
@@ -594,7 +697,7 @@ Net.prototype.ShowHtmlWithOptions = function(secondaryBrowserOptions)
  * @param {String} url The url to be opened.
  * @return {Boolean} True on successful 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.DownloadFile = function(url)
 {
@@ -621,7 +724,7 @@ Net.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     IsNetworkReachable: function(url, callbackFunctionName, callbackId)
     {
@@ -632,7 +735,7 @@ Net.prototype.Async = {
      * <br> @version 3.8.5
      * @return {Appverse.Net.NetworkData} NetworkData object. 
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     GetNetworkData: function(callbackFunctionName, callbackId)
     {
@@ -644,7 +747,7 @@ Net.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     GetNetworkTypeSupported: function(callbackFunctionName, callbackId)
     {
@@ -659,7 +762,7 @@ Net.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     GetNetworkTypeReachableList: function(url, callbackFunctionName, callbackId)
     {
@@ -693,7 +796,7 @@ Net.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     OpenBrowser: function(title, buttonText, url, callbackFunctionName, callbackId)
     {
@@ -711,7 +814,7 @@ Net.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     OpenBrowserWithOptions: function(secondaryBrowserOptions, callbackFunctionName, callbackId)
     {
@@ -726,7 +829,7 @@ Net.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     ShowHtml: function(title, buttonText, html, callbackFunctionName, callbackId)
     {
@@ -744,7 +847,7 @@ Net.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     ShowHtmlWithOptions: function(secondaryBrowserOptions, callbackFunctionName, callbackId)
     {
@@ -978,7 +1081,7 @@ Appverse.System = new System();
  * <br> @version 1.0
  * @return {int} Number of available displays. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *harcoded data (always 1) | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *harcoded data (always 1) | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetDisplays = function()
 {
@@ -991,7 +1094,7 @@ System.prototype.GetDisplays = function()
  * @param {int} displayNumber The display number index. If not provided, primary display information is returned.
  * @return {Appverse.System.DisplayInfo} The given display information, if found. Null value is returned, if given diplay number does not corresponds a valid index.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *data needs to be returned by callback| android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *data needs to be returned by callback| android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetDisplayInfo = function(displayNumber)
 {
@@ -1012,7 +1115,7 @@ System.prototype.GetDisplayInfo = function(displayNumber)
  * @param {int} displayNumber The display number index. If not provided, primary display orientation is returned.
  * @return {int} The given display orientation, if found. "Unknown" value is returned, if given diplay number does not corresponds a valid index.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOrientation = function(displayNumber)
 {
@@ -1028,7 +1131,7 @@ System.prototype.GetOrientation = function(displayNumber)
  * & {@link Appverse.System#ORIENTATION_UNKNOWN ORIENTATION_UNKNOWN}
  * @return {int} The primary display orientation, if found.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOrientationCurrent = function()
 {
@@ -1045,7 +1148,7 @@ System.prototype.GetOrientationCurrent = function()
  * @param {int} displayNumber The display number index. If not provided, primary display supported orientations are returned.
  * @return {int[]} The list of supported device orientations, for the given display.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *returns portrait&landscape | android <img src="resources/images/information.png"/> *returns portrait&landscape | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *returns portrait&landscape | android <img src="resources/images/information.png"/> *returns portrait&landscape | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOrientationSupported = function(displayNumber)
 {
@@ -1061,7 +1164,7 @@ System.prototype.GetOrientationSupported = function(displayNumber)
  * <br> @version 1.0
  * @return {Appverse.System.Locale[]} The list of supported locales.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 System.prototype.GetLocaleSupported = function()
 {
@@ -1073,7 +1176,7 @@ System.prototype.GetLocaleSupported = function()
  * <br> @version 1.0
  * @return {Appverse.System.Locale} The current Locale information.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 System.prototype.GetLocaleCurrent = function()
 {
@@ -1095,7 +1198,7 @@ System.prototype.GetLocaleCurrent = function()
  * & {@link Appverse.System#INPUTCAPABILITY_VOICE_RECOGNITION INPUTCAPABILITY_VOICE_RECOGNITION} 
  * @return {int[]} List of input methods supported by the device.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetInputMethods = function()
 {
@@ -1107,7 +1210,7 @@ System.prototype.GetInputMethods = function()
  * <br> @version 1.0
  * @return {int[]} List of input gestures supported by the device.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetInputGestures = function()
 {
@@ -1119,7 +1222,7 @@ System.prototype.GetInputGestures = function()
  * <br> @version 1.0
  * @return {int[]} List of input buttons supported by the device.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetInputButtons = function()
 {
@@ -1141,7 +1244,7 @@ System.prototype.GetInputButtons = function()
  * & {@link Appverse.System#INPUTCAPABILITY_VOICE_RECOGNITION INPUTCAPABILITY_VOICE_RECOGNITION} 
  * @return {int} Current input method.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetInputMethodCurrent = function()
 {
@@ -1163,7 +1266,7 @@ System.prototype.GetInputMethodCurrent = function()
  * @param {int} memType The memory type. Optional parameter.
  * @return {long} The memory available in bytes.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetMemoryAvailable = function(memUse, memType)
 {
@@ -1183,7 +1286,7 @@ System.prototype.GetMemoryAvailable = function(memUse, memType)
  * & {@link Appverse.System#MEMORYTYPE_UNKNOWN MEMORYTYPE_UNKNOWN} 
  * @return {int[]} The installed storage types.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetMemoryAvailableTypes = function()
 {
@@ -1202,7 +1305,7 @@ System.prototype.GetMemoryAvailableTypes = function()
  * @param {int} memType The type of memory to check for status. Optional parameter.
  * @return {Appverse.System.MemoryStatus} The memory status information.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetMemoryStatus = function(memType)
 {
@@ -1222,7 +1325,7 @@ System.prototype.GetMemoryStatus = function(memType)
  * & {@link Appverse.System#MEMORYTYPE_UNKNOWN MEMORYTYPE_UNKNOWN} 
  * @return {int[]} The available storafe types.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *harcoded values | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *harcoded values | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetMemoryTypes = function()
 {
@@ -1238,7 +1341,7 @@ System.prototype.GetMemoryTypes = function()
  * & {@link Appverse.System#MEMORYUSE_OTHER MEMORYUSE_OTHER} 
  * @return {int[]} The available memory uses.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *harcoded values | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *harcoded values | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetMemoryUses = function()
 {
@@ -1250,7 +1353,7 @@ System.prototype.GetMemoryUses = function()
  * <br> @version 1.0
  * @return {Appverse.System.HardwareInfo} The device hardware information (name, version, UUID, etc).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOSHardwareInfo = function()
 {
@@ -1262,7 +1365,7 @@ System.prototype.GetOSHardwareInfo = function()
  * <br> @version 1.0
  * @return {Appverse.System.OSInfo} The device OS information (name, vendor, version).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOSInfo = function()
 {
@@ -1274,7 +1377,7 @@ System.prototype.GetOSInfo = function()
  * <br> @version 1.0
  * @return {String} The user agent string. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOSUserAgent = function()
 {
@@ -1286,7 +1389,7 @@ System.prototype.GetOSUserAgent = function()
  * <br> @version 1.0
  * @return {Appverse.System.PowerInfo} The current charge information.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetPowerInfo = function()
 {
@@ -1298,7 +1401,7 @@ System.prototype.GetPowerInfo = function()
  * <br> @version 1.0
  * @return {long} The remaining power time.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetPowerRemainingTime = function()
 {
@@ -1310,7 +1413,7 @@ System.prototype.GetPowerRemainingTime = function()
  * <br> @version 1.0
  * @return {Appverse.System.CPUInfo} The processor information (name, vendor, speed, UUID, etc).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> *not available on iOS SDK | android <img src="resources/images/error.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> *not available on iOS SDK | android <img src="resources/images/error.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetCPUInfo = function()
 {
@@ -1322,7 +1425,7 @@ System.prototype.GetCPUInfo = function()
  * <br> @version 2.0
  * @return {Boolean} True if application remains with the same screen orientation (even though user rotates the device).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.IsOrientationLocked = function() {
     return post_to_url(Appverse.System.serviceName, "IsOrientationLocked", null, "POST");
@@ -1334,7 +1437,7 @@ System.prototype.IsOrientationLocked = function() {
  * @param {Boolean} Set value to true if application should remain with the same screen orientation (even though user rotates the device)..
  * @param {int} Set the orientation to lock the device to (this value is ignored if "lock" argument is "false"). Possible values of display orientation: {@link Appverse.System#ORIENTATION_LANDSCAPE ORIENTATION_LANDSCAPE}, {@link Appverse.System#ORIENTATION_PORTRAIT ORIENTATION_PORTRAIT} or {@link Appverse.System#ORIENTATION_UNKNOWN ORIENTATION_UNKNOWN}
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.LockOrientation = function(lock, orientation) {
     return post_to_url(Appverse.System.serviceName, "LockOrientation", get_params([lock, orientation]), "POST");
@@ -1346,7 +1449,7 @@ System.prototype.LockOrientation = function(lock, orientation) {
  * @param {String} textToCopy Text to copy to the Clipboard.
  * @return {Boolean} True if the text was successfully copied to the Clipboard, else False.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 System.prototype.CopyToClipboard = function(textToCopy)
 {
@@ -1359,7 +1462,7 @@ System.prototype.CopyToClipboard = function(textToCopy)
  * <br> @version 3.2
  * @return {Boolean} True if the splash screen is successfully shown, else False.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.ShowSplashScreen = function()
 {
@@ -1371,7 +1474,7 @@ System.prototype.ShowSplashScreen = function()
  * <br> @version 3.2
  * @return {Boolean} True if the splash screen is successfully dismissed, else False.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.DismissSplashScreen = function()
 {
@@ -1384,7 +1487,7 @@ System.prototype.DismissSplashScreen = function()
  * <br> <b>This feature is not supported on iOS platform (interface is available, but with no effect)</b>
  * <br> @version 3.8
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> *N/A* | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> *N/A* | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.DismissApplication = function()
 {
@@ -1396,7 +1499,7 @@ System.prototype.DismissApplication = function()
  * <br> @version 4.2
  * @method
  * @return {Appverse.System.App[]} Applications to be launched.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetApplications = function()
 {
@@ -1409,7 +1512,7 @@ System.prototype.GetApplications = function()
  * @method
  * @param {String} appName The application name to match.
  * @return {Appverse.System.App} Application to be launched that match the given name.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetApplication = function(appName)
 {
@@ -1422,11 +1525,11 @@ System.prototype.GetApplication = function(appName)
  * @method
  * @param {Appverse.System.App/String} app The application object (or its name) to be launched.
  * @param {String} query The query string (parameters) in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.LaunchApplication = function(app, query)
 {
-    post_to_url(Appverse.System.serviceName, "LaunchApplication", get_params([app, query]), "POST");
+    post_to_url_async(Appverse.System.serviceName, "LaunchApplication", get_params([app, query]), null, null);
 };
 
 /*
@@ -1459,7 +1562,7 @@ Appverse.Database = new Database();
  * <br> @version 1.0
  * @return {Appverse.Database.Database[]} List of application Databases.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.GetDatabaseList = function()
 {
@@ -1472,7 +1575,7 @@ Database.prototype.GetDatabaseList = function()
  * @param {String} dbName The database file name (please include .db extension).
  * @return {Appverse.Database.Database} The created database reference object.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.CreateDatabase = function(dbName)
 {
@@ -1486,7 +1589,7 @@ Database.prototype.CreateDatabase = function(dbName)
  * @param {String} dbName The database file name (including .db extension).
  * @return {Appverse.Database.Database} The created database reference object.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.GetDatabase = function(dbName)
 {
@@ -1501,7 +1604,7 @@ Database.prototype.GetDatabase = function(dbName)
  * @param {String[]} columnsDefs The column definitions array (SQLITE syntax).
  * @return {Boolean} True on successful table creation.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.CreateTable = function(db, tableName, columnsDefs)
 {
@@ -1514,7 +1617,7 @@ Database.prototype.CreateTable = function(db, tableName, columnsDefs)
  * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}) to be deleted.
  * @return {Boolean} True on successful database deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.DeleteDatabase = function(db)
 {
@@ -1528,7 +1631,7 @@ Database.prototype.DeleteDatabase = function(db)
  * @param {String} tableName The table name to be deleted.
  * @return {Boolean} True on successful table deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.DeleteTable = function(db, tableName)
 {
@@ -1541,7 +1644,7 @@ Database.prototype.DeleteTable = function(db, tableName)
  * @param {Appverse.Database.Database} db The database object reference (as provided by {@link #GetDatabase}) to check for table names.
  * @return {String[]} List of table names.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.GetTableNames = function(db)
 {
@@ -1557,7 +1660,7 @@ Database.prototype.GetTableNames = function(db)
  * @param {String} tableName The table name  to check for existence. Optional parameter.
  * @return {Boolean} True if database or database table exists.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.Exists = function(db, tableName)
 {
@@ -1574,7 +1677,7 @@ Database.prototype.Exists = function(db, tableName)
  * @param {String} dbName The database name to check for existence.
  * @return {Boolean} True if database exists.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.ExistsDatabase = function(dbName)
 {
@@ -1589,7 +1692,7 @@ Database.prototype.ExistsDatabase = function(dbName)
  * @param {String[]} replacements The replacement arguments for a preformatted SQL query. Optional parameter.
  * @return {Appverse.Database.ResultSet} The result set (with zero rows count parameter if no rows satisfy query conditions).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.ExecuteSQLQuery = function(db, query, replacements)
 {
@@ -1608,7 +1711,7 @@ Database.prototype.ExecuteSQLQuery = function(db, query, replacements)
  * @param {String[]} replacements The replacement arguments for a preformatted SQL statement. Optional parameter.
  * @return {Boolean} True on successful statement execution.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.ExecuteSQLStatement = function(db, statement, replacements)
 {
@@ -1627,7 +1730,7 @@ Database.prototype.ExecuteSQLStatement = function(db, statement, replacements)
  * @param {Boolean} rollbackFlag Indicates if rollback should be performed when any statement execution fails.
  * @return {Boolean} True on successful transaction execution.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.ExecuteSQLTransaction = function(db, statements, rollbackFlag)
 {
@@ -1653,7 +1756,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     GetDatabaseList: function(callbackFunctionName, callbackId)
     {
@@ -1666,7 +1769,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     CreateDatabase: function(dbName, callbackFunctionName, callbackId)
     {
@@ -1680,7 +1783,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     GetDatabase: function(dbName, callbackFunctionName, callbackId)
     {
@@ -1695,7 +1798,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     CreateTable: function(db, tableName, columnsDefs, callbackFunctionName, callbackId)
     {
@@ -1708,7 +1811,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     DeleteDatabase: function(db, callbackFunctionName, callbackId)
     {
@@ -1722,7 +1825,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     DeleteTable: function(db, tableName, callbackFunctionName, callbackId)
     {
@@ -1735,7 +1838,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     GetTableNames: function(db, callbackFunctionName, callbackId)
     {
@@ -1750,7 +1853,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     Exists: function(db, tableName, callbackFunctionName, callbackId)
     {
@@ -1767,7 +1870,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     ExistsDatabase: function(dbName, callbackFunctionName, callbackId)
     {
@@ -1782,7 +1885,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     ExecuteSQLQuery: function(db, query, replacements, callbackFunctionName, callbackId)
     {
@@ -1801,7 +1904,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     ExecuteSQLStatement: function(db, statement, replacements, callbackFunctionName, callbackId)
     {
@@ -1820,7 +1923,7 @@ Database.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     ExecuteSQLTransaction: function(db, statements, rollbackFlag, callbackFunctionName, callbackId)
     {
@@ -1859,7 +1962,7 @@ Appverse.FileSystem = new FileSystem();
  * <br> @version 1.0
  * @return {Appverse.FileSystem.DirectoryData} The configured root directory information.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.GetDirectoryRoot = function()
 {
@@ -1873,7 +1976,7 @@ FileSystem.prototype.GetDirectoryRoot = function()
  * @param {Appverse.FileSystem.DirectoryData} baseDirectory The base Directory to create directory under it. Optional parameter.
  * @return {Appverse.FileSystem.DirectoryData} The directory created, or null if folder cannot be created.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.CreateDirectory = function(directoryName, baseDirectory)
 {
@@ -1891,7 +1994,7 @@ FileSystem.prototype.CreateDirectory = function(directoryName, baseDirectory)
  * @param {Appverse.FileSystem.DirectoryData} baseDirectory The base Directory to create file under it. Optional parameter.
  * @return {Appverse.FileSystem.FileData} The file created, or null if folder cannot be created.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.CreateFile = function(fileName, baseDirectory)
 {
@@ -1908,7 +2011,7 @@ FileSystem.prototype.CreateFile = function(fileName, baseDirectory)
  * @param {Appverse.FileSystem.DirectoryData} dirData The base Directory to check for directories under it. Optional parameter.
  * @return {Appverse.FileSystem.DirectoryData[]} The directories information array.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.ListDirectories = function(dirData)
 {
@@ -1925,7 +2028,7 @@ FileSystem.prototype.ListDirectories = function(dirData)
  * @param {Appverse.FileSystem.DirectoryData} dirData The base Directory to check for files under it. Optional parameter.
  * @return {Appverse.FileSystem.FileData[]} The files information array.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.ListFiles = function(dirData)
 {
@@ -1950,7 +2053,7 @@ FileSystem.prototype.ExistsDirectory = function(dirData)
  * @param {Appverse.FileSystem.DirectoryData} dirData The directory to be deleted.
  * @return {Boolean} True on successful directory deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.DeleteDirectory = function(dirData)
 {
@@ -1963,7 +2066,7 @@ FileSystem.prototype.DeleteDirectory = function(dirData)
  * @param {Appverse.FileSystem.FileData} fileData The file to be deleted.
  * @return {Boolean} True on successful file deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.DeleteFile = function(fileData)
 {
@@ -1988,7 +2091,7 @@ FileSystem.prototype.ExistsFile = function(fileData)
  * @param {Appverse.FileSystem.FileData} fileData The file data to read.
  * @return {byte[]} Readed bytes.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.ReadFile = function(fileData)
 {
@@ -2003,7 +2106,7 @@ FileSystem.prototype.ReadFile = function(fileData)
  * @param {Boolean} appendFlag True if data should be appended to previous file data.
  * @return {Boolean} True if file could be written.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.WriteFile = function(fileData, contents, appendFlag)
 {
@@ -2017,7 +2120,7 @@ FileSystem.prototype.WriteFile = function(fileData, contents, appendFlag)
  * @param {String} destFileName The file name (relative path under "documents" application directory) to be copied to.
  * @return {Boolean} True if file could be copied.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/warning.png"/> *"resources" path pending to be defined for this platform </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/warning.png"/> *"resources" path pending to be defined for this platform | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.CopyFromResources = function(sourceFileName, destFileName)
 {
@@ -2031,7 +2134,7 @@ FileSystem.prototype.CopyFromResources = function(sourceFileName, destFileName)
  * @param {String} destFileName The file name (relative path under "documents" application directory) to be copied to.
  * @return {Boolean} True if file could be copied.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.CopyFromRemote = function(url, destFileName)
 {
@@ -2057,7 +2160,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     GetDirectoryRoot: function(callbackFunctionName, callbackId)
     {
@@ -2071,7 +2174,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     CreateDirectory: function(directoryName, baseDirectory, callbackFunctionName, callbackId)
     {
@@ -2089,7 +2192,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     CreateFile: function(fileName, baseDirectory, callbackFunctionName, callbackId)
     {
@@ -2106,7 +2209,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     ListDirectories: function(dirData, callbackFunctionName, callbackId)
     {
@@ -2123,7 +2226,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     ListFiles: function(dirData, callbackFunctionName, callbackId)
     {
@@ -2148,7 +2251,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     DeleteDirectory: function(dirData, callbackFunctionName, callbackId)
     {
@@ -2161,7 +2264,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     DeleteFile: function(fileData, callbackFunctionName, callbackId)
     {
@@ -2186,7 +2289,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     ReadFile: function(fileData, callbackFunctionName, callbackId)
     {
@@ -2201,7 +2304,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     WriteFile: function(fileData, contents, appendFlag, callbackFunctionName, callbackId)
     {
@@ -2215,7 +2318,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/warning.png"/> *"resources" path pending to be defined for this platform </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/warning.png"/> *"resources" path pending to be defined for this platform | emulator <img src="resources/images/check.png"/> </pre>
      */
     CopyFromResources: function(sourceFileName, destFileName, callbackFunctionName, callbackId)
     {
@@ -2229,7 +2332,7 @@ FileSystem.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     CopyFromRemote: function(url, destFileName, callbackFunctionName, callbackId)
     {
@@ -2361,7 +2464,7 @@ Appverse.Notification = new Notification();
  * <br> @version 1.0
  * @return {Boolean} True if activity indicator could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StartNotifyActivity = function()
 {
@@ -2373,7 +2476,7 @@ Notification.prototype.StartNotifyActivity = function()
  * <br> @version 1.0
  * @return {Boolean} True if activity indicator could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StopNotifyActivity = function()
 {
@@ -2385,7 +2488,7 @@ Notification.prototype.StopNotifyActivity = function()
  * <br> @version 1.0
  * @return {Boolean} True/false wheter activity indicator is running.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.IsNotifyActivityRunning = function()
 {
@@ -2400,7 +2503,7 @@ Notification.prototype.IsNotifyActivityRunning = function()
  * @param {String} buttonText The accept button text to be displayed.
  * @return {Boolean} True if alert notification could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StartNotifyAlert = function(message, title, buttonText)
 {
@@ -2416,7 +2519,7 @@ Notification.prototype.StartNotifyAlert = function(message, title, buttonText)
  * <br> @version 1.0
  * @return {Boolean} True if alert notification could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StopNotifyAlert = function()
 {
@@ -2431,7 +2534,7 @@ Notification.prototype.StopNotifyAlert = function()
  * @param {String[]} jsCallbackFunctions The callback javascript functions as string texts for each of the given buttons. Empty string if no action is required for a button.
  * @return {Boolean} True if action sheet could be showed.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Notification.prototype.StartNotifyActionSheet = function(title, buttons, jsCallbackFunctions)
 {
@@ -2443,7 +2546,7 @@ Notification.prototype.StartNotifyActionSheet = function(title, buttons, jsCallb
  * <br> @version 1.0
  * @return {Boolean} True if beep notification could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StartNotifyBeep = function()
 {
@@ -2455,7 +2558,7 @@ Notification.prototype.StartNotifyBeep = function()
  * <br> @version 1.0
  * @return {Boolean} True if beep notification could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StopNotifyBeep = function()
 {
@@ -2467,7 +2570,7 @@ Notification.prototype.StopNotifyBeep = function()
  * <br> @version 1.0
  * @return {Boolean} True if beep notification could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Notification.prototype.StartNotifyBlink = function()
 {
@@ -2479,7 +2582,7 @@ Notification.prototype.StartNotifyBlink = function()
  * <br> @version 1.0
  * @return {Boolean} True if blink notification could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Notification.prototype.StopNotifyBlink = function()
 {
@@ -2491,7 +2594,7 @@ Notification.prototype.StopNotifyBlink = function()
  * <br> @version 1.0
  * @return {Boolean} True if progress indicator animation could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> | windows <img src="resources/images/check.png"/> 
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> 
  * <br><br><img src="resources/images/warning.png"/> Showing the native loading window in <b>Android</b> is currently sending the application to background.
  * <br>This means that the platform server (Appverse) is no available till application comes to foreground again.
  * <br>But application could not wake up itself to foreground from javascript code.
@@ -2513,7 +2616,7 @@ Notification.prototype.StartNotifyLoading = function(loadingText)
  * <br> @version 1.0
  * @return {Boolean} True if progress indicator animation could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StopNotifyLoading = function()
 {
@@ -2525,7 +2628,7 @@ Notification.prototype.StopNotifyLoading = function()
  * <br> @version 1.0
  * @return {Boolean} True/false wheter progress indicator is running.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.IsNotifyLoadingRunning = function()
 {
@@ -2537,7 +2640,7 @@ Notification.prototype.IsNotifyLoadingRunning = function()
  * <br> @version 1.0
  * @param {float} progress The current progress; values between 0.0 and 1.0 (completed).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.UpdateNotifyLoading = function(progress)
 {
@@ -2549,7 +2652,7 @@ Notification.prototype.UpdateNotifyLoading = function(progress)
  * <br> @version 1.0
  * @return {Boolean} True if vibration notification could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Notification.prototype.StartNotifyVibrate = function()
 {
@@ -2561,7 +2664,7 @@ Notification.prototype.StartNotifyVibrate = function()
  * <br> @version 1.0
  * @return {Boolean} True if vibration notification could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Notification.prototype.StopNotifyVibrate = function()
 {
@@ -2575,7 +2678,7 @@ Notification.prototype.StopNotifyVibrate = function()
  * @method
  * @param {String} senderId The sender identifier. This parameter is required for some platforms (such as the Android platform), in iOS will be just ignored.
  * @param {Appverse.Notification.RemoteNotificationType[]} types The remote notifications types accepted by this application. For further information see, {@link Appverse.Notification#REMOTE_NOTIFICATION_TYPE_NONE REMOTE_NOTIFICATION_TYPE_NONE}, {@link Appverse.Notification#REMOTE_NOTIFICATION_TYPE_BADGE REMOTE_NOTIFICATION_TYPE_BADGE}, {@link Appverse.Notification#REMOTE_NOTIFICATION_TYPE_SOUND REMOTE_NOTIFICATION_TYPE_SOUND}, {@link Appverse.Notification#REMOTE_NOTIFICATION_TYPE_ALERT REMOTE_NOTIFICATION_TYPE_ALERT} and {@link Appverse.Notification#REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY}
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Notification.prototype.RegisterForRemoteNotifications = function(senderId, types)
 {
@@ -2587,7 +2690,7 @@ Notification.prototype.RegisterForRemoteNotifications = function(senderId, types
  * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnUnRegisterForRemoteNotificationsSuccess
  * <br> @version 3.9 (listener callback only available on 4.0)
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Notification.prototype.UnRegisterForRemoteNotifications = function()
 {
@@ -2599,7 +2702,7 @@ Notification.prototype.UnRegisterForRemoteNotifications = function()
  * <br> @version 3.9
  * @method
  * @param {int} badge The badge number to set.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> N/A  | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> N/A  | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Notification.prototype.SetApplicationIconBadgeNumber = function(badge)
 {
@@ -2610,7 +2713,7 @@ Notification.prototype.SetApplicationIconBadgeNumber = function(badge)
  * Increments (adds one to) the current application icon badge number (the one inside the red bubble).
  * <br> @version 3.9
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> N/A  | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> N/A  | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Notification.prototype.IncrementApplicationIconBadgeNumber = function()
 {
@@ -2621,7 +2724,7 @@ Notification.prototype.IncrementApplicationIconBadgeNumber = function()
  * Decrements (substracts one from) the current application icon badge number (the one inside the red bubble).
  * <br> @version 3.9
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> N/A  | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> N/A  | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Notification.prototype.DecrementApplicationIconBadgeNumber = function()
 {
@@ -2633,7 +2736,7 @@ Notification.prototype.DecrementApplicationIconBadgeNumber = function()
  * <br> @version 3.9
  * @method
  * @param {Appverse.Notification.NotificationData} notification The notification data to be presented. For further information see, {@link Appverse.Notification.NotificationData NotificationData}.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Notification.prototype.PresentLocalNotificationNow = function(notification)
 {
@@ -2646,7 +2749,7 @@ Notification.prototype.PresentLocalNotificationNow = function(notification)
  * @method
  * @param {Appverse.Notification.NotificationData} notification The notification data to be presented. For further information see, {@link Appverse.Notification.NotificationData NotificationData}.
  * @param {SchedulingData} schedule The scheduling data with the fire date. For further information see, {@link Appverse.Notification.SchedulingData SchedulingData}.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Notification.prototype.ScheduleLocalNotification = function(notification, schedule)
 {
@@ -2659,7 +2762,7 @@ Notification.prototype.ScheduleLocalNotification = function(notification, schedu
  * <br> @version 3.9
  * @method
  * @param {Appverse.DateTime} fireDate The local notification fire date identifier to be cancelled.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Notification.prototype.CancelLocalNotification = function(fireDate)
 {
@@ -2670,7 +2773,7 @@ Notification.prototype.CancelLocalNotification = function(fireDate)
  * Cancels all local notifications already scheduled.
  * <br> @version 3.9
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Notification.prototype.CancelAllLocalNotifications = function()
 {
@@ -2696,7 +2799,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     StartNotifyActivity: function(callbackFunctionName, callbackId)
     {
@@ -2708,7 +2811,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     StopNotifyActivity: function(callbackFunctionName, callbackId)
     {
@@ -2720,7 +2823,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     IsNotifyActivityRunning: function(callbackFunctionName, callbackId)
     {
@@ -2735,7 +2838,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     StartNotifyAlert: function(message, title, buttonText, callbackFunctionName, callbackId)
     {
@@ -2751,7 +2854,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     StopNotifyAlert: function(callbackFunctionName, callbackId)
     {
@@ -2766,7 +2869,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
      */
     StartNotifyActionSheet: function(title, buttons, jsCallbackFunctions, callbackFunctionName, callbackId)
     {
@@ -2778,7 +2881,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     StartNotifyBeep: function(callbackFunctionName, callbackId)
     {
@@ -2790,7 +2893,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     StopNotifyBeep: function(callbackFunctionName, callbackId)
     {
@@ -2802,7 +2905,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
      */
     StartNotifyBlink: function(callbackFunctionName, callbackId)
     {
@@ -2814,7 +2917,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
      */
     StopNotifyBlink: function(callbackFunctionName, callbackId)
     {
@@ -2826,7 +2929,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> | windows <img src="resources/images/check.png"/> 
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> 
      * <br><br><img src="resources/images/warning.png"/> Showing the native loading window in <b>Android</b> is currently sending the application to background.
      * <br>This means that the platform server (Appverse) is no available till application comes to foreground again.
      * <br>But application could not wake up itself to foreground from javascript code.
@@ -2848,7 +2951,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     StopNotifyLoading: function(callbackFunctionName, callbackId)
     {
@@ -2860,7 +2963,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     IsNotifyLoadingRunning: function(callbackFunctionName, callbackId)
     {
@@ -2873,7 +2976,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
      */
     UpdateNotifyLoading: function(progress, callbackFunctionName, callbackId)
     {
@@ -2885,7 +2988,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     StartNotifyVibrate: function(callbackFunctionName, callbackId)
     {
@@ -2897,7 +3000,7 @@ Notification.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     StopNotifyVibrate: function(callbackFunctionName, callbackId)
     {
@@ -3010,7 +3113,7 @@ Appverse.IO = new IO();
  * <br> @version 1.0
  * @return {Appverse.IO.IOService[]} List of external services.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 IO.prototype.GetServices = function()
 {
@@ -3036,7 +3139,7 @@ IO.prototype.GetServices = function()
  * @param {int} serviceType The service type to look for. Optional parameter.
  * @return {Appverse.IO.IOService} The external service matched.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 IO.prototype.GetService = function(serviceName, serviceType)
 {
@@ -3067,7 +3170,7 @@ IO.prototype.GetService = function(serviceName, serviceType)
  * @param {int} serviceType The service type to look for. Optional parameter. Just inform this when you pass the service name in the second argument.
  * @return {Appverse.IO.IOResponse} The response object returned from remote service. Access content doing: <pre>ioResponse.Content</pre>
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 IO.prototype.InvokeService = function(requestObjt, service, serviceType)
 {
@@ -3088,7 +3191,7 @@ IO.prototype.InvokeService = function(requestObjt, service, serviceType)
  * @param {String} storePath The relative path (under application documents root direectory) to store the contents received from this service invocation.
  * @return {String} The reference url for the stored file, or null on error case. If store file is a temporal file, application should remove it when no more needed.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 IO.prototype.InvokeServiceForBinary = function(requestObjt, service, storePath)
 {
@@ -3116,7 +3219,7 @@ IO.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
      */
     GetServices: function(callbackFunctionName, callbackId)
     {
@@ -3130,7 +3233,7 @@ IO.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
      */
     GetService: function(serviceName, serviceType, callbackFunctionName, callbackId)
     {
@@ -3149,7 +3252,7 @@ IO.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
      */
     InvokeService: function(requestObjt, service, serviceType, callbackFunctionName, callbackId)
     {
@@ -3170,7 +3273,7 @@ IO.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
      */
     InvokeServiceForBinary: function(requestObjt, service, storePath, callbackFunctionName, callbackId)
     {
@@ -3221,7 +3324,7 @@ Appverse.Geo = new Geo();
  * <br> @version 1.0
  * @return {Appverse.Geo.Acceleration} Current acceleration info (coordinates and acceleration vector number).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetAcceleration = function()
 {
@@ -3233,7 +3336,7 @@ Geo.prototype.GetAcceleration = function()
  * <br> @version 1.0
  * @return {Appverse.Geo.LocationCoordinate} Current location info (coordinates and precision).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetCoordinates = function()
 {
@@ -3249,7 +3352,7 @@ Geo.prototype.GetCoordinates = function()
  * @param {int} northType Type of north to measured heading relative to it. Optional parameter.
  * @return {float} Current heading. Measured in degrees, minutes and seconds.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetHeading = function(northType)
 {
@@ -3268,7 +3371,7 @@ Geo.prototype.GetHeading = function(northType)
  * <br> @version 1.0
  * @return {float} Current orientation. Measured in degrees, minutes and seconds.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetDeviceOrientation = function()
 {
@@ -3282,7 +3385,7 @@ Geo.prototype.GetDeviceOrientation = function()
  * <br> @version 1.0
  * @return {float} Device speed (in meters/second).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetVelocity = function()
 {
@@ -3295,7 +3398,7 @@ Geo.prototype.GetVelocity = function()
  * Shows Map on screen.
  * <br> @version 1.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Geo.prototype.GetMap = function()
 {
@@ -3308,7 +3411,7 @@ Geo.prototype.GetMap = function()
  * @param {float} scale The desired map scale.
  * @param {float} boundingBox The desired map view bounding box.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Geo.prototype.SetMapSettings = function(scale, boundingBox)
 {
@@ -3325,7 +3428,7 @@ Geo.prototype.SetMapSettings = function(scale, boundingBox)
  * @param {Appverse.Geo.LocationCategory} category The query to search POIs.. Optional parameter.
  * @return {Appverse.Geo.POI[]} Points of Interest for location, ordered by distance.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Geo.prototype.GetPOIList = function(location, radius, queryText, category)
 {
@@ -3346,7 +3449,7 @@ Geo.prototype.GetPOIList = function(location, radius, queryText, category)
  * @param {String} poiId POI identifier.
  * @return {Appverse.Geo.POI} Point of Interest found.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Geo.prototype.GetPOI = function(poiId)
 {
@@ -3358,7 +3461,7 @@ Geo.prototype.GetPOI = function(poiId)
  * <br> @version 1.0
  * @param {String} poiId POI identifier.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Geo.prototype.RemovePOI = function(poiId)
 {
@@ -3370,7 +3473,7 @@ Geo.prototype.RemovePOI = function(poiId)
  * <br> @version 1.0
  * @param {String} poiId POI identifier.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Geo.prototype.UpdatePOI = function(poi)
 {
@@ -3382,7 +3485,7 @@ Geo.prototype.UpdatePOI = function(poi)
  * <br> @version 1.0
  * @return {Boolean} True if the device can start the location services
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StartUpdatingLocation = function()
 {
@@ -3394,7 +3497,7 @@ Geo.prototype.StartUpdatingLocation = function()
  * <br> @version 1.0
  * @return {Boolean} True if the device can stop the location services
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StopUpdatingLocation = function()
 {
@@ -3406,7 +3509,7 @@ Geo.prototype.StopUpdatingLocation = function()
  * <br> @version 1.0
  * @return {Boolean} True if the device can start the location services
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StartUpdatingHeading = function()
 {
@@ -3418,7 +3521,7 @@ Geo.prototype.StartUpdatingHeading = function()
  * <br> @version 1.0
  * @return {Boolean} True if the device can stop the location services
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StopUpdatingHeading = function()
 {
@@ -3433,7 +3536,7 @@ Geo.prototype.StopUpdatingHeading = function()
  * <br> @version 1.0
  * @return {Appverse.Geo.GeoDecoderAttributes} Reverse geocoding attributes from the present location (latitude and longitude)
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetGeoDecoder = function()
 {
@@ -3445,7 +3548,7 @@ Geo.prototype.GetGeoDecoder = function()
  * <br> @version 1.0
  * @return {Boolean} True if the proximity sensor detects an object close to the device
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StartProximitySensor = function()
 {
@@ -3457,7 +3560,7 @@ Geo.prototype.StartProximitySensor = function()
  * <br> @version 1.0
  * @return {Boolean} True if the proximity sensor service could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StopProximitySensor = function()
 {
@@ -3469,7 +3572,7 @@ Geo.prototype.StopProximitySensor = function()
  * <br> @version 3.8
  * @return {Boolean} True if the device can start the location services
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.IsGPSEnabled = function()
 {
@@ -3553,90 +3656,6 @@ Media = function() {
     this.MEDIATSTATE_ERROR = 4;
 
     /**
-     * QR Type AddressBook.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_ADDRESSBOOK = 0;
-
-    /**
-     * QR Type Email.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_EMAIL_ADDRESS = 1;
-
-    /**
-     * QR Type Product.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_PRODUCT = 2;
-
-    /**
-     * QR Type URI.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_URI = 3;
-
-    /**
-     * QR Type Text.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_TEXT = 4;
-
-    /**
-     * QR Type Geolocation.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_GEO = 5;
-
-    /**
-     * QR Type Telephone.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_TEL = 6;
-
-    /**
-     * QR Type SMS.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_SMS = 7;
-
-    /**
-     * QR Type Calendar.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_CALENDAR = 8;
-
-    /**
-     * QR Type Wifi.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_WIFI = 9;
-
-    /**
-     * QR Type ISBN.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.QRTYPE_ISBN = 10;
-
-    /**
-     * Barcode Type QR.
-     * <br> @version 3.9
-     * @type int
-     */
-    this.BARCODETYPE_QR = 11;
-
-    /**
      * @event onFinishedPickingImage Fired when an image have been picked, either from the Photos library (after calling the {@link Appverse.Media.GetSnapshot GetSnapshot}), 
      * or from the Camera (after calling the {@link Appverse.Media.TakeSnapshot TakeSnapshot})
      * <br>Method to be overrided by JS applications, to handle this event.
@@ -3645,21 +3664,6 @@ Media = function() {
      * @param {Appverse.Media.MediaMetadata} mediaMetadata The metadata for the image picked.
      */
     this.onFinishedPickingImage = function(mediaMetadata) {
-    };
-
-
-    /**
-     * @event onQRCodeDetected Fired when a QR Code has been read, and its data is returned to the app in order to perform the desired javascript code on this case.
-     * <br> For further information see, {@link Appverse.Media.MediaQRContent MediaQRContent}.
-     * <br> Method to be overrided by JS applications, to handle this event.
-     * @aside guide application_listeners
-     * <br> @version 3.9
-     * @method
-     * @param {Appverse.Media.MediaQRContent} QRCodeContent The scanned QR Code data read
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
-     * 
-     */
-    this.onQRCodeDetected = function(QRCodeContent) {
     };
 
 }
@@ -3672,7 +3676,7 @@ Appverse.Media = new Media();
  * @param {String} filePath The media file path.
  * @return {Appverse.Media.MediaMetadata} Media file metadata.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.GetMetadata = function(filePath)
 {
@@ -3685,7 +3689,7 @@ Media.prototype.GetMetadata = function(filePath)
  * @param {String} filePath The media file path.
  * @return {Boolean} True if media file could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.Play = function(filePath)
 {
@@ -3698,7 +3702,7 @@ Media.prototype.Play = function(filePath)
  * @param {String} url The media remote URL.
  * @return {Boolean} True if media file could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * bug fixing | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * bug fixing | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.PlayStream = function(url)
 {
@@ -3711,7 +3715,7 @@ Media.prototype.PlayStream = function(url)
  * @param {long} position Index position.
  * @return {Boolean} True if player position could be moved.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.SeekPosition = function(position)
 {
@@ -3723,7 +3727,7 @@ Media.prototype.SeekPosition = function(position)
  * <br> @version 1.0
  * @return {Boolean} True if media file could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.Stop = function()
 {
@@ -3735,7 +3739,7 @@ Media.prototype.Stop = function()
  * <br> @version 1.0
  * @return {Boolean} True if media file could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.Pause = function()
 {
@@ -3753,7 +3757,7 @@ Media.prototype.Pause = function()
  * & {@link Appverse.Media#MEDIATSTATE_STOPPED MEDIATSTATE_STOPPED}
  * @return {int} Current player state.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.GetState = function()
 {
@@ -3765,7 +3769,7 @@ Media.prototype.GetState = function()
  * <br> @version 1.0
  * @return {Appverse.Media.MediaMetadata} Current media file metadata.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *mock data | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *mock data | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.GetCurrentMedia = function()
 {
@@ -3778,7 +3782,7 @@ Media.prototype.GetCurrentMedia = function()
  * Returned value is "null" on synchronous call.
  * <br> @version 2.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/warning.png"/> *in progress</pre>
  */
 Media.prototype.GetSnapshot = function()
 {
@@ -3791,41 +3795,11 @@ Media.prototype.GetSnapshot = function()
  * Returned value is "null" on synchronous call.
  * <br> @version 2.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/warning.png"/> *in progress</pre>
  */
 Media.prototype.TakeSnapshot = function()
 {
     return post_to_url(Appverse.Media.serviceName, "TakeSnapshot", null, "POST");
-};
-
-/**
- * Fires the camera to detected and process a QRCode image.
- * <br> @version 3.9
- * @param {Boolean} autoHandleQR True value to indicates that the detected QRCode should be handled by the platform (if possible) automatically, or False to just be get data returned.
- * QRCode data is provided via the proper event handled by the "Appverse.Media.onQRCodeDetected" method; please, override to handle the event.
- * Returned value is "null" on synchronous call.
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-Media.prototype.DetectQRCode = function(autoHandleQR)
-{
-    post_to_url(Appverse.Media.serviceName, "DetectQRCode", get_params([autoHandleQR]), "POST");
-};
-
-/**
- * Handles the given QRCode data to be processed (if possible) by the system. <br/>For further information see, {@link Appverse.Media.MediaQRContent MediaQRContent}.
- * <br> The content types that could be processed by the platform are:
- * <br> {@link Appverse.Media#QRTYPE_EMAIL_ADDRESS}, {@link Appverse.Media#QRTYPE_URI} and {@link Appverse.Media#QRTYPE_TEL}.
- * <br> Other types couldn't be processed without pre-parsing, so they are returned to be handled by the application.
- * <br> @version 3.9
- * @param {Appverse.Media.MediaQRContent} mediaQRContent The QRCode data scanned that needs to be handle.
- * @return {int} The current QRCode content type.
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
- */
-Media.prototype.HandleQRCode = function(mediaQRContent)
-{
-    return post_to_url(Appverse.Media.serviceName, "HandleQRCode", get_params([mediaQRContent]), "POST");
 };
 
 /**
@@ -3848,7 +3822,7 @@ Media.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     GetMetadata: function(filePath, callbackFunctionName, callbackId)
     {
@@ -3861,7 +3835,7 @@ Media.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     Play: function(filePath, callbackFunctionName, callbackId)
     {
@@ -3874,7 +3848,7 @@ Media.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * bug fixing | windows <img src="resources/images/error.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * bug fixing | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     PlayStream: function(url, callbackFunctionName, callbackId)
     {
@@ -3887,7 +3861,7 @@ Media.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     SeekPosition: function(position, callbackFunctionName, callbackId)
     {
@@ -3899,7 +3873,7 @@ Media.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     Stop: function(callbackFunctionName, callbackId)
     {
@@ -3911,7 +3885,7 @@ Media.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     Pause: function(callbackFunctionName, callbackId)
     {
@@ -3923,7 +3897,7 @@ Media.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     GetState: function(callbackFunctionName, callbackId)
     {
@@ -3935,7 +3909,7 @@ Media.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *mock data | windows <img src="resources/images/error.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *mock data | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     GetCurrentMedia: function(callbackFunctionName, callbackId)
     {
@@ -3975,7 +3949,7 @@ Appverse.Messaging = new Messaging();
  * @param {String} phoneNumber The phone address to send the message to (also, multiple addresses separated by comma or semicolon).
  * @param {String} text The message body.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data </pre>
  */
 Messaging.prototype.SendMessageSMS = function(phoneNumber, text)
 {
@@ -3989,7 +3963,7 @@ Messaging.prototype.SendMessageSMS = function(phoneNumber, text)
  * @param {String} text The message body.
  * @param {Appverse.Messaging.AttachmentData} attachment Attachament data.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data </pre>
  */
 Messaging.prototype.SendMessageMMS = function(phoneNumber, text, attachment)
 {
@@ -4001,7 +3975,7 @@ Messaging.prototype.SendMessageMMS = function(phoneNumber, text, attachment)
  * <br> @version 1.0. Modified version 4.5: this method is now asynchronous, but it has no callback function.
  * @param {Appverse.Messaging.EmailData} emailData The email message data, such as: subject, 'To','Cc','Bcc' addresses, etc.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data </pre>
  */
 Messaging.prototype.SendEmail = function(emailData)
 {
@@ -4342,9 +4316,20 @@ Pim = function() {
      * @aside guide application_listeners
      * <br> @version 4.3
      * @param {Appverse.Pim.ContactLite[]} contacts An array of ContactLite objects successfully retrieved from the device local agenda.
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
      */
     this.onListContactsEnd = function(contacts) {
+    };
+	
+    /**
+     * @event onAccessToContactsDenied Fired when the app executes any of the contacts API feature (list contacts, create contact, get contact, etc) 
+	 * and the user has revoked or never granted access to the contacts information for this app (via the device Privacy Settings).
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 4.8
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+     */
+    this.onAccessToContactsDenied = function() {
     };
 
 }
@@ -4357,7 +4342,7 @@ Appverse.Pim = new Pim();
  * <br> @version 4.3
  * @param {Appverse.Pim.ContactQuery} query The search query object. Optional parameter.<pre>null value for all contact returned.</pre>
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.ListContacts = function(query)
 {
@@ -4374,7 +4359,7 @@ Pim.prototype.ListContacts = function(query)
  * @param {String} id The contact identifier to search for.
  * @return {Appverse.Pim.Contact} contact.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.GetContact = function(id)
 {
@@ -4388,7 +4373,7 @@ Pim.prototype.GetContact = function(id)
  * @param {Appverse.Pim.Contact} contact Contact data to be created.
  * @return {Appverse.Pim.Contact} Created contact.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.CreateContact = function(contact)
 {
@@ -4402,7 +4387,7 @@ Pim.prototype.CreateContact = function(contact)
  * @param {Appverse.Pim.Contact} newContact New contact data to be added to the given contact.
  * @return {Boolean} True on successful updating.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.UpdateContact = function(contactId, newContactData)
 {
@@ -4415,7 +4400,7 @@ Pim.prototype.UpdateContact = function(contactId, newContactData)
  * @param {Appverse.Pim.Contact} contact Contact data to be deleted.
  * @return {Boolean} True on successful deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.DeleteContact = function(contact)
 {
@@ -4428,7 +4413,7 @@ Pim.prototype.DeleteContact = function(contact)
  * @param {Appverse.DateTime} date Date to match calendar entries.
  * @return {Appverse.Pim.CalendarEntry[]} List of calendar entries.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *further testing required | android <img src="resources/images/warning.png"/> *further testing required | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *further testing required | android <img src="resources/images/warning.png"/> *further testing required | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.ListCalendarEntriesByDate = function(date)
 {
@@ -4442,7 +4427,7 @@ Pim.prototype.ListCalendarEntriesByDate = function(date)
  * @param {Appverse.DateTime} endDate End date to match calendar entries.
  * @return {Appverse.Pim.CalendarEntry[]} List of calendar entries.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *further testing required | android <img src="resources/images/warning.png"/> *further testing required | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *further testing required | android <img src="resources/images/warning.png"/> *further testing required | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.ListCalendarEntriesByDateRange = function(startDate, endDate)
 {
@@ -4455,7 +4440,7 @@ Pim.prototype.ListCalendarEntriesByDateRange = function(startDate, endDate)
  * @param {Appverse.Pim.CalendarEntry} entry Calendar entry to be created.
  * @return {Appverse.Pim.CalendarEntry} Created calendar entry.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *issues with recurrences and alarms | android <img src="resources/images/warning.png"/> *issues with recurrences and alarms | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *issues with recurrences and alarms | android <img src="resources/images/warning.png"/> *issues with recurrences and alarms | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.CreateCalendarEntry = function(entry)
 {
@@ -4468,7 +4453,7 @@ Pim.prototype.CreateCalendarEntry = function(entry)
  * @param {Appverse.Pim.CalendarEntry} entry Calendar entry to be deleted.
  * @return {Boolean} True on successful deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.DeleteCalendarEntry = function(entry)
 {
@@ -4483,7 +4468,7 @@ Pim.prototype.DeleteCalendarEntry = function(entry)
  * @param {Appverse.DateTime} endDate New end date to move the calendar entry.
  * @return {Boolean} True on successful deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.MoveCalendarEntry = function(entry, startDate, endDate)
 {
@@ -4586,7 +4571,7 @@ Appverse.Telephony = new Telephony();
  * @param {int} callType The type of call to open.
  * @return {ICallControl} Call control interface to handle current call.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Telephony.prototype.Call = function(number, callType)
 {
@@ -4625,7 +4610,7 @@ Appverse.I18N = new I18N();
  * <br> @version 1.0
  * @return {Appverse.I18N.Locale[]} List of locales.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 I18N.prototype.GetLocaleSupported = function()
 {
@@ -4638,7 +4623,7 @@ I18N.prototype.GetLocaleSupported = function()
  * <br> @version 1.0
  * @return {String[]} List of locales (only locale descriptor string, such as "en-US").
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 I18N.prototype.GetLocaleSupportedDescriptors = function()
 {
@@ -4653,7 +4638,7 @@ I18N.prototype.GetLocaleSupportedDescriptors = function()
  * @param {String/Appverse.I18N.Locale} locale The full locale object to get localized message, or the locale desciptor ("language" or "language-country" two-letters ISO codes.
  * @return {String} Localized text.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 I18N.prototype.GetResourceLiteral = function(key, locale)
 {
@@ -4671,7 +4656,7 @@ I18N.prototype.GetResourceLiteral = function(key, locale)
  * @param {String/Appverse.I18N.Locale} locale The full locale object to get localized message, or the locale desciptor ("language" or "language-country" two-letters ISO codes.
  * @return {ResourceLiteralDictionary} Localized texts in the form of an object (you could get the value of a keyed literal using <b>resourceLiteralDictionary.MY_KEY</b> or <b>resourceLiteralDictionary["MY_KEY"]</b>).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 I18N.prototype.GetResourceLiterals = function(locale)
 {
@@ -4726,82 +4711,6 @@ Log.prototype.Log = function(message, level)
 };
 
 /*
- * ANALYTICS INTERFACES
- */
-
-/**
- * @class Appverse.Analytics 
- * Singleton class field to access Analytics interface. 
- * <br>This interface provides features to track application usage and send to Google Analytics.<br>
- * <br> @version 3.0
- * <pre>Usage: Appverse.Analytics.&lt;metodName&gt;([params]).<br>Example: Appverse.Analytics.TrackPageView('/mypage').</pre>
- * @singleton
- * @constructor Constructs a new Analytics interface.
- * @return {Appverse.Analytics} A new Analytics interface.
- */
-Analytics = function() {
-    /**
-     * Analytics service name (as configured on Platform Service Locator).
-     * @type String
-     * <br> @version 3.0
-     */
-    this.serviceName = "analytics";
-};
-
-Appverse.Analytics = new Analytics();
-
-/**
- * Starts the tracker - for the given web property id - from receiving and dispatching data to the server.
- * <br> @version 3.0
- * @param {String} webPropertyID The web property ID with the format UA-99999999-9
- * @return {Boolean} true if the tracker was started successfully
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
- */
-Analytics.prototype.StartTracking = function(webPropertyID) {
-    return post_to_url(Appverse.Analytics.serviceName, "StartTracking", get_params([webPropertyID]), "POST");
-};
-
-/**
- * 
- * Stops the tracker from receiving and dispatching data to the server
- * <br> @version 3.0
- * @return {Boolean} true if tracker was stopped
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
- */
-Analytics.prototype.StopTracking = function() {
-    return post_to_url(Appverse.Analytics.serviceName, "StopTracking", null, "POST");
-};
-
-/**
- * Sends an event to be tracked by the analytics tracker
- * <br> @version 3.0
- * @param {String} group the event group
- * @param {String} action the event action
- * @param {String} label The event label
- * @param {Integer} value The event value
- * @return {Boolean} true if the event was successfully tracked
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
- */
-Analytics.prototype.TrackEvent = function(group, action, label, value) {
-    return post_to_url(Appverse.Analytics.serviceName, "TrackEvent", get_params([group, action, label, value]), "POST");
-};
-
-/**
- * Sends a pageview to be tracked by the analytics tracker
- * <br> @version 3.0
- * @param {String} relativeUrl The relativeUrl to the page i.e. "/home"
- * @return {Boolean} true if the pageview was successfully tracked
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
- */
-Analytics.prototype.TrackPageView = function(relativeUrl) {
-    return post_to_url(Appverse.Analytics.serviceName, "TrackPageView", get_params([relativeUrl]), "POST");
-};
-
-/*
  * SECURITY INTERFACES
  */
 
@@ -4832,7 +4741,7 @@ Appverse.Security = new Security();
  * <br> @version 3.7
  * @return {Boolean} True if the device is modified.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data </pre>
  */
 Security.prototype.IsDeviceModified = function()
 {
@@ -4845,7 +4754,7 @@ Security.prototype.IsDeviceModified = function()
  * <br> @version 4.2
  * @method
  * @param {Appverse.Security.KeyPair} keyPair A key/value pair to store
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Security.prototype.StoreKeyValuePair = function(keyPair)
 {
@@ -4858,7 +4767,7 @@ Security.prototype.StoreKeyValuePair = function(keyPair)
  * <br> @version 4.2
  * @method
  * @param {Appverse.Security.KeyPair[]} keyPair A list of key/value pairs to store
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Security.prototype.StoreKeyValuePairs = function(keyPairs)
 {
@@ -4871,7 +4780,7 @@ Security.prototype.StoreKeyValuePairs = function(keyPairs)
  * <br> @version 4.2
  * @method
  * @param {String} key Name of the key to be returned
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Security.prototype.GetStoredKeyValuePair = function(key)
 {
@@ -4884,7 +4793,7 @@ Security.prototype.GetStoredKeyValuePair = function(key)
  * <br> @version 4.2
  * @method
  * @param {String[]} keys Array of Strings containing the keys to be returned
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Security.prototype.GetStoredKeyValuePairs = function(keys)
 {
@@ -4897,7 +4806,7 @@ Security.prototype.GetStoredKeyValuePairs = function(keys)
  * <br> @version 4.2
  * @method
  * @param {String} key Name of the key to be removed
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Security.prototype.RemoveStoredKeyValuePair = function(key)
 {
@@ -4910,7 +4819,7 @@ Security.prototype.RemoveStoredKeyValuePair = function(key)
  * <br> @version 4.2
  * @method
  * @param {String[]} keys Array of Strings containing the keys to be removed
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 Security.prototype.RemoveStoredKeyValuePairs = function(keys)
 {
@@ -4936,7 +4845,7 @@ Security.prototype.Async = {
      * @param {Appverse.Security.KeyPair} keyPair A key/value pair to store
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
      */
     StoreKeyValuePair: function(keyPair, callbackFunctionName, callbackId)
     {
@@ -4950,7 +4859,7 @@ Security.prototype.Async = {
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
      * @method
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
      */
     StoreKeyValuePairs: function(keyPairs, callbackFunctionName, callbackId)
     {
@@ -4964,7 +4873,7 @@ Security.prototype.Async = {
      * @param {String} key Name of the key to be returned
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
      */
 
     GetStoredKeyValuePair: function(key, callbackFunctionName, callbackId)
@@ -4979,7 +4888,7 @@ Security.prototype.Async = {
      * @param {String[]} keys Array of Strings containing the keys to be returned
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
      */
     GetStoredKeyValuePairs: function(keys, callbackFunctionName, callbackId)
     {
@@ -4993,7 +4902,7 @@ Security.prototype.Async = {
      * @param {String} key Name of the key to be removed
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
      */
     RemoveStoredKeyValuePair: function(key, callbackFunctionName, callbackId)
     {
@@ -5007,285 +4916,12 @@ Security.prototype.Async = {
      * @param {String[]} keys Array of Strings containing the keys to be removed
      * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
      * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
-     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
      */
     RemoveStoredKeyValuePairs: function(keys, callbackFunctionName, callbackId)
     {
         post_to_url_async(Appverse.Security.serviceName, "RemoveStoredKeyValuePairs", get_params([keys]), callbackFunctionName, callbackId);
     }
-};
-
-/*
- * WEBTREKK INTERFACES
- */
-
-/**
- * @class Appverse.Webtrekk
- * Singleton class field to access Webtrekk interface. 
- * <br>This interface provides features to track application usage and send to Webtrekk.<br>
- * <br> @version 3.8
- * <pre>Usage: Appverse.Webtrekk.&lt;metodName&gt;([params]).<br>Example: Appverse.Webtrekk.TrackContent('/mycontent').</pre>
- * @singleton
- * @constructor Constructs a new Webtrekk interface.
- * @return {Appverse.Webtrekk} A new Webtrekk interface.
- */
-Webtrekk = function() {
-    /**
-     * Webtrekk service name (as configured on Platform Service Locator).
-     * @type String
-     * <br> @version 3.8
-     */
-    this.serviceName = "webtrekk";
-
-    /**
-     * Country code of the client's language settings (e.g 'de').
-     * <br> @version 3.8
-     * @type string
-     */
-    this.COUNTRY_CODE = "la";
-
-    /**
-     * Order value.
-     * <br> @version 3.8
-     * @type string
-     */
-    this.ORDER_VALUE = "ov";
-
-    /**
-     * Order ID.
-     * <br> @version 3.8
-     * @type string
-     */
-    this.ORDER_ID = "oi";
-
-    /**
-     * Products in shopping basket.
-     * <br> @version 3.8
-     * @type string
-     */
-    this.SHOPPING_BASKET = "ba";
-
-    /**
-     * Product costs.
-     * <br> @version 3.8
-     * @type string
-     */
-    this.PRODUCTS_COSTS = "co";
-
-    /**
-     * Number of products.
-     * <br> @version 3.8
-     * @type string
-     */
-    this.NUMBER_OF_PRODUCTS = "qn";
-
-    /**
-     * Product category. Value is 'ca1' but you can add more categories by using 'ca2', 'ca3', etc...
-     * <br> @version 3.8
-     * @type string
-     */
-    this.PRODUCT_CATEGORY_1 = "ca1";
-
-    /**
-     * Status of the shopping basket (add|conf|view).
-     * <br> @version 3.8
-     * @type string
-     */
-    this.STATUS_SHOPPING_BASKET = "st";
-
-    /**
-     * Customer ID
-     * <br> @version 3.8
-     * @type string
-     */
-    this.CUSTOMER_ID = "cd";
-
-    /**
-     * Search term of internal search function.
-     * <br> @version 3.8
-     * @type string
-     */
-    this.SEARCH_TERM = "is";
-
-    /**
-     * Campaign ID consistinf od media code parameter and value ('wt_mc=newsletter')
-     * <br> @version 3.8
-     * @type string
-     */
-    this.CAMPAIGN_ID = "mc";
-
-    /**
-     * Content Group. Value is 'cg1' but you can add more categories by using 'cg2', 'cg3', etc...
-     * <br> @version 3.8
-     * @type string
-     */
-    this.CONTENT_GROUP = "cg1";
-
-    /**
-     * Page parameter. Value is 'cp1' but you can add more categories by using 'cp2', 'cp3', etc...
-     * <br> @version 3.8
-     * @type string
-     */
-    this.PAGE_PARAMETER = "cp1";
-
-    /**
-     * Session parameter. Value is 'cs1' but you can add more categories by using 'cs2', 'cs3', etc...
-     * <br> @version 3.8
-     * @type string
-     */
-    this.SESSION_PARAMETER = "cs1";
-
-    /**
-     * Action parameter. Value is 'ck1' but you can add more categories by using 'ck2', 'ck3', etc...
-     * <br> @version 3.8
-     * @type string
-     */
-    this.ACTION_PARAMETER = "ck1";
-
-    /**
-     * Independent parameter. Value is 'ce1' but you can add more categories by using 'ce2', 'ce3', etc...
-     * <br> @version 3.8
-     * @type string
-     */
-    this.INDEPENDENT_PARAMETER = "ce1";
-
-    /**
-     * Campaign parameter. Value is 'cc1' but you can add more categories by using 'cc2', 'cc3', etc...
-     * <br> @version 3.8
-     * @type string
-     */
-    this.CAMPAIGN_PARAMETER = "cc1";
-
-    /**
-     * E-commerce parameter. Value is 'cb1' but you can add more categories by using 'cb2', 'cb3', etc...
-     * <br> @version 3.8
-     * @type string
-     */
-    this.ECOMMERCE_PARAMETER = "cb1";
-};
-
-Appverse.Webtrekk = new Webtrekk();
-
-/**
- * Starts the tracker - for the given web server URL and Track Id - from receiving and dispatching data to the server.
- * <br> @version 3.8
- * <pre>
- * Usage samples: 
- * Appverse.Webtrekk.StartTracking("http://q3.webtrekk.net","111111111111");
- * or
- * Appverse.Webtrekk.StartTracking("http://q3.webtrekk.net","111111111111", "10");  // not recommended
- * </pre>
- * @param {String} webServerURL The web server URL with the format http://ap.Appverse.cat
- * @param {String} trackId The track Id with the format 123456789012345
- * @param {String} samplingRate [optional] The sampling rate in consultation with Webtrekk. 
- * The sampling supresses requests to Webtrekk depending on the specified value - that is,
- * only every nth user is tracked.
- * @return {Boolean} true if the tracker was started successfully
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
- */
-Webtrekk.prototype.StartTracking = function(webServerUrl, trackId, samplingRate) {
-    if (samplingRate == null) {
-        return post_to_url(Appverse.Webtrekk.serviceName, "StartTracking", get_params([webServerUrl, trackId]), "POST");
-    } else {
-        return post_to_url(Appverse.Webtrekk.serviceName, "StartTracking", get_params([webServerUrl, trackId, samplingRate]), "POST");
-    }
-};
-
-/**
- * Stops the tracker from receiving and dispatching data to the server
- * <br> @version 3.8
- * @return {Boolean} true if tracker was stopped
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
- */
-Webtrekk.prototype.StopTracking = function() {
-    return post_to_url(Appverse.Webtrekk.serviceName, "StopTracking", null, "POST");
-};
-
-/**
- * Sends a button click event to be tracked by the webtrekk tracker
- * <br> You should invoke the {@link Appverse.Webtrekk#StartTracking StartTracking} method prior to invoke this method.
- * <br> @version 3.8
- * <pre>
- * Action tracking measures clicks on internal or external links and buttons.
- * In mobile environments, the page name should be provided (unlike in websites).
- *
- * You could add further parameters to each request.
- * For further information see, {@link Appverse.Webtrekk.WebtrekkParametersCollection WebtrekkParametersCollection}.
- * 
- * Usage samples: 
- * Appverse.Webtrekk.TrackClick("myButton","home page");
- * or
- * Appverse.Webtrekk.TrackClick("myButton","home page",[{"Name":"la", "Value": "es"}, {"Name":"cd", "Value": "4515661"}]);
- *
- * For checking the possible names of the additional parameters, see the properties in the Appverse.Webtrekk object
- * such as the {@link Appverse.Webtrekk#COUNTRY_CODE COUNTRY_CODE} parameter.
- *</pre>
- * @param {String} clickId The button identification
- * @param {String} contentId The content identification (page name).
- * @param {Appverse.Webtrekk.WebtrekkParametersCollection} additionalParameters [optional] Array containing additional parameters
- * @return {Boolean} true if the content/event was successfully tracked
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
- */
-Webtrekk.prototype.TrackClick = function(clickId, contentId, additionalParameters) {
-    if (additionalParameters == null) {
-        return post_to_url(Appverse.Webtrekk.serviceName, "TrackClick", get_params([clickId, contentId]), "POST");
-    } else {
-        return post_to_url(Appverse.Webtrekk.serviceName, "TrackClick", get_params([clickId, contentId, additionalParameters]), "POST");
-    }
-};
-
-/**
- * Sends a content/event to be tracked by the webtrekk tracker
- * <br> You should invoke the {@link Appverse.Webtrekk#StartTracking StartTracking} method prior to invoke this method.
- * <br> @version 3.8
- * <pre>
- * Content tracking allows you to transmit particular app contents, such as pages or e-commerce values.
- * The contents are evaluated as page impressions and displayed in the page analysis on the Webtrekk user
- * interface.
- * 
- * A part from the content, you could also transmit additional parameters when tracking content.
- * For further information see, {@link Appverse.Analytics.AdditionalParameter AdditionalParameter}.
- * 
- * Usage samples: 
- * Appverse.Webtrekk.TrackContent("home page");
- * or
- * Appverse.Webtrekk.TrackContent("home page",[{"Name":"la", "Value": "es"}, {"Name":"cd", "Value": "4515661"}]);
- *
- * For checking the possible names of the additional parameters, see the properties in the Appverse.Webtrekk object
- * such as the {@link Appverse.Webtrekk#COUNTRY_CODE COUNTRY_CODE} parameter.
- *</pre>
- * @param {String} contentId The content identification
- * @param {Appverse.Webtrekk.WebtrekkParametersCollection} additionalParameters [optional] Array containing additional parameters
- * @return {Boolean} true if the content/event was successfully tracked
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
- */
-Webtrekk.prototype.TrackContent = function(contentId, additionalParameters) {
-    if (additionalParameters == null) {
-        return post_to_url(Appverse.Webtrekk.serviceName, "TrackContent", get_params([contentId]), "POST");
-    } else {
-        return post_to_url(Appverse.Webtrekk.serviceName, "TrackContent", get_params([contentId, additionalParameters]), "POST");
-    }
-};
-
-/**
- * Sets the time interval the request will use to transmit data to the server
- * <br> This method should be executed prior to start the session tracking using the {@link Appverse.Webtrekk#StartTracking StartTracking} method.
- * <br> @version 3.8
- * <pre>
- * Default value is 5 minutes (300 seconds).
- * To maximise battery life, the time interval can be increased to, for example, 10 minutes (600 seconds).
- * </pre>
- * @param {double} intervalInSeconds The interval in seconds the request will transmit data to the server
- * @return {Boolean} true if the interval was successfully set
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
- */
-Webtrekk.prototype.SetRequestInterval = function(intervalInSeconds) {
-    return post_to_url(Appverse.Webtrekk.serviceName, "SetRequestInterval", get_params([intervalInSeconds]), "POST");
 };
 
 /*
@@ -5416,6 +5052,447 @@ AppLoader.prototype.LoadModule = function(module, parameters, autoUpdate)
         post_to_url(Appverse.AppLoader.serviceName, "LoadModule", get_params([module, parameters, autoUpdate]), "POST");
     }
 };
+
+/*
+ * NFC INTERFACES
+ */
+
+/**
+ * @class Appverse.NFC 
+ * Singleton class field to configure, start, cancel and handle NFC payments against a PointOfSell device (using custom library). 
+ * <br>This interface provides features to make NFC payments. JUST AVAILABLE FOR ANDROID DEVICES.<br>
+ * <br> @version 4.5
+ * <pre>Usage: Appverse.NFC.&lt;metodName&gt;([params]).<br>Example: Appverse.NFC.StartNFCPaymentEngine().</pre>
+ * @singleton
+ * @constructor Constructs a new NFC interface.
+ * @return {Appverse.NFC} A new NFC interface.
+ */
+NFC = function() {
+    /**
+     * NFC service name (as configured on Platform Service Locator).
+     * @type String
+     * <br> @version 4.5
+     */
+    this.serviceName = "nfc";
+
+    /**
+     * Sets the value that identifies the CMPA to use for payments.
+     * <br> @version 4.5
+     * @type String
+     */
+    this.PROPERTY_APPLICATION_ID = "application_id";
+
+    /**
+     * Sets the text label that identifies the application.
+     * <br> @version 4.5
+     * @type String
+     */
+    this.PROPERTY_APPLICATION_LABEL = "application_label";
+
+    /**
+     * Sets the number of bytes in the AID field to be published on PPSE.
+     * <br> @version 4.5
+     * @type String
+     */
+    this.PROPERTY_AID_NAME_LENGTH = "aid_name_length";
+
+    /**
+     * Sets the startup mode of Engine. (if value is true, USB debugging is allowed for NFC payment).
+     * <br> @version 4.5
+     * @type String
+     */
+    this.PROPERTY_DEBUG_MODE = "debug_mode";
+
+    /**
+     * Sets the value of the duration in milliseconds of vibration performed when there is a transaction.
+     * <br> @version 4.5
+     * @type String
+     */
+    this.PROPERTY_VIBRATION_DURATION = "vibration_duration_in_msec";
+
+    /**
+     * Sets the value of the duration in seconds of the timer, starts when the payment is triggered by the POS.
+     * <br> @version 4.5
+     * @type String
+     */
+    this.PROPERTY_TIMER_PERIOD = "timer_period_in_sec";
+
+    /**
+     * Unknown Security Error.
+     * <br> @version 4.5
+     * @type int
+     */
+    this.SECURITY_ERROR_UNKNOWN = 0;
+
+    /**
+     * Device Rooted Security Error.
+     * <br> @version 4.5
+     * @type int
+     */
+    this.SECURITY_ERROR_DEVICE_ROOTED = 1;
+
+    /**
+     * Lock Disabled Security Error.
+     * <br> @version 4.5
+     * @type int
+     */
+    this.SECURITY_ERROR_LOCK_DISABLED = 2;
+
+    /**
+     * USB Debugging Enabled Security Error.
+     * <br> @version 4.5
+     * @type int
+     */
+    this.SECURITY_ERROR_USB_DEBUG_ENABLED = 3;
+
+    /**
+     * Unknown Engine Start Error.
+     * <br> @version 4.5
+     * @type int
+     */
+    this.ENGINE_START_ERROR_UNKNOWN = 0;
+
+    /**
+     * Operation Failed Engine Start Error (registration to the Wallet failed).
+     * <br> @version 4.5
+     * @type int
+     */
+    this.ENGINE_START_ERROR_OPERATION_FAILED = 1;
+
+    /**
+     * Canceled by User Engine Start Error (registration to the Wallet was canceled by the user).
+     * <br> @version 4.5
+     * @type int
+     */
+    this.ENGINE_START_ERROR_OPERATION_CANCELED = 2;
+
+    /**
+     * Already Started Engine Start Error (the payment engine has been already started).
+     * <br> @version 4.5
+     * @type int
+     */
+    this.ENGINE_START_ERROR_ALREADY_STARTED = 3;
+
+    /**
+     * Error Card Engine Start Error (communication problem with the SIM).
+     * <br> @version 4.5
+     * @type int
+     */
+    this.ENGINE_START_ERROR_OPERATION_ERROR_CARD = 4;
+
+    /**
+     * Cardlet Not Found Engine Start Error 
+     * (the engine did not detect the SIM CPMA identified by 'application_id' property at the configuration file located in /res/raw/nfcpaymentengine.properties).
+     * <br> @version 4.5
+     * @type int
+     */
+    this.ENGINE_START_ERROR_CARDLET_NOT_FOUND = 5;
+
+    /**
+     * Cardlet Security Engine Start Error (the engine has detected a problem of security regarding the CPMA within the Secure Element).
+     * <br> @version 4.5
+     * @type int
+     */
+    this.ENGINE_START_ERROR_CARDLET_SECURITY = 6;
+
+    /**
+     * Illegal Argument Engine Start Error (the requested operation failed because the parameters passed to the Wallet are not valid).
+     * <br> @version 4.5
+     * @type int
+     */
+    this.ENGINE_START_ERROR_ILLEGAL_ARGUMENT = 7;
+
+    /**
+     * Wallet Not Found Engine Start Error (the requested operation failed because the Wallet is not installed in the device)
+     * <br> @version 4.5
+     * @type int
+     */
+    this.ENGINE_START_ERROR_WALLET_NOT_FOUND = 8;
+
+    /**
+     * Unregistered Fetaure Engine Start Error (the engine has not been previously recorded in the Wallet)
+     * <br> @version 4.5
+     * @type int
+     */
+    this.ENGINE_START_ERROR_UNREGISTERED_FEATURE = 9;
+
+    /**
+     * Unknown Payment Error.
+     * <br> @version 4.5
+     * @type int
+     */
+    this.PAYMENT_ERROR_UNKNOWN = 0;
+
+    /**
+     * Canceled by User Payment Error (payment was canceled by the user).
+     * <br> @version 4.5
+     * @type int
+     */
+    this.PAYMENT_ERROR_OPERATION_CANCELED = 1;
+
+    /**
+     * Dual Tap Payment Error (error regarding the POS that require a double tap to start a transaction)
+     * <br> @version 4.5
+     * @type int
+     */
+    this.PAYMENT_ERROR_DUAL_TAP = 2;
+
+    /**
+     * Remove POS Device Payment Error (error regarding the POS that does not disable the NFC antenna once a transaction has been initiated)
+     * <br> @version 4.5
+     * @type int
+     */
+    this.PAYMENT_ERROR_REMOVE_DEVICE_FROM_POS = 3;
+
+    /**
+     * Illegal Argument Payment Error (the requested operation failed because the parameters passed to the Wallet are not valid.)
+     * <br> @version 4.5
+     * @type int
+     */
+    this.PAYMENT_ERROR_ILLEGAL_ARGUMENT = 4;
+
+    /**
+     * Wallet Not found Payment Error (the requested operation failed because the Wallet is not installed in the device)
+     * <br> @version 4.5
+     * @type int
+     */
+    this.PAYMENT_ERROR_WALLET_NOT_FOUND = 5;
+
+    /**
+     * Operation Failed Payment Error (the operation requested on this engine has failed; generic error)
+     * <br> @version 4.6
+     * @type int
+     */
+    this.PAYMENT_ERROR_OPERATION_FAILED = 6;
+
+    /**
+     * Unregistered Payment Error (error code returned when the Wallet has been uninstalled from the device and has not been invoked again the start engine method)
+     * <br> @version 4.6
+     * @type int
+     */
+    this.PAYMENT_ERROR_UNREGISTERED = 7;
+
+    /**
+     * Applet Not Found Payment Error (error code returned when the Wallet is not located on the CRS identified the applet from AID)
+     * <br> @version 4.6
+     * @type int
+     */
+    this.PAYMENT_ERROR_APPLET_NOT_FOUND = 8;
+
+    /**
+     * @event onEngineStartError Fired when there is an error while starting the NFC Payment engine.
+     * (after calling the Appverse.NFC.StartNFCPaymentEngine method), 
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 4.5
+     * @param {int} error The type of error produced (possible values: {@link Appverse.NFC#ENGINE_START_ERROR_UNKNOWN ENGINE_START_ERROR_UNKNOWN}, {@link Appverse.NFC#ENGINE_START_ERROR_OPERATION_FAILED ENGINE_START_ERROR_OPERATION_FAILED}, {@link Appverse.NFC#ENGINE_START_ERROR_OPERATION_CANCELED ENGINE_START_ERROR_OPERATION_CANCELED}, {@link Appverse.NFC#ENGINE_START_ERROR_ALREADY_STARTED ENGINE_START_ERROR_ALREADY_STARTED}, {@link Appverse.NFC#ENGINE_START_ERROR_OPERATION_ERROR_CARD ENGINE_START_ERROR_OPERATION_ERROR_CARD}, {@link Appverse.NFC#ENGINE_START_ERROR_CARDLET_NOT_FOUND ENGINE_START_ERROR_CARDLET_NOT_FOUND}, {@link Appverse.NFC#ENGINE_START_ERROR_CARDLET_SECURITY ENGINE_START_ERROR_CARDLET_SECURITY}, {@link Appverse.NFC#ENGINE_START_ERROR_ILLEGAL_ARGUMENT ENGINE_START_ERROR_ILLEGAL_ARGUMENT}, {@link Appverse.NFC#ENGINE_START_ERROR_WALLET_NOT_FOUND ENGINE_START_ERROR_WALLET_NOT_FOUND} and {@link Appverse.NFC#ENGINE_START_ERROR_UNREGISTERED_FEATURE ENGINE_START_ERROR_UNREGISTERED_FEATURE}).
+     */
+    this.onEngineStartError = function(error) {
+    };
+
+    /**
+     * @event onEngineStartSuccess Fired when the NFC Payment engine has started successfully.
+     * (after calling the Appverse.NFC.StartNFCPaymentEngine method), 
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 4.5
+     */
+    this.onEngineStartSuccess = function() {
+    };
+
+    /**
+     * @event onPaymentStarted Fired when the NFC Payment has been started successfully.
+     * (after calling the Appverse.NFC.StartNFCPayment method), 
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 4.5
+     */
+    this.onPaymentStarted = function() {
+    };
+
+    /**
+     * @event onPaymentCanceled Fired when the NFC Payment has been canceled successfully.
+     * (after calling the Appverse.NFC.CancelNFCPayment method), 
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 4.5
+     */
+    this.onPaymentCanceled = function() {
+    };
+
+    /**
+     * @event onUpdateCountDown Fired during an NFC Payment indicating the remaining seconds.
+     * (after calling the Appverse.NFC.StartNFCPayment method).
+     * <br> The total timer period is configured in the "timer_period_in_sec" property at the configuration file.
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 4.5
+     * @param {int} countDown The value of the remaining seconds before it is turned off with the POS payment
+     */
+    this.onUpdateCountDown = function(countDown) {
+    };
+
+    /**
+     * @event onCountDownFinished Fired during an NFC Payment indicating that the payment timer has expired.
+     * (after calling the Appverse.NFC.StartNFCPayment method).
+     * <br> The total timer period is configured in the "timer_period_in_sec" property at the configuration file.
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 4.5
+     */
+    this.onCountDownFinished = function() {
+    };
+
+    /**
+     * @event onPaymentSuccess Fired when the NFC Payment has been completed successfully.
+     * (after calling the Appverse.NFC.StartNFCPayment method).
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * @param {Appverse.NFC.NFCPaymentSuccess} paymentSuccess The payment success summary (with the amount, date and time of the just succeeded payment)
+     * <br> @version 4.5
+     */
+    this.onPaymentSuccess = function(paymentSuccess) {
+    };
+
+    /**
+     * @event onPaymentFailed Fired when the NFC Payment has failed.
+     * (after calling the Appverse.NFC.StartNFCPayment method).
+     * <br>Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 4.5
+     * @param {int} error The type of error produced. 
+     * Possible values: 
+     * {@link Appverse.NFC#PAYMENT_ERROR_UNKNOWN PAYMENT_ERROR_UNKNOWN}, 
+     * {@link Appverse.NFC#PAYMENT_ERROR_OPERATION_CANCELED PAYMENT_ERROR_OPERATION_CANCELED}, 
+     * {@link Appverse.NFC#PAYMENT_ERROR_DUAL_TAP PAYMENT_ERROR_DUAL_TAP}, 
+     * {@link Appverse.NFC#PAYMENT_ERROR_REMOVE_DEVICE_FROM_POS PAYMENT_ERROR_REMOVE_DEVICE_FROM_POS}, 
+     * {@link Appverse.NFC#PAYMENT_ERROR_ILLEGAL_ARGUMENT PAYMENT_ERROR_ILLEGAL_ARGUMENT},
+     * and {@link Appverse.NFC#PAYMENT_ERROR_WALLET_NOT_FOUND PAYMENT_ERROR_WALLET_NOT_FOUND}).
+     */
+    this.onPaymentFailed = function(error) {
+    };
+
+}
+
+Appverse.NFC = new NFC();
+
+/**
+ * Sets the application NFC parameters ad hoc by using the given properties object.
+ * <br> This properties could be settled also through an appropriate configuration file located in /res/raw/nfcpaymentengine.properties at build time.
+ * <br> @version 4.5
+ * @param {Appverse.NFC.NFCPaymentProperty[]} properties The NFC properties to be settled.
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *simulated,only TIMEOUT value is settled and used</pre>
+ */
+NFC.prototype.SetNFCPaymentProperties = function(properties)
+{
+    post_to_url(Appverse.NFC.serviceName, "SetNFCPaymentProperties", get_params([properties]), "POST");
+};
+
+/**
+ * Performs security checks (the device does not have root privileges, is not protected by lock and is not in USB debugging mode).
+ * <br> If successful, the NFCPaymentEngine starts (success or failure in this starting will be returned asynchronously via JS event listener).
+ * <br> @version 4.5
+ * @return {Appverse.NFC.NFCPaymentSecurityException} null if everything is ok, otherwise an exception object is received with the error data.
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *simulated</pre>
+ */
+NFC.prototype.StartNFCPaymentEngine = function()
+{
+    return post_to_url(Appverse.NFC.serviceName, "StartNFCPaymentEngine", null, "POST");
+};
+
+/**
+ * Stops the NFC payment engine.
+ * <br> This should be also called on application destroy (the platform will do it automatically).
+ * <br> @version 4.5
+ * @return {boolean} true if everything is ok, false otherwise to indicate there were issues stopping the engine.
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *simulated</pre>
+ */
+NFC.prototype.StopNFCPaymentEngine = function()
+{
+    return post_to_url(Appverse.NFC.serviceName, "StopNFCPaymentEngine", null, "POST");
+};
+
+/**
+ * Returns the last 4 digits of the Primary Account Number (PAN) from the SIM obfuscating the first 16.
+ * <br> It is required to call first the 'Appverse.NFC.StartNFCPaymentEngine' method to get the value, otherwise a null value is returned.
+ * <br> @version 4.5
+ * @return {String} PAN number obfuscated, null if not available.
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *simulated</pre>
+ */
+NFC.prototype.GetPrimaryAccountNumber = function()
+{
+    return post_to_url(Appverse.NFC.serviceName, "GetPrimaryAccountNumber", null, "POST");
+};
+
+/**
+ * Activates an NFC payment with the Point Of Sale (POS).
+ * <br> If the NFC is not enabled in the device, the user is redirected to the NFC settings to enable it.
+ * <br> It is required to call first the 'Appverse.NFC.StartNFCPaymentEngine' method.
+ * <br> @version 4.5
+ * @return {boolean} true if everything is ok, false otherwise to indicate there were issues starting the NFC payment.
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *simulated</pre>
+ */
+NFC.prototype.StartNFCPayment = function()
+{
+    return post_to_url(Appverse.NFC.serviceName, "StartNFCPayment", null, "POST");
+};
+
+/**
+ * Checks that the device has the NFC interface active.
+ * <br> @version 4.5
+ * @return {boolean} true if NFC interface is enabled, false otherwise.
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *simulated</pre>
+ */
+NFC.prototype.IsNFCEnabled = function()
+{
+    return post_to_url(Appverse.NFC.serviceName, "IsNFCEnabled", null, "POST");
+};
+
+/**
+ * Checks the presence/installation of the Wallet app by the given "packageName".
+ * <br> @version 4.5
+ * @param {String} packageName The package name of the application that needs to be checked
+ * @return {boolean} true if the app is installed on the current device, false otherwise.
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *simulated</pre>
+ */
+NFC.prototype.IsWalletAppInstalled = function(packageName)
+{
+    return post_to_url(Appverse.NFC.serviceName, "IsWalletAppInstalled", get_params([packageName]), "POST");
+};
+
+/**
+ * Launches the Settings section of the device in which the user can enable the NFC interface.
+ * <br> @version 4.5
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *popup</pre>
+ */
+NFC.prototype.StartNFCSettings = function()
+{
+    post_to_url(Appverse.NFC.serviceName, "StartNFCSettings", null, "POST");
+};
+
+/**
+ * Disables any NFC payment and resets the timer.
+ * <br> If the transaction is already started at the POS side this method can not finish the payment, but only reset the timer.
+ * <br> It is required to call first the 'Appverse.NFC.StartNFCPaymentEngine' method that assigns the appropiate PaymentListener to receive the notifications.
+ * <br> @version 4.5
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *simulated</pre>
+ */
+NFC.prototype.CancelNFCPayment = function()
+{
+    post_to_url(Appverse.NFC.serviceName, "CancelNFCPayment", null, "POST");
+};
+
+
+
 
 
 
@@ -5677,6 +5754,69 @@ function post_to_url(serviceName, methodName, params, method, returnAsString) {
     }
 }
 
+function post_to_url_emu(serviceName, methodName, params, method, returnAsString) {
+    method = method || "POST"; // Set method to post by default, if not specified.
+
+    var path = Appverse.SERVICE_URI + serviceName + "/" + methodName;
+
+    if (Appverse.isBackground()) {
+        // socket is closed, do not call appverse services
+        console.log("Application is on background. Internal Appverse Socket is closed. Call to '" + path + "' has been stopped.");
+        return null;
+    }
+
+    var xhr = new XMLHttpRequest();
+
+    /* SYNCHRONOUS OPTION*/
+    xhr.open(method, path, false);
+    xhr.setRequestHeader("Content-type", "application/json");
+    var reqData = null;
+
+    if (AppverseEmulator.eventListenersRegistered && typeof(AppverseEmulator.eventListenersRegistered[methodName]) != "undefined") {
+        AppverseEmulator.queuedMessagesCount++;
+        console.log("Appverse Emulator - queue result for methodName: " + methodName);
+        setTimeout(AppverseEmulator.appversePollingTimerFunc, AppverseEmulator.pollingInterval);
+    }
+
+    if (params != null) {
+        if (Appverse.unescapeNextRequestData) {
+            reqData = "json=" + unescape(params);
+        } else {
+            reqData = "json=" + params; // we don't unscape parameters if configured
+            Appverse.unescapeNextRequestData = true; // returning to default configuration value
+        }
+    }
+
+    try {
+        xhr.send(reqData);
+    } catch (e) {
+        return null;
+    }
+
+    var responseText = null;
+    if (xhr.status == 200) { //This status means ok, otherwise some error code is returned, 404 for example.
+        responseText = xhr.responseText;
+    }
+    else {
+        //alert("Error code " + xhr.status);
+        // TODO: handle error
+    }
+
+    if (responseText != null && responseText != '') { // [fix-01062011:MAPS:added checking for empty string, in Android platform void methods return empty strings, and the eval raise an exception]
+        if (returnAsString)
+        {
+            responseText = '"' + responseText + '"';	// eval response text as string, do conversions on required methods
+        }
+        try {
+            return  eval('(' + responseText + ')');
+        } catch (e) {
+            console.log("wrong responseText received from Appverse calls: " + responseText);
+            return null;
+        }
+    } else {
+        return null;
+    }
+}
 
 function post_to_url_async(serviceName, methodName, params, callBackFuncName, callbackId) {
     method = "POST"; // Set method to post by default, if not specified.
@@ -5776,6 +5916,13 @@ function post_to_url_async_emu(serviceName, methodName, params, callBackFuncName
             console.log("please define the callback function as a global variable. Error while evaluating function: " + e);
         }
     }
+
+    if (AppverseEmulator.eventListenersRegistered && typeof(AppverseEmulator.eventListenersRegistered[methodName]) != "undefined") {
+        AppverseEmulator.queuedMessagesCount++;
+        console.log("Appverse Emulator - queue result for methodName: " + methodName);
+        setTimeout(AppverseEmulator.appversePollingTimerFunc, AppverseEmulator.pollingInterval);
+    }
+
     try {
         xhr.send(reqData);
     } catch (e) {
