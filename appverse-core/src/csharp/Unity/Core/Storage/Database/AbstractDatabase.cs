@@ -21,6 +21,7 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if !WP8
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -28,11 +29,14 @@ using System.Data.Common;
 using System.IO;
 using System.Text;
 using Unity.Core.System;
-	
+#else
+#endif
+
 namespace Unity.Core.Storage.Database
 {
-	public abstract class AbstractDatabase : IDatabase
-	{
+    public abstract class AbstractDatabase : IDatabase
+    {
+#if !WP8
 		public static string DEFAULT_DATABASE_PATH = Environment.GetFolderPath (Environment.SpecialFolder.Personal); // path must exists, if not exists, it is created when instantiating this class.
 		public static string DEFAULT_DATABASE_DIR = "sqlite";
 		public static string DEFAULT_DATABASE_VERSION = "3";            // sqlite3
@@ -409,5 +413,7 @@ namespace Unity.Core.Storage.Database
 		public abstract IResultSet ExecuteSQLQuery (Database db, string queryText, string[] queryParams);
 
         #endregion
-	}
+#else
+#endif
+    }
 }

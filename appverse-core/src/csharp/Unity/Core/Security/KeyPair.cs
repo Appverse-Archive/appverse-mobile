@@ -26,7 +26,9 @@ using System.Xml.Serialization;
 
 namespace Unity.Core.Security
 {
+#if !WP8
     [Serializable]
+#endif
     public class KeyPair
     {
         private string key = String.Empty;
@@ -36,9 +38,10 @@ namespace Unity.Core.Security
         /// <summary>
         /// Name of the Key
         /// </summary>
-        public string Key { 
-            get { return this.key;} 
-            set { this.key = value;} 
+        public string Key
+        {
+            get { return this.key; }
+            set { this.key = value; }
         }
 
         [XmlElement]

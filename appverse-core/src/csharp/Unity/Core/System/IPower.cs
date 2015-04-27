@@ -21,24 +21,39 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.System
 {
-	public interface IPower
-	{
+    public interface IPower
+    {
+#if !WP8
+        /// <summary>
+        /// Provides device autonomy time (in milliseconds)
+        /// </summary>
+        /// <returns>Autonomy time.</returns>
+        long GetPowerRemainingTime();
 
-		/// <summary>
-		/// Provides device autonomy time (in milliseconds)
-		/// </summary>
-		/// <returns>Autonomy time.</returns>
-		long GetPowerRemainingTime ();
+        /// <summary>
+        /// Provides information about the device charge.
+        /// </summary>
+        /// <returns>Charge information.</returns>
+        PowerInfo GetPowerInfo();
+#else
+        /// <summary>
+        /// Provides device autonomy time (in milliseconds)
+        /// </summary>
+        /// <returns>Autonomy time.</returns>
+        Task<long> GetPowerRemainingTime();
 
-		/// <summary>
-		/// Provides information about the device charge.
-		/// </summary>
-		/// <returns>Charge information.</returns>
-		PowerInfo GetPowerInfo ();
+        /// <summary>
+        /// Provides information about the device charge.
+        /// </summary>
+        /// <returns>Charge information.</returns>
+        Task<PowerInfo> GetPowerInfo();
+#endif
 
-
-	}//end IPower
+    }//end IPower
 
 }//end namespace System

@@ -1,4 +1,4 @@
-/*
+﻿/*
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
@@ -23,17 +23,21 @@
  */
 using System;
 
-namespace Unity.Core.Notification
+namespace Unity.Core.Security
 {
-	public class RegistrationError
+	
+	public enum LocalAuthenticationStatus
 	{
-		public RegistrationError ()
-		{
-		}
-
-		public string Code {get;set;}
-
-		public string LocalizedDescription {get;set;}
+		//AuthenticationFailed,	// Authentication failed due to invalid credentials.
+		//PasscodeNotSet,			// Authentication could not take place, as the device does not have a passcode set.
+		Success,				// (0) Authentication succeeded.
+		//SystemCancel,			// Authentication was canceled by the system, usually due to an interruption by another application.
+		//TouchIDNotAvailable,	// Authentication failed due to the TouchID sensor is not available
+		//TouchIDNotEnrolled,		// Authentication failed because the user has not enrolled any fingers with TouchID.
+		RetryExceeded,			// (-1) Application retry limit exceeded
+		UserCancel,				// (-2) Authentication failed due to the using cancelling.
+		UserFallback			// (-3) Authentication failed because the user used a fallback (for example, a password).
 	}
+
 }
 

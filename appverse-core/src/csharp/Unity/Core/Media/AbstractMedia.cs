@@ -24,20 +24,27 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+#if WP8
+using System.Threading.Tasks;
+#endif
 using Unity.Core.Media.Audio;
 using Unity.Core.Media.Video;
 using Unity.Core.Media.Camera;
 
 namespace Unity.Core.Media
 {
-	public abstract class AbstractMedia : IAudio, IVideo, ICamera
-	{
-		
-		public AbstractMedia ()
-		{
-			this.State = MediaState.Stopped; // default state is stopped.	
-		}
-		
+    public abstract class AbstractMedia : IAudio, IVideo, ICamera
+    {
+
+        public AbstractMedia()
+        {
+            this.State = MediaState.Stopped; // default state is stopped.	
+        }
+
+        protected MediaState State { get; set; }
+        protected MediaMetadata CurrentMedia { get; set; }
+
+#if !WP8
         #region Miembros de IMediaOperations
 
 		public abstract MediaMetadata GetMetadata (string filePath);
@@ -52,11 +59,7 @@ namespace Unity.Core.Media
 
 		public abstract bool Pause ();
 
-		protected MediaState State { get; set; }
-
 		public abstract MediaState GetState ();
-
-		protected MediaMetadata CurrentMedia { get; set; }
 
 		public abstract MediaMetadata GetCurrentMedia ();
 
@@ -68,11 +71,7 @@ namespace Unity.Core.Media
 
 		public abstract MediaMetadata TakeSnapshot ();
 
-		public abstract void DetectQRCode (bool autoHandleQR);
-
-		public abstract QRType HandleQRCode (MediaQRContent mediaQRContent);
-
-		#endregion
+        #endregion
 
         #region IAudio implementation
 		public abstract bool StartAudioRecording (string outputFilePath);
@@ -87,7 +86,21 @@ namespace Unity.Core.Media
 		public abstract bool StopVideoRecording ();
         
         #endregion
-		
-		
-	}
+#else
+        public abstract Task<MediaMetadata> GetMetadata(string filePath);
+        public abstract Task<bool> Play(string filePath);
+        public abstract Task<bool> PlayStream(string url);
+        public abstract Task<long> SeekPosition(long position);
+        public abstract Task<bool> Stop();
+        public abstract Task<bool> Pause();
+        public abstract Task<MediaState> GetState();
+        public abstract Task<MediaMetadata> GetCurrentMedia();
+        public abstract Task<bool> StartAudioRecording(string outputFilePath);
+        public abstract Task<bool> StopAudioRecording();
+        public abstract Task<bool> StartVideoRecording(string outputFilePath);
+        public abstract Task<bool> StopVideoRecording();
+        public abstract Task<MediaMetadata> GetSnapshot();
+        public abstract Task<MediaMetadata> TakeSnapshot();
+#endif
+    }
 }

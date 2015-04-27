@@ -22,37 +22,42 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
+#if WP8
+using System.Diagnostics;
+#endif
 
 namespace Unity.Core.System
 {
-	public static class SystemLogger
-	{
-		public enum Module
-		{
-			CORE,
-			PLATFORM,
-			GUI,
-			GENERAL}
+    public static class SystemLogger
+    {
+        public enum Module
+        {
+            CORE,
+            PLATFORM,
+            GUI,
+            GENERAL
+        }
 		;
-		
-		public static void Log (string message)
-		{
-			Log (Module.GENERAL, message, null);
-		}
-		
-		public static void Log (string message, Exception ex)
-		{
-			Log (Module.GENERAL, message, ex);
-		}
-		
-		public static void Log (Module module, string message)
-		{
-			Log (module, message, null);
-		}
-		
-		public static void Log (Module module, string message, Exception ex)
-		{
-#if DEBUG
+
+        public static void Log(string message)
+        {
+            Log(Module.GENERAL, message, null);
+        }
+
+        public static void Log(string message, Exception ex)
+        {
+            Log(Module.GENERAL, message, ex);
+        }
+
+        public static void Log(Module module, string message)
+        {
+            Log(module, message, null);
+        }
+
+        public static void Log(Module module, string message, Exception ex)
+        {
+
+#if DEBUG   && !WP8
 			Console.WriteLine(module+": "+message);
 			if (ex!=null) {
 				Console.WriteLine(module+": Exception=["+ex.Message+"] Source=["+ex.Source+"]");
@@ -60,6 +65,13 @@ namespace Unity.Core.System
 				Console.WriteLine(module+": "+ex.StackTrace);
 			}	
 #endif
-		}
-	}
+#if DEBUG && WP8
+            Debug.WriteLine(module + ": " + message);
+            if (ex == null) return;
+            Debug.WriteLine(module + ": Exception=[" + ex.Message + "] Source=[" + ex.Source + "]");
+            Debug.WriteLine(module + ": Stacktrace ---------------------");
+            Debug.WriteLine(module + ": " + ex.StackTrace);
+#endif
+        }
+    }
 }

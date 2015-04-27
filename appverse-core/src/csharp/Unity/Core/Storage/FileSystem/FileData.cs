@@ -25,49 +25,52 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+#if WP8
+using Windows.Storage;
+#endif
 
 namespace Unity.Core.Storage.FileSystem
 {
-	public class FileData
-	{
-		public string FullName { get; set; }
+    public class FileData
+    {
+        public string FullName { get; set; }
 
-		public long Length { get; set; }
+        public long Length { get; set; }
 
-		/// <summary>
-		/// Parameterless constructor is needed when parsing jsonstring to object.
-		/// </summary>
-		public FileData ()
-		{
-		}
+        /// <summary>
+        /// Parameterless constructor is needed when parsing jsonstring to object.
+        /// </summary>
+        public FileData()
+        {
+        }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="path"></param>
-		public FileData (string path)
-		{
-			this.FullName = path;
-			this.Length = 0;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="path"></param>
+        public FileData(string path)
+        {
+            this.FullName = path;
+            this.Length = 0;
+#if !WP8
 			FileInfo fi = new FileInfo (this.FullName);
 			if (fi != null) {
 				this.Length = fi.Length;
 			}
+#endif
+        }
 
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="length"></param>
+        public FileData(string path, long length)
+        {
+            this.FullName = path;
+            this.Length = length;
+        }
 
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="path"></param>
-		/// <param name="length"></param>
-		public FileData (string path, long length)
-		{
-			this.FullName = path;
-			this.Length = length;
-		}
-
-	}
+    }
 }

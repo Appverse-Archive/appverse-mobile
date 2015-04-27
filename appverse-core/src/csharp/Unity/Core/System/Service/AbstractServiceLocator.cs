@@ -27,74 +27,91 @@ using System.Text;
 using System.IO;
 using System.Xml.Serialization;
 using System.Threading;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Unity.Core.System.Service
 {
-	public class AbstractServiceLocator : IServiceLocator
-	{
+    public class AbstractServiceLocator : IServiceLocator
+    {
+#if !WP8
+        protected static IServiceLocator singletonServiceLocator = null;
+        protected static Dictionary<string, Object> typedServices = new Dictionary<string, Object>();
+        private Dictionary<string, Object> services = new Dictionary<string, Object>();
 
-		protected static IServiceLocator singletonServiceLocator = null;
-		protected static Dictionary<string, Object> typedServices = new Dictionary<string, Object> ();
-		private Dictionary<string, Object> services = new Dictionary<string, Object> ();
-		
-		/// <summary>
-		/// Constructor. Only Accessible via its subclasses.
-		/// </summary>
-		protected AbstractServiceLocator ()
-		{
-			foreach (string serviceType in typedServices.Keys) {
-				SystemLogger.Log (SystemLogger.Module.CORE, "# Registered Service: name[" + serviceType + "] type[" + serviceType + "]");
+        /// <summary>
+        /// Constructor. Only Accessible via its subclasses.
+        /// </summary>
+        protected AbstractServiceLocator()
+        {
+            foreach (string serviceType in typedServices.Keys)
+            {
+                SystemLogger.Log(SystemLogger.Module.CORE, "# Registered Service: name[" + serviceType + "] type[" + serviceType + "]");
 
-				Object instantiatedService = typedServices [serviceType];
-				RegisterService (instantiatedService, serviceType);
-			}
-		}
+                Object instantiatedService = typedServices[serviceType];
+                RegisterService(instantiatedService, serviceType);
+            }
+        }
 
-		/// <summary>
-		/// Get IServiceLocator instace.
-		/// </summary>
-		/// <returns></returns>
-		public static IServiceLocator GetInstance ()
-		{
-			if (singletonServiceLocator == null) {
-				singletonServiceLocator = new AbstractServiceLocator ();
-			}
-			return singletonServiceLocator;
-		}
-		
-		/// <summary>
-		/// Adds given service to the inner services dictionary mappwd with the given key.
-		/// </summary>
-		/// <param name="service">Service bean to be addded.</param>
-		/// <param name="key">Key to </param>
-		public void RegisterService (Object service, string key)
-		{
-			if (key != null && service != null) {
-				services [key] = service;
-			}
-		}
+        /// <summary>
+        /// Get IServiceLocator instace.
+        /// </summary>
+        /// <returns></returns>
+        public static IServiceLocator GetInstance()
+        {
+            if (singletonServiceLocator == null)
+            {
+                singletonServiceLocator = new AbstractServiceLocator();
+            }
+            return singletonServiceLocator;
+        }
+
+        /// <summary>
+        /// Adds given service to the inner services dictionary mappwd with the given key.
+        /// </summary>
+        /// <param name="service">Service bean to be addded.</param>
+        /// <param name="key">Key to </param>
+        public void RegisterService(Object service, string key)
+        {
+            if (key != null && service != null)
+            {
+                services[key] = service;
+            }
+        }
 
         #region Miembros de IServiceLocator
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="name"></param>
-		/// <returns></returns>
-		public Object GetService (string name)
-		{
-			// Get mapped service.
-			Object service = null;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public Object GetService(string name)
+        {
+            // Get mapped service.
+            Object service = null;
 
-			try {
-				service = services [name];
-			} catch (Exception e) {
-				SystemLogger.Log (SystemLogger.Module .CORE, "No service found. Service name requested:" + name + ".", e);
-			}
+            try
+            {
+                service = services[name];
+            }
+            catch (Exception e)
+            {
+                SystemLogger.Log(SystemLogger.Module.CORE, "No service found. Service name requested:" + name + ".", e);
+            }
 
-			return service;
-		}
+            return service;
+        }
 
         #endregion
-	}
+#else
+        public virtual object GetService(string name)
+        {
+            return null;
+        }
+    
+#endif
+    }
+
 }

@@ -24,14 +24,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Unity.Core.Geo
 {
-	public abstract class AbstractGeo : ILocation, IMap
-	{
+    public abstract class AbstractGeo : ILocation, IMap
+    {
 
         #region Miembros de ILocation
-
+#if !WP8
 		public abstract Acceleration GetAcceleration ();
 
 		public abstract float GetHeading ();
@@ -61,10 +64,27 @@ namespace Unity.Core.Geo
 		public abstract bool StopProximitySensor ();
 		
 		public abstract bool IsGPSEnabled ();
+#else
+        public abstract Task<Acceleration> GetAcceleration();
+        public abstract Task<float> GetHeading();
+        public abstract Task<float> GetHeading(NorthType type);
+        public abstract Task<DeviceOrientation> GetDeviceOrientation();
+        public abstract Task<LocationCoordinate> GetCoordinates();
+        public abstract Task<float> GetVelocity();
+        public abstract Task<bool> StartUpdatingLocation();
+        public abstract Task<bool> StopUpdatingLocation();
+        public abstract Task<bool> StartUpdatingHeading();
+        public abstract Task<bool> StopUpdatingHeading();
+        public abstract Task<GeoDecoderAttributes> GetGeoDecoder();
+        public abstract Task<bool> StartProximitySensor();
+        public abstract Task<bool> StopProximitySensor();
+        public abstract Task<bool> IsGPSEnabled();
+#endif
 
         #endregion
 
         #region Miembros de IMap
+#if !WP8
 
 		public abstract POI[] GetPOIList (LocationCoordinate location, float radius);
 
@@ -83,7 +103,21 @@ namespace Unity.Core.Geo
 		public abstract void GetMap ();
 
 		public abstract void SetMapSettings (float scale, float boundingBox);
-
+#else
+        public abstract Task<POI[]> GetPOIList(LocationCoordinate location, float radius);
+        public abstract Task<POI[]> GetPOIList(LocationCoordinate location, float radius, string queryText);
+        public abstract Task<POI[]> GetPOIList(LocationCoordinate location, float radius, string queryText, LocationCategory category);
+        public abstract Task<POI[]> GetPOIList(LocationCoordinate location, float radius, LocationCategory category);
+        public abstract Task<POI> GetPOI(string id);
+        public abstract Task<bool> UpdatePOI(POI poi);
+        public abstract Task<bool> RemovePOI(string id);
+        public abstract Task GetMap();
+        public abstract Task SetMapSettings(float scale, float boundingBox);
+#endif
         #endregion
-	}
+
+
+
+
+    }
 }

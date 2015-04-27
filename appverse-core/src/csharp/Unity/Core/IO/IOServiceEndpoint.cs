@@ -45,5 +45,8 @@ namespace Unity.Core.IO
 		
 		[XmlAttributeAttribute(AttributeName = "proxy-url", DataType = "string")]
 		public string ProxyUrl { get; set; }
+
+		[XmlAttributeAttribute(AttributeName = "fingerprint", DataType = "string")]
+		public string Fingerprint { get; set; }
 	}
 }

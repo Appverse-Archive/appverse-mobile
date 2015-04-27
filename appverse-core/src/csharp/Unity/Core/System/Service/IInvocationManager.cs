@@ -24,13 +24,16 @@
 using System;
 namespace Unity.Core.System.Service
 {
-	public interface IInvocationManager
-	{
+    public interface IInvocationManager
+    {
+#if !WP8
 		byte[] InvokeService (Object service, string methodName, string queryString);
 
 		byte[] InvokeService (Object service, string methodName, object[] invokeParams);
 
 		string CacheControlHeader();
-	}
+#else
+#endif
+    }
 }
 

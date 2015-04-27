@@ -23,15 +23,32 @@
  */
 using System;
 
-namespace Unity.Core.Webtrekk
+namespace Unity.Core.Nfc
 {
-	public class WebtrekkParametersCollection
+    public class NFCPaymentSuccess
 	{
-		public WebtrekkParametersCollection ()
+		/// <summary>
+		/// Parameterless constructor is needed when parsing jsonstring to object.
+		/// </summary>
+        public NFCPaymentSuccess()
 		{
 		}
 
-		public WebtrekkParameter[] AdditionalParameters { get; set; }
+        /// <summary>
+        /// The amount formatted as follows "XX.YY", where XX is the integer part and YY is the decimal part of the amount.
+        /// </summary>
+        public string Amount { get; set; }
+
+        /// <summary>
+        /// The date formatted as follows "dd / MM / yyyy", where dd is the day, MM is the month and yyyy is the year.
+        /// </summary>
+		public string Date { get; set; }
+
+        /// <summary>
+        /// The time formatted as follows "HH: mm", where HH is the hour and mm is the minute.
+        /// </summary>
+        public string Time { get; set; }
+
 	}
 }
 

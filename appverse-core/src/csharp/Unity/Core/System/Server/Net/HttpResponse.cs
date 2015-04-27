@@ -28,28 +28,32 @@ using System.Collections;
 
 namespace Unity.Core.System.Server.Net
 {
-	public class HttpResponse
-	{
-		public int ReturnCode = 200;
+    public class HttpResponse
+    {
+        public int ReturnCode = 200;
+#if !WP8
 		public Hashtable Header = new Hashtable ();
-		public string Url, Content, ContentType = "text/html";
-		public byte[] RawContent = null;
+#else
+        public Dictionary<string, string> Header = new Dictionary<string, string>();
+#endif
+        public string Url, Content, ContentType = "text/html";
+        public byte[] RawContent = null;
 
-		public HttpResponse ()
-		{
-		}
+        public HttpResponse()
+        {
+        }
 
-		public HttpResponse (int code, string content)
-		{
-			ReturnCode = code;
-			Content = content;
-		}
+        public HttpResponse(int code, string content)
+        {
+            ReturnCode = code;
+            Content = content;
+        }
 
-		public void MakeRedirect (string newurl)
-		{
-			ReturnCode = 303;
-			Header ["Location"] = newurl;
-			Content = "This document is requesting a redirection to <a href=" + newurl + ">" + newurl + "</a>";
-		}
-	}
+        public void MakeRedirect(string newurl)
+        {
+            ReturnCode = 303;
+            Header["Location"] = newurl;
+            Content = "This document is requesting a redirection to <a href=" + newurl + ">" + newurl + "</a>";
+        }
+    }
 }

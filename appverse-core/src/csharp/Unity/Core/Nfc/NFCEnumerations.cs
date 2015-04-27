@@ -1,4 +1,4 @@
-/*
+﻿/*
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
@@ -21,63 +21,53 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-/// <summary>
-/// IAnalytics Interface to gather metrics data 
-/// </summary>
-namespace Unity.Core.Analytics
+namespace Unity.Core.Nfc
 {
-	public interface IAnalytics
+    public enum NFCPaymentSecurityExceptionType
 	{
-		/// <summary>
-		/// Starts the tracking.
-		/// </summary>
-		/// <returns>
-		/// True if started successfully
-		/// </returns>
-		/// <param name='webPropertyID'>
-		/// Google Analytics UID
-		/// </param>
-		bool StartTracking (string webPropertyID);
-    
-		/// <summary>
-		/// Stops a tracking session
-		/// </summary>
-		/// <returns>
-		/// True if stopped successfully
-		/// </returns>
-		bool StopTracking ();
-    
-		/// <summary>
-		/// Tracks an event
-		/// </summary>
-		/// <returns>
-		/// The event.
-		/// </returns>
-		/// <param name='group'>
-		/// 
-		/// </param>
-		/// <param name='action'>
-		/// 
-		/// </param>
-		/// <param name='label'>
-		/// 
-		/// </param>
-		/// <param name='value'>
-		/// 
-		/// </param>
-		bool TrackEvent (string group, string action, string label, int value);
-    
-		/// <summary>
-		/// Tracks a page view.
-		/// </summary>
-		/// <returns>
-		/// True if a pageview is tracked successfully
-		/// </returns>
-		/// <param name='relativeUrl'>
-		///  Relative URL to the domain to be tracked
-		/// </param>
-		bool TrackPageView (string relativeUrl);
+        Unhandled,
+        DeviceRooted,
+        DeviceLockDisabled,
+        USBDebuggingEnabled
+	}
+
+    public enum NFCPaymentError
+    {
+        Unknown,
+        OperationCancelledByUser,
+        DualTap,
+        RemoveDeviceFromPOS,
+        IllegalArgument,
+        WalletNotFound,
+		OperationFailed,
+		Unregistered,
+		AppletNotFound
+    }
+
+    public enum NFCPaymentEngineStartError
+    {
+        Unknown,
+        OperationFailed,
+        OperationCancelledByUser,
+        EngineAlreadyStarted,
+        OperationErrorCard,
+        CardletNotFound,
+        CardletSecurity,
+        IllegalArgument,
+        WalletNotFound,
+        UnregisteredFeature
+    }
+	
+	public enum NFCPaymentPropertyKey {
+		application_id,
+		application_label,
+		aid_name_length,
+		debug_mode,
+		vibration_duration_in_msec,
+		timer_period_in_sec
 	}
 }
-

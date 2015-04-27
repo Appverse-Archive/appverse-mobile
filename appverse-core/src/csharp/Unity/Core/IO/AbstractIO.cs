@@ -29,109 +29,143 @@ using System.Text;
 using System.Xml.Serialization;
 using Unity.Core.System;
 using System.Threading;
+#if !WP8
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
+#else
+using System.Threading.Tasks;
+#endif
 using System.Collections;
+
 
 namespace Unity.Core.IO
 {
-	public abstract class AbstractIO : IIo
-	{
-		private static string SERVICES_CONFIG_FILE = "app/config/io-services-config.xml";
-		private static int ABSOLUTE_INVOKE_TIMEOUT = 60000; // 60 seconds
-		private static int DEFAULT_READWRITE_TIMEOUT = 15000; // 15 seconds
-		private static int DEFAULT_RESPONSE_TIMEOUT = 100000; // 100 seconds
-		private static int MAX_BINARY_SIZE = 8*1024*1024;  // 8 MB
-		private static int DEFAULT_BUFFER_READ_SIZE = 4096;	// 4 KB
-		private IOServicesConfig servicesConfig = new IOServicesConfig ();  // empty list
-		private static IDictionary<ServiceType, string> contentTypes = new Dictionary<ServiceType, string> ();
-		private CookieContainer cookieContainer = null;
-        
-		static AbstractIO ()
-		{
-			contentTypes [ServiceType.XMLRPC_JSON] = "application/json";
-			contentTypes [ServiceType.XMLRPC_XML] = "text/xml";
-			contentTypes [ServiceType.REST_JSON] = "application/json";
-			contentTypes [ServiceType.REST_XML] = "text/xml";
-			contentTypes [ServiceType.SOAP_JSON] = "application/json";
-			contentTypes [ServiceType.SOAP_XML] = "text/xml";
-			contentTypes [ServiceType.AMF_SERIALIZATION] = "";
-			contentTypes [ServiceType.REMOTING_SERIALIZATION] = "";
-			contentTypes [ServiceType.OCTET_BINARY] = "application/octet-stream";
-			contentTypes [ServiceType.GWT_RPC] = "text/x-gwt-rpc; charset=utf-8";
+    public abstract class AbstractIO : IIo
+    {
+        private static string SERVICES_CONFIG_FILE = "app/config/io-services-config.xml";
+        private static int ABSOLUTE_INVOKE_TIMEOUT = 60000; // 60 seconds
+        private static int DEFAULT_READWRITE_TIMEOUT = 15000; // 15 seconds
+        private static int DEFAULT_RESPONSE_TIMEOUT = 100000; // 100 seconds
+        private static int MAX_BINARY_SIZE = 8 * 1024 * 1024;  // 8 MB
+        private static int DEFAULT_BUFFER_READ_SIZE = 4096;	// 4 KB
+        private IOServicesConfig servicesConfig = new IOServicesConfig();  // empty list
+        private static IDictionary<ServiceType, string> contentTypes = new Dictionary<ServiceType, string>();
+        private CookieContainer cookieContainer = null;
 
-		}
-		
-		private string _servicesConfigFile = SERVICES_CONFIG_FILE;
-		private string _IOUserAgent = "Unity 1.0";
-		
-		public virtual string IOUserAgent { 
-			get {
-				return this._IOUserAgent;
-			} 
-			set { 
-				this._IOUserAgent = value; 
-			}
-		}
-		
-		public virtual string ServicesConfigFile { 
-			get {
-				return this._servicesConfigFile;
-			} 
-			set { 
-				this._servicesConfigFile = value; 
-			}
-		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public AbstractIO ()
-		{
-			LoadServicesConfig ();
-			this.cookieContainer = new CookieContainer ();
-		}
-		
-		/// <summary>
-		/// Default method, to be overrided by platform implementation. 
-		/// </summary>
-		/// <returns>
-		/// A <see cref="Stream"/>
-		/// </returns>
-		public virtual byte[] GetConfigFileBinaryData ()
-		{
-			SystemLogger.Log (SystemLogger.Module .CORE, "# Loading IO Services Configuration from file: " + ServicesConfigFile);
 
-			Stream fs = new FileStream (ServicesConfigFile, FileMode.Open);
-			if(fs != null) {
-				return ((MemoryStream)fs).GetBuffer ();
-			} else {
-				return null;
-			}
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		protected void LoadServicesConfig ()
+        static AbstractIO()
         {
-            try {   // FileStream to read the XML document.
-				byte[] configFileRawData = GetConfigFileBinaryData ();
-				if (configFileRawData != null) {
-					XmlSerializer serializer = new XmlSerializer (typeof(IOServicesConfig));
-					servicesConfig = (IOServicesConfig)serializer.Deserialize (new MemoryStream(configFileRawData));
-				}
-			} catch (Exception e) {
-				SystemLogger.Log (SystemLogger.Module .CORE, "Error when loading services configuration", e);
+            contentTypes[ServiceType.XMLRPC_JSON] = "application/json";
+            contentTypes[ServiceType.XMLRPC_XML] = "text/xml";
+            contentTypes[ServiceType.REST_JSON] = "application/json";
+            contentTypes[ServiceType.REST_XML] = "text/xml";
+            contentTypes[ServiceType.SOAP_JSON] = "application/json";
+            contentTypes[ServiceType.SOAP_XML] = "text/xml";
+            contentTypes[ServiceType.AMF_SERIALIZATION] = "";
+            contentTypes[ServiceType.REMOTING_SERIALIZATION] = "";
+            contentTypes[ServiceType.OCTET_BINARY] = "application/octet-stream";
+            contentTypes[ServiceType.GWT_RPC] = "text/x-gwt-rpc; charset=utf-8";
+        }
+
+        private string _servicesConfigFile = SERVICES_CONFIG_FILE;
+        private string _IOUserAgent = "Unity 1.0";
+
+        public virtual string IOUserAgent
+        {
+            get
+            {
+                return this._IOUserAgent;
+            }
+            set
+            {
+                this._IOUserAgent = value;
+            }
+        }
+
+        public virtual string ServicesConfigFile
+        {
+            get
+            {
+                return this._servicesConfigFile;
+            }
+            set
+            {
+                this._servicesConfigFile = value;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public AbstractIO()
+        {
+            LoadServicesConfig();
+            this.cookieContainer = new CookieContainer();
+        }
+
+        protected void removeFingerprints()
+        {
+            IOService[] services = servicesConfig.Services.ToArray();
+            if (services != null)
+            {
+                foreach (IOService serv in services)
+                {
+                    serv.Endpoint.Fingerprint = null;
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected void LoadServicesConfig()
+        {
+            try
+            {   // FileStream to read the XML document.
+                byte[] configFileRawData = GetConfigFileBinaryData();
+                if (configFileRawData != null)
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(IOServicesConfig));
+                    servicesConfig = (IOServicesConfig)serializer.Deserialize(new MemoryStream(configFileRawData));
+                }
+            }
+            catch (Exception e)
+            {
+                SystemLogger.Log(SystemLogger.Module.CORE, "Error when loading services configuration", e);
                 servicesConfig = new IOServicesConfig(); // reset services config mapping when the services could not be loaded for any reason
-			}
-		}
+            }
+        }
 
+#if !WP8
+        public abstract String GetDirectoryRoot();
 
-		public abstract String GetDirectoryRoot ();
+        /// <summary>
+        /// Default method, to be overrided by platform implementation. 
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Stream"/>
+        /// </returns>
+        public virtual byte[] GetConfigFileBinaryData()
+        {
+            SystemLogger.Log(SystemLogger.Module.CORE, "# Loading IO Services Configuration from file: " + ServicesConfigFile);
+
+            Stream fs = new FileStream(ServicesConfigFile, FileMode.Open);
+            if (fs != null)
+            {
+                return ((MemoryStream)fs).GetBuffer();
+            }
+            else
+            {
+                return null;
+            }
+        }
+#endif
 
         #region Miembros de IIo
-
+#if !WP8
 		/// <summary>
 		/// 
 		/// </summary>
@@ -140,6 +174,8 @@ namespace Unity.Core.IO
 		{
 			return servicesConfig.Services.ToArray ();
 		}
+
+
 
 		/// <summary>
 		/// Get the IO Service that matches the given name.
@@ -229,7 +265,8 @@ namespace Unity.Core.IO
 		private string FormatRequestUriString(IORequest request, IOService service, string reqMethod) {
 
 			string requestUriString = String.Format ("{0}:{1}{2}", service.Endpoint.Host, service.Endpoint.Port, service.Endpoint.Path);
-			if (service.Endpoint.Port == 0) {
+			if (service.Endpoint.Port == 0) 
+			{
 				requestUriString = String.Format ("{0}{1}", service.Endpoint.Host, service.Endpoint.Path);
 			}
 			
@@ -250,7 +287,8 @@ namespace Unity.Core.IO
 			webReq.ContentType = contentTypes [service.Type];
 			
 			// check specific request ContentType defined, and override service type in that case
-			if (request.ContentType != null && request.ContentType.Length > 0) {
+			if (request.ContentType != null && request.ContentType.Length > 0) 
+			{
 				webReq.ContentType = request.ContentType;
 			}
 			
@@ -266,7 +304,7 @@ namespace Unity.Core.IO
 			webReq.ProtocolVersion = HttpVersion.Version10;
 			if (request.ProtocolVersion == HTTPProtocolVersion.HTTP11) webReq.ProtocolVersion = HttpVersion.Version11;
 
-            
+            // [MOBPLAT-200] ... Allow Gzip or Deflate decompression methods
             webReq.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 			
 			// user agent needs to be informed - some servers check this parameter and send 500 errors when not informed.
@@ -317,6 +355,28 @@ namespace Unity.Core.IO
 
 			return webReq;
 		}
+
+        /*
+        private static Stream GetStreamForResponse(HttpWebResponse webResponse)
+        {
+            Stream stream;
+            switch (webResponse.ContentEncoding.ToUpperInvariant())
+            {
+                case "GZIP":
+                    stream = new GZipStream(webResponse.GetResponseStream(), CompressionMode.Decompress);
+                    break;
+                case "DEFLATE":
+                    stream = new DeflateStream(webResponse.GetResponseStream(), CompressionMode.Decompress);
+                    break;
+
+                default:
+                    stream = webResponse.GetResponseStream();
+                    //stream.ReadTimeout = readTimeOut;
+                    break;
+            }
+            return stream;
+        }
+        */
 
 		private IOResponse ReadWebResponse(HttpWebRequest webRequest, HttpWebResponse webResponse, IOService service) {
 			IOResponse response = new IOResponse ();
@@ -654,7 +714,27 @@ namespace Unity.Core.IO
 		{
 			throw new NotImplementedException ();
 		}
+#else
+        public abstract Task<string> GetDirectoryRoot();
+        public abstract Task<IOService[]> GetServices();
+        public abstract Task<IOService> GetService(string name);
+        public abstract Task<IOService> GetService(string name, ServiceType type);
+        public abstract Task<IOResponse> InvokeService(IORequest request, IOService service);
+        public abstract Task<IOResponse> InvokeService(IORequest request, string serviceName);
+        public abstract Task<IOResponse> InvokeService(IORequest request, string serviceName, ServiceType type);
+        public abstract Task<IOResponseHandle> InvokeService(IORequest request, IOService service, IOResponseHandler handler);
+        public abstract Task<IOResponseHandle> InvokeService(IORequest request, string serviceName, IOResponseHandler handler);
+        public abstract Task<IOResponseHandle> InvokeService(IORequest request, string serviceName, ServiceType type, IOResponseHandler handler);
+        public abstract Task<string> InvokeServiceForBinary(IORequest request, IOService service, string storePath);
+
+        public virtual byte[] GetConfigFileBinaryData()
+        {
+            return null;
+        }
+#endif
 
         #endregion
-	}
+
+
+    }
 }

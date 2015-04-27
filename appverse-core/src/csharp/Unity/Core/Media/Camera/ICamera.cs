@@ -22,10 +22,14 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Media.Camera
 {
-	public interface ICamera
-	{
+    public interface ICamera
+    {
+#if !WP8
 		/// <summary>
 		/// Select picture.
 		/// </summary>
@@ -37,19 +41,20 @@ namespace Unity.Core.Media.Camera
 		/// </summary>
 		/// <returns>Photo metadata.</returns>
 		MediaMetadata TakeSnapshot ();
+#else
+        /// <summary>
+        /// Select picture.
+        /// </summary>
+        /// <returns>Photo metadata.</returns>
+        Task<MediaMetadata> GetSnapshot();
 
-		/// <summary>
-		/// Detects the QR code.
-		/// </summary>
-		/// <returns>The QR code.</returns>
-		void DetectQRCode(bool autoHandleQR);
+        /// <summary>
+        /// Take picture.
+        /// </summary>
+        /// <returns>Photo metadata.</returns>
+        Task<MediaMetadata> TakeSnapshot();
+#endif
 
-		/// <summary>
-		/// Handles the QR code.
-		/// </summary>
-		/// <returns>The QR code type.</returns>
-		QRType HandleQRCode(MediaQRContent mediaQRContent);
-
-	}//end ICamera
+    }//end ICamera
 
 }//end namespace Camera

@@ -27,16 +27,18 @@ using System.Text;
 
 namespace Unity.Core.System.Server.Net
 {
+#if !WP8
 	[Serializable]
-	public struct Parameter
-	{
-		public byte Type;
-		public byte[] content;
+#endif
+    public struct Parameter
+    {
+        public byte Type;
+        public byte[] content;
 
-		public Parameter (byte[] content, byte type)
-		{
-			this.content = content;
-			Type = type;
-		}
-	}
+        public Parameter(byte[] content, byte type)
+        {
+            this.content = content;
+            Type = type;
+        }
+    }
 }

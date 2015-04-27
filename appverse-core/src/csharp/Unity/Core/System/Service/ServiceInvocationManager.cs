@@ -30,8 +30,9 @@ using Unity.Core.IO;
 
 namespace Unity.Core.System.Service
 {
-	public class ServiceInvocationManager : AbstractInvocationManager
-	{
+    public class ServiceInvocationManager : AbstractInvocationManager
+    {
+#if !WP8
 		private string _latestCacheControlHeader = null;
 
 		public override string CacheControlHeader ()
@@ -50,11 +51,17 @@ namespace Unity.Core.System.Service
 		{
 			byte[] result = null;
 			
-			object retObj = InvokeServiceMethod (service, methodName, invokeParams);
+			object retObj = null;
+
+			try {
+				retObj = InvokeServiceMethod (service, methodName, invokeParams);
+			} catch (Exception ex) {
+				SystemLogger.Log (SystemLogger.Module .CORE, "ServiceInvocationManager - Exception invoking method [" + methodName + "]. Exception message: " + ex.Message);
+			}
 
 			_latestCacheControlHeader = null;
 
-			if(typeof(IIo).IsAssignableFrom(service.GetType())){
+			if(service!=null && typeof(IIo).IsAssignableFrom(service.GetType())){
 				SystemLogger.Log (SystemLogger.Module .CORE, "For I/O Services, check cache control header from remote server");
 				_latestCacheControlHeader = GetCacheControlHeaderFromObject(retObj);
 			}
@@ -215,5 +222,7 @@ namespace Unity.Core.System.Service
 			
 			return null;
 		}
-	}
+#else
+#endif
+    }
 }

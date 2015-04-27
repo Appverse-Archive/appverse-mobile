@@ -21,11 +21,14 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.IO
 {
-	public interface IIo
-	{
-
+    public interface IIo
+    {
+#if !WP8
 		IOService[] GetServices ();
 
 		IOService GetService (string name);
@@ -53,7 +56,35 @@ namespace Unity.Core.IO
 		/// <param name="service">Service.</param>
 		/// <param name="storePath">Store path (realtive path under application Documents folder).</param>
 		string InvokeServiceForBinary (IORequest request, IOService service, string storePath);
+#else
+        Task<IOService[]> GetServices();
 
-	}//end IIo
+        Task<IOService> GetService(string name);
+
+        Task<IOService> GetService(string name, ServiceType type);
+
+        Task<IOResponse> InvokeService(IORequest request, IOService service);
+
+        Task<IOResponse> InvokeService(IORequest request, string serviceName);
+
+        Task<IOResponse> InvokeService(IORequest request, string serviceName, ServiceType type);
+
+        Task<IOResponseHandle> InvokeService(IORequest request, IOService service, IOResponseHandler handler);
+
+        Task<IOResponseHandle> InvokeService(IORequest request, string serviceName, IOResponseHandler handler);
+
+        Task<IOResponseHandle> InvokeService(IORequest request, string serviceName, ServiceType type, IOResponseHandler handler);
+
+        /// <summary>
+        /// Invokes a service for getting a big binary, storing it into filesystem and returning the reference url.
+        /// Only OCTET_BINARY service types are allowed.
+        /// </summary>
+        /// <returns>The reference Url for the stored file (if success, null otherwise.</returns>
+        /// <param name="request">Request.</param>
+        /// <param name="service">Service.</param>
+        /// <param name="storePath">Store path (realtive path under application Documents folder).</param>
+        Task<string> InvokeServiceForBinary(IORequest request, IOService service, string storePath);
+#endif
+    }//end IIo
 
 }//end namespace IO

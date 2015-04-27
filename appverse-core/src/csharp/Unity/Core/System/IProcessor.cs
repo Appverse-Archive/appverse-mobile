@@ -21,18 +21,27 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.System
 {
-	public interface IProcessor
-	{
+    public interface IProcessor
+    {
+#if !WP8
+        /// <summary>
+        /// Provides information about the device CPU.
+        /// </summary>
+        /// <returns>Processor information.</returns>
+        CPUInfo GetCPUInfo();
+#else
+        /// <summary>
+        /// Provides information about the device CPU.
+        /// </summary>
+        /// <returns>Processor information.</returns>
+        Task<CPUInfo> GetCPUInfo();
+#endif
 
-		/// <summary>
-		/// Provides information about the device CPU.
-		/// </summary>
-		/// <returns>Processor information.</returns>
-		CPUInfo GetCPUInfo ();
-
-
-	}//end IProcessor
+    }//end IProcessor
 
 }//end namespace System

@@ -21,10 +21,14 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Storage.Database
 {
-	public interface IDatabase
-	{
+    public interface IDatabase
+    {
+#if !WP8
 		/// <summary>
 		/// Creates database on default path.
 		/// </summary>
@@ -139,7 +143,8 @@ namespace Unity.Core.Storage.Database
 		/// <param name="queryParams">Replacement parameters to be applied to query statement.</param>
 		/// <returns>Result set.</returns>
 		IResultSet ExecuteSQLQuery (Database db, string queryText, string[] queryParams);
-
-	}//end IDatabase
+#else
+#endif
+    }//end IDatabase
 
 }//end namespace Database

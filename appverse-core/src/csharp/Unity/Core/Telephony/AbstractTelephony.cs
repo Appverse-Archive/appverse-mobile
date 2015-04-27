@@ -24,15 +24,21 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Unity.Core.Telephony
 {
-	public abstract class AbstractTelephony : ITelephony
-	{
+    public abstract class AbstractTelephony : ITelephony
+    {
         #region Miembros de ITelephony
-
-		public abstract ICallControl Call (string number, CallType type);
+#if !WP8
+        public abstract void Call(string number, CallType type);
+#else
+        public abstract Task Call(string number, CallType type);
+#endif
 
         #endregion
-	}
+    }
 }
