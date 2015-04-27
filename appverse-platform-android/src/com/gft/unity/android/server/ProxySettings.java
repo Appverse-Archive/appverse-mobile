@@ -34,6 +34,7 @@ import android.content.Intent;
 import android.net.Proxy;
 import android.os.Build;
 import android.os.Parcelable;
+
 import android.util.Log;
 import android.webkit.WebView;
 
@@ -44,23 +45,24 @@ import android.webkit.WebView;
 public class ProxySettings {
 
 	private static final String TAG = "Appverse.ProxySettings";
-	
+
 	public static boolean shouldSetProxySetting = false;
-	
+
 	static {
-		if(checkSystemProxyProperties()) {
+		if (checkSystemProxyProperties()) {
 			shouldSetProxySetting = true;
 		}
 	}
-	
+
 	/** API LEVEL > 14 **/
 	private static Method m = null;
-	private static Constructor c =  null;
-	
+	private static Constructor c = null;
+
 	static final int PROXY_CHANGED = 193;
 
-	private static Object getDeclaredField(Object obj, String name) throws SecurityException,
-			NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+	private static Object getDeclaredField(Object obj, String name)
+			throws SecurityException, NoSuchFieldException,
+			IllegalArgumentException, IllegalAccessException {
 		Field f = obj.getClass().getDeclaredField(name);
 		f.setAccessible(true);
 		Object out = f.get(obj);
@@ -68,23 +70,24 @@ public class ProxySettings {
 		// out);
 		return out;
 	}
-	
-	private static Object getFieldValueSafely(Field field, Object classInstance) throws IllegalArgumentException, IllegalAccessException {
-	    boolean oldAccessibleValue = field.isAccessible();
-	    field.setAccessible(true);
-	    Object result = field.get(classInstance);
-	    field.setAccessible(oldAccessibleValue);
-	    return result;      
+
+	private static Object getFieldValueSafely(Field field, Object classInstance)
+			throws IllegalArgumentException, IllegalAccessException {
+		boolean oldAccessibleValue = field.isAccessible();
+		field.setAccessible(true);
+		Object result = field.get(classInstance);
+		field.setAccessible(oldAccessibleValue);
+		return result;
 	}
 
 	public static Object getRequestQueue(Context ctx) throws Exception {
 		Object ret = null;
 		Class networkClass = Class.forName("android.webkit.Network");
 		if (networkClass != null) {
-			
+
 			// this code works for api level < 11
-			Object networkObj = invokeMethod(networkClass, "getInstance", new Object[] { ctx },
-					Context.class);
+			Object networkObj = invokeMethod(networkClass, "getInstance",
+					new Object[] { ctx }, Context.class);
 			if (networkObj != null) {
 				ret = getDeclaredField(networkObj, "mRequestQueue");
 			}
@@ -92,8 +95,8 @@ public class ProxySettings {
 		return ret;
 	}
 
-	private static Object invokeMethod(Object object, String methodName, Object[] params,
-			Class... types) throws Exception {
+	private static Object invokeMethod(Object object, String methodName,
+			Object[] params, Class... types) throws Exception {
 		Object out = null;
 		Class c = object instanceof Class ? (Class) object : object.getClass();
 		if (types != null) {
@@ -116,13 +119,13 @@ public class ProxySettings {
 	}
 
 	private static void setDeclaredField(Object obj, String name, Object value)
-			throws SecurityException, NoSuchFieldException, IllegalArgumentException,
-			IllegalAccessException {
+			throws SecurityException, NoSuchFieldException,
+			IllegalArgumentException, IllegalAccessException {
 		Field f = obj.getClass().getDeclaredField(name);
 		f.setAccessible(true);
 		f.set(obj, value);
 	}
-	
+
 	/**
 	 * Override WebKit Proxy settings
 	 * 
@@ -132,240 +135,259 @@ public class ProxySettings {
 	 * @param port
 	 * @return true if Proxy was successfully set
 	 */
-	public static boolean setProxy(Context ctx, WebView view, String host, int port) {
+	public static boolean setProxy(Context ctx, WebView view, String host,
+			int port) {
 		boolean ret = false;
-		
-		//if(shouldSetProxySetting) {	
-			setSystemProperties(host, port);
-	
-			Log.d(TAG, "Build.VERSION.SDK_INT: " + Build.VERSION.SDK_INT);
-			try {
-				if (Build.VERSION.SDK_INT < 11) {
-					
-					Log.d(TAG, "Setting GB Proxy...");
-					ret = setGBProxy(ctx, host, port);
-	
-				} else if (Build.VERSION.SDK_INT < 16) {
-					
-					Log.d(TAG, "Setting HC / ICS Proxy...");
-					ret = setHCICSProxy(view, host, port);
-					
-				} else if (Build.VERSION.SDK_INT < 19) {
 
-					Log.d(TAG, "Setting JB Proxy...");
-					ret = setJBProxy(view, host, port);
+		// if(shouldSetProxySetting) {
+		setSystemProperties(host, port);
 
-				} else {
+		Log.d(TAG, "Build.VERSION.SDK_INT: " + Build.VERSION.SDK_INT);
+		try {
+			if (Build.VERSION.SDK_INT < 11) {
 
-					Log.d(TAG, "Setting KK Proxy...");
-					ret = setKitKatWebViewProxy(view, host, port);
-				}
-			} catch (Exception e) {
-				Log.e(TAG, "error setting up webkit proxying", e);
+				Log.d(TAG, "Setting GB Proxy...");
+				ret = setGBProxy(ctx, host, port);
+
+			} else if (Build.VERSION.SDK_INT < 16) {
+
+				Log.d(TAG, "Setting HC / ICS Proxy...");
+				ret = setHCICSProxy(view, host, port);
+
+			} else if (Build.VERSION.SDK_INT < 19) {
+
+				Log.d(TAG, "Setting JB Proxy...");
+				ret = setJBProxy(view, host, port);
+
+			} else {
+
+				Log.d(TAG, "Setting KK Proxy...");
+				ret = setKitKatLollipopWebViewProxy(view, host, port);
 			}
-		//} else {
-			//Log.d(TAG, "Proxy settings are not applied as we are not in 3g connectivity and/or proxy setting is not already set");
-		//}
-		
+		} catch (Exception e) {
+			Log.e(TAG, "error setting up webkit proxying", e);
+		}
+		// } else {
+		// Log.d(TAG,
+		// "Proxy settings are not applied as we are not in 3g connectivity and/or proxy setting is not already set");
+		// }
+
 		return ret;
 	}
-	
-	private static boolean setGBProxy(Context ctx, String host, int port) throws Exception {
+
+	private static boolean setGBProxy(Context ctx, String host, int port)
+			throws Exception {
 		Object requestQueueObject = getRequestQueue(ctx);
 		if (requestQueueObject != null) {
 			// Create Proxy config object and set it into request Q
-			//HttpHost httpHost = new HttpHost(host, port, "http");
+			// HttpHost httpHost = new HttpHost(host, port, "http");
 
 			setDeclaredField(requestQueueObject, "mProxyHost", null);
-			
+
 			return true;
 		} else {
 			return false;
 		}
-		
+
 	}
-	
+
 	private static boolean setHCICSProxy(WebView view, String host, int port) {
-		
-		try
-		{
-		  Class jwcjb = Class.forName("android.webkit.JWebCoreJavaBridge");
-		  Class params[] = new Class[1];
-		  params[0] = Class.forName("android.net.ProxyProperties");
-		  Method updateProxyInstance = jwcjb.getDeclaredMethod("updateProxy", params);
 
-		  Class wv = Class.forName("android.webkit.WebView");
-		  Field mWebViewCoreField = wv.getDeclaredField("mWebViewCore");
-		  Object mWebViewCoreFieldIntance = getFieldValueSafely(mWebViewCoreField, view);
+		try {
+			Class jwcjb = Class.forName("android.webkit.JWebCoreJavaBridge");
+			Class params[] = new Class[1];
+			params[0] = Class.forName("android.net.ProxyProperties");
+			Method updateProxyInstance = jwcjb.getDeclaredMethod("updateProxy",
+					params);
 
-		  Class wvc = Class.forName("android.webkit.WebViewCore");
-		  Field mBrowserFrameField = wvc.getDeclaredField("mBrowserFrame");
-		  Object mBrowserFrame = getFieldValueSafely(mBrowserFrameField, mWebViewCoreFieldIntance);
+			Class wv = Class.forName("android.webkit.WebView");
+			Field mWebViewCoreField = wv.getDeclaredField("mWebViewCore");
+			Object mWebViewCoreFieldIntance = getFieldValueSafely(
+					mWebViewCoreField, view);
 
-		  Class bf = Class.forName("android.webkit.BrowserFrame");
-		  Field sJavaBridgeField = bf.getDeclaredField("sJavaBridge");
-		  Object sJavaBridge = getFieldValueSafely(sJavaBridgeField, mBrowserFrame);
+			Class wvc = Class.forName("android.webkit.WebViewCore");
+			Field mBrowserFrameField = wvc.getDeclaredField("mBrowserFrame");
+			Object mBrowserFrame = getFieldValueSafely(mBrowserFrameField,
+					mWebViewCoreFieldIntance);
 
-		  Class ppclass = Class.forName("android.net.ProxyProperties");
-		  Class pparams[] = new Class[3];
-		  pparams[0] = String.class;
-		  pparams[1] = int.class;
-		  pparams[2] = String.class;
-		  Constructor ppcont = ppclass.getConstructor(pparams);
-		  
-		  String proxyHost = System.getProperty("http.proxyHost", "");
-		  String proxyPort = System.getProperty("http.proxyPort","0");
-		  
-		  updateProxyInstance.invoke(sJavaBridge, ppcont.newInstance(proxyHost, Integer.parseInt(proxyPort), "127.0.0.1"));
-		  //Log.d(TAG, "Proxy host is set to: " + proxyHost + ":" + proxyPort);
-		  return true;
-		}
-		catch (Exception ex)
-		{    
+			Class bf = Class.forName("android.webkit.BrowserFrame");
+			Field sJavaBridgeField = bf.getDeclaredField("sJavaBridge");
+			Object sJavaBridge = getFieldValueSafely(sJavaBridgeField,
+					mBrowserFrame);
+
+			Class ppclass = Class.forName("android.net.ProxyProperties");
+			Class pparams[] = new Class[3];
+			pparams[0] = String.class;
+			pparams[1] = int.class;
+			pparams[2] = String.class;
+			Constructor ppcont = ppclass.getConstructor(pparams);
+
+			String proxyHost = System.getProperty("http.proxyHost", "");
+			String proxyPort = System.getProperty("http.proxyPort", "0");
+
+			updateProxyInstance.invoke(sJavaBridge, ppcont.newInstance(
+					proxyHost, Integer.parseInt(proxyPort), "127.0.0.1"));
+			// Log.d(TAG, "Proxy host is set to: " + proxyHost + ":" +
+			// proxyPort);
+			return true;
+		} catch (Exception ex) {
 			Log.d(TAG, "Exception setHCProxy", ex);
 			return false;
 		}
 	}
-	
-	private static boolean setJBProxy(WebView view, String host, int port) throws ClassNotFoundException,
-			NoSuchMethodException, IllegalArgumentException, InstantiationException,
+
+	private static boolean setJBProxy(WebView view, String host, int port)
+			throws ClassNotFoundException, NoSuchMethodException,
+			IllegalArgumentException, InstantiationException,
 			IllegalAccessException, InvocationTargetException {
-		
+
 		/*
-		
-		
-		Class webViewCoreClass = Class.forName("android.webkit.WebViewCore");
-		Class proxyPropertiesClass = Class.forName("android.net.ProxyProperties");
-		if (webViewCoreClass != null && proxyPropertiesClass != null) {
-			if (m==null || c==null) {
-				m = webViewCoreClass.getDeclaredMethod("sendStaticMessage", Integer.TYPE, Object.class);
-				m.setAccessible(true);
-				c = proxyPropertiesClass.getConstructor(String.class, Integer.TYPE,String.class);
-				c.setAccessible(true);
-			}
-			String proxyHost = System.getProperty("http.proxyHost");
-			String proxyPort = System.getProperty("http.proxyPort","0");
-			  
-			Object properties = c.newInstance(proxyHost, Integer.parseInt(proxyPort), "127.0.0.1");
-			m.invoke(null, PROXY_CHANGED, properties);
+		 * 
+		 * 
+		 * Class webViewCoreClass = Class.forName("android.webkit.WebViewCore");
+		 * Class proxyPropertiesClass =
+		 * Class.forName("android.net.ProxyProperties"); if (webViewCoreClass !=
+		 * null && proxyPropertiesClass != null) { if (m==null || c==null) { m =
+		 * webViewCoreClass.getDeclaredMethod("sendStaticMessage", Integer.TYPE,
+		 * Object.class); m.setAccessible(true); c =
+		 * proxyPropertiesClass.getConstructor(String.class,
+		 * Integer.TYPE,String.class); c.setAccessible(true); } String proxyHost
+		 * = System.getProperty("http.proxyHost"); String proxyPort =
+		 * System.getProperty("http.proxyPort","0");
+		 * 
+		 * Object properties = c.newInstance(proxyHost,
+		 * Integer.parseInt(proxyPort), "127.0.0.1"); m.invoke(null,
+		 * PROXY_CHANGED, properties); return true; } return false;
+		 */
+
+		try {
+			Class jwcjb = Class.forName("android.webkit.JWebCoreJavaBridge");
+			Class params[] = new Class[1];
+			params[0] = Class.forName("android.net.ProxyProperties");
+			Method updateProxyInstance = jwcjb.getDeclaredMethod("updateProxy",
+					params);
+
+			Class wv = Class.forName("android.webkit.WebView");
+			Field mProviderField = wv.getDeclaredField("mProvider");
+			Object mProviderFieldIntance = getFieldValueSafely(mProviderField,
+					view);
+			Class provider = Class.forName("android.webkit.WebViewClassic");
+
+			Field mWebViewCoreField = provider.getDeclaredField("mWebViewCore");
+			Object mWebViewCoreFieldIntance = getFieldValueSafely(
+					mWebViewCoreField, mProviderFieldIntance);
+
+			Class wvc = Class.forName("android.webkit.WebViewCore");
+			Field mBrowserFrameField = wvc.getDeclaredField("mBrowserFrame");
+			Object mBrowserFrame = getFieldValueSafely(mBrowserFrameField,
+					mWebViewCoreFieldIntance);
+
+			Class bf = Class.forName("android.webkit.BrowserFrame");
+			Field sJavaBridgeField = bf.getDeclaredField("sJavaBridge");
+			Object sJavaBridge = getFieldValueSafely(sJavaBridgeField,
+					mBrowserFrame);
+
+			Class ppclass = Class.forName("android.net.ProxyProperties");
+			Class pparams[] = new Class[3];
+			pparams[0] = String.class;
+			pparams[1] = int.class;
+			pparams[2] = String.class;
+			Constructor ppcont = ppclass.getConstructor(pparams);
+
+			String proxyHost = System.getProperty("http.proxyHost", "");
+			String proxyPort = System.getProperty("http.proxyPort", "0");
+
+			updateProxyInstance.invoke(sJavaBridge, ppcont.newInstance(
+					proxyHost, Integer.parseInt(proxyPort), "127.0.0.1"));
+			// Log.d(TAG, "Proxy host is set to: " + proxyHost + ":" +
+			// proxyPort);
 			return true;
-		}
-		return false;
-		
-		*/
-		
-		try
-		{
-		  Class jwcjb = Class.forName("android.webkit.JWebCoreJavaBridge");
-		  Class params[] = new Class[1];
-		  params[0] = Class.forName("android.net.ProxyProperties");
-		  Method updateProxyInstance = jwcjb.getDeclaredMethod("updateProxy", params);
-
-		  Class wv = Class.forName("android.webkit.WebView");
-		  Field mProviderField = wv.getDeclaredField("mProvider");
-		  Object mProviderFieldIntance = getFieldValueSafely(mProviderField, view);
-		  Class provider = Class.forName("android.webkit.WebViewClassic");
-		  
-		  Field mWebViewCoreField = provider.getDeclaredField("mWebViewCore");
-		  Object mWebViewCoreFieldIntance = getFieldValueSafely(mWebViewCoreField, mProviderFieldIntance);
-
-		  Class wvc = Class.forName("android.webkit.WebViewCore");
-		  Field mBrowserFrameField = wvc.getDeclaredField("mBrowserFrame");
-		  Object mBrowserFrame = getFieldValueSafely(mBrowserFrameField, mWebViewCoreFieldIntance);
-
-		  Class bf = Class.forName("android.webkit.BrowserFrame");
-		  Field sJavaBridgeField = bf.getDeclaredField("sJavaBridge");
-		  Object sJavaBridge = getFieldValueSafely(sJavaBridgeField, mBrowserFrame);
-
-		  Class ppclass = Class.forName("android.net.ProxyProperties");
-		  Class pparams[] = new Class[3];
-		  pparams[0] = String.class;
-		  pparams[1] = int.class;
-		  pparams[2] = String.class;
-		  Constructor ppcont = ppclass.getConstructor(pparams);
-		  
-		  String proxyHost = System.getProperty("http.proxyHost","");
-		  String proxyPort = System.getProperty("http.proxyPort","0");
-		  
-		  updateProxyInstance.invoke(sJavaBridge, ppcont.newInstance(proxyHost, Integer.parseInt(proxyPort), "127.0.0.1"));
-		  //Log.d(TAG, "Proxy host is set to: " + proxyHost + ":" + proxyPort);
-		  return true;
-		}
-		catch (Exception ex)
-		{    
+		} catch (Exception ex) {
 			Log.d(TAG, "Exception setJBProxy", ex);
 			return false;
 		}
 
 	}
-	
-	
-private static boolean setKitKatWebViewProxy(WebView webView, String host, int port) {
-		
+
+	private static boolean setKitKatLollipopWebViewProxy(WebView webView,
+			String host, int port) {
+
 		Context appContext = webView.getContext().getApplicationContext();
-		
-	    System.setProperty("http.proxyHost", host);
-	    System.setProperty("http.proxyPort", port + "");
-	    System.setProperty("https.proxyHost", host);
-	    System.setProperty("https.proxyPort", port + "");
-	    
-	    boolean result = false;
-	    
-	    try {
-	    	
-	    	Class applicationCls = Class.forName("android.app.Application"); 
-	    	Field loadedApkField = applicationCls.getDeclaredField("mLoadedApk");
-	        loadedApkField.setAccessible(true);
-	        Object loadedApk = loadedApkField.get(appContext);
-	        
-	        Class loadedApkCls = Class.forName("android.app.LoadedApk");
-	        Field receiversField = loadedApkCls.getDeclaredField("mReceivers");
-	        receiversField.setAccessible(true);
-	        
-	        Map receivers = (Map) receiversField.get(loadedApk);
-	        
-	        for (Object receiverMap : receivers.values()) {
-	            for (Object rec : ((Map) receiverMap).keySet()) {
-	                Class clazz = rec.getClass();
-	                if (clazz.getName().contains("ProxyChangeListener")) {
-	                    Method onReceiveMethod = clazz.getDeclaredMethod("onReceive", Context.class, Intent.class);
-	                    Intent intent = new Intent(Proxy.PROXY_CHANGE_ACTION);
 
-	                    /*********** optional, may be need in future *************/
-	                    final String CLASS_NAME = "android.net.ProxyProperties";
-	                    Class cls = Class.forName(CLASS_NAME);
-	                    Constructor constructor = cls.getConstructor(String.class, Integer.TYPE, String.class);
-	                    constructor.setAccessible(true);
-	                    Object proxyProperties = constructor.newInstance(host, port, null);
-	                    intent.putExtra("proxy", (Parcelable) proxyProperties);
-	                    /*********** optional, may be need in future *************/
+		System.setProperty("http.proxyHost", host);
+		System.setProperty("http.proxyPort", port + "");
+		System.setProperty("https.proxyHost", host);
+		System.setProperty("https.proxyPort", port + "");
 
-	                    onReceiveMethod.invoke(rec, appContext, intent);
-	                    
-	                    // at least one receiver is settled
-	                    result = true;
-	                }
-	            }
-	        }
-	        return result;
-	    } catch (Exception ex) {
-	    	Log.d(TAG, "Exception setKitKatWebViewProxy", ex);
-	    	return false;
-	    }
+		boolean result = false;
+
+		try {
+
+			Class applicationCls = Class.forName("android.app.Application");
+			Field loadedApkField = applicationCls
+					.getDeclaredField("mLoadedApk");
+			loadedApkField.setAccessible(true);
+			Object loadedApk = loadedApkField.get(appContext);
+
+			Class loadedApkCls = Class.forName("android.app.LoadedApk");
+			Field receiversField = loadedApkCls.getDeclaredField("mReceivers");
+			receiversField.setAccessible(true);
+
+			Map receivers = (Map) receiversField.get(loadedApk);
+
+			for (Object receiverMap : receivers.values()) {
+				for (Object rec : ((Map) receiverMap).keySet()) {
+					Class clazz = rec.getClass();
+					if (clazz.getName().contains("ProxyChangeListener")) {
+						Method onReceiveMethod = clazz.getDeclaredMethod(
+								"onReceive", Context.class, Intent.class);
+						Intent intent = new Intent(Proxy.PROXY_CHANGE_ACTION);
+
+						/*********** optional, may be need in future *************/
+						// final String CLASS_NAME =
+						// "android.net.ProxyProperties";
+						final String CLASS_NAME;
+						if (Build.VERSION.SDK_INT <= 19) {
+							CLASS_NAME = "android.net.ProxyProperties";
+						} else {
+							CLASS_NAME = "android.net.ProxyInfo";
+						}
+						Class cls = Class.forName(CLASS_NAME);
+						Constructor constructor = cls.getConstructor(
+								String.class, Integer.TYPE, String.class);
+						constructor.setAccessible(true);
+						Object proxyProperties = constructor.newInstance(host,
+								port, null);
+						intent.putExtra("proxy", (Parcelable) proxyProperties);
+						/*********** optional, may be need in future *************/
+
+						onReceiveMethod.invoke(rec, appContext, intent);
+
+						// at least one receiver is settled
+						result = true;
+					}
+				}
+			}
+			return result;
+		} catch (Exception ex) {
+			Log.d(TAG, "Exception setKitKatWebViewProxy", ex);
+			return false;
+		}
 	}
-	
+
 	public static boolean checkSystemProxyProperties() {
 
-		//System.getProperties().list(System.out);
-		
+		// System.getProperties().list(System.out);
+
 		if (Build.VERSION.SDK_INT < 11) {
 			// Proxy system properties are not set for device under api level 11
 			return true;
 		} else {
 			String proxyHost = System.getProperty("http.proxyHost");
 			String httpsProxyHost = System.getProperty("https.proxyHost");
-			
-			if((proxyHost!=null && proxyHost.length()>0) || (httpsProxyHost!=null && httpsProxyHost.length()>0)) {
+
+			if ((proxyHost != null && proxyHost.length() > 0)
+					|| (httpsProxyHost != null && httpsProxyHost.length() > 0)) {
 				Log.d(TAG, "Proxy host is defined by the system");
 				return true;
 			}
@@ -376,13 +398,16 @@ private static boolean setKitKatWebViewProxy(WebView webView, String host, int p
 
 	private static void setSystemProperties(String host, int port) {
 		/*
-		System.setProperty("http.proxyHost", host);
-		System.setProperty("http.proxyPort", port + "");
-		
-		System.setProperty("https.proxyHost", System.getProperty("http.proxyHost"));
-		System.setProperty("https.proxyPort", System.getProperty("http.proxyPort"));
-		
-		System.setProperty("http.nonProxyHosts", "127.0.0.1");
-		System.setProperty("https.nonProxyHosts", "127.0.0.1");*/
+		 * System.setProperty("http.proxyHost", host);
+		 * System.setProperty("http.proxyPort", port + "");
+		 * 
+		 * System.setProperty("https.proxyHost",
+		 * System.getProperty("http.proxyHost"));
+		 * System.setProperty("https.proxyPort",
+		 * System.getProperty("http.proxyPort"));
+		 * 
+		 * System.setProperty("http.nonProxyHosts", "127.0.0.1");
+		 * System.setProperty("https.nonProxyHosts", "127.0.0.1");
+		 */
 	}
 }
