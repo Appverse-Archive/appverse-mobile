@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beacon.iOS", "Beacon.iOS\Beacon.iOS.csproj", "{2CDAB383-BB86-42D6-993B-5C37ABF3C581}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|iPhoneSimulator = Debug|iPhoneSimulator
+		Release|iPhoneSimulator = Release|iPhoneSimulator
+		Debug|iPhone = Debug|iPhone
+		Release|iPhone = Release|iPhone
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2CDAB383-BB86-42D6-993B-5C37ABF3C581}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{2CDAB383-BB86-42D6-993B-5C37ABF3C581}.Debug|iPhone.Build.0 = Debug|iPhone
+		{2CDAB383-BB86-42D6-993B-5C37ABF3C581}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{2CDAB383-BB86-42D6-993B-5C37ABF3C581}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{2CDAB383-BB86-42D6-993B-5C37ABF3C581}.Release|iPhone.ActiveCfg = Release|iPhone
+		{2CDAB383-BB86-42D6-993B-5C37ABF3C581}.Release|iPhone.Build.0 = Release|iPhone
+		{2CDAB383-BB86-42D6-993B-5C37ABF3C581}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{2CDAB383-BB86-42D6-993B-5C37ABF3C581}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Beacon.iOS\Beacon.iOS.csproj
+	EndGlobalSection
+EndGlobal

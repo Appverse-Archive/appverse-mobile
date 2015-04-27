@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analytics.iOS", "Analytics.iOS\Analytics.iOS.csproj", "{6B1831F2-1152-4FC6-9A1B-90284D467F59}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|iPhoneSimulator = Debug|iPhoneSimulator
+		Release|iPhoneSimulator = Release|iPhoneSimulator
+		Debug|iPhone = Debug|iPhone
+		Release|iPhone = Release|iPhone
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6B1831F2-1152-4FC6-9A1B-90284D467F59}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{6B1831F2-1152-4FC6-9A1B-90284D467F59}.Debug|iPhone.Build.0 = Debug|iPhone
+		{6B1831F2-1152-4FC6-9A1B-90284D467F59}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{6B1831F2-1152-4FC6-9A1B-90284D467F59}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{6B1831F2-1152-4FC6-9A1B-90284D467F59}.Release|iPhone.ActiveCfg = Release|iPhone
+		{6B1831F2-1152-4FC6-9A1B-90284D467F59}.Release|iPhone.Build.0 = Release|iPhone
+		{6B1831F2-1152-4FC6-9A1B-90284D467F59}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{6B1831F2-1152-4FC6-9A1B-90284D467F59}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Analytics.iOS\Analytics.iOS.csproj
+	EndGlobalSection
+EndGlobal
