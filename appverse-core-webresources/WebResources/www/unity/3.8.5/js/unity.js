@@ -99,7 +99,7 @@ Unity._background = false;
  * <br> @version 2.0
  * @method
  * @return {Boolean} True if application has been set to background.
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Unity.isBackground = function() {
@@ -110,7 +110,7 @@ Unity.isBackground = function() {
  * Applications should override/implement this method to be aware of application being send to background, and should perform the desired javascript code on this case.
  * <br> @version 2.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Unity.backgroundApplicationListener= function() {};
@@ -119,7 +119,7 @@ Unity.backgroundApplicationListener= function() {};
  * Applications should override/implement this method to be aware of application coming back from background, and should perform the desired javascript code on this case.
  * <br> @version 2.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Unity.foregroundApplicationListener = function() {};
@@ -128,7 +128,7 @@ Unity.foregroundApplicationListener = function() {};
  * Applications should override/implement this method to be aware of device physical back button has been pressed, and should perform the desired javascript code on this case.
  * <br> @version 3.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  * 
  */
 Unity.backButtonListener = function() {};
@@ -301,7 +301,7 @@ Unity.Net = new Net();
  * @param {String} url The host url to check for reachability.
  * @return {Boolean} True/false if reachable. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.IsNetworkReachable = function(url)
 {
@@ -313,7 +313,7 @@ Net.prototype.IsNetworkReachable = function(url)
  * <br> @version 3.8.5
  * @return {NetworkData} NetworkData object. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.GetNetworkData = function()
 {
@@ -333,7 +333,7 @@ Net.prototype.GetNetworkData = function()
  * & {@link Unity.Net#NETWORKTYPE_WIFI NETWORKTYPE_WIFI}
  * @return {int[]} Array of supported network types. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.GetNetworkTypeSupported = function()
 {
@@ -354,7 +354,7 @@ Net.prototype.GetNetworkTypeSupported = function()
  * @param {String} url The host url to check for reachability.
  * @return {int[]} Array of network types from which given url host is reachable. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.GetNetworkTypeReachableList = function(url)
 {
@@ -375,7 +375,7 @@ Net.prototype.GetNetworkTypeReachableList = function(url)
  * @param {String} url The host url to check for reachability.
  * @return {int} Prefered network type from which given url host is reachable. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.GetNetworkTypeReachable = function(url)
 {
@@ -395,7 +395,7 @@ Net.prototype.GetNetworkTypeReachable = function(url)
  * @param {String} url The url to be opened.
  * @return {Boolean} True on successful 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.OpenBrowser = function(title, buttonText, url)
 {
@@ -410,7 +410,7 @@ Net.prototype.OpenBrowser = function(title, buttonText, url)
  * @param {String} htmls The html string to be rendered.
  * @return {Boolean} True on successful 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.ShowHtml = function(title, buttonText, html)
 {
@@ -423,7 +423,7 @@ Net.prototype.ShowHtml = function(title, buttonText, html)
  * @param {String} url The url to be opened.
  * @return {Boolean} True on successful 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Net.prototype.DownloadFile = function(url)
 {
@@ -450,7 +450,7 @@ Net.prototype.Async = {
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 IsNetworkReachable : function(url, callbackFunctionName, callbackId)
 {
@@ -462,7 +462,7 @@ IsNetworkReachable : function(url, callbackFunctionName, callbackId)
  * <br> @version 3.8.5
  * @return {NetworkData} NetworkData object. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 GetNetworkData : function(callbackFunctionName, callbackId)
 {
@@ -475,7 +475,7 @@ GetNetworkData : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 GetNetworkTypeSupported : function(callbackFunctionName, callbackId)
 {
@@ -489,7 +489,7 @@ GetNetworkTypeSupported : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 GetNetworkTypeReachableList : function(url, callbackFunctionName, callbackId)
 {
@@ -523,7 +523,7 @@ GetNetworkTypeReachable : function(url, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 OpenBrowser : function(title, buttonText, url, callbackFunctionName, callbackId)
 {
@@ -539,7 +539,7 @@ OpenBrowser : function(title, buttonText, url, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 ShowHtml : function(title, buttonText, html, callbackFunctionName, callbackId)
 {
@@ -765,7 +765,7 @@ Unity.System = new System();
  * <br> @version 1.0
  * @return {int} Number of available displays. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *harcoded data (always 1) | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *harcoded data (always 1) | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetDisplays = function()
 {
@@ -778,7 +778,7 @@ System.prototype.GetDisplays = function()
  * @param {int} displayNumber The display number index. If not provided, primary display information is returned.
  * @return {DisplayInfo} The given display information, if found. Null value is returned, if given diplay number does not corresponds a valid index.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *data needs to be returned by callback| android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *data needs to be returned by callback| android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetDisplayInfo = function(displayNumber)
 {
@@ -799,7 +799,7 @@ System.prototype.GetDisplayInfo = function(displayNumber)
  * @param {int} displayNumber The display number index. If not provided, primary display orientation is returned.
  * @return {int} The given display orientation, if found. "Unknown" value is returned, if given diplay number does not corresponds a valid index.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOrientation = function(displayNumber)
 {
@@ -815,7 +815,7 @@ System.prototype.GetOrientation = function(displayNumber)
  * & {@link Unity.System#ORIENTATION_UNKNOWN ORIENTATION_UNKNOWN}
  * @return {int} The primary display orientation, if found.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOrientationCurrent = function()
 {
@@ -832,7 +832,7 @@ System.prototype.GetOrientationCurrent = function()
  * @param {int} displayNumber The display number index. If not provided, primary display supported orientations are returned.
  * @return {int[]} The list of supported device orientations, for the given display.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *returns portrait&landscape | android <img src="resources/images/information.png"/> *returns portrait&landscape | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *returns portrait&landscape | android <img src="resources/images/information.png"/> *returns portrait&landscape | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOrientationSupported = function(displayNumber)
 {
@@ -848,7 +848,7 @@ System.prototype.GetOrientationSupported = function(displayNumber)
  * <br> @version 1.0
  * @return {Locale[]} The list of supported locales.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 System.prototype.GetLocaleSupported = function()
 {
@@ -860,7 +860,7 @@ System.prototype.GetLocaleSupported = function()
  * <br> @version 1.0
  * @return {Locale} The current Locale information.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 System.prototype.GetLocaleCurrent = function()
 {
@@ -882,7 +882,7 @@ System.prototype.GetLocaleCurrent = function()
  * & {@link Unity.System#INPUTCAPABILITY_VOICE_RECOGNITION INPUTCAPABILITY_VOICE_RECOGNITION} 
  * @return {int[]} List of input methods supported by the device.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetInputMethods = function()
 {
@@ -894,7 +894,7 @@ System.prototype.GetInputMethods = function()
  * <br> @version 1.0
  * @return {int[]} List of input gestures supported by the device.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetInputGestures = function()
 {
@@ -906,7 +906,7 @@ System.prototype.GetInputGestures = function()
  * <br> @version 1.0
  * @return {int[]} List of input buttons supported by the device.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetInputButtons = function()
 {
@@ -928,7 +928,7 @@ System.prototype.GetInputButtons = function()
  * & {@link Unity.System#INPUTCAPABILITY_VOICE_RECOGNITION INPUTCAPABILITY_VOICE_RECOGNITION} 
  * @return {int} Current input method.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetInputMethodCurrent = function()
 {
@@ -950,7 +950,7 @@ System.prototype.GetInputMethodCurrent = function()
  * @param {int} memType The memory type. Optional parameter.
  * @return {long} The memory available in bytes.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetMemoryAvailable = function(memUse, memType)
 {
@@ -970,7 +970,7 @@ System.prototype.GetMemoryAvailable = function(memUse, memType)
  * & {@link Unity.System#MEMORYTYPE_UNKNOWN MEMORYTYPE_UNKNOWN} 
  * @return {int[]} The installed storage types.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetMemoryAvailableTypes = function()
 {
@@ -989,7 +989,7 @@ System.prototype.GetMemoryAvailableTypes = function()
  * @param {int} memType The type of memory to check for status. Optional parameter.
  * @return {MemoryStatus} The memory status information.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetMemoryStatus = function(memType)
 {
@@ -1009,7 +1009,7 @@ System.prototype.GetMemoryStatus = function(memType)
  * & {@link Unity.System#MEMORYTYPE_UNKNOWN MEMORYTYPE_UNKNOWN} 
  * @return {int[]} The available storafe types.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *harcoded values | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *harcoded values | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetMemoryTypes = function()
 {
@@ -1025,7 +1025,7 @@ System.prototype.GetMemoryTypes = function()
  * & {@link Unity.System#MEMORYUSE_OTHER MEMORYUSE_OTHER} 
  * @return {int[]} The available memory uses.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *harcoded values | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/information.png"/> *harcoded values | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.GetMemoryUses = function()
 {
@@ -1037,7 +1037,7 @@ System.prototype.GetMemoryUses = function()
  * <br> @version 1.0
  * @return {HardwareInfo} The device hardware information (name, version, UUID, etc).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOSHardwareInfo = function()
 {
@@ -1049,7 +1049,7 @@ System.prototype.GetOSHardwareInfo = function()
  * <br> @version 1.0
  * @return {OSInfo} The device OS information (name, vendor, version).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOSInfo = function()
 {
@@ -1061,7 +1061,7 @@ System.prototype.GetOSInfo = function()
  * <br> @version 1.0
  * @return {String} The user agent string. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetOSUserAgent = function()
 {
@@ -1073,7 +1073,7 @@ System.prototype.GetOSUserAgent = function()
  * <br> @version 1.0
  * @return {PowerInfo} The current charge information.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetPowerInfo = function()
 {
@@ -1085,7 +1085,7 @@ System.prototype.GetPowerInfo = function()
  * <br> @version 1.0
  * @return {long} The remaining power time.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetPowerRemainingTime = function()
 {
@@ -1097,7 +1097,7 @@ System.prototype.GetPowerRemainingTime = function()
  * <br> @version 1.0
  * @return {CPUInfo} The processor information (name, vendor, speed, UUID, etc).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> *not available on iOS SDK | android <img src="resources/images/error.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> *not available on iOS SDK | android <img src="resources/images/error.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.GetCPUInfo = function()
 {
@@ -1109,7 +1109,7 @@ System.prototype.GetCPUInfo = function()
  * <br> @version 2.0
  * @return {Boolean} True if application remains with the same screen orientation (even though user rotates the device).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.IsOrientationLocked  = function() {
 	return post_to_url(Unity.System.serviceName, "IsOrientationLocked", null, "POST");
@@ -1121,7 +1121,7 @@ System.prototype.IsOrientationLocked  = function() {
  * @param {Boolean} Set value to true if application should remain with the same screen orientation (even though user rotates the device)..
  * @param {int} Set the orientation to lock the device to (this value is ignored if "lock" argument is "false"). Possible values of display orientation: {@link Unity.System#ORIENTATION_LANDSCAPE ORIENTATION_LANDSCAPE}, {@link Unity.System#ORIENTATION_PORTRAIT ORIENTATION_PORTRAIT} or {@link Unity.System#ORIENTATION_UNKNOWN ORIENTATION_UNKNOWN}
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.LockOrientation = function(lock, orientation) {
 	return post_to_url(Unity.System.serviceName, "LockOrientation", get_params([lock,orientation]), "POST");
@@ -1133,7 +1133,7 @@ System.prototype.LockOrientation = function(lock, orientation) {
  * @param {String} textToCopy Text to copy to the Clipboard.
  * @return {Boolean} True if the text was successfully copied to the Clipboard, else False.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 System.prototype.CopyToClipboard = function(textToCopy)
 {
@@ -1146,7 +1146,7 @@ System.prototype.CopyToClipboard = function(textToCopy)
  * <br> @version 3.2
  * @return {Boolean} True if the splash screen is successfully shown, else False.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.ShowSplashScreen = function()
 {
@@ -1158,7 +1158,7 @@ System.prototype.ShowSplashScreen = function()
  * <br> @version 3.2
  * @return {Boolean} True if the splash screen is successfully dismissed, else False.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 System.prototype.DismissSplashScreen = function()
 {
@@ -1171,7 +1171,7 @@ System.prototype.DismissSplashScreen = function()
  * <br> <b>This feature is not supported on iOS platform (interface is available, but with no effect)<b>
  * <br> @version 3.8
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> *N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> *N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 System.prototype.DismissApplication = function()
 {
@@ -1209,7 +1209,7 @@ Unity.Database = new Database();
  * <br> @version 1.0
  * @return {Unity.Database.Database[]} List of application Databases.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.GetDatabaseList = function()
 {
@@ -1222,7 +1222,7 @@ Database.prototype.GetDatabaseList = function()
  * @param {String} dbName The database file name (please include .db extension).
  * @return {Unity.Database.Database} The created database reference object.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.CreateDatabase = function(dbName)
 {
@@ -1236,7 +1236,7 @@ Database.prototype.CreateDatabase = function(dbName)
  * @param {String} dbName The database file name (inlcuding .db extension).
  * @return {Unity.Database.Database} The created database reference object.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.GetDatabase = function(dbName)
 {
@@ -1251,7 +1251,7 @@ Database.prototype.GetDatabase = function(dbName)
  * @param {String[]} columnsDefs The column definitions array (SQLITE syntax).
  * @return {Boolean} True on successful table creation.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.CreateTable = function(db,tableName,columnsDefs)
 {
@@ -1264,7 +1264,7 @@ Database.prototype.CreateTable = function(db,tableName,columnsDefs)
  * @param {Unity.Database.Database} db The database object reference (as provided by {@link #GetDatabase}) to be deleted.
  * @return {Boolean} True on successful database deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.DeleteDatabase = function(db)
 {
@@ -1278,7 +1278,7 @@ Database.prototype.DeleteDatabase = function(db)
  * @param {String} tableName The table name to be deleted.
  * @return {Boolean} True on successful table deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.DeleteTable = function(db,tableName)
 {
@@ -1291,7 +1291,7 @@ Database.prototype.DeleteTable = function(db,tableName)
  * @param {Unity.Database.Database} db The database object reference (as provided by {@link #GetDatabase}) to check for table names.
  * @return {String[]} List of table names.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.GetTableNames = function(db)
 {
@@ -1307,7 +1307,7 @@ Database.prototype.GetTableNames = function(db)
  * @param {String} tableName The table name  to check for existence. Optional parameter.
  * @return {Boolean} True if database or database table exists.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.Exists = function(db, tableName)
 {
@@ -1324,7 +1324,7 @@ Database.prototype.Exists = function(db, tableName)
  * @param {String} dbName The database name to check for existence.
  * @return {Boolean} True if database exists.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.ExistsDatabase = function(dbName)
 {
@@ -1339,7 +1339,7 @@ Database.prototype.ExistsDatabase = function(dbName)
  * @param {String[]} replacements The replacement arguments for a preformatted SQL query. Optional parameter.
  * @return {ResultSet} The result set (with zero rows count parameter if no rows satisfy query conditions).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.ExecuteSQLQuery = function(db, query, replacements)
 {
@@ -1358,7 +1358,7 @@ Database.prototype.ExecuteSQLQuery = function(db, query, replacements)
  * @param {String[]} replacements The replacement arguments for a preformatted SQL statement. Optional parameter.
  * @return {Boolean} True on successful statement execution.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.ExecuteSQLStatement = function(db, statement, replacements)
 {
@@ -1377,7 +1377,7 @@ Database.prototype.ExecuteSQLStatement = function(db, statement, replacements)
  * @param {Boolean} rollbackFlag Indicates if rollback should be performed when any statement execution fails.
  * @return {Boolean} True on successful transaction execution.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Database.prototype.ExecuteSQLTransaction = function(db, statements, rollbackFlag)
 {
@@ -1404,7 +1404,7 @@ Database.prototype.Async = {
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 GetDatabaseList : function(callbackFunctionName, callbackId)
 {
@@ -1418,7 +1418,7 @@ GetDatabaseList : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 CreateDatabase : function(dbName, callbackFunctionName, callbackId)
 {
@@ -1432,7 +1432,7 @@ CreateDatabase : function(dbName, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 GetDatabase : function(dbName, callbackFunctionName, callbackId)
 {
@@ -1448,7 +1448,7 @@ GetDatabase : function(dbName, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 CreateTable : function(db,tableName,columnsDefs, callbackFunctionName, callbackId)
 {
@@ -1462,7 +1462,7 @@ CreateTable : function(db,tableName,columnsDefs, callbackFunctionName, callbackI
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 DeleteDatabase : function(db, callbackFunctionName, callbackId)
 {
@@ -1477,7 +1477,7 @@ DeleteDatabase : function(db, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 DeleteTable : function(db,tableName, callbackFunctionName, callbackId)
 {
@@ -1491,7 +1491,7 @@ DeleteTable : function(db,tableName, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 GetTableNames : function(db, callbackFunctionName, callbackId)
 {
@@ -1507,7 +1507,7 @@ GetTableNames : function(db, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Exists : function(db, tableName, callbackFunctionName, callbackId)
 {
@@ -1525,7 +1525,7 @@ Exists : function(db, tableName, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 ExistsDatabase : function(dbName, callbackFunctionName, callbackId)
 {
@@ -1541,7 +1541,7 @@ ExistsDatabase : function(dbName, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 ExecuteSQLQuery : function(db, query, replacements, callbackFunctionName, callbackId)
 {
@@ -1561,7 +1561,7 @@ ExecuteSQLQuery : function(db, query, replacements, callbackFunctionName, callba
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 ExecuteSQLStatement : function(db, statement, replacements, callbackFunctionName, callbackId)
 {
@@ -1581,7 +1581,7 @@ ExecuteSQLStatement : function(db, statement, replacements, callbackFunctionName
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 ExecuteSQLTransaction : function(db, statements, rollbackFlag, callbackFunctionName, callbackId)
 {
@@ -1620,7 +1620,7 @@ Unity.FileSystem = new FileSystem();
  * <br> @version 1.0
  * @return {DirectoryData} The configured root directory information.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.GetDirectoryRoot = function()
 {
@@ -1634,7 +1634,7 @@ FileSystem.prototype.GetDirectoryRoot = function()
  * @param {DirectoryData} baseDirectory The base Directory to create directory under it. Optional parameter.
  * @return {DirectoryData} The directory created, or null if folder cannot be created.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.CreateDirectory = function(directoryName, baseDirectory)
 {
@@ -1652,7 +1652,7 @@ FileSystem.prototype.CreateDirectory = function(directoryName, baseDirectory)
  * @param {DirectoryData} baseDirectory The base Directory to create file under it. Optional parameter.
  * @return {FileData} The file created, or null if folder cannot be created.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.CreateFile = function(fileName, baseDirectory)
 {
@@ -1669,7 +1669,7 @@ FileSystem.prototype.CreateFile = function(fileName, baseDirectory)
  * @param {DirectoryData} dirData The base Directory to check for directories under it. Optional parameter.
  * @return {DirectoryData[]} The directories information array.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.ListDirectories = function(dirData)
 {
@@ -1686,7 +1686,7 @@ FileSystem.prototype.ListDirectories = function(dirData)
  * @param {DirectoryData} dirData The base Directory to check for files under it. Optional parameter.
  * @return {FileData[]} The files information array.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.ListFiles = function(dirData)
 {
@@ -1711,7 +1711,7 @@ FileSystem.prototype.ExistsDirectory = function(dirData)
  * @param {DirectoryData} dirData The directory to be deleted.
  * @return {Boolean} True on successful directory deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.DeleteDirectory = function(dirData)
 {
@@ -1724,7 +1724,7 @@ FileSystem.prototype.DeleteDirectory = function(dirData)
  * @param {FileData} fileData The file to be deleted.
  * @return {Boolean} True on successful file deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.DeleteFile = function(fileData)
 {
@@ -1749,7 +1749,7 @@ FileSystem.prototype.ExistsFile = function(fileData)
  * @param {FileData} fileData The file data to read.
  * @return {byte[]} Readed bytes.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.ReadFile = function(fileData)
 {
@@ -1764,7 +1764,7 @@ FileSystem.prototype.ReadFile = function(fileData)
  * @param {Boolean} appendFlag True if data should be appended to previous file data.
  * @return {Boolean} True if file could be written.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.WriteFile = function(fileData, contents, appendFlag)
 {
@@ -1778,7 +1778,7 @@ FileSystem.prototype.WriteFile = function(fileData, contents, appendFlag)
  * @param {String} destFileName The file name (relative path under "documents" application directory) to be copied to.
  * @return {Boolean} True if file could be copied.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/warning.png"/> *"resources" path pending to be defined for this platform </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/warning.png"/> *"resources" path pending to be defined for this platform | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.CopyFromResources = function(sourceFileName, destFileName)
 {
@@ -1792,7 +1792,7 @@ FileSystem.prototype.CopyFromResources = function(sourceFileName, destFileName)
  * @param {String} destFileName The file name (relative path under "documents" application directory) to be copied to.
  * @return {Boolean} True if file could be copied.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 FileSystem.prototype.CopyFromRemote = function(url, destFileName)
 {
@@ -1819,7 +1819,7 @@ FileSystem.prototype.Async = {
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 GetDirectoryRoot : function(callbackFunctionName, callbackId)
 {
@@ -1834,7 +1834,7 @@ GetDirectoryRoot : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 CreateDirectory : function(directoryName, baseDirectory, callbackFunctionName, callbackId)
 {
@@ -1853,7 +1853,7 @@ CreateDirectory : function(directoryName, baseDirectory, callbackFunctionName, c
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 CreateFile : function(fileName, baseDirectory, callbackFunctionName, callbackId)
 {
@@ -1871,7 +1871,7 @@ CreateFile : function(fileName, baseDirectory, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 ListDirectories : function(dirData, callbackFunctionName, callbackId)
 {
@@ -1889,7 +1889,7 @@ ListDirectories : function(dirData, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 ListFiles : function(dirData, callbackFunctionName, callbackId)
 {
@@ -1916,7 +1916,7 @@ ExistsDirectory : function(dirData, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 DeleteDirectory : function(dirData, callbackFunctionName, callbackId)
 {
@@ -1930,7 +1930,7 @@ DeleteDirectory : function(dirData, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 DeleteFile : function(fileData, callbackFunctionName, callbackId)
 {
@@ -1957,7 +1957,7 @@ ExistsFile : function(fileData, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 ReadFile : function(fileData, callbackFunctionName, callbackId)
 {
@@ -1973,7 +1973,7 @@ ReadFile : function(fileData, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 WriteFile : function(fileData, contents, appendFlag, callbackFunctionName, callbackId)
 {
@@ -1988,7 +1988,7 @@ WriteFile : function(fileData, contents, appendFlag, callbackFunctionName, callb
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/warning.png"/> *"resources" path pending to be defined for this platform </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/warning.png"/> *"resources" path pending to be defined for this platform | emulator <img src="resources/images/check.png"/> </pre>
  */
 CopyFromResources : function(sourceFileName, destFileName, callbackFunctionName, callbackId)
 {
@@ -2003,7 +2003,7 @@ CopyFromResources : function(sourceFileName, destFileName, callbackFunctionName,
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 CopyFromRemote : function(url, destFileName, callbackFunctionName, callbackId)
 {
@@ -2042,7 +2042,7 @@ Unity.Notification = new Notification();
  * <br> @version 1.0
  * @return {Boolean} True if activity indicator could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StartNotifyActivity = function()
 {
@@ -2054,7 +2054,7 @@ Notification.prototype.StartNotifyActivity = function()
  * <br> @version 1.0
  * @return {Boolean} True if activity indicator could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StopNotifyActivity = function()
 {
@@ -2066,7 +2066,7 @@ Notification.prototype.StopNotifyActivity = function()
  * <br> @version 1.0
  * @return {Boolean} True/false wheter activity indicator is running.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.IsNotifyActivityRunning = function()
 {
@@ -2081,7 +2081,7 @@ Notification.prototype.IsNotifyActivityRunning = function()
  * @param {String} buttonText The accept button text to be displayed.
  * @return {Boolean} True if alert notification could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StartNotifyAlert = function(message, title, buttonText)
 {
@@ -2097,7 +2097,7 @@ Notification.prototype.StartNotifyAlert = function(message, title, buttonText)
  * <br> @version 1.0
  * @return {Boolean} True if alert notification could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StopNotifyAlert = function()
 {
@@ -2112,7 +2112,7 @@ Notification.prototype.StopNotifyAlert = function()
  * @param {String[]} jsCallbackFunctions The callback javascript functions as string texts for each of the given buttons. Empty string if no action is required for a button.
  * @return {Boolean} True if action sheet could be showed.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Notification.prototype.StartNotifyActionSheet = function(title, buttons, jsCallbackFunctions)
 {
@@ -2124,7 +2124,7 @@ Notification.prototype.StartNotifyActionSheet = function(title, buttons, jsCallb
  * <br> @version 1.0
  * @return {Boolean} True if beep notification could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StartNotifyBeep = function()
 {
@@ -2136,7 +2136,7 @@ Notification.prototype.StartNotifyBeep = function()
  * <br> @version 1.0
  * @return {Boolean} True if beep notification could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StopNotifyBeep = function()
 {
@@ -2148,7 +2148,7 @@ Notification.prototype.StopNotifyBeep = function()
  * <br> @version 1.0
  * @return {Boolean} True if beep notification could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Notification.prototype.StartNotifyBlink = function()
 {
@@ -2160,7 +2160,7 @@ Notification.prototype.StartNotifyBlink = function()
  * <br> @version 1.0
  * @return {Boolean} True if blink notification could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Notification.prototype.StopNotifyBlink = function()
 {
@@ -2172,7 +2172,7 @@ Notification.prototype.StopNotifyBlink = function()
  * <br> @version 1.0
  * @return {Boolean} True if progress indicator animation could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StartNotifyLoading = function(loadingText)
 {
@@ -2188,7 +2188,7 @@ Notification.prototype.StartNotifyLoading = function(loadingText)
  * <br> @version 1.0
  * @return {Boolean} True if progress indicator animation could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.StopNotifyLoading = function()
 {
@@ -2200,7 +2200,7 @@ Notification.prototype.StopNotifyLoading = function()
  * <br> @version 1.0
  * @return {Boolean} True/false wheter progress indicator is running.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.IsNotifyLoadingRunning = function()
 {
@@ -2212,7 +2212,7 @@ Notification.prototype.IsNotifyLoadingRunning = function()
  * <br> @version 1.0
  * @param {float} progress The current progress; values between 0.0 and 1.0 (completed).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Notification.prototype.UpdateNotifyLoading = function(progress)
 {
@@ -2224,7 +2224,7 @@ Notification.prototype.UpdateNotifyLoading = function(progress)
  * <br> @version 1.0
  * @return {Boolean} True if vibration notification could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Notification.prototype.StartNotifyVibrate = function()
 {
@@ -2236,7 +2236,7 @@ Notification.prototype.StartNotifyVibrate = function()
  * <br> @version 1.0
  * @return {Boolean} True if vibration notification could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Notification.prototype.StopNotifyVibrate = function()
 {
@@ -2263,7 +2263,7 @@ Notification.prototype.Async = {
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 StartNotifyActivity : function(callbackFunctionName, callbackId)
 {
@@ -2276,7 +2276,7 @@ StartNotifyActivity : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 StopNotifyActivity : function(callbackFunctionName, callbackId)
 {
@@ -2289,7 +2289,7 @@ StopNotifyActivity : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 IsNotifyActivityRunning : function(callbackFunctionName, callbackId)
 {
@@ -2305,7 +2305,7 @@ IsNotifyActivityRunning : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 StartNotifyAlert : function(message, title, buttonText, callbackFunctionName, callbackId)
 {
@@ -2322,7 +2322,7 @@ StartNotifyAlert : function(message, title, buttonText, callbackFunctionName, ca
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 StopNotifyAlert : function(callbackFunctionName, callbackId)
 {
@@ -2338,7 +2338,7 @@ StopNotifyAlert : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 StartNotifyActionSheet : function(title, buttons, jsCallbackFunctions, callbackFunctionName, callbackId)
 {
@@ -2351,7 +2351,7 @@ StartNotifyActionSheet : function(title, buttons, jsCallbackFunctions, callbackF
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 StartNotifyBeep : function(callbackFunctionName, callbackId)
 {
@@ -2364,7 +2364,7 @@ StartNotifyBeep : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 StopNotifyBeep : function(callbackFunctionName, callbackId)
 {
@@ -2377,7 +2377,7 @@ StopNotifyBeep : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 StartNotifyBlink : function(callbackFunctionName, callbackId)
 {
@@ -2390,7 +2390,7 @@ StartNotifyBlink : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 StopNotifyBlink : function(callbackFunctionName, callbackId)
 {
@@ -2403,7 +2403,7 @@ StopNotifyBlink : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 StartNotifyLoading : function(loadingText, callbackFunctionName, callbackId)
 {
@@ -2420,7 +2420,7 @@ StartNotifyLoading : function(loadingText, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 StopNotifyLoading : function(callbackFunctionName, callbackId)
 {
@@ -2433,7 +2433,7 @@ StopNotifyLoading : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 IsNotifyLoadingRunning : function(callbackFunctionName, callbackId)
 {
@@ -2447,7 +2447,7 @@ IsNotifyLoadingRunning : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 UpdateNotifyLoading : function(progress, callbackFunctionName, callbackId)
 {
@@ -2460,7 +2460,7 @@ UpdateNotifyLoading : function(progress, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 StartNotifyVibrate : function(callbackFunctionName, callbackId)
 {
@@ -2473,7 +2473,7 @@ StartNotifyVibrate : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 StopNotifyVibrate : function(callbackFunctionName, callbackId)
 {
@@ -2586,7 +2586,7 @@ Unity.IO = new IO();
  * <br> @version 1.0
  * @return {IOService[]} List of external services.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 IO.prototype.GetServices = function()
 {
@@ -2612,7 +2612,7 @@ IO.prototype.GetServices = function()
  * @param {int} serviceType The service type to look for. Optional parameter.
  * @return {IOService} The external service matched.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 IO.prototype.GetService = function(serviceName, serviceType)
 {
@@ -2643,7 +2643,7 @@ IO.prototype.GetService = function(serviceName, serviceType)
  * @param {int} serviceType The service type to look for. Optional parameter.
  * @return {IOResponse} The response object returned from remote service. Access content doing: <pre>ioResponse.Content</pre>
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 IO.prototype.InvokeService = function(requestObjt, service, serviceType)
 {
@@ -2674,7 +2674,7 @@ IO.prototype.Async = {
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 GetServices : function(callbackFunctionName, callbackId)
 {
@@ -2689,7 +2689,7 @@ GetServices : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 GetService : function(serviceName, serviceType, callbackFunctionName, callbackId)
 {
@@ -2709,7 +2709,7 @@ GetService : function(serviceName, serviceType, callbackFunctionName, callbackId
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 InvokeService : function(requestObjt, service, serviceType, callbackFunctionName, callbackId)
 {
@@ -2764,7 +2764,7 @@ Unity.Geo = new Geo();
  * <br> @version 1.0
  * @return {Acceleration} Current acceleration info (coordinates and acceleration vector number).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetAcceleration = function()
 {
@@ -2776,7 +2776,7 @@ Geo.prototype.GetAcceleration = function()
  * <br> @version 1.0
  * @return {LocationCoordinate} Current location info (coordinates and precision).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetCoordinates = function()
 {
@@ -2792,7 +2792,7 @@ Geo.prototype.GetCoordinates = function()
  * @param {int} northType Type of north to measured heading relative to it. Optional parameter.
  * @return {float} Current heading. Measured in degrees, minutes and seconds.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetHeading = function(northType)
 {
@@ -2811,7 +2811,7 @@ Geo.prototype.GetHeading = function(northType)
  * <br> @version 1.0
  * @return {float} Current orientation. Measured in degrees, minutes and seconds.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetDeviceOrientation = function()
 {
@@ -2825,7 +2825,7 @@ Geo.prototype.GetDeviceOrientation = function()
  * <br> @version 1.0
  * @return {float} Device speed (in meters/second).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetVelocity = function()
 {
@@ -2838,7 +2838,7 @@ Geo.prototype.GetVelocity = function()
  * Shows Map on screen.
  * <br> @version 1.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Geo.prototype.GetMap = function()
 {
@@ -2851,7 +2851,7 @@ Geo.prototype.GetMap = function()
  * @param {float} scale The desired map scale.
  * @param {float} boundingBox The desired map view bounding box.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 Geo.prototype.SetMapSettings = function(scale, boundingBox)
 {
@@ -2868,7 +2868,7 @@ Geo.prototype.SetMapSettings = function(scale, boundingBox)
  * @param {LocationCategory} category The query to search POIs.. Optional parameter.
  * @return {POI[]} Points of Interest for location, ordered by distance.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Geo.prototype.GetPOIList = function(location, radius, queryText, category)
 {
@@ -2889,7 +2889,7 @@ Geo.prototype.GetPOIList = function(location, radius, queryText, category)
  * @param {String} poiId POI identifier.
  * @return {POI} Point of Interest found.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Geo.prototype.GetPOI = function(poiId)
 {
@@ -2901,7 +2901,7 @@ Geo.prototype.GetPOI = function(poiId)
  * <br> @version 1.0
  * @param {String} poiId POI identifier.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Geo.prototype.RemovePOI = function(poiId)
 {
@@ -2913,7 +2913,7 @@ Geo.prototype.RemovePOI = function(poiId)
  * <br> @version 1.0
  * @param {String} poiId POI identifier.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Geo.prototype.UpdatePOI = function(poi)
 {
@@ -2925,7 +2925,7 @@ Geo.prototype.UpdatePOI = function(poi)
  * <br> @version 1.0
  * @return {Boolean} True if the device can start the location services
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StartUpdatingLocation = function()
 {
@@ -2937,7 +2937,7 @@ Geo.prototype.StartUpdatingLocation = function()
  * <br> @version 1.0
  * @return {Boolean} True if the device can stop the location services
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StopUpdatingLocation = function()
 {
@@ -2949,7 +2949,7 @@ Geo.prototype.StopUpdatingLocation = function()
  * <br> @version 1.0
  * @return {Boolean} True if the device can start the location services
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StartUpdatingHeading = function()
 {
@@ -2961,7 +2961,7 @@ Geo.prototype.StartUpdatingHeading = function()
  * <br> @version 1.0
  * @return {Boolean} True if the device can stop the location services
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StopUpdatingHeading = function()
 {
@@ -2976,7 +2976,7 @@ Geo.prototype.StopUpdatingHeading = function()
  * <br> @version 1.0
  * @return {GeoDecoderAttributes} Reverse geocoding attributes from the present location (latitude and longitude)
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.GetGeoDecoder = function()
 {
@@ -2988,7 +2988,7 @@ Geo.prototype.GetGeoDecoder = function()
  * <br> @version 1.0
  * @return {Boolean} True if the proximity sensor detects an object close to the device
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StartProximitySensor = function()
 {
@@ -3000,7 +3000,7 @@ Geo.prototype.StartProximitySensor = function()
  * <br> @version 1.0
  * @return {Boolean} True if the proximity sensor service could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.StopProximitySensor = function()
 {
@@ -3012,7 +3012,7 @@ Geo.prototype.StopProximitySensor = function()
  * <br> @version 3.8
  * @return {Boolean} True if the device can start the location services
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Geo.prototype.IsGPSEnabled = function()
 {
@@ -3113,7 +3113,7 @@ Unity.Media = new Media();
  * @param {String} filePath The media file path.
  * @return {Unity.Media.MediaMetadata} Media file metadata.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.GetMetadata = function(filePath)
 {
@@ -3126,7 +3126,7 @@ Media.prototype.GetMetadata = function(filePath)
  * @param {String} filePath The media file path.
  * @return {Boolean} True if media file could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.Play = function(filePath)
 {
@@ -3139,7 +3139,7 @@ Media.prototype.Play = function(filePath)
  * @param {String} url The media remote URL.
  * @return {Boolean} True if media file could be started.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * bug fixing | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * bug fixing | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.PlayStream = function(url)
 {
@@ -3152,7 +3152,7 @@ Media.prototype.PlayStream = function(url)
  * @param {long} position Index position.
  * @return {Boolean} True if player position could be moved.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.SeekPosition = function(position)
 {
@@ -3164,7 +3164,7 @@ Media.prototype.SeekPosition = function(position)
  * <br> @version 1.0
  * @return {Boolean} True if media file could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.Stop = function()
 {
@@ -3176,7 +3176,7 @@ Media.prototype.Stop = function()
  * <br> @version 1.0
  * @return {Boolean} True if media file could be stopped.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.Pause = function()
 {
@@ -3194,7 +3194,7 @@ Media.prototype.Pause = function()
  * & {@link Unity.Media#MEDIATSTATE_STOPPED MEDIATSTATE_STOPPED}
  * @return {int} Current player state.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.GetState = function()
 {
@@ -3206,7 +3206,7 @@ Media.prototype.GetState = function()
  * <br> @version 1.0
  * @return {Unity.Media.MediaMetadata} Current media file metadata.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *mock data | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *mock data | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Media.prototype.GetCurrentMedia = function()
 {
@@ -3219,7 +3219,7 @@ Media.prototype.GetCurrentMedia = function()
  * Returned value is "null" on synchronous call.
  * <br> @version 2.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/warning.png"/> *in progress</pre>
  */
 Media.prototype.GetSnapshot = function()
 {
@@ -3232,7 +3232,7 @@ Media.prototype.GetSnapshot = function()
  * Returned value is "null" on synchronous call.
  * <br> @version 2.0
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/warning.png"/> *in progress</pre>
  */
 Media.prototype.TakeSnapshot = function()
 {
@@ -3260,7 +3260,7 @@ Media.prototype.Async = {
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 GetMetadata : function(filePath, callbackFunctionName, callbackId)
 {
@@ -3274,7 +3274,7 @@ GetMetadata : function(filePath, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Play : function(filePath, callbackFunctionName, callbackId)
 {
@@ -3288,7 +3288,7 @@ Play : function(filePath, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * bug fixing | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * bug fixing | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 PlayStream : function(url, callbackFunctionName, callbackId)
 {
@@ -3302,7 +3302,7 @@ PlayStream : function(url, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 SeekPosition : function(position, callbackFunctionName, callbackId)
 {
@@ -3315,7 +3315,7 @@ SeekPosition : function(position, callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Stop : function(callbackFunctionName, callbackId)
 {
@@ -3328,7 +3328,7 @@ Stop : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Pause : function(callbackFunctionName, callbackId)
 {
@@ -3341,7 +3341,7 @@ Pause : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 GetState : function(callbackFunctionName, callbackId)
 {
@@ -3354,7 +3354,7 @@ GetState : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *mock data | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/information.png"/> *mock data | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 GetCurrentMedia : function(callbackFunctionName, callbackId)
 {
@@ -3369,7 +3369,7 @@ GetCurrentMedia : function(callbackFunctionName, callbackId)
  * @param {String} callbackFunctionName The name of the callback function to be called when the method response is handled. Arguments of this function are the invocation result object and the invocation callbackId. Defaults to "callback".
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/warning.png"/> *in progress</pre>
  */
 GetSnapshot : function(callbackFunctionName, callbackId)
 {
@@ -3385,7 +3385,7 @@ GetSnapshot : function(callbackFunctionName, callbackId)
  * @param {String} callbackId The id to uniquely identify different callbacks with the same callback function. Defaults to "callbackid".
  * @return {Unity.Media.MediaMetadata} Media file metadata taken by the camera. 
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/warning.png"/> * in progess | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/warning.png"/> *in progress</pre>
  */
 TakeSnapshot : function(callbackFunctionName, callbackId)
 {
@@ -3426,7 +3426,7 @@ Unity.Messaging = new Messaging();
  * @param {String} text The message body.
  * @return {Boolean} True if SMS could be send.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data </pre>
  */
 Messaging.prototype.SendMessageSMS = function(phoneNumber, text)
 {
@@ -3441,7 +3441,7 @@ Messaging.prototype.SendMessageSMS = function(phoneNumber, text)
  * @param {AttachmentData} attachment Attachament data.
  * @return {Boolean} True if MMS could be send.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data </pre>
  */
 Messaging.prototype.SendMessageMMS = function(phoneNumber, text, attachment)
 {
@@ -3454,7 +3454,7 @@ Messaging.prototype.SendMessageMMS = function(phoneNumber, text, attachment)
  * @param {EmailData} emailData The email message data, such as: subject, 'To','Cc','Bcc' addresses, etc.
  * @return {Boolean} True if email could be send.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data </pre>
  */
 Messaging.prototype.SendEmail = function(emailData)
 {
@@ -3738,7 +3738,7 @@ Unity.Pim = new Pim();
  * @param {String} queryText The search query text. Optional parameter.<pre>Format is: &lt;queryParam1Name&gt;=&lt;queryParam1Value&gt;&&lt;queryParam2Name&gt;=&lt;queryParam2Value&gt;&....</pre>
  * @return {Contact[]} List of contacts.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.ListContacts = function(queryText)
 {
@@ -3755,7 +3755,7 @@ Pim.prototype.ListContacts = function(queryText)
  * @param {Contact} contact Contact data to be created.
  * @return {Contact} Created contact.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.CreateContact = function(contact)
 {
@@ -3769,7 +3769,7 @@ Pim.prototype.CreateContact = function(contact)
  * @param {Contact} newContact New contact data to be added to the given contact.
  * @return {Boolean} True on successful updating.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.UpdateContact = function(contactId, newContactData)
 {
@@ -3782,7 +3782,7 @@ Pim.prototype.UpdateContact = function(contactId, newContactData)
  * @param {Contact} contact Contact data to be deleted.
  * @return {Boolean} True on successful deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.DeleteContact = function(contact)
 {
@@ -3795,7 +3795,7 @@ Pim.prototype.DeleteContact = function(contact)
  * @param {DateTime} date Date to match calendar entries.
  * @return {CalendarEntry[]} List of calendar entries.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *further testing required | android <img src="resources/images/warning.png"/> *further testing required | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *further testing required | android <img src="resources/images/warning.png"/> *further testing required | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.ListCalendarEntriesByDate = function(date)
 {
@@ -3809,7 +3809,7 @@ Pim.prototype.ListCalendarEntriesByDate = function(date)
  * @param {DateTime} endDate End date to match calendar entries.
  * @return {CalendarEntry[]} List of calendar entries.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *further testing required | android <img src="resources/images/warning.png"/> *further testing required | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *further testing required | android <img src="resources/images/warning.png"/> *further testing required | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.ListCalendarEntriesByDateRange = function(startDate, endDate)
 {
@@ -3822,7 +3822,7 @@ Pim.prototype.ListCalendarEntriesByDateRange = function(startDate, endDate)
  * @param {CalendarEntry} entry Calendar entry to be created.
  * @return {CalendarEntry} Created calendar entry.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *issues with recurrences and alarms | android <img src="resources/images/warning.png"/> *issues with recurrences and alarms | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/warning.png"/> *issues with recurrences and alarms | android <img src="resources/images/warning.png"/> *issues with recurrences and alarms | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.CreateCalendarEntry = function(entry)
 {
@@ -3835,7 +3835,7 @@ Pim.prototype.CreateCalendarEntry = function(entry)
  * @param {CalendarEntry} entry Calendar entry to be deleted.
  * @return {Boolean} True on successful deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.DeleteCalendarEntry = function(entry)
 {
@@ -3850,7 +3850,7 @@ Pim.prototype.DeleteCalendarEntry = function(entry)
  * @param {DateTime} endDate New end date to move the calendar entry.
  * @return {Boolean} True on successful deletion.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> *xml data store</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *xml data store</pre>
  */
 Pim.prototype.MoveCalendarEntry = function(entry, startDate, endDate)
 {
@@ -3953,7 +3953,7 @@ Unity.Telephony = new Telephony();
  * @param {int} callType The type of call to open.
  * @return {ICallControl} Call control interface to handle current call.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data</pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
 Telephony.prototype.Call = function(number, callType)
 {
@@ -3992,7 +3992,7 @@ Unity.I18N = new I18N();
  * <br> @version 1.0
  * @return {Locale[]} List of locales.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 I18N.prototype.GetLocaleSupported = function()
 {
@@ -4005,7 +4005,7 @@ I18N.prototype.GetLocaleSupported = function()
  * <br> @version 1.0
  * @return {String[]} List of locales (only locale descriptor string, such as "en-US").
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 I18N.prototype.GetLocaleSupportedDescriptors = function()
 {
@@ -4020,7 +4020,7 @@ I18N.prototype.GetLocaleSupportedDescriptors = function()
  * @param {String/Locale} locale The full locale object to get localized message, or the locale desciptor ("language" or "language-country" two-letters ISO codes.
  * @return {String} Localized text.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/> </pre>
  */
 I18N.prototype.GetResourceLiteral = function(key, locale)
 {
@@ -4038,7 +4038,7 @@ I18N.prototype.GetResourceLiteral = function(key, locale)
  * @param {String/Locale} locale The full locale object to get localized message, or the locale desciptor ("language" or "language-country" two-letters ISO codes.
  * @return {ResourceLiteralDictionary} Localized texts in the form of an object (you could get the value of a keyed literal using <b>resourceLiteralDictionary.MY_KEY</b> or <b>resourceLiteralDictionary["MY_KEY"]</b>).
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 I18N.prototype.GetResourceLiterals = function(locale)
 {
@@ -4123,7 +4123,7 @@ Unity.Analytics = new Analytics();
  * @param {String} webPropertyID The web property ID with the format UA-99999999-9
  * @return {Boolean} true if the tracker was started successfully
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
  */
 Analytics.prototype.StartTracking = function (webPropertyID){
     return post_to_url(Unity.Analytics.serviceName, "StartTracking", get_params([webPropertyID]),"POST");
@@ -4135,7 +4135,7 @@ Analytics.prototype.StartTracking = function (webPropertyID){
  * <br> @version 3.0
  * @return {Boolean} true if tracker was stopped
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
  */
 Analytics.prototype.StopTracking = function (){
     return post_to_url(Unity.Analytics.serviceName, "StopTracking", null,"POST");
@@ -4150,7 +4150,7 @@ Analytics.prototype.StopTracking = function (){
  * @param {Integer} value The event value
  * @return {Boolean} true if the event was successfully tracked
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
  */
 Analytics.prototype.TrackEvent = function (group, action, label, value){
     return post_to_url(Unity.Analytics.serviceName, "TrackEvent", get_params([group,action,label, value]),"POST");
@@ -4162,7 +4162,7 @@ Analytics.prototype.TrackEvent = function (group, action, label, value){
  * @param {String} relativeUrl The relativeUrl to the page i.e. "/home"
  * @return {Boolean} true if the pageview was successfully tracked
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
  */
 Analytics.prototype.TrackPageView = function (relativeUrl){
     return post_to_url(Unity.Analytics.serviceName, "TrackPageView", get_params([relativeUrl]),"POST");
@@ -4199,7 +4199,7 @@ Unity.Security = new Security();
  * <br> @version 3.7
  * @return {Boolean} True if the device is modified.
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> *mock data </pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data </pre>
  */
 Security.prototype.IsDeviceModified = function()
 {
@@ -4373,7 +4373,7 @@ Unity.Webtrekk = new Webtrekk();
  * only every nth user is tracked.
  * @return {Boolean} true if the tracker was started successfully
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Webtrekk.prototype.StartTracking = function (webServerUrl, trackId, samplingRate){
 	if(samplingRate == null){
@@ -4388,7 +4388,7 @@ Webtrekk.prototype.StartTracking = function (webServerUrl, trackId, samplingRate
  * <br> @version 3.8
  * @return {Boolean} true if tracker was stopped
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Webtrekk.prototype.StopTracking = function (){
     return post_to_url(Unity.Webtrekk.serviceName, "StopTracking", null,"POST");
@@ -4418,7 +4418,7 @@ Webtrekk.prototype.StopTracking = function (){
  * @param {WebtrekkParametersCollection} additionalParameters [optional] Array containing additional parameters
  * @return {Boolean} true if the content/event was successfully tracked
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Webtrekk.prototype.TrackClick = function (clickId, contentId, additionalParameters){
 	if(additionalParameters == null){
@@ -4452,7 +4452,7 @@ Webtrekk.prototype.TrackClick = function (clickId, contentId, additionalParamete
  * @param {WebtrekkParametersCollection} additionalParameters [optional] Array containing additional parameters
  * @return {Boolean} true if the content/event was successfully tracked
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Webtrekk.prototype.TrackContent = function (contentId, additionalParameters){
 	if(additionalParameters == null){
@@ -4473,7 +4473,7 @@ Webtrekk.prototype.TrackContent = function (contentId, additionalParameters){
  * @param {double} intervalInSeconds The interval in seconds the request will transmit data to the server
  * @return {Boolean} true if the interval was successfully set
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/> </pre>
  */
 Webtrekk.prototype.SetRequestInterval = function (intervalInSeconds){
     return post_to_url(Unity.Webtrekk.serviceName, "SetRequestInterval", get_params([intervalInSeconds]),"POST");
