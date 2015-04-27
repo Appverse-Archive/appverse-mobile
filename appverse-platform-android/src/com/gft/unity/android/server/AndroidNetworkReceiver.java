@@ -24,6 +24,9 @@
 package com.gft.unity.android.server;
 
 
+import com.gft.unity.android.AndroidServiceLocator;
+import com.gft.unity.android.activity.IActivityManager;
+import com.gft.unity.core.net.NetworkType;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
 
@@ -31,6 +34,10 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.webkit.WebView;
 
 /**
@@ -61,6 +68,67 @@ public class AndroidNetworkReceiver extends BroadcastReceiver {
 		if(ctx instanceof Activity) {
 			((Activity)ctx).runOnUiThread(action);
 		}
+		
+		LOGGER.logDebug("onReceive", "*********** Network connectivity change");
+	     /*if(intent.getExtras()!=null) {
+	        NetworkInfo ni=(NetworkInfo) intent.getExtras().get(ConnectivityManager.EXTRA_NETWORK_INFO);
+	        if(ni!=null && ni.getState()==NetworkInfo.State.CONNECTED) {
+	            LOGGER.logDebug("onReceive", "*********** Network "+ni.getTypeName()+" connected: "+ni.getType());
+	            LOGGER.logDebug("onReceive", "*********** Network "+ni.getTypeName()+" connected: "+ni.getDetailedState());
+	            LOGGER.logDebug("onReceive", "*********** Network "+ni.getTypeName()+" connected: "+ni.getExtraInfo());
+	            LOGGER.logDebug("onReceive", "*********** Network "+ni.getTypeName()+" connected: "+ni.getTypeName());
+	            LOGGER.logDebug("onReceive", "*********** Network "+ni.getTypeName()+" connected: "+ni.getReason());
+	        }
+	     }
+	     if(intent.getExtras().getBoolean(ConnectivityManager.EXTRA_NO_CONNECTIVITY,Boolean.FALSE)) {
+	            LOGGER.logDebug("onReceive", "*********** Network There's no network connectivity");
+	     }*/
+	     
+	    ConnectivityManager connectivityManager = (ConnectivityManager)ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+        int networkType = intent.getExtras().getInt(ConnectivityManager.EXTRA_NETWORK_TYPE);
+        boolean isWiFi = networkType == ConnectivityManager.TYPE_WIFI;
+        boolean isMobile = networkType == ConnectivityManager.TYPE_MOBILE;
+        
+        NetworkInfo networkInfo = connectivityManager.getNetworkInfo(networkType);
+        boolean isConnected = networkInfo.isConnected();
+        com.gft.unity.core.net.NetworkType type = NetworkType.Unknown;
+        if (isWiFi) {
+            if (isConnected) {
+            	LOGGER.logDebug("onReceive", "Wi-Fi - CONNECTED ("+networkInfo.getType()+")");
+                type = NetworkType.Wifi;
+                WifiManager wifiManager = (WifiManager) ctx
+                        .getSystemService(ctx.WIFI_SERVICE);
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
+                LOGGER.logDebug("onReceive", "SSID: "+wifiInfo.getSSID());
+                    
+            } else {
+            	LOGGER.logDebug("onReceive", "Wi-Fi - DISCONNECTED ("+networkInfo.getType()+")");
+                
+            }
+        } else if (isMobile) {
+            if (isConnected) {
+            	LOGGER.logDebug("onReceive", "Mobile - CONNECTED ("+networkInfo.getType()+")");
+                type = NetworkType.Carrier_3G;
+            } else {
+            	LOGGER.logDebug("onReceive", "Mobile - DISCONNECTED ("+networkInfo.getType()+")");
+            }
+        } else {
+            if (isConnected) {
+            	LOGGER.logDebug("onReceive", networkInfo.getTypeName() + " - CONNECTED ("+networkInfo.getType()+")");
+            } else {
+            	LOGGER.logDebug("onReceive", networkInfo.getTypeName() + " - DISCONNECTED ("+networkInfo.getType()+")");
+            }
+        }
+       
+        
+        IActivityManager am = (IActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+        LOGGER.logDebug("onReceive", "*********************** NETWORKSTATUS: "+type.ordinal());
+        am.executeJS("try{if(Appverse&&Appverse.Net){Appverse.Net.NetworkStatus = " + type.ordinal() + "; localStorage.setItem('_NetworkStatus', Appverse.Net.NetworkStatus); Appverse.Net.onConnectivityChange(Appverse.Net.NetworkStatus);}}catch(e){console.log('Error setting network status from AndroidNetworkReceiver(please check onConnectivityChange method): '+e);}");
+        //am.executeJS("Appverse.Net.onConnectivityChange",type.ordinal());
+		
 	}
 	
 	private class ProxySettingsAction implements Runnable {

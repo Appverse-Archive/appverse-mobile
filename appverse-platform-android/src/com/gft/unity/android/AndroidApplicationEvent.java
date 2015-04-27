@@ -23,10 +23,8 @@
  */
 package com.gft.unity.android;
 
-import com.gft.unity.core.storage.share.AbstractShare;
+public enum AndroidApplicationEvent {
 
-public class AndroidShare extends AbstractShare {
-
-	public AndroidShare() {		
-	}
+	onPause, onResume, onStop, onDestroy
+	
 }

@@ -45,6 +45,8 @@ public interface IActivityManager {
 	
 	public void executeJS(String method, Object[] dataArray);
 	
+	public void executeJS(String json);
+	
 	public boolean startShowSplashScreen();
 	
 	public boolean startDismissSplashScreen();

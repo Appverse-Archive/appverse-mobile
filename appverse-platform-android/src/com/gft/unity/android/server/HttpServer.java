@@ -26,6 +26,7 @@ package com.gft.unity.android.server;
 import java.util.Properties;
 
 import android.content.Context;
+import android.os.Build;
 import android.webkit.WebView;
 
 import com.gft.unity.android.AndroidSystemLogger;
@@ -97,12 +98,19 @@ public class HttpServer extends com.gft.unity.core.system.server.HttpServer {
 	public Properties getServerProperties() {
 		if (this.serverProperties == null) {
 			this.serverProperties = com.gft.unity.core.system.server.HttpServer.SERVER_CONFIG;
-			this.serverProperties.setProperty("chain.chain",
-					"asset service");
-			this.serverProperties.setProperty("asset.class",
-					"com.gft.unity.android.server.handler.AssetHandler");
-			this.serverProperties.setProperty("service.class",
+			
+			/* removed internal service handler in Appverse 5 (only possible for Android devices 4.2 version or higher, due to security risks) */
+			if(Build.VERSION.SDK_INT >= 17){ 
+				this.serverProperties.setProperty("chain.chain", "asset");  // only the asset handler is added
+				this.serverProperties.setProperty("asset.class",
+						"com.gft.unity.android.server.handler.AssetHandler");
+			} else {
+				this.serverProperties.setProperty("chain.chain", "asset service"); // both the asset handler and the service handler are added
+				this.serverProperties.setProperty("asset.class",
+						"com.gft.unity.android.server.handler.AssetHandler");
+				this.serverProperties.setProperty("service.class",
 					"com.gft.unity.android.server.handler.ServiceHandler");
+			}
 		}
 		return this.serverProperties;
 	}

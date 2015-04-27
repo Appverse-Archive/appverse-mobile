@@ -710,7 +710,10 @@ public class AndroidSystem extends AbstractSystem {
 						.GetInstance()
 						.GetService(
 								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-			
+				
+				// [AMOB-27] the new activity/application is launched as a new task (not grouped with the launcher app tasks stack)
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);   
+				
 				boolean result = aam.startActivity(intent);
 				
 				if(!result) {
