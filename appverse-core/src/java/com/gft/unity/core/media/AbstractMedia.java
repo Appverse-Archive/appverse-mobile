@@ -69,12 +69,6 @@ public abstract class AbstractMedia implements IAudio, ICamera, IVideo {
     public abstract MediaMetadata TakeSnapshot();
     
     @Override
-    public abstract void DetectQRCode (boolean autoHandleQR);
-
-    @Override
-    public abstract QRType HandleQRCode (MediaQRContent mediaQRContent);
-
-    @Override
     public abstract boolean StartAudioRecording(String outputFilePath);
 
     @Override

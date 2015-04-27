@@ -46,7 +46,7 @@ public abstract class AbstractPim implements ICalendar, IContacts {
     public abstract boolean UpdateContact(String ID, Contact newContactData);
     
     @Override
-    public abstract Contact GetContact(String id);
+    public abstract void GetContact(String id);
     
     @Override
     public abstract CalendarEntry CreateCalendarEntry(CalendarEntry entry);
@@ -55,10 +55,10 @@ public abstract class AbstractPim implements ICalendar, IContacts {
     public abstract boolean DeleteCalendarEntry(CalendarEntry entry);
 
     @Override
-    public abstract CalendarEntry[] ListCalendarEntries(DateTime date);
+    public abstract void ListCalendarEntries(DateTime date);
 
     @Override
-    public abstract CalendarEntry[] ListCalendarEntries(DateTime startDate,
+    public abstract void ListCalendarEntries(DateTime startDate,
             DateTime endDate);
 
     @Override

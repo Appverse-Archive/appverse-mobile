@@ -29,5 +29,5 @@ public abstract class AbstractTelephony implements ITelephony {
     }
 
     @Override
-    public abstract ICallControl Call(String number, CallType type);
+    public abstract void Call(String number, CallType type);
 }

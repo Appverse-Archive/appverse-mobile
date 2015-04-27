@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 
 public class HttpServer {
 
-    protected static final Properties SERVER_CONFIG;
+    public static final Properties SERVER_CONFIG;
 
     static {
         SERVER_CONFIG = new Properties();

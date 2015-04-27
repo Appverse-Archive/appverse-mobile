@@ -30,5 +30,5 @@ public interface ITelephony {
      * @param number
      * @param type
      */
-    public ICallControl Call(String number, CallType type);
+    public void Call(String number, CallType type);
 }
