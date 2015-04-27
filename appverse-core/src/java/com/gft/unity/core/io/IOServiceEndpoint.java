@@ -29,7 +29,8 @@ public class IOServiceEndpoint {
     private String path;
     private int port;
     private String scheme;
-    private String proxyUrl;
+    private String proxyUrl;    
+    private String fingerprint;
 
     public IOServiceEndpoint() {
     }
@@ -73,6 +74,15 @@ public class IOServiceEndpoint {
     public void setProxyUrl(String proxyUrl) {
         this.proxyUrl = proxyUrl;
     }
+    
+    public String getFingerprint() {
+        return fingerprint;
+    }
+
+    public void setFingerprint(String fingerprint) {
+        this.fingerprint = fingerprint;
+    }
+    
 
     @Override
     public String toString() {
@@ -87,6 +97,8 @@ public class IOServiceEndpoint {
         builder.append(scheme);
         builder.append(", proxyUrl=");
         builder.append(proxyUrl);
+        builder.append(", fingerprint=");
+        builder.append(fingerprint);
         builder.append("]");
         return builder.toString();
     }
