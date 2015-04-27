@@ -23,19 +23,20 @@
  */
 using System;
 
-namespace Unity.Core.Analytics
+namespace Unity.Core.Nfc
 {
-	public abstract class AbstractAnalytics: IAnalytics
+	public class NFCPaymentSecurityException
 	{
-		#region IAnalytics methods
-		public abstract bool StartTracking (string webPropertyID);
+		/// <summary>
+		/// Parameterless constructor is needed when parsing jsonstring to object.
+		/// </summary>
+        public NFCPaymentSecurityException()
+		{
+		}
 
-		public abstract bool StopTracking ();
+        public NFCPaymentSecurityExceptionType Type { get; set; }
+		public string Message { get; set; }
 
-		public abstract bool TrackEvent (string group, string action, string label, int value);
-
-		public abstract bool TrackPageView (string relativeUrl);
-		#endregion
 	}
 }
 

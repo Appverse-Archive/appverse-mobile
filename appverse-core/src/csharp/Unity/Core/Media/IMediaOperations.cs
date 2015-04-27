@@ -24,58 +24,110 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Unity.Core.Media
 {
-	public interface IMediaOperations
-	{
-		/// <summary>
-		/// Get Media metadata.
-		/// </summary>
-		/// <param name="filePath">The media file path.</param>
-		/// <returns>Media metadata.</returns>
-		MediaMetadata GetMetadata (string filePath);
+    public interface IMediaOperations
+    {
+#if !WP8
+        /// <summary>
+        /// Get Media metadata.
+        /// </summary>
+        /// <param name="filePath">The media file path.</param>
+        /// <returns>Media metadata.</returns>
+        MediaMetadata GetMetadata(string filePath);
 
-		/// <summary>
-		/// Start playing media.
-		/// </summary>
-		/// <param name="filePath">The media file path.</param>
-		bool Play (string filePath);
+        /// <summary>
+        /// Start playing media.
+        /// </summary>
+        /// <param name="filePath">The media file path.</param>
+        bool Play(string filePath);
 
-		/// <summary>
-		/// Start playing media stream.
-		/// </summary>
-		/// <param name="url">Streaming url</param>
-		bool PlayStream (string url);
+        /// <summary>
+        /// Start playing media stream.
+        /// </summary>
+        /// <param name="url">Streaming url</param>
+        bool PlayStream(string url);
 
-		/// <summary>
-		/// Move player to the given position in the media.
-		/// </summary>
-		/// <param name="position">Index Position.</param>
-		long SeekPosition (long position);
+        /// <summary>
+        /// Move player to the given position in the media.
+        /// </summary>
+        /// <param name="position">Index Position.</param>
+        long SeekPosition(long position);
 
-		/// <summary>
-		/// Stop playing media file.
-		/// </summary>
-		bool Stop ();
+        /// <summary>
+        /// Stop playing media file.
+        /// </summary>
+        bool Stop();
 
-		/// <summary>
-		/// Pause playing media file.
-		/// </summary>
-		bool Pause ();
+        /// <summary>
+        /// Pause playing media file.
+        /// </summary>
+        bool Pause();
 
-		/// <summary>
-		/// Player current state.
-		/// </summary>
-		//MediaState State { get; }
-		MediaState GetState ();
+        /// <summary>
+        /// Player current state.
+        /// </summary>
+        //MediaState State { get; }
+        MediaState GetState();
 
-		/// <summary>
-		/// Current media on player.
-		/// </summary>
-		//MediaMetadata CurrentMedia { get; }
+        /// <summary>
+        /// Current media on player.
+        /// </summary>
+        //MediaMetadata CurrentMedia { get; }
 
-		MediaMetadata GetCurrentMedia ();
+        MediaMetadata GetCurrentMedia();
+#else
+        /// <summary>
+        /// Get Media metadata.
+        /// </summary>
+        /// <param name="filePath">The media file path.</param>
+        /// <returns>Media metadata.</returns>
+        Task<MediaMetadata> GetMetadata(string filePath);
 
-	}
+        /// <summary>
+        /// Start playing media.
+        /// </summary>
+        /// <param name="filePath">The media file path.</param>
+        Task<bool> Play(string filePath);
+
+        /// <summary>
+        /// Start playing media stream.
+        /// </summary>
+        /// <param name="url">Streaming url</param>
+        Task<bool> PlayStream(string url);
+
+        /// <summary>
+        /// Move player to the given position in the media.
+        /// </summary>
+        /// <param name="position">Index Position.</param>
+        Task<long> SeekPosition(long position);
+
+        /// <summary>
+        /// Stop playing media file.
+        /// </summary>
+        Task<bool> Stop();
+
+        /// <summary>
+        /// Pause playing media file.
+        /// </summary>
+        Task<bool> Pause();
+
+        /// <summary>
+        /// Player current state.
+        /// </summary>
+        //MediaState State { get; }
+        Task<MediaState> GetState();
+
+        /// <summary>
+        /// Current media on player.
+        /// </summary>
+        //MediaMetadata CurrentMedia { get; }
+
+        Task<MediaMetadata> GetCurrentMedia();
+#endif
+    }
 }

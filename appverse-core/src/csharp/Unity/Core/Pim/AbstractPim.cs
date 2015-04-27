@@ -26,35 +26,46 @@ using System.Collections.Generic;
 using System.Text;
 using System.Collections;
 using System.Text.RegularExpressions;
+#if WP8
+using System.Threading.Tasks;
+#endif
+
 
 namespace Unity.Core.Pim
 {
-	public abstract class AbstractPim : ICalendar, IContacts
-	{
+    public abstract class AbstractPim : ICalendar, IContacts
+    {
 
-		
+
         #region Miembros de ICalendar
+#if !WP8
+		public abstract void ListCalendarEntries (DateTime date);
 
-		public abstract CalendarEntry[] ListCalendarEntries (DateTime date);
-
-		public abstract CalendarEntry[] ListCalendarEntries (DateTime startDate, DateTime endDate);
+		public abstract void ListCalendarEntries (DateTime startDate, DateTime endDate);
 
 		public abstract CalendarEntry CreateCalendarEntry (CalendarEntry entry);
 
 		public abstract bool DeleteCalendarEntry (CalendarEntry entry);
 
 		public abstract bool MoveCalendarEntry (CalendarEntry entry, DateTime newStartDate, DateTime newEndDate);
+#else
+        public abstract Task ListCalendarEntries(DateTime date);
+        public abstract Task ListCalendarEntries(DateTime startDate, DateTime endDate);
+        public abstract Task<CalendarEntry> CreateCalendarEntry(CalendarEntry entry);
+        public abstract Task<bool> DeleteCalendarEntry(CalendarEntry entry);
+        public abstract Task<bool> MoveCalendarEntry(CalendarEntry entry, DateTime newStartDate, DateTime newEndDate);
+#endif
 
         #endregion
 
         #region Miembros de IContacts
-
+#if !WP8
 		public void ListContacts ()
 		{
 			ListContacts (null);
 		}
 
-		public abstract Contact GetContact(String id);
+		public abstract void GetContact(String id);
 
 		public abstract void ListContacts (ContactQuery query);
 		
@@ -90,7 +101,16 @@ namespace Unity.Core.Pim
 		public abstract bool UpdateContact (string ID, Contact newContactData);
 
 		public abstract bool DeleteContact (Contact contact);
-
+#else
+        public abstract Task GetContact(string id);
+        public abstract Task ListContacts();
+        public abstract Task ListContacts(ContactQuery query);
+        public abstract Task<Contact> CreateContact(Contact contactData);
+        public abstract Task<bool> UpdateContact(string ID, Contact newContactData);
+        public abstract Task<bool> DeleteContact(Contact contact);
+#endif
         #endregion
-	}
+
+
+    }
 }

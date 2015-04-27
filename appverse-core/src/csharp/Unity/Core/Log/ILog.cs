@@ -21,37 +21,65 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Log
 {
-	public interface ILog
-	{
+    public interface ILog
+    {
+#if !WP8
+        /// <summary>
+        /// Logs the given system
+        /// </summary>
+        /// <param name="message">
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        bool Log(string message);
 
-		/// <summary>
-		/// Logs the given system
-		/// </summary>
-		/// <param name="message">
-		/// A <see cref="System.String"/>
-		/// </param>
-		/// <returns>
-		/// A <see cref="System.Boolean"/>
-		/// </returns>
-		bool Log (string message);
-		
-		/// <summary>
-		///  
-		/// </summary>
-		/// <param name="level">
-		/// A <see cref="LogLevel"/>
-		/// </param>
-		/// <param name="message">
-		/// A <see cref="System.String"/>
-		/// </param>
-		/// <returns>
-		/// A <see cref="System.Boolean"/>
-		/// </returns>
-		bool Log (string message, LogLevel level);
+        /// <summary>
+        ///  
+        /// </summary>
+        /// <param name="level">
+        /// A <see cref="LogLevel"/>
+        /// </param>
+        /// <param name="message">
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        bool Log(string message, LogLevel level);
+#else
+        /// <summary>
+        /// Logs the given system
+        /// </summary>
+        /// <param name="message">
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        Task<bool> Log(string message);
 
-        
-	}//end ILog
+        /// <summary>
+        ///  
+        /// </summary>
+        /// <param name="level">
+        /// A <see cref="LogLevel"/>
+        /// </param>
+        /// <param name="message">
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        Task<bool> Log(string message, LogLevel level);
+#endif
+
+    }//end ILog
 
 }//end namespace Log

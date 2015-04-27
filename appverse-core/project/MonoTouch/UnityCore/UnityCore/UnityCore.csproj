@@ -62,8 +62,10 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
-    <Reference Include="monotouch" />
     <Reference Include="System.Data" />
+    <Reference Include="Xamarin.iOS">
+      <HintPath>..\..\..\..\..\..\..\..\..\Library\Frameworks\Xamarin.iOS.framework\Versions\8.9.1.3\lib\mono\Xamarin.iOS\Xamarin.iOS.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
@@ -218,21 +220,12 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Log\LogEnumerations.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOHeader.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\IO\IOCookie.cs" />
-    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Analytics\IAnalytics.cs" />
-    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Analytics\AbstractAnalytics.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\I18N\ResourceLiteralDictionary.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\System\UnityContext.cs" />
-    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\IWebtrekk.cs" />
-    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\AbstractWebtrekk.cs" />
-    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\WebtrekkParameter.cs" />
-    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\WebtrekkParametersCollection.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\NetworkData.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\NotificationEnumerations.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\NotificationData.cs" />
-    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\RegistrationToken.cs" />
-    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\RegistrationError.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Notification\SchedulingData.cs" />
-    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Media\MediaQRContent.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\ILoader.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\Module.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\ModuleParam.cs" />
@@ -246,11 +239,14 @@
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\ContactLite.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Pim\ContactQuery.cs" />
     <Compile Include="..\..\..\..\src\csharp\Unity\Core\Net\SecondaryBrowserOptions.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\SecurityConfig.cs" />
+    <Compile Include="..\..\..\..\src\csharp\Unity\Core\Security\SecurityEnumerations.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\Analytics\" />
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\Webtrekk\" />
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\AppLoader\" />
     <Folder Include="..\..\..\..\src\csharp\Unity\Core\System\Launch\" />
+    <Folder Include="..\..\..\..\src\csharp\Unity\Core\" />
   </ItemGroup>
 </Project>

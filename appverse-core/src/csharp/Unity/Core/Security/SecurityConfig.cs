@@ -1,4 +1,4 @@
-/*
+﻿/*
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
@@ -22,29 +22,16 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
+using System.Xml.Serialization;
+using System.Collections.Generic;
 
-namespace Unity.Core.Notification
+namespace Unity.Core.Security
 {
-	public class RegitrationToken
+	[XmlRootAttribute("security-config", Namespace = "", IsNullable = false)]
+	public class SecurityConfig
 	{
-		public RegitrationToken ()
-		{
-		}
-
-		public byte[] Binary { get; set; }
-		
-		public int BinaryLength {
-			get {
-				if (Binary != null) {
-					return Binary.Length;
-				} else {
-					return 0;
-				}
-			}
-		}
-
-		public string StringRepresentation { get; set; }
-
+		[XmlArray("keychain-items-with-passcode-protection", IsNullable = false), XmlArrayItem("key", typeof(String))]
+		public List<String> ProtectedKeys = new List<String> ();
 	}
 }
 

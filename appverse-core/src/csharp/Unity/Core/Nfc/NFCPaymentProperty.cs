@@ -23,16 +23,18 @@
  */
 using System;
 
-namespace Unity.Core.Webtrekk
+namespace Unity.Core.Nfc
 {
-	public class WebtrekkParameter
+	public class NFCPaymentProperty
 	{
-		public WebtrekkParameter ()
+		/// <summary>
+		/// Parameterless constructor is needed when parsing jsonstring to object.
+		/// </summary>
+        public NFCPaymentProperty()
 		{
 		}
 
-		public string Name { get; set; }
-
+        public string Key { get; set; }
 		public string Value { get; set; }
 	}
 }

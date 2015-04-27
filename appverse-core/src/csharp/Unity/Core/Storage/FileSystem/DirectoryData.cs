@@ -24,26 +24,29 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+#if WP8
+using System.Threading.Tasks;
+#endif
 using Unity.Core.System;
 
 namespace Unity.Core.Storage.FileSystem
 {
-	public class DirectoryData
-	{
-		public string FullName { get; set; }
+    public class DirectoryData
+    {
+        public string FullName { get; set; }
 
-		/// <summary>
-		/// Parameterless constructor is needed when parsing jsonstring to object.
-		/// </summary>
-		public DirectoryData ()
-		{
-		}
+        /// <summary>
+        /// Parameterless constructor is needed when parsing jsonstring to object.
+        /// </summary>
+        public DirectoryData()
+        {
+        }
 
-		public DirectoryData (string path)
-		{
-			this.FullName = path;
-		}
-
+        public DirectoryData(string path)
+        {
+            this.FullName = path;
+        }
+#if !WP8
 		public FileData[] GetFiles ()
 		{
 			List<FileData> list = new List<FileData> ();
@@ -80,6 +83,19 @@ namespace Unity.Core.Storage.FileSystem
 
 			return list.ToArray ();
 		}
-        
-	}
+#else
+        public virtual Task<FileData[]> GetFiles()
+        {
+            return null;
+        }
+
+        public virtual Task<FileData[]> GetDirectories()
+        {
+            return null;
+        }
+
+#endif
+
+
+    }
 }

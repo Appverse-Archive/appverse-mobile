@@ -27,8 +27,11 @@ using System.Text;
 
 namespace Unity.Core.System.Server.Net
 {
-	public interface IHttpHandler
-	{
+    public interface IHttpHandler
+    {
+#if !WP8
 		bool Process (HttpServer server, HttpRequest request, HttpResponse response);
-	}
+#else
+#endif
+    }
 }

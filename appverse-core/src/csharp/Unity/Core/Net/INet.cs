@@ -21,64 +21,119 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Net
 {
-	public interface INet
-	{
+    public interface INet
+    {
+#if !WP8
+        /// <summary>
+        /// List of supported network types (cable, wifi, etc.) on the current device.
+        /// </summary>
+        /// <returns>Network types.</returns>
+        NetworkType[] GetNetworkTypeSupported();
 
-		/// <summary>
-		/// List of supported network types (cable, wifi, etc.) on the current device.
-		/// </summary>
-		/// <returns>Network types.</returns>
-		NetworkType[] GetNetworkTypeSupported ();
+        /// <summary>
+        /// Detect if network is reachable or not.
+        /// </summary>
+        /// <param name="url">The url to check reachability.</param>
+        /// <returns>True if reachable.</returns>
+        bool IsNetworkReachable(string url);
 
-		/// <summary>
-		/// Detect if network is reachable or not.
-		/// </summary>
-		/// <param name="url">The url to check reachability.</param>
-		/// <returns>True if reachable.</returns>
-		bool IsNetworkReachable (string url);
+        /// <summary>
+        /// Get the prefered network type to reach the given url.
+        /// </summary>
+        /// <param name="url">The url to check reachability.</param>
+        /// <returns>Network type.</returns>
+        NetworkType GetNetworkTypeReachable(string url);
 
-		/// <summary>
-		/// Get the prefered network type to reach the given url.
-		/// </summary>
-		/// <param name="url">The url to check reachability.</param>
-		/// <returns>Network type.</returns>
-		NetworkType GetNetworkTypeReachable (string url);
-        
-		/// <summary>
-		/// List of network types available to reach the given url.
-		/// </summary>
-		/// <param name="url">The url to check reachability.</param>
-		/// <returns>List of network types, ordered by preference.</returns>
-		NetworkType[] GetNetworkTypeReachableList (string url);
-		
-		bool OpenBrowser (string title, string buttonText, string url);
+        /// <summary>
+        /// List of network types available to reach the given url.
+        /// </summary>
+        /// <param name="url">The url to check reachability.</param>
+        /// <returns>List of network types, ordered by preference.</returns>
+        NetworkType[] GetNetworkTypeReachableList(string url);
 
-		bool OpenBrowserWithOptions (SecondaryBrowserOptions browserOptions);
-		
-		bool ShowHtml (string title, string buttonText, string html);
+        bool OpenBrowser(string title, string buttonText, string url);
 
-		bool ShowHtmlWithOptions (SecondaryBrowserOptions browserOptions);
-		
-		/// <summary>
-		/// Downloads the given url file by using the default native handler. 
-		/// </summary>
-		/// <param name="url">
-		/// A <see cref="System.String"/>
-		/// </param>
-		/// <returns>
-		/// A <see cref="System.Boolean"/>
-		/// </returns>
-		bool DownloadFile (string url);
+        bool OpenBrowserWithOptions(SecondaryBrowserOptions browserOptions);
 
-		/// <summary>
-		/// Returns active network connection data.
-		/// </summary>
-		/// A <see cref="Unity.Core.Net.NetworkData"/>
-		NetworkData GetNetworkData();
-		
+        bool ShowHtml(string title, string buttonText, string html);
 
-	}//end INet
+        bool ShowHtmlWithOptions(SecondaryBrowserOptions browserOptions);
+
+        /// <summary>
+        /// Downloads the given url file by using the default native handler. 
+        /// </summary>
+        /// <param name="url">
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        bool DownloadFile(string url);
+
+        /// <summary>
+        /// Returns active network connection data.
+        /// </summary>
+        /// A <see cref="Unity.Core.Net.NetworkData"/>
+        NetworkData GetNetworkData();
+#else
+        /// <summary>
+        /// List of supported network types (cable, wifi, etc.) on the current device.
+        /// </summary>
+        /// <returns>Network types.</returns>
+        Task<NetworkType[]> GetNetworkTypeSupported();
+
+        /// <summary>
+        /// Detect if network is reachable or not.
+        /// </summary>
+        /// <param name="url">The url to check reachability.</param>
+        /// <returns>True if reachable.</returns>
+        Task<bool> IsNetworkReachable(string url);
+
+        /// <summary>
+        /// Get the prefered network type to reach the given url.
+        /// </summary>
+        /// <param name="url">The url to check reachability.</param>
+        /// <returns>Network type.</returns>
+        Task<NetworkType> GetNetworkTypeReachable(string url);
+
+        /// <summary>
+        /// List of network types available to reach the given url.
+        /// </summary>
+        /// <param name="url">The url to check reachability.</param>
+        /// <returns>List of network types, ordered by preference.</returns>
+        Task<NetworkType[]> GetNetworkTypeReachableList(string url);
+
+        Task<bool> OpenBrowser(string title, string buttonText, string url);
+
+        Task<bool> OpenBrowserWithOptions(SecondaryBrowserOptions browserOptions);
+
+        Task<bool> ShowHtml(string title, string buttonText, string html);
+
+        Task<bool> ShowHtmlWithOptions(SecondaryBrowserOptions browserOptions);
+
+        /// <summary>
+        /// Downloads the given url file by using the default native handler. 
+        /// </summary>
+        /// <param name="url">
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <returns>
+        /// A <see cref="System.Boolean"/>
+        /// </returns>
+        Task<bool> DownloadFile(string url);
+
+        /// <summary>
+        /// Returns active network connection data.
+        /// </summary>
+        /// A <see cref="Unity.Core.Net.NetworkData"/>
+        Task<NetworkData> GetNetworkData();
+#endif
+
+    }//end INet
 
 }//end namespace Net

@@ -21,33 +21,57 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Messaging
 {
-	public interface IMessaging
-	{
+    public interface IMessaging
+    {
+#if !WP8
+        /// <summary>
+        /// Send a text message (SMS).
+        /// </summary>
+        /// <param name="phoneNumber">The address to send the message to.</param>
+        /// <param name="text">The message body.</param>
+        bool SendMessageSMS(string phoneNumber, string text);
 
-		/// <summary>
-		/// Send a text message (SMS).
-		/// </summary>
-		/// <param name="phoneNumber">The address to send the message to.</param>
-		/// <param name="text">The message body.</param>
-		bool SendMessageSMS (string phoneNumber, string text);
+        /// <summary>
+        /// Send a media message (MMS).
+        /// </summary>
+        /// <param name="phoneNumber">The address to send the message to.</param>
+        /// <param name="text">The message body.</param>
+        /// <param name="attachment">Attachament data.</param>
+        bool SendMessageMMS(string phoneNumber, string text, AttachmentData attachment);
 
-		/// <summary>
-		/// Send a media message (MMS).
-		/// </summary>
-		/// <param name="phoneNumber">The address to send the message to.</param>
-		/// <param name="text">The message body.</param>
-		/// <param name="attachment">Attachament data.</param>
-		bool SendMessageMMS (string phoneNumber, string text, AttachmentData attachment);
+        /// <summary>
+        /// Send an email message.
+        /// </summary>
+        /// <param name="emailData">Email message data.</param>
+        bool SendEmail(EmailData emailData);
+#else
+        /// <summary>
+        /// Send a text message (SMS).
+        /// </summary>
+        /// <param name="phoneNumber">The address to send the message to.</param>
+        /// <param name="text">The message body.</param>
+        Task<bool> SendMessageSMS(string phoneNumber, string text);
 
-		/// <summary>
-		/// Send an email message.
-		/// </summary>
-		/// <param name="emailData">Email message data.</param>
-		bool SendEmail (EmailData emailData);
+        /// <summary>
+        /// Send a media message (MMS).
+        /// </summary>
+        /// <param name="phoneNumber">The address to send the message to.</param>
+        /// <param name="text">The message body.</param>
+        /// <param name="attachment">Attachament data.</param>
+        Task<bool> SendMessageMMS(string phoneNumber, string text, AttachmentData attachment);
 
+        /// <summary>
+        /// Send an email message.
+        /// </summary>
+        /// <param name="emailData">Email message data.</param>
+        Task<bool> SendEmail(EmailData emailData);
+#endif
 
-	}//end IMessaging
+    }//end IMessaging
 
 }//end namespace Messaging

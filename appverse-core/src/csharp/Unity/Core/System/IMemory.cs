@@ -21,58 +21,107 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.System
 {
-	public interface IMemory
-	{
+    public interface IMemory
+    {
+#if !WP8
+        /// <summary>
+        /// Helper method to return available memory types.
+        /// </summary>
+        /// <returns>List of supported memory types.</returns>
+        MemoryType[] GetMemoryTypes();
 
-		/// <summary>
-		/// Helper method to return available memory types.
-		/// </summary>
-		/// <returns>List of supported memory types.</returns>
-		MemoryType[] GetMemoryTypes ();
+        /// <summary>
+        /// Helper method to return supported memory usage types.
+        /// </summary>
+        /// <returns>List of supported memory usage types.</returns>
+        MemoryUse[] GetMemoryUses();
 
-		/// <summary>
-		/// Helper method to return supported memory usage types.
-		/// </summary>
-		/// <returns>List of supported memory usage types.</returns>
-		MemoryUse[] GetMemoryUses ();
+        /// <summary>
+        /// Installed memory types.
+        /// </summary>
+        /// <returns>List of installed memory types.</returns>
+        MemoryType[] GetMemoryAvailableTypes();
 
-		/// <summary>
-		/// Installed memory types.
-		/// </summary>
-		/// <returns>List of installed memory types.</returns>
-		MemoryType[] GetMemoryAvailableTypes ();
+        /// <summary>
+        /// Provides a global map of the memory status for all storage types installed.
+        /// </summary>
+        /// <returns>MemoryStatus</returns>
+        MemoryStatus GetMemoryStatus();
 
-		/// <summary>
-		/// Provides a global map of the memory status for all storage types installed.
-		/// </summary>
-		/// <returns>MemoryStatus</returns>
-		MemoryStatus GetMemoryStatus ();
+        /// <summary>
+        /// Provides a map of the memory for the given storage type.
+        /// </summary>
+        /// <param name="type">Type of memory.</param>
+        /// <returns>MemoryStatus</returns>
+        MemoryStatus GetMemoryStatus(MemoryType type);
 
-		/// <summary>
-		/// Provides a map of the memory for the given storage type.
-		/// </summary>
-		/// <param name="type">Type of memory.</param>
-		/// <returns>MemoryStatus</returns>
-		MemoryStatus GetMemoryStatus (MemoryType type);
+        /// <summary>
+        /// Provides memory available for the given use.
+        /// </summary>
+        /// <param name="use">Type of usage.</param>
+        /// <returns>Memory available in bytes.</returns>
+        long GetMemoryAvailable(MemoryUse use);
 
-		/// <summary>
-		/// Provides memory available for the given use.
-		/// </summary>
-		/// <param name="use">Type of usage.</param>
-		/// <returns>Memory available in bytes.</returns>
-		long GetMemoryAvailable (MemoryUse use);
+        /// <summary>
+        /// Provides memory available for the given use and of the given type.
+        /// </summary>
+        /// <param name="use">Type of usage.</param>
+        /// <param name="type">Type of storage.</param>
+        /// <returns>Memory available in bytes.</returns>
+        long GetMemoryAvailable(MemoryUse use, MemoryType type);
+#else
+        /// <summary>
+        /// Helper method to return available memory types.
+        /// </summary>
+        /// <returns>List of supported memory types.</returns>
+        Task<MemoryType[]> GetMemoryTypes();
 
-		/// <summary>
-		/// Provides memory available for the given use and of the given type.
-		/// </summary>
-		/// <param name="use">Type of usage.</param>
-		/// <param name="type">Type of storage.</param>
-		/// <returns>Memory available in bytes.</returns>
-		long GetMemoryAvailable (MemoryUse use, MemoryType type);
+        /// <summary>
+        /// Helper method to return supported memory usage types.
+        /// </summary>
+        /// <returns>List of supported memory usage types.</returns>
+        Task<MemoryUse[]> GetMemoryUses();
 
+        /// <summary>
+        /// Installed memory types.
+        /// </summary>
+        /// <returns>List of installed memory types.</returns>
+        Task<MemoryType[]> GetMemoryAvailableTypes();
 
-	}//end IMemory
+        /// <summary>
+        /// Provides a global map of the memory status for all storage types installed.
+        /// </summary>
+        /// <returns>MemoryStatus</returns>
+        Task<MemoryStatus> GetMemoryStatus();
+
+        /// <summary>
+        /// Provides a map of the memory for the given storage type.
+        /// </summary>
+        /// <param name="type">Type of memory.</param>
+        /// <returns>MemoryStatus</returns>
+        Task<MemoryStatus> GetMemoryStatus(MemoryType type);
+
+        /// <summary>
+        /// Provides memory available for the given use.
+        /// </summary>
+        /// <param name="use">Type of usage.</param>
+        /// <returns>Memory available in bytes.</returns>
+        Task<long> GetMemoryAvailable(MemoryUse use);
+
+        /// <summary>
+        /// Provides memory available for the given use and of the given type.
+        /// </summary>
+        /// <param name="use">Type of usage.</param>
+        /// <param name="type">Type of storage.</param>
+        /// <returns>Memory available in bytes.</returns>
+        Task<long> GetMemoryAvailable(MemoryUse use, MemoryType type);
+#endif
+
+    }//end IMemory
 
 }//end namespace System

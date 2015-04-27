@@ -21,22 +21,23 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Pim
 {
-	public interface IContacts
-	{
-
+    public interface IContacts
+    {
+#if !WP8
 		
 		/// <summary>
 		/// Get all the available data for a Contact
 		/// </summary>
-		/// <returns>the Contact Object</returns>
-		Contact GetContact (string id);
+		void GetContact (string id);
 
 		/// <summary>
 		/// List of stored phone contacts.
 		/// </summary>
-		/// <returns>List of contacts.</returns>
 		void ListContacts ();
 
 		/// <summary>
@@ -69,8 +70,47 @@ namespace Unity.Core.Pim
 		bool DeleteContact (Contact contact);
 
 		/// TODO: share contact.
+#else
+        /// <summary>
+        /// Get all the available data for a Contact
+        /// </summary>
+        Task GetContact(string id);
 
+        /// <summary>
+        /// List of stored phone contacts.
+        /// </summary>
+        Task ListContacts();
 
-	}//end IContacts
+        /// <summary>
+        /// List of stored phone contacts that match given query.
+        /// </summary>
+        /// <param name="query">Search query.</param>
+        /// <returns>List of contacts.</returns>
+        Task ListContacts(ContactQuery query);
+
+        /// <summary>
+        /// Creates a Contact based on given contact data.
+        /// </summary>
+        /// <param name="contactData">Contact data.</param>
+        /// <returns>Created contact.</returns>
+        Task<Contact> CreateContact(Contact contactData);
+
+        /// <summary>
+        /// Updates contact data (given its ID) with the given contact data.
+        /// </summary>
+        /// <param name="ID">Contact identifier.</param>
+        /// <param name="newContactData">Data to add to contact.</param>
+        /// <returns>True on successful update.</returns>
+        Task<bool> UpdateContact(string ID, Contact newContactData);
+
+        /// <summary>
+        /// Deletes the given contact.
+        /// </summary>
+        /// <param name="contact">Contact to be deleted.</param>
+        /// <returns>True on successful deletion.</returns>
+        Task<bool> DeleteContact(Contact contact);
+#endif
+
+    }//end IContacts
 
 }//end namespace Pim

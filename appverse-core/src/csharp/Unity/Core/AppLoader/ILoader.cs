@@ -22,27 +22,43 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.AppLoader
 {
-	public interface ILoader
-	{
+    public interface ILoader
+    {
+#if !WP8
+        void InitializeModuleContext(ModuleContext context);
 
-		void InitializeModuleContext(ModuleContext context);
+        Module[] ListInstalledModules();
 
-		Module[] ListInstalledModules();
+        void UpdateModules(Module[] modules, string callbackId);
 
-		void UpdateModules(Module[] modules, string callbackId);
+        void UpdateModule(Module module, string callbackId);
 
-		void UpdateModule(Module module, string callbackId);
+        void DeleteModules(Module[] modules);
 
-		void DeleteModules(Module[] modules);
+        void LoadModule(Module module, ModuleParam[] moduleParams);
 
-		void LoadModule(Module module, ModuleParam[] moduleParams);
+        void LoadModule(Module module, ModuleParam[] moduleParams, bool autoUpdate);
+#else
+        Task InitializeModuleContext(ModuleContext context);
 
-		void LoadModule(Module module, ModuleParam[] moduleParams, bool autoUpdate);
+        Task<Module[]> ListInstalledModules();
 
+        Task UpdateModules(Module[] modules, string callbackId);
 
-	}
+        Task UpdateModule(Module module, string callbackId);
+
+        Task DeleteModules(Module[] modules);
+
+        Task LoadModule(Module module, ModuleParam[] moduleParams);
+
+        Task LoadModule(Module module, ModuleParam[] moduleParams, bool autoUpdate);
+#endif
+
+    }
 }
 

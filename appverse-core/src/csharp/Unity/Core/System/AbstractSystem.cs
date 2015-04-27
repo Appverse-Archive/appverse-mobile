@@ -27,81 +27,103 @@ using System.Text;
 using System.Xml.Serialization;
 using Unity.Core.System.Launch;
 using System.IO;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Unity.Core.System
 {
-	public abstract class AbstractSystem : IDisplay, IHumanInteraction, IMemory, IOperatingSystem, IPower, IProcessor
-	{
+    public abstract class AbstractSystem : IDisplay, IHumanInteraction, IMemory, IOperatingSystem, IPower, IProcessor
+    {
 
-		private static string UNITY_VERSION = "0.1";
-		protected bool locked = false;
-		protected DisplayOrientation lockedOrientation = DisplayOrientation.Portrait;
+#if !WP8
+        private static string UNITY_VERSION = "0.1";
+        protected bool locked = false;
+        protected DisplayOrientation lockedOrientation = DisplayOrientation.Portrait;
 
-		private static string LAUNCH_CONFIG_FILE = "app/config/launch-config.xml";
-		private LaunchConfig launchConfig = new LaunchConfig ();  // empty apps list
-		private string _launchConfigFile = LAUNCH_CONFIG_FILE;
+        private static string LAUNCH_CONFIG_FILE = "app/config/launch-config.xml";
+        private LaunchConfig launchConfig = new LaunchConfig();  // empty apps list
+        private string _launchConfigFile = LAUNCH_CONFIG_FILE;
 
-		public virtual string LaunchConfigFile { 
-			get {
-				return this._launchConfigFile;
-			} 
-			set { 
-				this._launchConfigFile = value; 
-			}
-		}
+        public abstract UnityContext GetUnityContext();
+
+        public virtual string LaunchConfigFile
+        {
+            get
+            {
+                return this._launchConfigFile;
+            }
+            set
+            {
+                this._launchConfigFile = value;
+            }
+        }
 
         #region Internal Unity Methods
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public AbstractSystem ()
-		{
-			LoadLaunchConfig ();
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        public AbstractSystem()
+        {
+            LoadLaunchConfig();
+        }
 
-		public abstract UnityContext GetUnityContext ();
+        
 
 
-		/// <summary>
-		/// Load launch config file
-		/// </summary>
-		protected void LoadLaunchConfig ()
-		{
-			try {   // FileStream to read the XML document.
-				byte[] configFileRawData = GetConfigFileBinaryData ();
-				if (configFileRawData != null) {
-					XmlSerializer serializer = new XmlSerializer (typeof(LaunchConfig));
-					launchConfig = (LaunchConfig)serializer.Deserialize (new MemoryStream(configFileRawData));
-				}
-			} catch (Exception e) {
-				SystemLogger.Log (SystemLogger.Module .CORE, "Error when loading launch configuration", e);
-				launchConfig = new LaunchConfig(); // reset launch config mapping when the services could not be loaded for any reason
-			}
-		}
+        /// <summary>
+        /// Load launch config file
+        /// </summary>
+        protected void LoadLaunchConfig()
+        {
+            try
+            {   // FileStream to read the XML document.
+                byte[] configFileRawData = GetConfigFileBinaryData();
+                if (configFileRawData != null && configFileRawData.Length > 0)
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(LaunchConfig));
+                    launchConfig = (LaunchConfig)serializer.Deserialize(new MemoryStream(configFileRawData));
+                }
+                else
+                {
+                    launchConfig = new LaunchConfig();  // the app has no launch config file available
+                }
+            }
+            catch (Exception e)
+            {
+                SystemLogger.Log(SystemLogger.Module.CORE, "Error when loading launch configuration", e);
+                launchConfig = new LaunchConfig(); // reset launch config mapping when the services could not be loaded for any reason
+            }
+        }
 
-		/// <summary>
-		/// Default method, to be overrided by platform implementation. 
-		/// </summary>
-		/// <returns>
-		/// A <see cref="Stream"/>
-		/// </returns>
-		public virtual byte[] GetConfigFileBinaryData ()
-		{
-			SystemLogger.Log (SystemLogger.Module .CORE, "# Loading Launch Apps Configuration from file: " + LaunchConfigFile);
+        /// <summary>
+        /// Default method, to be overrided by platform implementation. 
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Stream"/>
+        /// </returns>
+        public virtual byte[] GetConfigFileBinaryData()
+        {
+            SystemLogger.Log(SystemLogger.Module.CORE, "# Loading Launch Apps Configuration from file: " + LaunchConfigFile);
 
-			Stream fs = new FileStream (LaunchConfigFile, FileMode.Open);
-			if(fs != null) {
-				return ((MemoryStream)fs).GetBuffer ();
-			} else {
-				return null;
-			}
-		}
+            Stream fs = new FileStream(LaunchConfigFile, FileMode.Open);
+            if (fs != null)
+            {
+                return ((MemoryStream)fs).GetBuffer();
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         #endregion
+#else
+#endif
 
         #region Miembros de IDisplay
-
+#if !WP8
 		/// <summary>
 		/// Returns primary display orientation.
 		/// </summary>
@@ -209,11 +231,24 @@ namespace Unity.Core.System
 		/// The splash screen.
 		/// </returns>
 		public abstract bool DismissSplashScreen ();
-
+#else
+        public abstract Task<DisplayOrientation> GetOrientationCurrent();
+        public abstract Task<DisplayOrientation> GetOrientation(int displayNumber);
+        public abstract Task<DisplayOrientation[]> GetOrientationSupported();
+        public abstract Task<DisplayOrientation[]> GetOrientationSupported(int displayNumber);
+        public abstract Task<int> GetDisplays();
+        public abstract Task<DisplayInfo> GetDisplayInfo();
+        public abstract Task<DisplayInfo> GetDisplayInfo(int displayNumber);
+        public abstract Task LockOrientation(bool lockOrientation, DisplayOrientation orientation);
+        public abstract Task<bool> IsOrientationLocked();
+        public abstract Task<DisplayOrientation> GetLockedOrientation();
+        public abstract Task<bool> ShowSplashScreen();
+        public abstract Task<bool> DismissSplashScreen();
+#endif
         #endregion
 
         #region Miembros de IHumanInteraction
-
+#if !WP8
 		public abstract Locale[] GetLocaleSupported ();
 
 		public abstract Locale GetLocaleCurrent ();
@@ -227,11 +262,19 @@ namespace Unity.Core.System
 		public abstract InputButton[] GetInputButtons ();
 		
 		public abstract bool CopyToClipboard (string text);
-
+#else
+        public abstract Task<Locale[]> GetLocaleSupported();
+        public abstract Task<Locale> GetLocaleCurrent();
+        public abstract Task<InputCapability> GetInputMethodCurrent();
+        public abstract Task<InputCapability[]> GetInputMethods();
+        public abstract Task<InputGesture[]> GetInputGestures();
+        public abstract Task<InputButton[]> GetInputButtons();
+        public abstract Task<bool> CopyToClipboard(string text);
+#endif
         #endregion
 
         #region Miembros de IMemory
-
+#if !WP8
 		/// <summary>
 		/// Returns the available memory types from MemoryType enumeration.
 		/// </summary>
@@ -283,11 +326,19 @@ namespace Unity.Core.System
 		public abstract long GetMemoryAvailable (MemoryUse use);
 
 		public abstract long GetMemoryAvailable (MemoryUse use, MemoryType type);
-
+#else
+        public abstract Task<MemoryType[]> GetMemoryTypes();
+        public abstract Task<MemoryUse[]> GetMemoryUses();
+        public abstract Task<MemoryType[]> GetMemoryAvailableTypes();
+        public abstract Task<MemoryStatus> GetMemoryStatus();
+        public abstract Task<MemoryStatus> GetMemoryStatus(MemoryType type);
+        public abstract Task<long> GetMemoryAvailable(MemoryUse use);
+        public abstract Task<long> GetMemoryAvailable(MemoryUse use, MemoryType type);
+#endif
         #endregion
 
         #region Miembros de IOperatingSystem
-
+#if !WP8
 		public abstract HardwareInfo GetOSHardwareInfo ();
 
 		public abstract OSInfo GetOSInfo ();
@@ -351,10 +402,21 @@ namespace Unity.Core.System
 		{
 			return launchConfig.Apps.ToArray ();
 		}
-
-		#endregion
+#else
+        public abstract Task<UnityContext> GetUnityContext();
+        public abstract Task<HardwareInfo> GetOSHardwareInfo();
+        public abstract Task<OSInfo> GetOSInfo();
+        public abstract Task<string> GetOSUserAgent();
+        public abstract Task DismissApplication();
+        public abstract Task LaunchApplication(App application, string query);
+        public abstract Task LaunchApplication(string appName, string query);
+        public abstract Task<App> GetApplication(string appName);
+        public abstract Task<App[]> GetApplications();
+#endif
+        #endregion
 
         #region Miembros de IPower
+#if !WP8
 		/// <summary>
 		/// Returns battery autonomy time if the battery is discharging or -1 if the device is connected to the main power supply.
 		/// </summary>
@@ -370,12 +432,18 @@ namespace Unity.Core.System
 		}
 
 		public abstract PowerInfo GetPowerInfo ();
-
+#else
+        public abstract Task<long> GetPowerRemainingTime();
+        public abstract Task<PowerInfo> GetPowerInfo();
+#endif
         #endregion
 
         #region Miembros de IProcessor
-
+#if !WP8
 		public abstract CPUInfo GetCPUInfo ();
+#else
+        public abstract Task<CPUInfo> GetCPUInfo();
+#endif
 
         #endregion
     }

@@ -21,11 +21,15 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
+
+#if WP8
+using System.Threading.Tasks;
+#endif
 namespace Unity.Core.Media.Audio
 {
-	public interface IAudio : IMediaOperations
-	{
-
+    public interface IAudio : IMediaOperations
+    {
+#if !WP8
 
 		/// <summary>
 		/// Start recording audio to destination path.
@@ -39,8 +43,21 @@ namespace Unity.Core.Media.Audio
 		/// </summary>
 		/// <returns>True if audio recording could be stopped.</returns>
 		bool StopAudioRecording ();
+#else
+        /// <summary>
+        /// Start recording audio to destination path.
+        /// </summary>
+        /// <param name="outputFilePath">The destination file path.</param>
+        /// <returns>True if audio could be recorded.</returns>
+        Task<bool> StartAudioRecording(string outputFilePath);
 
+        /// <summary>
+        /// Stop recording audio.
+        /// </summary>
+        /// <returns>True if audio recording could be stopped.</returns>
+        Task<bool> StopAudioRecording();
+#endif
 
-	}//end IAudio
+    }//end IAudio
 
 }//end namespace Audio

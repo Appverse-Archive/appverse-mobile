@@ -22,23 +22,31 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Unity.Core.Log
 {
-	public abstract class AbstractLog : ILog
-	{
-		public AbstractLog ()
-		{
-		}
-		
-		#region ILog implementation
-		
+    public abstract class AbstractLog : ILog
+    {
+        public AbstractLog()
+        {
+        }
+
+        #region ILog implementation
+#if !WP8
 		public abstract bool Log (string message);
 		
 		public abstract bool Log (string message, LogLevel level);
-		
-		#endregion
-		
-	}
+#else
+        public abstract Task<bool> Log(string message);
+        public abstract Task<bool> Log(string message, LogLevel level);
+#endif
+
+        #endregion
+
+
+    }
 }
 
