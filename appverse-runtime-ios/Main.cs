@@ -25,8 +25,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
+using Foundation;
+using UIKit;
+
+using Unity.Platform.IPhone;
 
 namespace UnityUI.iOS
 {
@@ -39,10 +41,34 @@ namespace UnityUI.iOS
 				#if DEBUG
 					Console.WriteLine("Starting main application...");
 				#endif
-				
+
 				// if you want to use a different Application Delegate class from "AppDelegate"
 				// you can specify it here.
-				UIApplication.Main (args, null, "AppDelegate");
+
+
+				DeviceHardware.HardwareVersion hwVersion = DeviceHardware.Version;
+
+				#if DEBUG
+				Console.WriteLine("Current Device Version: " + hwVersion);
+				#endif
+			/* TO BE REMOVED - 5.0.6 [AMOB-30]
+
+				if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+
+					// Previous issues using WKWebview in 64-bits devices were solved compiling for both 32 and 64 bits
+
+					#if DEBUG
+					Console.WriteLine("Loading Application Delegate (support for iOS8)");
+					#endif
+					UIApplication.Main (args, null, "AppDelegate_WKWebView");
+
+				} else {
+			*/
+					#if DEBUG
+					Console.WriteLine("Loading Application Delegate");
+					#endif
+					UIApplication.Main (args, null, "AppDelegate_UIWebView");
+			//	}
 				
 				#if DEBUG
 					Console.WriteLine("END main application");
