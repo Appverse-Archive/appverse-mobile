@@ -83,6 +83,15 @@ import com.gft.unity.core.system.launch.LaunchData;
 import com.gft.unity.core.system.log.LogManager;
 import com.gft.unity.core.security.ISecurity;
 
+// FACEBOOK INTEGRATION
+//import com.facebook.AppEventsLogger;
+
+
+// ADFORM INTEGRATION
+import com.adform.adformtrackingsdk.AdformTrackingSdk;
+import com.adform.adformtrackingsdk.TrackPoint;
+
+
 public class MainActivity extends Activity {
 
 	private static final AndroidSystemLogger LOG = AndroidSystemLogger.getSuperClassInstance();
@@ -120,12 +129,17 @@ public class MainActivity extends Activity {
 
 	public static final String PREFS_NAME = "IntentState";
 	SharedPreferences settings;
+	
+	private int AdformTrackingID = 244452;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		LOG.Log(Module.GUI, "onCreate");
+		
+		
+		adhocCustomization_onCreate();
 
 		// GUI initialization code
 		getWindow().requestFeature(Window.FEATURE_NO_TITLE);
@@ -145,8 +159,6 @@ public class MainActivity extends Activity {
 		}
 
 		appView = new WebView(this);
-                //Platforms notification are enable by default.
-		//appView.enablePlatformNotifications();
 		setGlobalProxy();
 
 		appView.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,
@@ -314,6 +326,9 @@ public class MainActivity extends Activity {
 				securityChecksPassed = true;
 				LOG.Log(Module.GUI, "Device is NOT rooted.");
 			}
+		} else {
+			securityChecksPassed = true;
+			LOG.Log(Module.GUI, "This device rooted blocking is not activated for this application");
 		}
 
 		securityChecksPerfomed = true;
@@ -385,6 +400,8 @@ public class MainActivity extends Activity {
 		// Stop HTTP server, and send to background later
 		stopServer(true);
 		super.onPause();
+		
+		adhocCustomization_onPause();
 	}
 
 	@Override
@@ -412,6 +429,8 @@ public class MainActivity extends Activity {
 
 		LOG.Log(Module.GUI, "Security checks passed... beaking up Appverse...");
 		
+		adhocCustomization_onResume();
+		
 		// Start HTTP server
 		startServer();
 
@@ -432,6 +451,58 @@ public class MainActivity extends Activity {
 			this.getIntent().setData(nullData);
 		}
 	}
+	
+	private void adhocCustomization_onResume() {
+		
+		try {
+			/* FACEBOOK SDK INTEGRATION
+			LOG.Log(Module.GUI, "Activating Facebook App ... ");
+			AppEventsLogger.activateApp(this, "123456");
+			*/
+			
+			LOG.Log(Module.GUI, "Tracking onResume() event to AdForm ... ");
+			AdformTrackingSdk.onResume(this);
+			
+		}  catch (Throwable th) {
+			LOG.LogDebug(Module.GUI, "Exception applying customization for onResume(). See below stacktrace");
+			
+			th.printStackTrace();
+		}
+		
+	}
+	
+	private void adhocCustomization_onPause() {
+		
+		try {
+			LOG.Log(Module.GUI, "Tracking onPause() event to AdForm ... ");
+			AdformTrackingSdk.onPause();
+		
+		} catch (Throwable th) {
+			LOG.LogDebug(Module.GUI, "Exception applying customization for onPause(). See below stacktrace");
+			
+			th.printStackTrace();
+		}
+		
+	}
+	
+	private void adhocCustomization_onCreate() {
+		try{
+			LOG.Log(Module.GUI, "Start Tracking Adform [" + AdformTrackingID + "]... ");
+			
+			AdformTrackingSdk.startTracking(this,  AdformTrackingID);
+			
+			String sectionName = "Download";
+			LOG.Log(Module.GUI, "Adform Tracking Point with Section [" + sectionName + "]...");
+		
+			TrackPoint trackpoint = new TrackPoint(AdformTrackingID);
+			trackpoint.setSectionName(sectionName);
+			AdformTrackingSdk.sendTrackPoint(trackpoint);
+			
+		} catch (Throwable th) {
+			LOG.LogDebug(Module.GUI, "Exception applying customization for onCreate(). See below stacktrace");
+			th.printStackTrace();
+		}
+	}
 
 	@Override
 	protected void finalize() throws Throwable {
@@ -442,7 +513,8 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		LOG.Log(Module.GUI, "onDestroy");		
+		LOG.Log(Module.GUI, "onDestroy");
+		
 		
 		try{
 			AndroidBeacon beacon = (AndroidBeacon) AndroidServiceLocator
