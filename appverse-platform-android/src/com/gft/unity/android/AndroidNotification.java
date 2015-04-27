@@ -41,7 +41,7 @@ import com.gft.unity.android.activity.AndroidActivityManager;
 import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.android.notification.LocalNotificationReceiver;
 import com.gft.unity.android.notification.NotificationUtils;
-import com.gft.unity.android.util.json.JSONSerializer;
+import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.notification.AbstractNotification;
 import com.gft.unity.core.notification.DateTime;
 import com.gft.unity.core.notification.NotificationData;
@@ -425,13 +425,13 @@ public class AndroidNotification extends AbstractNotification {
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
 		
-		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Unity.OnRegisterForRemoteNotificationsSuccess...");
+		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Appverse.PushNotificaations.OnRegisterForRemoteNotificationsSuccess...");
 		
 		RegistrationToken notificationToken = new RegistrationToken();
 		notificationToken.setStringRepresentation(registrationId);
 		notificationToken.setBinary(registrationId.getBytes());
 			
-		am.loadUrlIntoWebView("javascript:try{Unity.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
+		am.loadUrlIntoWebView("javascript:try{Appverse.PushNotificaations.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
 	}
 	
 	
@@ -445,12 +445,12 @@ public class AndroidNotification extends AbstractNotification {
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
 		
-		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Unity.OnRegisterForRemoteNotificationsFailure...");
+		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Appverse.PushNotificaations.OnRegisterForRemoteNotificationsFailure...");
 		
 		RegistrationError notificationError = new RegistrationError();
 		notificationError.setCode(exceptionCode);
 		notificationError.setLocalizedDescription(exceptionMessage);
-		am.loadUrlIntoWebView("javascript:try{Unity.OnRegisterForRemoteNotificationsFailure(" + JSONSerializer.serialize(notificationError) +")}catch(e){}");
+		am.loadUrlIntoWebView("javascript:try{Appverse.PushNotificaations.OnRegisterForRemoteNotificationsFailure(" + JSONSerializer.serialize(notificationError) +")}catch(e){}");
 	}
 
 	@Override

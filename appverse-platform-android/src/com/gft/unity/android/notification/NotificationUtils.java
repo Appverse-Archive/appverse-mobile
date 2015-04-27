@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import com.gft.unity.android.util.json.JSONObject;
-import com.gft.unity.android.util.json.JSONSerializer;
+import com.gft.unity.core.json.JSONObject;
+import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.notification.DateTime;
 import com.gft.unity.core.notification.NotificationData;
 import com.gft.unity.core.notification.RepeatInterval;

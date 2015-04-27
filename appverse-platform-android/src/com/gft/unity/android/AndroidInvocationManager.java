@@ -29,11 +29,11 @@ import java.util.List;
 
 import android.util.TimingLogger;
 
-import com.gft.unity.android.util.json.JSONArray;
-import com.gft.unity.android.util.json.JSONException;
-import com.gft.unity.android.util.json.JSONObject;
-import com.gft.unity.android.util.json.JSONSerializer;
-import com.gft.unity.android.util.json.JSONTokener;
+import com.gft.unity.core.json.JSONArray;
+import com.gft.unity.core.json.JSONException;
+import com.gft.unity.core.json.JSONObject;
+import com.gft.unity.core.json.JSONSerializer;
+import com.gft.unity.core.json.JSONTokener;
 import com.gft.unity.core.io.IIo;
 import com.gft.unity.core.io.IOHeader;
 import com.gft.unity.core.io.IOResponse;

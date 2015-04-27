@@ -44,8 +44,8 @@ import com.gft.unity.core.system.server.net.Server;
 
 public class AssetHandler extends AndroidHandler {
 
-	private static final String ASSET_PATH = "/WebResources/";
-	private static final String DOCUMENT_PATH = "/documents/";
+	public static final String ASSET_PATH = "/WebResources/";
+	public static final String DOCUMENT_PATH = "/documents/";
 
 	private AssetManager assetManager;
 	private IFileSystem fs;
