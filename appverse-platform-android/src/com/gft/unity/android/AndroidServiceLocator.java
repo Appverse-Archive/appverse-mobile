@@ -23,13 +23,31 @@
  */
 package com.gft.unity.android;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Build;
+import android.os.ResultReceiver;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebView;
 
+import com.gft.unity.android.server.handler.AssetHandler;
+import com.gft.unity.core.IAppDelegate;
+import com.gft.unity.core.storage.filesystem.FileData;
+import com.gft.unity.core.storage.filesystem.IFileSystem;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.server.net.ServerSocketEndPoint;
 import com.gft.unity.core.system.service.AbstractServiceLocator;
@@ -39,31 +57,56 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
 
 	private static final AndroidSystemLogger LOG = AndroidSystemLogger.getSuperClassInstance();
 	
+	// legacy internal server
 	public static final String INTERNAL_SERVER_HOST = "127.0.0.1";
 	public static final String INTERNAL_SERVER_PORT = "8080";
 	public static final String INTERNAL_SERVER_URL = "http://" + INTERNAL_SERVER_HOST + ":" + INTERNAL_SERVER_PORT;
+	
+	// new Appverse URI
+	public static final String APPVERSE_URI = "https://appverse/";
 	
 	public static final String SERVICE_ANDROID_ASSET_MANAGER = "android.asset";
 	public static final String SERVICE_ANDROID_ACTIVITY_MANAGER = "android.activity";
 
 	private static Context context;
+	private static WebView webView;
 	private static final Semaphore SEMAPHORE = new Semaphore(1);
 	
 	private static String IN_DEBUG_MODE = "$debuggable$";
 	
 	private static List<String> managedServices = new ArrayList<String>();
+	
+	public String inUseURI = null;
+	
+	private Map<Integer, ResultReceiver> resultReceivers;
 			
 	private AndroidServiceLocator() {
 		super();
+		resultReceivers = new HashMap<Integer, ResultReceiver>();
 		registerServices();
+		
+		if(Build.VERSION.SDK_INT >= 17){
+			this.inUseURI = APPVERSE_URI.substring(0, APPVERSE_URI.length() - 1); // remove trailing slash
+		} else {
+			this.inUseURI = INTERNAL_SERVER_URL;
+		}
 	}
 	
 	public static void setContext(Context context) {
 		AndroidServiceLocator.context = context;
 	}
+	
+	public static void setContext(Context context, WebView appView) {
+		AndroidServiceLocator.context = context;
+		AndroidServiceLocator.webView = appView;
+	}
 
 	public static Context getContext() {
 		return context;
+	}
+	
+	public static WebView getApplicationWebView() {
+		return webView;
 	}
 	
 	public static IServiceLocator GetInstance() {
@@ -104,23 +147,66 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
 				AndroidServiceLocator.SERVICE_TYPE_LOG);
 		this.RegisterService(new AndroidPim(),
 				AndroidServiceLocator.SERVICE_TYPE_PIM);
-		this.RegisterService(new AndroidAnalytics(),
-				AndroidServiceLocator.SERVICE_TYPE_ANALYTICS);
 		this.RegisterService(new AndroidSecurity(),
 				AndroidServiceLocator.SERVICE_TYPE_SECURITY);
-		this.RegisterService(new AndroidWebtrekk(),
-				AndroidServiceLocator.SERVICE_TYPE_WEBTREKK);
 		this.RegisterService(new AndroidAppLoader(),
-				AndroidServiceLocator.SERVICE_TYPE_APPLOADER);		
-		if(Build.VERSION.SDK_INT>=18){
-			this.RegisterService(new AndroidBeacon(),
-				AndroidServiceLocator.SERVICE_TYPE_BEACON);
-		}else {
-			this.RegisterService(new AndroidNotSupportedAPI(),
-					AndroidServiceLocator.SERVICE_TYPE_BEACON);
-			
-		}
+				AndroidServiceLocator.SERVICE_TYPE_APPLOADER);
+		
+		// TODO :: create implementation classes for modules
+		this.RegisterService(new AndroidNotification(),
+				AndroidServiceLocator.SERVICE_TYPE_PUSH);
+		
+		
+		// include services from modules here
+		// START_APPVERSE_MODULES_SERVICES
+
+		// START_HERE_APPVERSE_MODULE_SERVICE
+		// END_HERE_APPVERSE_MODULE_SERVICE
+
+		// END_APPVERSE_MODULES_SERVICES
+
+		// example:
+		//  this.RegisterService(new module.ios.main.class(this.getContext()), "module.api.service.name");
+		
 	}
+	
+	public void RegisterResultReceiver(int[] resultCodes, ResultReceiver resultReceiver) {
+		for (int i : resultCodes) {
+			resultReceivers.put(i, resultReceiver);
+		}
+		
+	}
+	
+	public ResultReceiver getResultReceiver(int resultCode) {
+		return resultReceivers.get(resultCode);
+	}
+	
+	
+	public void sendApplicationEvent(AndroidApplicationEvent event) {
+		
+		IAppDelegate[] appDelegates = this.getAppDelegateServices();
+		LOG.LogDebug(SystemLogger.Module.PLATFORM, "Found IAppDelegates to send event [" + event.toString() +"]: #" + appDelegates.length); 
+		for (IAppDelegate iAppDelegate : appDelegates) {
+			switch (event) {
+			case onPause:
+				iAppDelegate.onPause();
+				break;
+			case onResume:
+				iAppDelegate.onResume();
+				break;	
+			case onStop:
+				iAppDelegate.onStop();
+				break;
+			case onDestroy:
+				iAppDelegate.onDestroy();
+				break;
+			default:
+				break;	
+			}
+		}
+		
+	}
+	
 	
     public static boolean isDebuggable() {
     	
@@ -134,22 +220,161 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
     	return isDebuggable;
     }
     
+    /**
+     * LEGACY code: used by UnityWebviewClient  (for older Androird SDK versions)
+     * @param url
+     */
     public static void checkResourceIsManagedService(String url) {
     	if(url!=null && url.indexOf(AndroidServiceLocator.INTERNAL_SERVER_URL)>-1 
-				&& (url.indexOf("/service/")>-1 || url.indexOf("/service-async/")>-1) ) {
+				&& (url.indexOf("/service/")>-1 ) ) {
 			//LOG.LogDebug(SystemLogger.Module.PLATFORM, "Handle managed service: " + url);
 			AndroidServiceLocator.registerManagedService(url, ""+System.currentTimeMillis());
 		}
     }
     
+    /**
+     * NEW CODE: used by the new AppverseWebviewClient. Only resources are managed
+     * @param url
+     * @return
+     */
+    public static WebResourceResponse checkManagedResource(String url) {
+    	if(url!=null && url.indexOf(AndroidServiceLocator.APPVERSE_URI)>-1 
+				&& url.indexOf(AssetHandler.ASSET_PATH)>-1 ) {
+    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "Handle managed resource: " + url);
+    		
+    		String assetPath = url.substring(AndroidServiceLocator.APPVERSE_URI.length());
+    		try {
+    			URI assetUrl = new URI(url);
+    			assetPath = assetUrl.getPath();  // removing query parameters
+    			assetPath = assetPath.substring(1);  // removing leading slash
+			} catch (URISyntaxException e) {
+				LOG.LogDebug(SystemLogger.Module.PLATFORM, "Malformat URL syntax (web resource). Exception message: " + e.getMessage());
+			}
+    		
+    		byte[] assetData = AndroidServiceLocator.handleAssetResource(assetPath);
+    		String mimeType = AndroidServiceLocator.getMimeType(assetPath);
+    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "Handle managed resource - mimeType: " + mimeType);
+    		if(assetData!=null)
+    			return new WebResourceResponse(mimeType, "utf-8", new ByteArrayInputStream(assetData));
+    		else
+    			LOG.LogDebug(SystemLogger.Module.PLATFORM, "Exception getting resource data bytes for url: " + url +". No resource found");
+    		
+    	} else  if(url!=null && url.indexOf(AndroidServiceLocator.APPVERSE_URI)>-1 
+				&& url.indexOf(AssetHandler.DOCUMENT_PATH)>-1 ) {
+    		
+    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "Handle managed document resource: " + url);
+    		
+    		String docPath = url.substring(AndroidServiceLocator.APPVERSE_URI.length());
+    		try {
+    			URI assetDocUrl = new URI(url);
+    			docPath = assetDocUrl.getPath();  // removing query parameters, keeping leading slash
+			} catch (URISyntaxException e) {
+				LOG.LogDebug(SystemLogger.Module.PLATFORM, "Malformat URL syntax (document resource). Exception message: " + e.getMessage());
+			}
+    		
+    		byte[] docData = AndroidServiceLocator.handleDocument(docPath);
+    		String mimeType = AndroidServiceLocator.getMimeType(docPath);
+    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "Handle managed document resource - mimeType: " + mimeType);
+    		if(docData!=null)
+    			return new WebResourceResponse(mimeType, "utf-8", new ByteArrayInputStream(docData));
+    		else
+    			LOG.LogDebug(SystemLogger.Module.PLATFORM, "Exception getting document data bytes for url: " + url +". No document found");
+    	}
+    	
+    	// do not handled the resource (it is not managed)
+    	return null;
+    }
+    
+    private static byte[] handleAssetResource(String assetPath) {
+		InputStream is = null;
+		BufferedInputStream bis = null;
+		ByteArrayOutputStream baos = null;
+		try {
+			is = AndroidUtils.getInstance().getAssetInputStream(getAssetManager(), assetPath);
+			bis = new BufferedInputStream(is, 2048);
+			baos = new ByteArrayOutputStream();
+			byte[] buf = new byte[512];
+			int length = 0;
+			while ((length = bis.read(buf)) != -1) {
+				baos.write(buf, 0, length);
+			}
+		} catch (IOException ex) {
+			LOG.Log(SystemLogger.Module.PLATFORM, "Error loading managed asset", ex);
+			return null;
+		} finally {
+			if (bis != null) {
+				try {
+					bis.close();
+				} catch (Exception ex) {
+				}
+			}
+			if (is != null) {
+				try {
+					is.close();
+				} catch (Exception ex) {
+				}
+			}
+			if (baos != null) {
+				try {
+					baos.close();
+				} catch (Exception ex) {
+				}
+			}
+		}
+
+		return baos.toByteArray();
+	}
+    
+    private static byte[] handleDocument(String documentPath) {
+
+		// normalize the document path
+		documentPath = normalizeDocumentPath(documentPath);
+		
+		// read document/file
+		FileData fd = new FileData();
+		fd.setFullName(documentPath);
+		return getFileSystemService().ReadFile(fd);
+	}
+
+    private static AssetManager getAssetManager() {
+		return (AssetManager)  AndroidServiceLocator.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ASSET_MANAGER);
+	}
+    
+    private static IFileSystem getFileSystemService() {
+		return (IFileSystem)  AndroidServiceLocator.GetInstance().GetService(AndroidServiceLocator.SERVICE_TYPE_FILESYSTEM);
+	}
+    
+    public static String getMimeType(String filename) {
+        int index = filename.lastIndexOf(".");
+        String mimeType = null;
+        if (index > 0) {
+            mimeType = com.gft.unity.core.system.server.HttpServer.SERVER_CONFIG.getProperty("mime"
+                    + filename.substring(index).toLowerCase());
+        }
+
+        return mimeType;
+    }
+    
+    private static String normalizeDocumentPath(String url) {
+
+    	if(url == null) return url;
+    	
+		String documentPath = URLDecoder.decode(url);
+		return documentPath.substring(AssetHandler.DOCUMENT_PATH.length());
+	}
+
+    
+    /**
+     * LEGACY code: used by UnityWebviewClient  (for older Androird SDK versions)
+     */
     public static void registerManagedService(String service, String timestamp) {
     	long uid = System.currentTimeMillis();
     	LOG.LogDebug(SystemLogger.Module.PLATFORM, "[" +uid+ "] registerManagedService Acquiring semaphore "+ System.currentTimeMillis());	
     	SEMAPHORE.acquireUninterruptibly();
     	try {	    	
-    		LOG.LogDebug(SystemLogger.Module.PLATFORM, "Registered managedServices Size b4:" + managedServices.size());
+    		//LOG.LogDebug(SystemLogger.Module.PLATFORM, "Registered managedServices Size b4:" + managedServices.size());
         	managedServices.add(service + "_" + timestamp);
-        	LOG.LogDebug(SystemLogger.Module.PLATFORM, "Registered managedServices Size after:" + managedServices.size());
+        	//LOG.LogDebug(SystemLogger.Module.PLATFORM, "Registered managedServices Size after:" + managedServices.size());
 	    	
     	} catch (Throwable th) {
     		LOG.LogDebug(SystemLogger.Module.PLATFORM, "*************** Throwable exception #registerManagedService: " + th.getMessage());
@@ -160,7 +385,9 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
     	}
     }
     
-    
+    /**
+     * LEGACY code: used by UnityWebviewClient  (for older Androird SDK versions)
+     */
     public static boolean consumeManagedService(String service) {
     	
     	if(Build.VERSION.SDK_INT < 11){ 

@@ -43,7 +43,7 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
 import com.gft.unity.android.AndroidSystemLogger;
-import com.gft.unity.android.util.json.JSONSerializer;
+import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
 
@@ -53,7 +53,6 @@ public class AndroidActivityManager implements IActivityManager {
 
 	public static final int GET_SNAPSHOT_RC = 5000;
 	public static final int TAKE_SNAPSHOT_RC = 5001;
-	public static final int QRCODE_DETECT_RC = 5002;
 	
 	private static final String SPLASH_PORTRAIT_ID = "launch_portrait";
 	private static final String SPLASH_LANDSCAPE_ID = "launch_landscape";
@@ -261,6 +260,14 @@ public class AndroidActivityManager implements IActivityManager {
 			String jsCallbackFunction = "javascript:if(" + method + "){" + method + "("
 					+ dataJSONString + ");}";
 
+			this.main.runOnUiThread(new AAMExecuteJS(this.view, jsCallbackFunction));
+		}
+	}
+	
+	@Override
+	public void executeJS(String json) {
+		if (view != null) {			
+			String jsCallbackFunction = "javascript:" + json + ";";
 			this.main.runOnUiThread(new AAMExecuteJS(this.view, jsCallbackFunction));
 		}
 	}

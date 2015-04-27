@@ -21,7 +21,7 @@ import android.webkit.WebView;
 
 import com.gft.unity.android.AndroidServiceLocator;
 import com.gft.unity.android.AndroidUtils;
-import com.gft.unity.android.util.json.JSONSerializer;
+import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.notification.NotificationData;
 import com.gft.unity.core.notification.RegistrationError;
 import com.gft.unity.core.notification.RegistrationToken;

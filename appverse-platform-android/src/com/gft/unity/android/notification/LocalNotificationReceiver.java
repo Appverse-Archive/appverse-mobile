@@ -23,7 +23,7 @@
  */
 package com.gft.unity.android.notification;
 
-import com.gft.unity.android.util.json.JSONSerializer;
+import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.notification.NotificationData;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;

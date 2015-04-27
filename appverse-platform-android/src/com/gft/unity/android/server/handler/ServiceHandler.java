@@ -29,6 +29,7 @@ import java.io.IOException;
 import com.gft.unity.android.AndroidInvocationManager;
 import com.gft.unity.android.AndroidServiceLocator;
 import com.gft.unity.android.activity.AndroidActivityManager;
+import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.system.server.net.HttpRequest;
 import com.gft.unity.core.system.server.net.HttpResponse;
 import com.gft.unity.core.system.server.net.Request;
@@ -38,7 +39,6 @@ import com.gft.unity.core.system.server.net.Server;
 public class ServiceHandler extends AndroidHandler {
 
 	private static final String SERVICE_PREFIX = "/service/";
-	private static final String SERVICE_ASYNC_PREFIX = "/service-async/";
 	private static final String PARAM_PREFIX = "json=";
 
 	private static final String HEADER_CACHE_NAME = "Cache-Control";
@@ -63,58 +63,61 @@ public class ServiceHandler extends AndroidHandler {
 		if (aRequest instanceof HttpRequest) {
 			HttpRequest request = (HttpRequest) aRequest;
 			HttpResponse response = (HttpResponse) aResponse;
-			// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
-			//Log("COMMENT FOR PLATFORM RELEASE: " + request.getMethod() + " " + request.getUrl());
+			//TODO REMOVE OR COMMENT FOR RELEASE
+			//LogDebug("COMMENT FOR PLATFORM RELEASE: " + request.getMethod() + " " + request.getUrl());
 
 			boolean isManagedService = AndroidServiceLocator.consumeManagedService(request.getUrl());
 			if(!isManagedService) {
-				Log("**** WARNING: Anonymous service call, not managed by Appverse !!!");
+				LogDebug("**** WARNING: Anonymous service call, not managed by Appverse !!!");
 			}
 			//LogDebug("Managed Service [" + request.getUrl() + "]: " + managedService);
 			
-			if ((request.getUrl().startsWith(SERVICE_PREFIX) || request.getUrl().startsWith (SERVICE_ASYNC_PREFIX)) && isManagedService ) {
+			if (request.getUrl().startsWith(SERVICE_PREFIX) && isManagedService) {
 
-				boolean asyncmode = false;
+				boolean asyncmode = true; // Appverse 5.0 is allways async
 				int serviceUriLength = SERVICE_PREFIX.length();
-				if(request.getUrl().startsWith (SERVICE_ASYNC_PREFIX)) {
-					asyncmode = true;
-					serviceUriLength = SERVICE_ASYNC_PREFIX.length();
-				}
 
 				String[] commands = request.getUrl()
 						.substring(serviceUriLength).split("/");
 				String serviceName = commands[0];
 				String methodName = commands[1];
-				LogDebug("Service: [" + serviceName + "] Method:[" + methodName
-						+ "]");
+				LogDebug("Service: [" + serviceName + "] Method:[" + methodName + "]");
 
 				String params = "";
 				byte[] paramsBytes = request.getPostData();
 				if (paramsBytes != null) {
 					params = new String(paramsBytes);
 				}
-
+				//TODO REMOVE OR COMMENT FOR RELEASE
+				//LogDebug("########## handle params: " + params);
 				AndroidInvocationManager aim = (AndroidInvocationManager) AndroidInvocationManager
 						.getInstance();
 				AndroidServiceLocator asl = (AndroidServiceLocator) AndroidServiceLocator
 						.GetInstance();
 				byte[] result = null;
-				try {
-					if (asyncmode){
-						AndroidActivityManager aam = (AndroidActivityManager) asl.GetService(
-								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-						// Process result asynchronously
-						this.processAsyncPOSTResult(aim, aam, asl.GetService(serviceName), methodName, params);
-					} else {
-						// Process result synchronously
-						result = this.processPOSTResult(aim, asl.GetService(serviceName), methodName, params);
+				Object service = asl.GetService(serviceName);
+				if(service != null) {
+					
+					try {
+						if (asyncmode){
+							AndroidActivityManager aam = (AndroidActivityManager) asl.GetService(
+									AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+							// Process result asynchronously
+							this.processAsyncPOSTResult(aim, aam, service, methodName, params);
+						} else {
+							// Process result synchronously
+							result = this.processPOSTResult(aim, service, methodName, params);
+						}
+					
+					} catch (Exception e) {
+						LogDebug("Exception invoking method [" + methodName + "]. Exception:"+ e.getMessage());
+						// sending bad request message, instead of passing to next handler
+						String badRequestResponse = "{\"result\":\"Malformed request\"}";
+						result = badRequestResponse.getBytes();
 					}
-				
-				} catch (Exception e) {
-					Log("Exception invoking method [" + methodName + "]", e);
-					// sending bad request message, instead of passing to next handler
-					String badRequestResponse = "{\"result\":\"Malformed request\"}";
-					result = badRequestResponse.getBytes();
+				} else {
+					LogDebug ("**********  No Service registered found for service name: " + serviceName + ". Please check module is properly included");
+					return false;
 				}
 				
 				// adding a cache header to make sure the browser never caches
@@ -152,18 +155,19 @@ public class ServiceHandler extends AndroidHandler {
 		return false;
 	}
 	
-	private void processAsyncPOSTResult(AndroidInvocationManager aim, AndroidActivityManager aam,
+	public void processAsyncPOSTResult(AndroidInvocationManager aim, AndroidActivityManager aam,
 				Object service, String methodName, String query) {
 		
 		LogDebug("Processing result asynchronously");
-		// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
-		// LogDebug("query: " + query);
+		//TODO JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+		//LogDebug("query: " + query);
 
 		String callback = null;
 		String ID = null;
 		String JSON = "";
 
 		// querystring format: callbackFunction$$$ID$$$json=****** 
+		// [MOBPLAT-185], the "json" latest query parameter could not be present (for API methods without parameters)
 		if (query!= null) {
 			String token0 = "&";
 			String token1 = "callback=";
@@ -194,12 +198,12 @@ public class ServiceHandler extends AndroidHandler {
 			}
 			if(query != null)  JSON = query;
 		}
-		// JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
-		/*
-		LogDebug("callback function: " + callback);
-		LogDebug("callback ID: " + ID);
-		LogDebug("JSON data: " + JSON);
-		*/
+		//TODO JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+		
+		//LogDebug("callback function: " + callback);
+		//LogDebug("callback ID: " + ID);
+		//LogDebug("JSON data: " + JSON);
+		
 
 		this.processServiceAsynchronously(callback, ID, aim, aam, service, methodName,JSON);
 
@@ -207,6 +211,8 @@ public class ServiceHandler extends AndroidHandler {
 	
 	protected void processServiceAsynchronously(String callbackFunction, String id, AndroidInvocationManager aim, AndroidActivityManager aam,
 			Object service, String methodName, String query) {
+		//TODO JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+		//LogDebug(" ############## processServiceAsynchronously query: " + query);
 		AsyncServiceThread asyncThread = new AsyncServiceThread(callbackFunction, id, aim, aam, service,methodName, query);
 		asyncThread.start();
 	}
@@ -238,7 +244,11 @@ public class ServiceHandler extends AndroidHandler {
     			Object service, String methodName, String query) {
     		super();
     		this.callbackFunction = callbackFunction;
+    		//TODO REMOVE OR COMMENT FOR RELEASE
+    		//LogDebug(" ############## Callback fn: " + callbackFunction);
     		this.id = id;
+    		//TODO JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+    		//LogDebug(" ############## id: " + id);
     		this.invocationManager = invocationManager;
     		this.activityManager = activityManager;
     		this.service = service;
@@ -248,18 +258,29 @@ public class ServiceHandler extends AndroidHandler {
         
        @Override
         public void run() {
-    	   	byte[] result = null;
-			try {
-				result = processPOSTResult(invocationManager, service, methodName, query);
-			} catch (Exception e) {
-				LogDebug(" ############## Exception while invoking service: " + e.getMessage());
-			}
-	   		String jsonResultString = null;
-	   		if(result!=null) {
-	   			jsonResultString = new String(result);
-	   		}
-	
-	   		this.sendBackResult(activityManager, callbackFunction, id, jsonResultString);
+    	   try {
+	    	   	byte[] result = null;
+		   		String jsonResultString = null;
+		   		
+				try {
+					result = processPOSTResult(invocationManager, service, methodName, query);						
+				} catch (Exception ex) {
+					//TODO JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+					//ex.printStackTrace();
+					LogDebug(" ############## Exception while invoking method: " + methodName + " (Exception: " + ex.getMessage() +" -> Caused by: "+ex.getCause().getMessage() +" )");
+					jsonResultString = JSONSerializer.serialize(ex.getCause().getMessage());				
+				}
+	       
+		   		if(result!=null) {
+		   			jsonResultString = new String(result);
+		   		}
+		   		//TODO JUST FOR LOCAL TESTING, DO NOT UNCOMMENT FOR PLATFORM RELEASE
+		   		//LogDebug(" ############## jsonResultString: "+jsonResultString); 
+		   		this.sendBackResult(activityManager, callbackFunction, id, jsonResultString);
+    	   } catch(Exception e) {
+    		   //e.printStackTrace();
+    		   LogDebug(" ############## Unhandled exception while invoking method: " + methodName); 
+    	   }
           
         }
        

@@ -36,6 +36,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import com.gft.unity.android.activity.IActivityManager;
+import com.gft.unity.android.server.handler.AssetHandler;
 import com.gft.unity.android.util.FilenameUtils;
 import com.gft.unity.core.apploader.AbstractLoader;
 import com.gft.unity.core.apploader.Module;
@@ -49,8 +50,6 @@ import com.gft.unity.core.system.log.Logger.LogCategory;
 
 public class AndroidAppLoader extends AbstractLoader {
 	
-	private static String DOCUMENTS_URI = "http://127.0.0.1:8080/documents";
-
 	private static final String LOGGER_MODULE = "Appverse App Loader";
 	private static final Logger LOGGER = Logger.getInstance(
 			LogCategory.PLATFORM, LOGGER_MODULE);
@@ -117,7 +116,7 @@ public class AndroidAppLoader extends AbstractLoader {
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Unity.AppLoader.onDeleteModulesFinished", 
+		am.executeJS("Appverse.AppLoader.onDeleteModulesFinished", 
 				new Object []{successlist.toArray(new Module[successlist.size()]), failedlist.toArray(new Module[failedlist.size()])});
 		
 		this.GetNotificationService().StopNotifyLoading();
@@ -167,7 +166,7 @@ public class AndroidAppLoader extends AbstractLoader {
 				String directoryName = directory.getAbsolutePath();
 				LOGGER.logInfo("LoadModule", "Loading module at directoryName: " + directoryName);
 				
-				String path = DOCUMENTS_URI + FilenameUtils.UNIX_SEPARATOR + location + FilenameUtils.UNIX_SEPARATOR + DEFAULT_HOME_PAGE;
+				String path = ((AndroidServiceLocator) AndroidServiceLocator.GetInstance()).inUseURI + AssetHandler.DOCUMENT_PATH + location + FilenameUtils.UNIX_SEPARATOR + DEFAULT_HOME_PAGE;
 				LOGGER.logInfo("LoadModule", "Loading module at path: " + path);
 
 				if(directory.exists()) {
@@ -336,7 +335,7 @@ public class AndroidAppLoader extends AbstractLoader {
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Unity.AppLoader.onUpdateModulesFinished", 
+		am.executeJS("Appverse.AppLoader.onUpdateModulesFinished", 
 				new Object []{successlist.toArray(new Module[successlist.size()]), failedlist.toArray(new Module[failedlist.size()]), callbackId});
 		
 
@@ -369,7 +368,7 @@ public class AndroidAppLoader extends AbstractLoader {
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Unity.AppLoader.onUpdateModulesFinished", 
+		am.executeJS("Appverse.AppLoader.onUpdateModulesFinished", 
 				new Object []{successlist.toArray(new Module[successlist.size()]), failedlist.toArray(new Module[failedlist.size()]), callbackId});
 		
 

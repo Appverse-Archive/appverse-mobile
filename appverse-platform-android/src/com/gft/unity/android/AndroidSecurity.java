@@ -277,7 +277,7 @@ public class AndroidSecurity extends AbstractSecurity {
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Unity.OnKeyValuePairsFound",new Object[]{ foundKeyPairs.toArray()});
+		am.executeJS("Appverse.OnKeyValuePairsFound",new Object[]{ foundKeyPairs.toArray()});
 	}
 	
 	@Override
@@ -301,7 +301,7 @@ public class AndroidSecurity extends AbstractSecurity {
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Unity.OnKeyValuePairsFound", new Object[]{foundKeyPairs.toArray()});
+		am.executeJS("Appverse.OnKeyValuePairsFound", new Object[]{foundKeyPairs.toArray()});
 		
 	}
 	@Override
@@ -325,7 +325,7 @@ public class AndroidSecurity extends AbstractSecurity {
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Unity.OnKeyValuePairsRemoveCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		am.executeJS("Appverse.OnKeyValuePairsRemoveCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
 		
 	}
 	@Override
@@ -351,7 +351,7 @@ public class AndroidSecurity extends AbstractSecurity {
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Unity.OnKeyValuePairsRemoveCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		am.executeJS("Appverse.OnKeyValuePairsRemoveCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
 		
 	}
 	@Override
@@ -376,7 +376,7 @@ public class AndroidSecurity extends AbstractSecurity {
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Unity.OnKeyValuePairsStoreCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		am.executeJS("Appverse.OnKeyValuePairsStoreCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
 		
 	}
 	@Override
@@ -402,7 +402,7 @@ public class AndroidSecurity extends AbstractSecurity {
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Unity.OnKeyValuePairsStoreCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		am.executeJS("Appverse.OnKeyValuePairsStoreCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
 	}
 	
 	

@@ -47,8 +47,8 @@ public class AndroidTelephony extends AbstractTelephony {
 	}
 
 	@Override
-	public ICallControl Call(String number, CallType type) {
-		ICallControl result = null;
+	public void Call(String number, CallType type) {
+		
 
 		LOGGER.logOperationBegin("Call", new String[] { "number", "type" },
 				new Object[] { number, type });
@@ -61,14 +61,13 @@ public class AndroidTelephony extends AbstractTelephony {
 					Uri.parse(PHONE_PREFIX + url));
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			context.startActivity(intent);
-
-			result = new AndroidCallControl(type);
+			
 		} catch (Exception ex) {
 			LOGGER.logError("Call", "Error", ex);
 		} finally {
-			LOGGER.logOperationEnd("Call", result);
+			LOGGER.logOperationEnd("Call", "Calling");
 		}
 
-		return result;
+		
 	}
 }

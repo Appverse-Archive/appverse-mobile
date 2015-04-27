@@ -37,6 +37,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,6 +48,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
@@ -55,6 +57,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertPathBuilder;
 import java.security.cert.CertPathBuilderException;
 import java.security.cert.CertStore;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -150,9 +153,9 @@ public class AndroidIO extends AbstractIO implements Runnable{
 
 	private static final AndroidSystemLogger LOG = AndroidSystemLogger.getSuperClassInstance();
 	private static String _VALIDATECERTIFICATES = "$ValidateCertificates$";
-	private static String _VALIDROOTAUTHORITIES = "VeriSign;";
-	//private static String _VALIDROOTAUTHORITIES = "$ValidRoothAuthorities$";
 	
+	private static String _VALIDATEFINGERPRINTS = "$ValidateFingerprints$";
+
 	private static final String DEFAULT_SERVICE_TYPE = "XMLRPC_JSON";
 	private static final String DEFAULT_SERVICE_METHOD = "POST";
 	private static final String DEFAULT_ENCODING = "UTF-8";
@@ -166,6 +169,7 @@ public class AndroidIO extends AbstractIO implements Runnable{
 	private static final String PROXY_ATTRIBUTE = "proxy";
 	private static final String SCHEME_ATTRIBUTE = "scheme";
 	private static final String SERVICE_ATTRIBUTE = "name";
+	private static final String FINGERPRINT_ATTRIBUTE = "fingerprint";
 
 	// private static final String HTTP_SCHEME = "http";
 	private static final String HTTPS_SCHEME = "https";
@@ -181,15 +185,42 @@ public class AndroidIO extends AbstractIO implements Runnable{
 	private static DefaultHttpClient httpSSLClient = null;
 	private static final CookieStore cookieStore = httpClient.getCookieStore();
 	
-	private boolean addedGzipHttpResponseInterceptor = false;
+	public static HashMap<String, String[]> FINGERPRINTS;
 
 	public AndroidIO() {
 		loadServicesConfig();
+		FINGERPRINTS = getFingerprints();
 		(new Thread(this)).start();
+	}
+	
+	private HashMap<String, String[]> getFingerprints(){
+		HashMap<String, String[]> result = new HashMap<String, String[]>();
+		for(IOService serv : servicesConfig.getServices()){			
+			if(serv.getEndpoint().getFingerprint() != null){
+				try {
+					URL aURL = new URL(serv.getEndpoint().getHost());
+					result.put(aURL.getHost(),serv.getEndpoint().getFingerprint().split(","));
+					//LOG.LogDebug(Module.PLATFORM,"*************** getFingerprints: " +aURL.getHost()+":"+serv.getEndpoint().getFingerprint());
+				} catch (MalformedURLException e) {					
+					e.printStackTrace();
+				}
+				
+			}
+		}
+		IOService[] services = servicesConfig.getServices();
+		for(IOService serv : services){
+			serv.getEndpoint().setFingerprint(null);
+		}
+		
+		return result;
 	}
 	
 	public boolean Validatecertificates() {
 		return Boolean.parseBoolean(AndroidIO._VALIDATECERTIFICATES);
+	}
+	
+	public static boolean ValidateFingerprints() {
+		return Boolean.parseBoolean(AndroidIO._VALIDATEFINGERPRINTS);
 	}
 
 	private void loadServicesConfig() {
@@ -207,6 +238,7 @@ public class AndroidIO extends AbstractIO implements Runnable{
 			String serviceName = "";
 			String serviceType = "";
 			String serviceMethod = "";
+			String fingerprint = "";
 			IOServiceEndpoint serviceEndpoint = null;
 			while (eventType != XmlPullParser.END_DOCUMENT) {
 				if (eventType == XmlPullParser.START_TAG) {
@@ -218,7 +250,7 @@ public class AndroidIO extends AbstractIO implements Runnable{
 						serviceType = xpp.getAttributeValue(null,
 								TYPE_ATTRIBUTE);
 						serviceMethod = xpp.getAttributeValue(null,
-								REQ_METHOD_ATTRIBUTE);
+								REQ_METHOD_ATTRIBUTE);						
 					} else if (xpp.getName().toUpperCase()
 							.equals(ENDPOINT_NODE_ATTRIBUTE)) {
 						serviceEndpoint = new IOServiceEndpoint();
@@ -234,8 +266,13 @@ public class AndroidIO extends AbstractIO implements Runnable{
 						serviceEndpoint.setProxyUrl(xpp.getAttributeValue(null,
 								PROXY_ATTRIBUTE));
 						serviceEndpoint.setScheme(xpp.getAttributeValue(null,
-								SCHEME_ATTRIBUTE));
-
+								SCHEME_ATTRIBUTE));						
+						fingerprint = xpp.getAttributeValue(null,
+								FINGERPRINT_ATTRIBUTE);				
+						if(fingerprint != null)
+							fingerprint = fingerprint.toUpperCase();
+						serviceEndpoint.setFingerprint(fingerprint);
+						//LOG.LogDebug(Module.PLATFORM, "LoadConfig fingerprint [" + fingerprint + "]");
 					}
 				} else if (eventType == XmlPullParser.END_TAG) {
 					if (xpp.getName().toUpperCase()
@@ -252,16 +289,19 @@ public class AndroidIO extends AbstractIO implements Runnable{
 								.valueOf(serviceMethod));
 						service.setEndpoint(serviceEndpoint);
 						servicesList.add(service);
+						
+						
 					}
 				}
 				eventType = xpp.next();
+				
 			}
 		} catch (Exception ex) {
 			LOG.LogDebug(Module.PLATFORM, "LoadConfig error ["
 					+ SERVICES_CONFIG_FILE + "]: " + ex.getMessage());
 		}
 		servicesConfig.setServices(servicesList
-				.toArray(new IOService[servicesList.size()]));
+				.toArray(new IOService[servicesList.size()]));		
 	}
 
 	private String formatRequestUriString(IORequest request, IOServiceEndpoint endpoint, String requestMethod) {
@@ -292,11 +332,14 @@ public class AndroidIO extends AbstractIO implements Runnable{
 				LOG.LogDebug(Module.PLATFORM, "Custom HTTPSClient not yet intialized on first request, forcing creating it...");
 				createHttpClients();
 			}
-			httpClient = httpSSLClient;
+			httpClient = httpSSLClient; // reusing HTTP SSL client
 		}else{
 			LOG.LogDebug(Module.PLATFORM, "Applying DefaultHTTPClient");
 			httpClient = new DefaultHttpClient();
+			// [MOBPLAT-200] : allow gzip, deflate decompression modes
+			httpClient.addResponseInterceptor(new GzipHttpResponseInterceptor());
 		}
+		
 		return true;
 	}
 	
@@ -328,12 +371,6 @@ public class AndroidIO extends AbstractIO implements Runnable{
 					proxyUrl.getPort(), proxyUrl.getScheme());
 			httpClient.getParams().setParameter(
 					ConnRoutePNames.DEFAULT_PROXY, proxyHost);
-		}
-		
-		// [MOBPLAT-200] : allow gzip, deflate decompression modes
-		if(!addedGzipHttpResponseInterceptor) {
-			httpClient.addResponseInterceptor(new GzipHttpResponseInterceptor());
-			addedGzipHttpResponseInterceptor = true;
 		}
 	}
 	
@@ -497,16 +534,48 @@ public class AndroidIO extends AbstractIO implements Runnable{
 		 *************/
 		LOG.LogDebug(Module.PLATFORM, "reading cookies.. ");
 		if (cookieStore.getCookies().size() > 0) {
+			LOG.LogDebug(Module.PLATFORM, "cookies store found: " + cookieStore.getCookies().size() );
+			// using hashmap to remove duplicated cookies keys
+			Map<String,IOCookie> cookiesMap = new HashMap<String,IOCookie>();
+			//Map<String,Cookie> cookiesStoreMap = new HashMap<String,Cookie>();
 
-			IOCookie[] cookies = new IOCookie[cookieStore.getCookies()
-					.size()];
+			// rollback
+			//IOCookie[] cookies = new IOCookie[cookieStore.getCookies() .size()];
+			
 			for (int i = 0; i < cookieStore.getCookies().size(); i++) {
 				Cookie cookie = cookieStore.getCookies().get(i);
 				IOCookie ioCookie = new IOCookie();
 				ioCookie.setName(cookie.getName());
 				ioCookie.setValue(cookie.getValue());
-				cookies[i] = ioCookie;
+				LOG.LogDebug(Module.PLATFORM, "cookies found: " + cookie.getName() + "=" + cookie.getValue() );
+				
+				cookiesMap.put(ioCookie.getName(), ioCookie);
+				LOG.LogDebug(Module.PLATFORM, "cookies stored: " +cookiesMap.get(ioCookie.getName()).getName() + "=" + cookiesMap.get(ioCookie.getName()).getValue());
+				//cookiesStoreMap.put(cookie.getName(), cookie);
+				
+				// rollback
+				//cookies[i] = ioCookie;
+				
 			}
+			
+			// clearing cookie store
+			/*
+			LOG.LogDebug(Module.PLATFORM, "cookiestor. length: "+ cookieStore.getCookies().size());
+			cookieStore.clear();
+			LOG.LogDebug(Module.PLATFORM, "cookiestore cleared. length: "+  cookieStore.getCookies().size());
+			Cookie[] newCookiesToStore = cookiesStoreMap.values().toArray(new Cookie[0]);
+			for(int j=0; j < newCookiesToStore.length; j++) 
+				cookieStore.addCookie(newCookiesToStore[j]);
+			LOG.LogDebug(Module.PLATFORM, "cookiestore stored. length: "+  cookieStore.getCookies().size());
+			*/
+			
+			
+			IOCookie[] cookies = cookiesMap.values().toArray(new IOCookie[0]);
+			LOG.LogDebug(Module.PLATFORM, "cookies processed (duplicated removed): " + cookies.length);
+			
+			// rollback
+			//LOG.LogDebug(Module.PLATFORM, "cookies processed: " + cookies.length);
+			
 			response.getSession().setCookies(cookies);
 		}
 
@@ -848,7 +917,7 @@ public class AndroidIO extends AbstractIO implements Runnable{
 	    protected static SSLContext sslContext;
 	    protected static Map<Integer, Long> myCertificateList;
 	    protected static ValidatingSSLSocketFactory singletonFactory;
-	    
+	    public String requestHostUri = null;
 	    public static ValidatingSSLSocketFactory GetInstance(KeyStore truststore)
 	    {
 	    	if(singletonFactory==null){
@@ -880,7 +949,9 @@ public class AndroidIO extends AbstractIO implements Runnable{
 	        
 	        TrustManager tm = new X509TrustManager() {
 	        	 
-	        	public X509Certificate[] getAcceptedIssuers() {
+	        	private char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};	        	
+	        	
+	            public X509Certificate[] getAcceptedIssuers() {
 	        		try{
 	        		X509Certificate[] returnIssuers = new X509Certificate[truststore.size()];
 	                Enumeration aliases = truststore.aliases();
@@ -902,13 +973,16 @@ public class AndroidIO extends AbstractIO implements Runnable{
 	            }
 
 	            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+	            	
 	            	boolean bErrorsFound = false;
 	            	try {
 	    				LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Starting Certificate Validation process");
 	    				if(chain!= null && chain.length>0) LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate chain elements: " + chain.length ); 
 	            		//check the certificate is in memory
-	            		if(!certificateIsTheSame(chain[0])){
-	            			if(certChainIsValid(chain[0], chain)){
+	    				X509Certificate endCert = chain[0];
+	            		if(!certificateIsTheSame(endCert)){
+	            			if(certChainIsValid(endCert, chain)){
+	            				/* Checking only last certificate in the chain
 		            			for(int i=0; i< chain.length; i++){
 		            				X509Certificate chainCert = chain[i];
 		            				LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate Name: " + chainCert.getSubjectDN().getName() + " ;SN: " + chainCert.getSerialNumber().toString() );
@@ -935,6 +1009,39 @@ public class AndroidIO extends AbstractIO implements Runnable{
 					            		LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is expired");
 					            	}
 		            			}
+		            			*/
+	            				
+	            				// ThHis magic is needed to verify self-signed
+	            				X509CertParser parser = new X509CertParser();
+			            		ByteArrayInputStream bais = new ByteArrayInputStream(endCert.getEncoded());
+			    	            parser.engineInit(bais);
+			    	            bais.close();
+			    	            
+			            		X509CertificateObject cert = (X509CertificateObject)parser.engineRead();
+	            				if(certIsValidNow(cert)){
+			            			if(!certIsSelfSigned(cert)){
+
+			            				
+			            				if(AndroidIO.ValidateFingerprints()){
+			            					LOG.LogDebug(Module.PLATFORM, "Certificate Validation: VALIDATING FINGERPRINT");
+				            				if(verifyFingerprint(endCert)){
+				            					LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate Fingerprint is valid");
+											} else {
+												bErrorsFound = true;
+												LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate Fingerprint not valid");
+											}
+			            				}else {
+			            					LOG.LogDebug(Module.PLATFORM, "Certificate Validation: DO NOT VALIDATE FINGERPRINT");
+			            				}
+			            			}else{ 
+			            				bErrorsFound = true;
+			            				LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is Self Signed");
+			            			}
+				            	}else{ 
+				            		bErrorsFound = true;
+				            		LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is expired");
+				            	}
+	            				
 		            			if(!bErrorsFound) myCertificateList.put(Integer.valueOf(chain[0].hashCode()), Long.valueOf(System.currentTimeMillis())); 
 	            			}else{ 
             					bErrorsFound = true;
@@ -949,8 +1056,86 @@ public class AndroidIO extends AbstractIO implements Runnable{
 						bErrorsFound = true;
 						LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Error in certificate chain");
 					}
+	            	catch (Exception e) {
+	            		bErrorsFound = true;
+	            		LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Unhandled error: " + e.getMessage());
+	            	}
 	            	if(bErrorsFound){ throw new CertificateException("Certificate Validation: Errors found in the Certificate Chain");}
 	            }
+	            
+	            /**
+	             * Checks the certificate fingerprint is the expected
+	             * @param cert
+	             * 				Certificate to check
+	             * @return
+	             * 				True if the certificate fingerprint was the expected one; false otherwise
+	             */
+	        	private boolean verifyFingerprint(X509Certificate endCert){
+        			try {
+        				LOG.LogDebug(Module.PLATFORM, "ValidatingSSLSocketFactory - verifyFingerprint requestHostUri: " + requestHostUri);
+	            		MessageDigest md;
+						md = MessageDigest.getInstance("SHA1");
+						md.update(endCert.getEncoded());
+		                String thumbprint = dumpHex(md.digest());
+		                
+		                
+		                
+		                String[] fingerprint = null;
+		                if(FINGERPRINTS.containsKey(requestHostUri)){
+		                	fingerprint = FINGERPRINTS.get(requestHostUri);
+		                	//LOG.LogDebug(Module.PLATFORM, "******** Certificate Validation: requestHostUri ["+ requestHostUri +"] fingerprint "+ Arrays.toString(FINGERPRINTS.get(requestHostUri)));
+		                }
+		                
+		            			            		            	
+		            	if(fingerprint != null){
+		                	//LOG.LogDebug(Module.PLATFORM, "******** Certificate Validation: allowed fringerprint: " + Arrays.toString(fingerprint));
+		                	//LOG.LogDebug(Module.PLATFORM, "******** Certificate Validation: tocheck fringerprint: ["+thumbprint+"]");
+		                			                	
+		                	if(!Arrays.asList(fingerprint).contains(thumbprint)){
+		                	
+		                		LOG.LogDebug(Module.PLATFORM, "Certificate Validation: WRONG CERTIFICATE FINGERPRINT");
+		                		return false;
+		                	}
+		                }else{
+		                	LOG.LogDebug(Module.PLATFORM, "WARNING Certificate Validation: NO FINGERPRINT FOUND (you should provide a valid fingerprint in your io-services-config.xml in order to validate HTTPS web certificates)");		                	
+		                	return false;
+		                }
+		                return true;
+        			}catch (NoSuchAlgorithmException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (CertificateEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (Exception e) {
+						e.printStackTrace();
+						
+					}
+        			return false;
+					
+	        	}
+	        	
+	        	
+
+	        	/**
+	        	 * Get certificate fringerprint
+	        	 * @param data
+	        	 * @return fingerprint
+	        	 */
+	        	private String dumpHex(byte[] data) {
+	                final int n = data.length;
+	                final StringBuilder sb = new StringBuilder(n * 3 - 1);
+	                for (int i = 0; i < n; i++) {
+	                  if (i > 0) {
+	                    sb.append(' ');
+	                  }
+	                  sb.append(HEX_CHARS[(data[i] >> 4) & 0x0F]);
+	                  sb.append(HEX_CHARS[data[i] & 0x0F]);
+	                }
+	                return sb.toString();
+	              }
+	        	
+	        
 	            
 	            /**
 	             * Check the certificate is in memory and is still valid
@@ -1157,9 +1342,17 @@ public class AndroidIO extends AbstractIO implements Runnable{
 	            private boolean certIsSelfSigned(X509Certificate cert)
 	            {
 	            	try {
+	            		LOG.LogDebug(Module.PLATFORM, "Certificate Validation: checking if self-signed");
 						cert.verify(cert.getPublicKey());
 						LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Certificate is self-signed");
-						
+						for(X509Certificate trustedCert : this.getAcceptedIssuers()){
+							//If trusted and cert have same name
+							if(trustedCert.getSubjectX500Principal().getName().equals(cert.getIssuerX500Principal().getName())){
+								LOG.LogDebug(Module.PLATFORM, "Certificate Validation: Trusted self-signed found.");
+								return false;
+							}
+						}
+						/*
 						//ROOT TOKEN READ
 						List<String> rootAuth = null;
 						boolean bLookForRoots = false;
@@ -1215,7 +1408,8 @@ public class AndroidIO extends AbstractIO implements Runnable{
 								}
 							}
 						}
-						/////////////////
+						/*////////////////
+						
 						return true;
 					} catch (InvalidKeyException e) {
 					} catch (CertificateException e) {
@@ -1312,9 +1506,11 @@ public class AndroidIO extends AbstractIO implements Runnable{
 
 	    @Override
 	    public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
+	    	requestHostUri = host;
+	    	LOG.LogDebug(Module.PLATFORM, "ValidatingSSLSocketFactory - Create Socket for host requestHostUri: " + requestHostUri);
 	        return sslContext.getSocketFactory().createSocket(socket, host, port, autoClose);
 	    }
-
+	    
 	    @Override
 	    public Socket createSocket() throws IOException {
 	        return sslContext.getSocketFactory().createSocket();
@@ -1489,6 +1685,9 @@ public class AndroidIO extends AbstractIO implements Runnable{
 				new DefaultHttpClient().getParams(), registry);
 		httpSSLClient = new DefaultHttpClient(mgr,
 				new DefaultHttpClient().getParams());
+		
+		// [MOBPLAT-200] : allow gzip, deflate decompression modes
+		httpSSLClient.addResponseInterceptor(new GzipHttpResponseInterceptor());
 		
 		LOG.LogDebug(Module.PLATFORM, "httpSSLClient stored for next HTTPS access");
 		
