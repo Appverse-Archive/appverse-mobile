@@ -31,24 +31,14 @@ namespace Unity.Core.Media.Camera
 		/// </summary>
 		/// <returns>Photo metadata.</returns>
 		MediaMetadata GetSnapshot ();
-        
+
 		/// <summary>
 		/// Take picture.
 		/// </summary>
 		/// <returns>Photo metadata.</returns>
 		MediaMetadata TakeSnapshot ();
 
-		/// <summary>
-		/// Detects the QR code.
-		/// </summary>
-		/// <returns>The QR code.</returns>
-		void DetectQRCode(bool autoHandleQR);
 
-		/// <summary>
-		/// Handles the QR code.
-		/// </summary>
-		/// <returns>The QR code type.</returns>
-		QRType HandleQRCode(MediaQRContent mediaQRContent);
 
 	}//end ICamera
 

@@ -32,13 +32,13 @@ namespace Unity.Core.Media
 {
 	public abstract class AbstractMedia : IAudio, IVideo, ICamera
 	{
-		
+
 		public AbstractMedia ()
 		{
 			this.State = MediaState.Stopped; // default state is stopped.	
 		}
-		
-        #region Miembros de IMediaOperations
+
+		#region Miembros de IMediaOperations
 
 		public abstract MediaMetadata GetMetadata (string filePath);
 
@@ -60,34 +60,30 @@ namespace Unity.Core.Media
 
 		public abstract MediaMetadata GetCurrentMedia ();
 
-        #endregion
+		#endregion
 
-        #region Miembros de ICamera
+		#region Miembros de ICamera
 
 		public abstract MediaMetadata GetSnapshot ();
 
 		public abstract MediaMetadata TakeSnapshot ();
 
-		public abstract void DetectQRCode (bool autoHandleQR);
+		#endregion
 
-		public abstract QRType HandleQRCode (MediaQRContent mediaQRContent);
+		#region IAudio implementation
+		public abstract bool StartAudioRecording (string outputFilePath);
+
+		public abstract bool StopAudioRecording ();
 
 		#endregion
 
-        #region IAudio implementation
-		public abstract bool StartAudioRecording (string outputFilePath);
-        
-		public abstract bool StopAudioRecording ();
-        
-        #endregion
-		
-        #region IVideo implementation
+		#region IVideo implementation
 		public abstract bool StartVideoRecording (string outputFilePath);
-        
+
 		public abstract bool StopVideoRecording ();
-        
-        #endregion
-		
-		
+
+		#endregion
+
+
 	}
 }

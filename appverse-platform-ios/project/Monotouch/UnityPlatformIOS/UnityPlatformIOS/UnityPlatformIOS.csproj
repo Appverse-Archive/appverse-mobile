@@ -66,23 +66,11 @@
     <Reference Include="UnityCore">
       <HintPath>..\..\..\..\lib\Unity\Release\UnityCore.dll</HintPath>
     </Reference>
-    <Reference Include="Webtrekk">
-      <HintPath>..\..\..\..\lib\Webtrekk.dll</HintPath>
-    </Reference>
     <Reference Include="SharpZipLib">
       <HintPath>..\..\..\..\lib\SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\..\..\..\lib\BouncyCastle.Crypto.dll</HintPath>
-    </Reference>
-    <Reference Include="ZXing.Net.Mobile">
-      <HintPath>..\..\..\..\lib\ZXing.Net.Mobile.dll</HintPath>
-    </Reference>
-    <Reference Include="zxing.monotouch">
-      <HintPath>..\..\..\..\lib\zxing.monotouch.dll</HintPath>
-    </Reference>
-    <Reference Include="GoogleAnalytics.iOS">
-      <HintPath>..\..\..\..\lib\GoogleAnalytics.iOS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -109,10 +97,8 @@
     <Compile Include="..\..\..\..\src\csharp\IPhoneUIViewController.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneUtils.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneLog.cs" />
-    <Compile Include="..\..\..\..\src\csharp\IPhoneAnalytics.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneSecurity.cs" />
     <Compile Include="..\..\..\..\src\csharp\SplashScreenView.cs" />
-    <Compile Include="..\..\..\..\src\csharp\IPhoneWebtrekk.cs" />
     <Compile Include="..\..\..\..\src\csharp\SecurityUtils.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneServiceURIHandler.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneAppLoader.cs" />

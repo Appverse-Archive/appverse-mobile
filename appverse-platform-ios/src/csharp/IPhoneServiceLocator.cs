@@ -55,11 +55,11 @@ namespace Unity.Platform.IPhone
 
 		static IPhoneServiceLocator()
         {
-            typedServices["net"]        = new IPhoneNet();
-            typedServices["system"]     = new IPhoneSystem();
-            typedServices["file"]       = new IPhoneFileSystem();
-            typedServices["db"]         = new IPhoneDatabase();
-            typedServices["io"]         = new IPhoneIO();
+			typedServices["net"]        = new IPhoneNet();
+			typedServices["system"]     = new IPhoneSystem();
+			typedServices["file"]       = new IPhoneFileSystem();
+			typedServices["db"]         = new IPhoneDatabase();
+			typedServices["io"]         = new IPhoneIO();
 			typedServices["notify"]     = new IPhoneNotification();
 			typedServices["geo"]     	= new IPhoneGeo();
 			typedServices["media"]     	= new IPhoneMedia();
@@ -68,9 +68,7 @@ namespace Unity.Platform.IPhone
 			typedServices["phone"]  	= new IPhoneTelephony();
 			typedServices["i18n"]  		= new IPhoneI18N();
 			typedServices["log"]  		= new IPhoneLog();
-			typedServices["analytics"]  = new IPhoneAnalytics();
 			typedServices["security"]   = new IPhoneSecurity();
-			typedServices["webtrekk"]  	= new IPhoneWebtrekk();
 			typedServices["loader"]  	= new IPhoneAppLoader();
         }
 

@@ -31,17 +31,23 @@ using Unity.Core.System;
 
 namespace UnityUI.iOS
 {
-	public partial class UnityUI_iOSViewController : UIViewController
+	public abstract partial class UnityUI_iOSViewController : UIViewController
 	{
 		static bool UserInterfaceIdiomIsPhone {
 			get { return UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone; }
 		}
 
+		//: base (UserInterfaceIdiomIsPhone ? "UnityUI_iOSViewController_iPhone" : "UnityUI_iOSViewController_iPad", null)
 		public UnityUI_iOSViewController ()
-			: base (UserInterfaceIdiomIsPhone ? "UnityUI_iOSViewController_iPhone" : "UnityUI_iOSViewController_iPad", null)
 		{
 			log ("Constructor default.");
-			Initialize ();
+			//Initialize ();
+		}
+
+		public UnityUI_iOSViewController (string nibfile, NSBundle bundle)
+			: base (nibfile, bundle)
+		{
+			log ("Constructor default (using nib).");
 		}
 
 		private bool IsLogging = true;
@@ -72,7 +78,7 @@ namespace UnityUI.iOS
 			Initialize ();
 		}
 		
-		void Initialize ()
+		protected void Initialize ()
 		{
 			log ("Initialize view");
 			this.ShowSplashScreenOnStartupTime( UIApplication.SharedApplication.StatusBarOrientation);
@@ -173,36 +179,17 @@ namespace UnityUI.iOS
 		
 		
 		
-		private void log (string message)
+		public void log (string message)
 		{
 			if (IsLogging) {
 				SystemLogger.Log (SystemLogger.Module.GUI, "ViewController: " + message);
 			}
 		}
 
-		public void loadWebView (string urlPath)
-		{
-			NSUrl url = new NSUrl (urlPath);
-			//NSUrlRequest request = new NSUrlRequest(url, NSUrlRequestCachePolicy.ReturnCacheDataElseLoad, 3600.0);
-			// FIX (16-09-2013) - testing iOS 7 apps; resources are not refreshed when installing a new app version on the top of a previous one
-			// We need to remove the cache data loaded
-			NSUrlRequest request = new NSUrlRequest(url		, NSUrlRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData, 3600.0);
-
-			if (webView != null) {
-				this.webView.LoadRequest (request);
-			} else {
-				log ("WebView is null.");
-			}
-			
-		}
-
-		public void loadWebViewData(NSData data, string mimeType, string textEncodingName, NSUrl baseUrl) {
-			if (webView != null) {
-				this.webView.LoadData(data, mimeType, textEncodingName, baseUrl);
-			} else {
-				log ("WebView is null. Data could not be loaded");
-			}
-		}
+		public abstract void loadWebView (string urlPath);
+		public abstract void EvaluateJavascript (string jsToEvaluate);
+		public abstract void CustomizeWebView();
+		public abstract void ApplyAutoresizingMask ();
 
 #endregion
 		
@@ -351,16 +338,16 @@ namespace UnityUI.iOS
 			log ("WillRotate to Interface Orientation: " + toInterfaceOrientation);
 			switch (toInterfaceOrientation) {
 			case UIInterfaceOrientation.Portrait:
-				webView.EvaluateJavascript (@"window.__defineGetter__('orientation',function(){return 0;});window.onorientationchange();");
+				this.EvaluateJavascript (@"window.__defineGetter__('orientation',function(){return 0;});window.onorientationchange();");
 				break;
 			case UIInterfaceOrientation.LandscapeLeft:
-				webView.EvaluateJavascript (@"window.__defineGetter__('orientation',function(){return 90;});window.onorientationchange();");
+				this.EvaluateJavascript (@"window.__defineGetter__('orientation',function(){return 90;});window.onorientationchange();");
 				break;
 			case UIInterfaceOrientation.LandscapeRight:
-				webView.EvaluateJavascript (@"window.__defineGetter__('orientation',function(){return -90;});window.onorientationchange();");
+				this.EvaluateJavascript (@"window.__defineGetter__('orientation',function(){return -90;});window.onorientationchange();");
 				break;
 			case UIInterfaceOrientation.PortraitUpsideDown:
-				webView.EvaluateJavascript (@"window.__defineGetter__('orientation',function(){return 180;});window.onorientationchange();");
+				this.EvaluateJavascript (@"window.__defineGetter__('orientation',function(){return 180;});window.onorientationchange();");
 				break;
 			default:
 				break;
@@ -368,7 +355,7 @@ namespace UnityUI.iOS
 			
 			this.ShowSplashScreenOnStartupTime(toInterfaceOrientation);
 			
-			//webView.EvaluateJavascript(@"window.onorientationchange();");
+			//this.EvaluateJavascript(@"window.onorientationchange();");
 			
 		}
 		
@@ -377,17 +364,18 @@ namespace UnityUI.iOS
 			base.DidRotate (fromInterfaceOrientation);
 			
 			log ("DidRotate from Interface Orientation: " + fromInterfaceOrientation);
-			webView.EvaluateJavascript (@"refreshOrientation();");
-			//webView.EvaluateJavascript(@"window.onorientationchange();");
+			this.EvaluateJavascript (@"refreshOrientation();");
+			//this.EvaluateJavascript(@"window.onorientationchange();");
 		}
 
 		public override void ViewWillLayoutSubviews () {
 			log ("ViewWillLayoutSubviews");
 			if(!this.isTopController) {
 				log ("ViewWillLayoutSubviews: main UIViewController is NOT the top controller... executing refreshOrientation() JS function");
-				webView.EvaluateJavascript (@"refreshOrientation();");
+				this.EvaluateJavascript (@"refreshOrientation();");
 				this.isTopController = true;
 			}
+			ApplyAutoresizingMask ();
 		}
 		
 		public void SetAsTopController(bool topController) {
@@ -407,6 +395,9 @@ namespace UnityUI.iOS
 			base.ViewDidLoad ();
 			
 			// Perform any additional setup after loading the view, typically from a nib.
+			log ("ViewDidLoad");
+
+			this.CustomizeWebView ();
 		}
 
 		/*

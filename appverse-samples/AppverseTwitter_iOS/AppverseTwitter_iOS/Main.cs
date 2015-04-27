@@ -28,6 +28,8 @@ using System.Linq;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 
+using Unity.Platform.IPhone;
+
 namespace UnityUI.iOS
 {
 	public class Application
@@ -39,10 +41,66 @@ namespace UnityUI.iOS
 				#if DEBUG
 					Console.WriteLine("Starting main application...");
 				#endif
-				
+
 				// if you want to use a different Application Delegate class from "AppDelegate"
 				// you can specify it here.
-				UIApplication.Main (args, null, "AppDelegate");
+
+
+				DeviceHardware.HardwareVersion hwVersion = DeviceHardware.Version;
+
+				#if DEBUG
+				Console.WriteLine("Current Device Version: " + hwVersion);
+				#endif
+
+				if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+
+					if(	   hwVersion == DeviceHardware.HardwareVersion.iPhone1G
+						|| hwVersion == DeviceHardware.HardwareVersion.iPhone3G
+						|| hwVersion == DeviceHardware.HardwareVersion.iPhone3GS
+						|| hwVersion == DeviceHardware.HardwareVersion.iPhone4
+						|| hwVersion == DeviceHardware.HardwareVersion.iPhone4_Verizon
+						|| hwVersion == DeviceHardware.HardwareVersion.iPhone4S
+						|| hwVersion == DeviceHardware.HardwareVersion.iPhone5
+						|| hwVersion == DeviceHardware.HardwareVersion.iPhone5C
+						|| hwVersion == DeviceHardware.HardwareVersion.iPod1G
+						|| hwVersion == DeviceHardware.HardwareVersion.iPod2G
+						|| hwVersion == DeviceHardware.HardwareVersion.iPod3G
+						|| hwVersion == DeviceHardware.HardwareVersion.iPod4G
+						|| hwVersion == DeviceHardware.HardwareVersion.iPod5G
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad1Wifi
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad1GSM
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad2Wifi
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad2GSM
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad2CDMA
+						|| hwVersion == DeviceHardware.HardwareVersion.iPadMini1GWifi
+						|| hwVersion == DeviceHardware.HardwareVersion.iPadMini1GGSM
+						|| hwVersion == DeviceHardware.HardwareVersion.iPadMini1GGlobal
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad3Wifi
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad3GSM
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad3Global
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad4Wifi
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad4GSM
+						|| hwVersion == DeviceHardware.HardwareVersion.iPad4Global ) {
+						
+						#if DEBUG
+						Console.WriteLine("Loading Application Delegate (support for iOS8)");
+						#endif
+						UIApplication.Main (args, null, "AppDelegate_WKWebView");
+						
+					} else {
+						#if DEBUG
+						Console.WriteLine("Loading Application Delegate (support for iOS8)... using UIWebview to avoid runtime issues (64 bits devices) ");
+						#endif
+						UIApplication.Main (args, null, "AppDelegate_UIWebView");
+						
+					}
+
+				} else {
+					#if DEBUG
+					Console.WriteLine("Loading Application Delegate");
+					#endif
+					UIApplication.Main (args, null, "AppDelegate_UIWebView");
+				}
 				
 				#if DEBUG
 					Console.WriteLine("END main application");
