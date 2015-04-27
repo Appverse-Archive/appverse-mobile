@@ -24,8 +24,6 @@
 package com.gft.unity.core.media.camera;
 
 import com.gft.unity.core.media.MediaMetadata;
-import com.gft.unity.core.media.MediaQRContent;
-import com.gft.unity.core.media.QRType;
 
 public interface ICamera {
 
@@ -44,19 +42,4 @@ public interface ICamera {
      * user cancels.
      */
     public MediaMetadata TakeSnapshot();
-    
-    /**
-     * Detects the QR code..
-     *
-     * @return The QR code.
-     */
-    
-    public void DetectQRCode(boolean autoHandleQR);
-    
-     /**
-     * Handles the QR code.
-     *
-     * @return The QR code type.
-     */
-    public QRType HandleQRCode(MediaQRContent mediaQRContent);
 }

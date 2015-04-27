@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (“APL v2.0”).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  ("APL v2.0").  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -21,37 +21,20 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-package com.gft.unity.core.io;
-
-public class IOHeader {
-
-    private String name;
-    private String value;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("IOHeader [name=");
-        builder.append(name);
-        builder.append(", value=");
-        builder.append(value);
-        builder.append("]");
-        return builder.toString();
-    }
+package com.gft.unity.core.json;
+/**
+ * The <code>JSONString</code> interface allows a <code>toJSONString()</code> 
+ * method so that a class can change the behavior of 
+ * <code>JSONObject.toString()</code>, <code>JSONArray.toString()</code>,
+ * and <code>JSONWriter.value(</code>Object<code>)</code>. The 
+ * <code>toJSONString</code> method will be used instead of the default behavior 
+ * of using the Object's <code>toString()</code> method and quoting the result.
+ */
+public interface JSONString {
+	/**
+	 * The <code>toJSONString</code> method allows a class to produce its own JSON 
+	 * serialization. 
+	 * @return A strictly syntactically correct JSON text.
+	 */
+	public String toJSONString();
 }

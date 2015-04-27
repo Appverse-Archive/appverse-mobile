@@ -46,18 +46,16 @@ public interface ICalendar {
      * Lists calendar entries for given date.
      *
      * @param date Date to match calendar entries.
-     * @return List of calendar entries.
      */
-    public CalendarEntry[] ListCalendarEntries(DateTime date);
+    public void ListCalendarEntries(DateTime date);
 
     /**
      * Lists calendar entries between given start and end dates.
      *
      * @param startDate Start date to match calendar entries.
      * @param endDate End date to match calendar entries.
-     * @return List of calendar entries.
      */
-    public CalendarEntry[] ListCalendarEntries(DateTime startDate,
+    public void ListCalendarEntries(DateTime startDate,
             DateTime endDate);
 
     /**

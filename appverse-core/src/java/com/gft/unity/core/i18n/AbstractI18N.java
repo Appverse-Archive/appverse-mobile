@@ -41,6 +41,12 @@ public abstract class AbstractI18N implements II18N {
     public AbstractI18N() {
         configuration = loadConfiguration();
     }
+    
+    public String getDefaultLocale() {
+        if(configuration == null || configuration.getDefaultLocale() == null)
+            return "undefined";
+        return configuration.getDefaultLocale().toString();
+    }
 
     @Override
     public Locale[] GetLocaleSupported() {
