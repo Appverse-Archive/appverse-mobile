@@ -47,8 +47,13 @@ import android.widget.Button;
 
 import com.gft.unity.android.AndroidNet;
 import com.gft.unity.android.AndroidServiceLocator;
+import com.gft.unity.android.AndroidSystemLogger;
+import com.gft.unity.core.system.SystemLogger.Module;
 
 public class BrowserActivity extends Activity {
+	
+	private static final AndroidSystemLogger LOG = AndroidSystemLogger.getSuperClassInstance();
+
 
 	private static final String LAYOUT_ID = "browserlayout";
 	private static final String BTN_CLOSE_ID = "btnCloseBrowser";
@@ -85,10 +90,21 @@ public class BrowserActivity extends Activity {
 		mWebView.getSettings().setSupportZoom(true);
 		mWebView.getSettings().setDomStorageEnabled(true);
 		getIntentExtras_FileExtensions();
-		if(browserfileExtensions!= null && !browserfileExtensions.isEmpty()){
-			mWebView.setWebViewClient(new UnityWebViewClient(browserfileExtensions));
-		}else{
-			mWebView.setWebViewClient(new UnityWebViewClient());
+		
+		if(Build.VERSION.SDK_INT >= 17){
+			LOG.Log(Module.GUI, "Using new AppverseWebviewClient..." );
+			if(browserfileExtensions!= null && !browserfileExtensions.isEmpty()){
+				mWebView.setWebViewClient(new AppverseWebViewClient(browserfileExtensions));
+			}else{
+				mWebView.setWebViewClient(new AppverseWebViewClient());
+			}
+		} else {
+			LOG.Log(Module.GUI, "Using legacy UnityWebViewClient..." );
+			if(browserfileExtensions!= null && !browserfileExtensions.isEmpty()){
+				mWebView.setWebViewClient(new UnityWebViewClient(browserfileExtensions));
+			}else{
+				mWebView.setWebViewClient(new UnityWebViewClient());
+			}
 		}
 
 		mWebView.setWebChromeClient(new WebChromeClient() {
@@ -177,20 +193,80 @@ public class BrowserActivity extends Activity {
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 			try {
+				//LOG.Log(Module.GUI, "shouldOverrideUrlLoading: " + url);
+				
+				String action = Intent.ACTION_VIEW;  // default action
+				
+				// tel and mailto schemes should be treated by system too
+				if (url!=null && (url.startsWith("mailto:") || url.startsWith("tel:"))) { 
+					LOG.Log(Module.GUI, "shouldOverrideUrlLoading: tel or mailto schemes need to be handled specifically when called inside webview");
+					
+					Intent intent = null;
+					
+					if (url.startsWith("mailto:"))  {
+						/*
+						* action=android.intent.action.SEND, 
+						* mimeType=text/plain, 
+						* category=null, uriScheme=null
+						* android.intent.extra.TEXT, value: Email message text
+						* android.intent.extra.SUBJECT, value: Email subject
+	 					* context_path, value: additionalPathIfNeeded/
+						* android.intent.extra.EMAIL, value: [unityversal@gmail.com,jon@example.com]
+						*/
+						
+						action = Intent.ACTION_SEND;
+						url = url.replaceFirst("mailto:", ""); 
+			            url = url.trim(); 
+						intent = new Intent(action);
+						intent.setType("text/plain");
+						String[] extraMailData = new String[] {url.split("\\?")[0] };
+						//LOG.Log(Module.GUI, "shouldOverrideUrlLoading: mailto: extra email data: " + extraMailData);
+						intent.putExtra(Intent.EXTRA_EMAIL, extraMailData);
+						
+					} else if (url.startsWith("tel:")) {
+						intent = new Intent(action, Uri.parse(url));
+						//LOG.Log(Module.GUI, "shouldOverrideUrlLoading: tel uri data: " + Uri.parse(url).toString());
+						intent.addCategory(Intent.CATEGORY_BROWSABLE);
+					}
+					
+					view.getContext().startActivity(intent);
+					return true;
+				}
+				
+				
+				boolean delegatesToSystem = false;
+				//LOG.Log(Module.GUI, "shouldOverrideUrlLoading: checking path");
 				String path = new URL(url).getPath();
 				if(path!=null && path.lastIndexOf('.')!=-1){
 					String urlExtension = path.substring(path.lastIndexOf('.'));
 					if(!urlExtension.isEmpty()&& fileExtensions!=null && fileExtensions.size()>0 && fileExtensions.contains(urlExtension))
 					{
-						// Delegate to the system the open/download of that file (operating system handles the url)
-						view.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-						return true;
+						delegatesToSystem = true;
 					}
 				}
+				//LOG.Log(Module.GUI, "shouldOverrideUrlLoading: checking query");
+				// extensions could also be received as Query parameters
+				String query = new URL(url).getQuery();
+				if(query!=null && query.lastIndexOf('.')!=-1){
+					String urlExtensionQuery = query.substring(query.lastIndexOf('.'));
+					if(!urlExtensionQuery.isEmpty() && fileExtensions!=null && fileExtensions.size()>0 && fileExtensions.contains(urlExtensionQuery))
+					{
+						delegatesToSystem = true;
+					}
+				}
+				
+				if(delegatesToSystem) {
+					// Delegate to the system the open/download of that file (operating system handles the url)
+					LOG.Log(Module.GUI, "shouldOverrideUrlLoading: delegating handle of this url to the system");
+					
+					view.getContext().startActivity(new Intent(action, Uri.parse(url)));
+					return true;
+				}
+				
 			} catch (MalformedURLException e) {
-				//LOG ERROR
+				LOG.Log(Module.GUI, "shouldOverrideUrlLoading: MalformedURLException: "+ e.getMessage());
 			} catch (Exception e) {
-				//LOG ERROR
+				LOG.Log(Module.GUI, "shouldOverrideUrlLoading: General exception: "+ e.getMessage());
 			}
 			view.loadUrl(url);
 			return true;
@@ -198,10 +274,10 @@ public class BrowserActivity extends Activity {
 		
 		@Override
 		public WebResourceResponse shouldInterceptRequest (WebView view, String url) {
-		
+			// API level 11, won't be called for lower versions
 			//LOG.Log(Module.GUI, "shouldInterceptRequest [" + url + "]");			
 			if(!(url!=null && url.indexOf(AndroidServiceLocator.INTERNAL_SERVER_URL)>-1 
-					&& (url.indexOf("/service/")>-1 || url.indexOf("/service-async/")>-1) )){
+					&& (url.indexOf("/service/")>-1 ))){
 				return null;
 			}
 			
@@ -221,11 +297,113 @@ public class BrowserActivity extends Activity {
 		@Override
 		public void onLoadResource(WebView view, String url) {
 			//LOG.Log(Module.GUI, "loading resource [" + url + "]");
+			/* DEPRECATED CODE - Appverse is only supporting >=14 SDK levels */
 			if(Build.VERSION.SDK_INT < 11){ 
 				AndroidServiceLocator.checkResourceIsManagedService(url);
 			}
 			
 			super.onLoadResource(view, url);
+		}
+	}
+	
+	private class AppverseWebViewClient extends WebViewClient {
+		private List<String> fileExtensions = null;
+		
+		public AppverseWebViewClient(){
+			super();
+		}
+		
+		public AppverseWebViewClient(List<String> browserFileExtensions) {
+			super();
+			this.fileExtensions = browserFileExtensions;
+		}
+
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			try {
+				//LOG.Log(Module.GUI, "shouldOverrideUrlLoading: " + url);
+				
+				String action = Intent.ACTION_VIEW;  // default action
+				
+				// tel and mailto schemes should be treated by system too
+				if (url!=null && (url.startsWith("mailto:") || url.startsWith("tel:"))) { 
+					LOG.Log(Module.GUI, "** AppverseWebViewClient - shouldOverrideUrlLoading: tel or mailto schemes need to be handled specifically when called inside webview");
+					
+					Intent intent = null;
+					
+					if (url.startsWith("mailto:"))  {
+						/*
+						* action=android.intent.action.SEND, 
+						* mimeType=text/plain, 
+						* category=null, uriScheme=null
+						* android.intent.extra.TEXT, value: Email message text
+						* android.intent.extra.SUBJECT, value: Email subject
+	 					* context_path, value: additionalPathIfNeeded/
+						* android.intent.extra.EMAIL, value: [unityversal@gmail.com,jon@example.com]
+						*/
+						
+						action = Intent.ACTION_SEND;
+						url = url.replaceFirst("mailto:", ""); 
+			            url = url.trim(); 
+						intent = new Intent(action);
+						intent.setType("text/plain");
+						String[] extraMailData = new String[] {url.split("\\?")[0] };
+						//LOG.Log(Module.GUI, "shouldOverrideUrlLoading: mailto: extra email data: " + extraMailData);
+						intent.putExtra(Intent.EXTRA_EMAIL, extraMailData);
+						
+					} else if (url.startsWith("tel:")) {
+						intent = new Intent(action, Uri.parse(url));
+						//LOG.Log(Module.GUI, "shouldOverrideUrlLoading: tel uri data: " + Uri.parse(url).toString());
+						intent.addCategory(Intent.CATEGORY_BROWSABLE);
+					}
+					
+					view.getContext().startActivity(intent);
+					return true;
+				}
+				
+				
+				boolean delegatesToSystem = false;
+				//LOG.Log(Module.GUI, "shouldOverrideUrlLoading: checking path");
+				String path = new URL(url).getPath();
+				if(path!=null && path.lastIndexOf('.')!=-1){
+					String urlExtension = path.substring(path.lastIndexOf('.'));
+					if(!urlExtension.isEmpty()&& fileExtensions!=null && fileExtensions.size()>0 && fileExtensions.contains(urlExtension))
+					{
+						delegatesToSystem = true;
+					}
+				}
+				//LOG.Log(Module.GUI, "shouldOverrideUrlLoading: checking query");
+				// extensions could also be received as Query parameters
+				String query = new URL(url).getQuery();
+				if(query!=null && query.lastIndexOf('.')!=-1){
+					String urlExtensionQuery = query.substring(query.lastIndexOf('.'));
+					if(!urlExtensionQuery.isEmpty() && fileExtensions!=null && fileExtensions.size()>0 && fileExtensions.contains(urlExtensionQuery))
+					{
+						delegatesToSystem = true;
+					}
+				}
+				
+				if(delegatesToSystem) {
+					// Delegate to the system the open/download of that file (operating system handles the url)
+					LOG.Log(Module.GUI, "** AppverseWebViewClient - shouldOverrideUrlLoading: delegating handle of this url to the system");
+					
+					view.getContext().startActivity(new Intent(action, Uri.parse(url)));
+					return true;
+				}
+				
+			} catch (MalformedURLException e) {
+				LOG.Log(Module.GUI, "** AppverseWebViewClient - shouldOverrideUrlLoading: MalformedURLException: "+ e.getMessage());
+			} catch (Exception e) {
+				LOG.Log(Module.GUI, "** AppverseWebViewClient - shouldOverrideUrlLoading: General exception: "+ e.getMessage());
+			}
+			view.loadUrl(url);
+			return true;
+		}
+		
+		@Override
+		public WebResourceResponse shouldInterceptRequest (WebView view, String url) {
+			LOG.LogDebug(Module.GUI, "** AppverseWebViewClient - shouldInterceptRequest [" + url + "]");
+			return AndroidServiceLocator.checkManagedResource(url);
 		}
 	}
 }
