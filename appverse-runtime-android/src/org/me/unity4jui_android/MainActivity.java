@@ -25,7 +25,7 @@ package org.me.unity4jui_android;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URI;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -33,17 +33,23 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import android.net.Uri;
-import android.os.Build;
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.content.pm.ActivityInfo;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.view.KeyEvent;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
@@ -51,45 +57,48 @@ import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
 import android.webkit.WebSettings.RenderPriority;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.WebSettings;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.app.NotificationManager;
 
+import com.gft.unity.android.AndroidApplicationEvent;
+import com.gft.unity.android.AndroidI18N;
+import com.gft.unity.android.AndroidIO;
 import com.gft.unity.android.AndroidServiceLocator;
-
-import com.gft.unity.android.AndroidBeacon;
-
 import com.gft.unity.android.AndroidSystem;
 import com.gft.unity.android.AndroidSystemLogger;
 import com.gft.unity.android.AndroidUtils;
 import com.gft.unity.android.activity.AndroidActivityManager;
+import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.android.log.AndroidLoggerDelegate;
-import com.gft.unity.android.server.HttpServer;
-import com.gft.unity.android.server.ProxySettings;
 import com.gft.unity.android.notification.LocalNotificationReceiver;
 import com.gft.unity.android.notification.NotificationUtils;
 import com.gft.unity.android.notification.RemoteNotificationIntentService;
 import com.gft.unity.android.server.AndroidNetworkReceiver;
-import com.gft.unity.android.util.json.JSONSerializer;
+import com.gft.unity.android.server.HttpServer;
+import com.gft.unity.android.server.ProxySettings;
+import com.gft.unity.android.server.handler.AndroidJavaScriptServiceInterface;
+import com.gft.unity.core.IAppDelegate;
+import com.gft.unity.core.i18n.Locale;
+import com.gft.unity.core.i18n.ResourceLiteralDictionary;
+import com.gft.unity.core.io.IOService;
+import com.gft.unity.core.json.JSONSerializer;
+import com.gft.unity.core.net.NetworkType;
 import com.gft.unity.core.notification.NotificationData;
+import com.gft.unity.core.security.ISecurity;
 import com.gft.unity.core.system.DisplayOrientation;
+import com.gft.unity.core.system.HardwareInfo;
+import com.gft.unity.core.system.OSInfo;
 import com.gft.unity.core.system.SystemLogger.Module;
+import com.gft.unity.core.system.UnityContext;
 import com.gft.unity.core.system.launch.LaunchData;
 import com.gft.unity.core.system.log.LogManager;
-import com.gft.unity.core.security.ISecurity;
 
 public class MainActivity extends Activity {
 
 	private static final AndroidSystemLogger LOG = AndroidSystemLogger.getSuperClassInstance();
-
-	// private static final String WEBVIEW_MAIN_URL =
-	// "file:///android_asset/WebResources/www/index.html";
-	private static final String WEBVIEW_MAIN_URL = AndroidServiceLocator.INTERNAL_SERVER_URL + "/WebResources/www/index.html";
 
 	private static final String SERVER_PROPERTIES = "Settings.bundle/Root.properties";
 	private static final String SERVER_PORT_PROPERTY = "IPC_DefaultPort";
@@ -116,7 +125,8 @@ public class MainActivity extends Activity {
 	private Bundle lastIntentExtras = null;
 	private Uri lastIntentData = null;
 
-	private UnityWebViewClient webViewClient = null;
+	private UnityWebViewClient webViewClient = null;  				// legacy web view client
+	private AppverseWebViewClient appverseWebviewClient = null;   	// new web view client
 
 	public static final String PREFS_NAME = "IntentState";
 	SharedPreferences settings;
@@ -143,17 +153,42 @@ public class MainActivity extends Activity {
 			getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,
 					WindowManager.LayoutParams.FLAG_SECURE);
 		}
+		
+		if (Build.VERSION.SDK_INT >= 19) {
+		    if (AndroidServiceLocator.isDebuggable()) { 
+		    	LOG.Log(Module.GUI, "debug version; activating webview for remote debugging");
+				try {
+					Class webviewClass = Class
+							.forName("android.webkit.WebView");
+					Method setWebContentsDebuggingEnabledMethod = webviewClass
+							.getDeclaredMethod(
+									"setWebContentsDebuggingEnabled",
+									boolean.class);
+					setWebContentsDebuggingEnabledMethod.invoke(null, true);
+				} catch (Exception ex) {
+					LOG.Log(Module.GUI, "debug version; EXCEPTION activating webview for remote debugging: " + ex.getMessage());
+				}
+		    		
+		    }
+		  }
 
 		appView = new WebView(this);
-                //Platforms notification are enable by default.
-		//appView.enablePlatformNotifications();
 		setGlobalProxy();
 
 		appView.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 		appView.setId(APPVIEW_ID);
-		webViewClient = new UnityWebViewClient();
-		appView.setWebViewClient(webViewClient);
+		
+		if(Build.VERSION.SDK_INT >= 17){
+			LOG.Log(Module.GUI, "Using new AppverseWebviewClient..." );
+			appverseWebviewClient = new AppverseWebViewClient();
+			appView.setWebViewClient(appverseWebviewClient);
+		} else {
+			LOG.Log(Module.GUI, "Using legacy UnityWebViewClient..." );
+			webViewClient = new UnityWebViewClient();
+			appView.setWebViewClient(webViewClient);
+		}
+		
 		appView.getSettings().setJavaScriptEnabled(true);
 		appView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
 		appView.getSettings().setAllowFileAccess(true);
@@ -213,7 +248,7 @@ public class MainActivity extends Activity {
 		LogManager.setDelegate(new AndroidLoggerDelegate());
 
 		// save the context for further access
-		AndroidServiceLocator.setContext(this);
+		AndroidServiceLocator.setContext(this, appView);
 
 		// initialize the service locator
 		activityManager = new AndroidActivityManager(this, appView);
@@ -228,8 +263,30 @@ public class MainActivity extends Activity {
 		serviceLocator.RegisterService(activityManager,
 				AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
 		
+		if(Build.VERSION.SDK_INT >= 17){   // Only used for JELLY_BEAN_MR1 or higher
+			/*** INJECT SCRIPT MESSAGE HANDLER (new in Appverse 5) ***/
+			
+			/** From Android documentation:
+			 * 
+			 * This method can be used to allow JavaScript to control the host application. 
+			 * This is a powerful feature, but also presents a security risk for apps targeting JELLY_BEAN or earlier. 
+			 * Apps that target a version later than JELLY_BEAN are still vulnerable if the app runs on a device running Android earlier than 4.2. 
+			 * The most secure way to use this method is to target JELLY_BEAN_MR1 and to ensure the method is called only when running on Android 4.2 or later. 
+			 * With these older versions, JavaScript could use reflection to access an injected object's public fields. 
+			 * Use of this method in a WebView containing untrusted content could allow an attacker to manipulate the host application in unintended ways, 
+			 * executing Java code with the permissions of the host application. Use extreme care when using this method in a WebView which could contain untrusted content.
+			 
+			 * JavaScript interacts with Java object on a private, background thread of this WebView. Care is therefore required to maintain thread safety.
+			 * The Java object's fields are not accessible.
+			 * For applications targeted to API level LOLLIPOP and above, methods of injected Java objects are enumerable from JavaScript.
+			 * 
+			 */
+			
+			appView.addJavascriptInterface(new AndroidJavaScriptServiceInterface(serviceLocator, activityManager), "appverseJSBridge");
+		}
+		
 		if(performSecurityChecks(serviceLocator))  {
-
+			
 			LOG.Log(Module.GUI, "Security checks passed... initializing Appverse...");
 			
 	
@@ -249,25 +306,85 @@ public class MainActivity extends Activity {
 			// actionFilter.addAction("android.intent.action.SERVICE_STATE");
 			registerReceiver(new AndroidNetworkReceiver(appView), actionFilter);
 	
+			
+			ConnectivityManager conMan = (ConnectivityManager) this
+	                .getSystemService(Context.CONNECTIVITY_SERVICE);
+	        NetworkInfo networkInfo = conMan.getActiveNetworkInfo();
+	        com.gft.unity.core.net.NetworkType type = NetworkType.Unknown;
+	        if(networkInfo != null){
+	        	boolean isWiFi = networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
+	            boolean isMobile = networkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+	    		boolean isConnected = networkInfo.isConnected();
+	    		if (isWiFi) {
+	                if (isConnected) {
+	                	LOG.Log(Module.GUI, "Wi-Fi - CONNECTED ("+networkInfo.getType()+")");
+	                    type = NetworkType.Wifi;
+	                } else {
+	                	LOG.Log(Module.GUI, "Wi-Fi - DISCONNECTED ("+networkInfo.getType()+")");
+	                    
+	                }
+	            } else if (isMobile) {
+	                if (isConnected) {
+	                	LOG.Log(Module.GUI, "Mobile - CONNECTED ("+networkInfo.getType()+")");
+	                    type = NetworkType.Carrier_3G;
+	                } else {
+	                	LOG.Log(Module.GUI, "Mobile - DISCONNECTED ("+networkInfo.getType()+")");
+	                }
+	            } else {
+	                if (isConnected) {
+	                	LOG.Log(Module.GUI, networkInfo.getTypeName() + " - CONNECTED ("+networkInfo.getType()+")");
+	                } else {
+	                	LOG.Log(Module.GUI, networkInfo.getTypeName() + " - DISCONNECTED ("+networkInfo.getType()+")");
+	                }
+	            }
+	        } else {
+	        	LOG.Log(Module.GUI, "DISCONNECTED");
+	        }
+	        	        
+			final int typeOrdinal = type.ordinal();
 			final Activity currentContext = this;
 			new Thread(new Runnable() {
 				public void run() {
 					currentContext.runOnUiThread(new Runnable() {
 						public void run() {
-							appView.loadUrl(WEBVIEW_MAIN_URL);
-	
+
+							InitializeAppverseContext(typeOrdinal);
+							String networkStatusListener = "javascript:try{if(Appverse&&Appverse.Net){Appverse.Net.NetworkStatus = " + typeOrdinal + ";Appverse.Net.onConnectivityChange(Appverse.Net.NetworkStatus);}else{console.log('Appverse is not defined');}}catch(e){console.log('Error setting network status (please check onConnectivityChange method): '+e);}";
+							queueJSStatementsForWebviewClient(networkStatusListener);
+							loadMainURLIntoWebview(appView);
 						}
 					});
 				}
 			}).start();
 		}
-
+		
+		
+        
+        
+        
 		holdSplashScreenOnStartup = checkUnityProperty("Unity_HoldSplashScreenOnStartup");
 		hasSplash = activityManager.showSplashScreen(appView);
 		
 		RemoteNotificationIntentService.loadNotificationOptions(getResources(),
 				appView, this);
 		LocalNotificationReceiver.initialize(appView, this);
+	}
+	
+	
+	private void queueJSStatementsForWebviewClient(String jsStatement) {
+		if(webViewClient != null) {
+			webViewClient.executeJSStatements.add(jsStatement);
+		} else if(appverseWebviewClient != null) {
+			appverseWebviewClient.executeJSStatements.add(jsStatement);
+		}
+	}
+	
+	private void loadMainURLIntoWebview(WebView webView) {
+		if(webViewClient != null) {
+			webViewClient.loadMainURLIntoWebview(webView);
+		} else if(appverseWebviewClient != null) {
+			appverseWebviewClient.loadMainURLIntoWebview(webView);
+		}
 	}
 	
 	
@@ -314,6 +431,9 @@ public class MainActivity extends Activity {
 				securityChecksPassed = true;
 				LOG.Log(Module.GUI, "Device is NOT rooted.");
 			}
+		} else {
+			securityChecksPassed = true;
+			LOG.Log(Module.GUI, "This device rooted blocking is not activated for this application");
 		}
 
 		securityChecksPerfomed = true;
@@ -353,7 +473,7 @@ public class MainActivity extends Activity {
 		if (hasFocus) {
 			LOG.Log(Module.GUI,
 					"application has focus; calling foreground listener");
-			appView.loadUrl("javascript:try{Unity._toForeground()}catch(e){}");
+			appView.loadUrl("javascript:try{Appverse._toForeground()}catch(e){}");
 
 			// check for notification details or other extra data
 			this.checkLaunchedFromNotificationOrExternaly();
@@ -362,7 +482,7 @@ public class MainActivity extends Activity {
 			if (!activityManager.isNotifyLoadingVisible()) {
 				LOG.Log(Module.GUI,
 						"application lost focus; calling background listener");
-				appView.loadUrl("javascript:try{Unity._toBackground()}catch(e){}");
+				appView.loadUrl("javascript:try{Appverse._toBackground()}catch(e){}");
 			} else {
 				LOG.Log(Module.GUI,
 						"application lost focus due to a showing dialog (StartNotifyLoading feature); application is NOT calling background listener to allow platform calls on the meantime.");
@@ -381,6 +501,8 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onPause() {
 		LOG.Log(Module.GUI, "onPause");
+		
+		((AndroidServiceLocator)AndroidServiceLocator.GetInstance()).sendApplicationEvent(AndroidApplicationEvent.onPause);
 
 		// Stop HTTP server, and send to background later
 		stopServer(true);
@@ -412,10 +534,12 @@ public class MainActivity extends Activity {
 
 		LOG.Log(Module.GUI, "Security checks passed... beaking up Appverse...");
 		
+		((AndroidServiceLocator)AndroidServiceLocator.GetInstance()).sendApplicationEvent(AndroidApplicationEvent.onResume);
+
 		// Start HTTP server
 		startServer();
 
-		appView.loadUrl("javascript:try{Unity._toForeground()}catch(e){}");
+		appView.loadUrl("javascript:try{Appverse._toForeground()}catch(e){}");
 
 		// TESTING getExtras();
 
@@ -442,17 +566,10 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		LOG.Log(Module.GUI, "onDestroy");		
+		LOG.Log(Module.GUI, "onDestroy");
 		
-		try{
-			AndroidBeacon beacon = (AndroidBeacon) AndroidServiceLocator
-				.GetInstance().GetService(
-						AndroidServiceLocator.SERVICE_TYPE_BEACON);
-			
-			beacon.StopMonitoringBeacons();
-		} catch (Exception e) {
-			LOG.Log(Module.GUI, "Exception checking BLE feature enabled. Exception: " + e.getMessage());
-		}
+		((AndroidServiceLocator)AndroidServiceLocator.GetInstance()).sendApplicationEvent(AndroidApplicationEvent.onDestroy);
+		
 		// Stop HTTP server
 		stopServer();
 		super.onDestroy();
@@ -465,7 +582,9 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onStop() {
 		LOG.Log(Module.GUI, "onStop");
-
+		
+		((AndroidServiceLocator)AndroidServiceLocator.GetInstance()).sendApplicationEvent(AndroidApplicationEvent.onStop);
+		
 		// Stop HTTP server
 		stopServer();
 		super.onStop();
@@ -493,14 +612,31 @@ public class MainActivity extends Activity {
 		}
 		
 		if(!handleResult) {
-			LOG.LogDebug(Module.GUI, "******** Calling super.onActivityResult()");
-			super.onActivityResult(requestCode, resultCode, data);
+			
+			ResultReceiver resultReceiver = ((AndroidServiceLocator)AndroidServiceLocator.GetInstance()).getResultReceiver(requestCode);
+			
+			if(resultReceiver!=null) {
+				LOG.LogDebug(Module.GUI, "******** Calling ResultReceiver send  (probably from a module)...");
+				Bundle bundle = (data==null?new Bundle():data.getExtras());
+				bundle.putInt(IAppDelegate.ACTIVITY_RESULT_CODE_BUNDLE_KEY, resultCode);
+				resultReceiver.send(requestCode, bundle);
+				
+			} else {
+			
+				LOG.LogDebug(Module.GUI, "******** Calling super.onActivityResult()");
+				super.onActivityResult(requestCode, resultCode, data);
+			}
 		}
 		
 	}
 
 	private void startServer() {
 
+		if(appverseWebviewClient != null) {
+			LOG.LogDebug(Module.GUI,"******** Using Appverse Webview Client - No Internal Server used");
+			return;
+		}
+		
 		if (server == null) {
 			AssetManager am = (AssetManager) AndroidServiceLocator
 					.GetInstance()
@@ -565,12 +701,12 @@ public class MainActivity extends Activity {
 				if (notificationType != null
 						&& notificationType
 								.equals(NotificationUtils.NOTIFICATION_TYPE_LOCAL)) {
-					appView.loadUrl("javascript:try{Unity.OnLocalNotificationReceived("
+					appView.loadUrl("javascript:try{Appverse.OnLocalNotificationReceived("
 							+ JSONSerializer.serialize(notif) + ")}catch(e){}");
 				} else if (notificationType != null
 						&& notificationType
 								.equals(NotificationUtils.NOTIFICATION_TYPE_REMOTE)) {
-					appView.loadUrl("javascript:try{Unity.OnRemoteNotificationReceived("
+					appView.loadUrl("javascript:try{Appverse.PushNotifications.OnRemoteNotificationReceived("
 							+ JSONSerializer.serialize(notif) + ")}catch(e){}");
 				}
 			} else {
@@ -600,12 +736,7 @@ public class MainActivity extends Activity {
 		if (this.lastIntentData != null) {
 			LOG.Log(Module.GUI,
 					"Activity was launched from an external app with uri scheme... ");
-			/*if (Build.VERSION.SDK_INT < 11) {
-				
-				LOG.LogDebug(Module.GUI, "API Level < 11 cant parse intents parameters");
-				return;
-
-			}*/
+			
 			Set<String> lastIntentDataSet = this.getQueryParameterNames(this.lastIntentData);
 			for (String key : lastIntentDataSet) {
 			//for (String key : this.lastIntentData.getQueryParameterNames()) {
@@ -632,17 +763,28 @@ public class MainActivity extends Activity {
 		}
 
 		if (launchDataList != null) {
-			String executeExternallyLaunchedListener = "javascript:try{Unity.OnExternallyLaunched ("
+			String executeExternallyLaunchedListener = "javascript:try{Appverse.OnExternallyLaunched ("
 					+ JSONSerializer.serialize(launchDataList
 							.toArray(new LaunchData[launchDataList.size()]))
 					+ ")}catch(e){console.log('TESTING OnExternallyLaunched: ' + e);}";
-			if (webViewClient.webViewReady) {
-				LOG.Log(Module.GUI,
-						"Calling OnExternallyLaunched JS listener...");
-				appView.loadUrl(executeExternallyLaunchedListener);
-			} else {
-				webViewClient.executeJSStatements.add(executeExternallyLaunchedListener);
-				
+			if(webViewClient!=null) {
+				if (webViewClient.webViewReady) {
+					LOG.Log(Module.GUI,
+							"Calling OnExternallyLaunched JS listener...");
+					appView.loadUrl(executeExternallyLaunchedListener);
+				} else {
+					webViewClient.executeJSStatements.add(executeExternallyLaunchedListener);
+					
+				}
+			} else if(appverseWebviewClient!=null) {
+				if (appverseWebviewClient.webViewReady) {
+					LOG.Log(Module.GUI,
+							"Calling OnExternallyLaunched JS listener...");
+					appView.loadUrl(executeExternallyLaunchedListener);
+				} else {
+					appverseWebviewClient.executeJSStatements.add(executeExternallyLaunchedListener);
+					
+				}
 			}
 
 		}
@@ -708,7 +850,7 @@ public class MainActivity extends Activity {
 	private void _stopServer(boolean sendToBackground) {
 
 		// ******* TO BE REVIEW, this while is not well programmed, needs to be changed and assure server is stopped after all
-		while (server != null && !webViewClient.webViewLoadingPage) {
+		while (server != null && webViewClient!=null && !webViewClient.webViewLoadingPage) {
 			// [MOBPLAT-179] wait to stop server while page is still loading
 			LOG.Log(Module.GUI, "App finished loading, server could be stopped");
 
@@ -717,7 +859,7 @@ public class MainActivity extends Activity {
 			LOG.Log(Module.GUI, "Server stopped.");
 
 			if (sendToBackground) {
-				appView.loadUrl("javascript:try{Unity._toBackground()}catch(e){}");
+				appView.loadUrl("javascript:try{Appverse._toBackground()}catch(e){}");
 			}
 
 		}
@@ -736,9 +878,11 @@ public class MainActivity extends Activity {
 		public boolean webViewReady = false;
 		public List<String> executeJSStatements = new ArrayList<String>();
 
+		private static final String LEGACY_WEBVIEW_MAIN_URL = AndroidServiceLocator.INTERNAL_SERVER_URL + "/WebResources/www/index.html";
+		
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			LOG.LogDebug(Module.GUI, "should override url loading [" + url + "]");
+			LOG.LogDebug(Module.GUI, "** UnityWebViewClient - should override url loading [" + url + "]");
 			view.loadUrl(url);
 			return true;
 		}
@@ -746,10 +890,10 @@ public class MainActivity extends Activity {
 		@Override
 		public WebResourceResponse shouldInterceptRequest (WebView view, String url) {
 		
-			LOG.LogDebug(Module.GUI, "shouldInterceptRequest [" + url + "]");
+			LOG.LogDebug(Module.GUI, "** UnityWebViewClient - shouldInterceptRequest [" + url + "]");
 			
 			boolean isSocketListening = AndroidServiceLocator.isSocketListening();
-			LOG.LogDebug(Module.GUI, "*** isSocketListening ?: " + isSocketListening);
+			LOG.LogDebug(Module.GUI, "** UnityWebViewClient - isSocketListening ?: " + isSocketListening);
 			if(!isSocketListening) {
 				LOG.LogDebug(Module.GUI, "*** WARNING - call to service STOPPED. Appverse is not listening right now!!");
 				return new WebResourceResponse("text/plain", "utf-8", 
@@ -763,10 +907,11 @@ public class MainActivity extends Activity {
 		
 		@Override
 		public void onLoadResource(WebView view, String url) {
-			LOG.LogDebug(Module.GUI, "loading resource [" + url + "]");
+			LOG.LogDebug(Module.GUI, "** UnityWebViewClient - loading resource [" + url + "]");
+			/* DEPRECATED CODE - Appverse is only supporting >=14 SDK levels */
 			if(Build.VERSION.SDK_INT < 11){ 
 				boolean isSocketListening = AndroidServiceLocator.isSocketListening();
-				LOG.LogDebug(Module.GUI, "*** isSocketListening ?: " + isSocketListening);
+				LOG.LogDebug(Module.GUI, "** UnityWebViewClient - isSocketListening ?: " + isSocketListening);
 				if(isSocketListening) {
 					AndroidServiceLocator.checkResourceIsManagedService(url);
 				}
@@ -816,13 +961,97 @@ public class MainActivity extends Activity {
 				executeJSStatements = new ArrayList<String>(); // reset
 			}
 		}
+		
+		public void loadMainURLIntoWebview (WebView webView) {
+			webView.loadUrl(UnityWebViewClient.LEGACY_WEBVIEW_MAIN_URL);
+		}
+	}
+
+	
+	/**
+	 * Upgraded WebViewClient for Appverse 5.0
+	 * Webview requests are intercepted and handled
+	 * @author maps
+	 *
+	 */
+	private class AppverseWebViewClient extends WebViewClient {
+		
+		public boolean webViewLoadingPage = false;
+		public boolean webViewReady = false;
+		public List<String> executeJSStatements = new ArrayList<String>();
+		
+		private static final String WEBVIEW_MAIN_URL = AndroidServiceLocator.APPVERSE_URI + "WebResources/www/index.html";
+		
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			LOG.LogDebug(Module.GUI, "** AppverseWebViewClient - should override url loading [" + url + "]");
+			view.loadUrl(url);
+			return true;
+		}
+		
+		@Override
+		public WebResourceResponse shouldInterceptRequest (WebView view, String url) {
+			LOG.LogDebug(Module.GUI, "** AppverseWebViewClient - shouldInterceptRequest [" + url + "]");
+			return AndroidServiceLocator.checkManagedResource(url);
+		}
+		
+		@Override
+		public void onLoadResource(WebView view, String url) {
+			super.onLoadResource(view, url);
+		}
+		
+		@Override
+		public void onReceivedError(WebView view, int errorCode,
+				String description, String failingUrl) {
+			LOG.Log(Module.GUI, "** AppverseWebViewClient - failed loading: "
+					+ failingUrl + ", error code: " + errorCode + " ["
+					+ description + "]");
+		}
+
+		@Override
+		public void onPageStarted(WebView view, String url, Bitmap favicon) {
+			LOG.Log(Module.GUI, "** AppverseWebViewClient - onPageStarted [" + url
+					+ "]");
+			this.webViewLoadingPage = true;
+			super.onPageStarted(view, url, favicon);
+		}
+
+		@Override
+		public void onPageFinished(WebView view, String url) {
+			LOG.Log(Module.GUI, "** AppverseWebViewClient - onPageFinished.");
+
+			if (hasSplash && !holdSplashScreenOnStartup) {
+				LOG.Log(Module.GUI,
+						"** AppverseWebViewClient - Dismissing SplashScreen (default)");
+				activityManager.dismissSplashScreen();
+			}
+			this.webViewLoadingPage = false;
+			this.webViewReady = true;
+			super.onPageFinished(view, url);
+
+			// removing all cached files after main page has finished (in addition to setting to false the 'setAppCacheEnabled') 
+			view.clearCache(true);
+			
+			// Execute any queued JS statements
+			if (executeJSStatements != null && executeJSStatements.size() > 0) {
+				for (String executeJSStatement : executeJSStatements) {
+					LOG.Log(Module.GUI, "Executing JS statement... : "); 
+					view.loadUrl(executeJSStatement);
+				}
+				executeJSStatements = new ArrayList<String>(); // reset
+			}
+		}
+		
+		public void loadMainURLIntoWebview (WebView webView) {
+			webView.loadUrl(AppverseWebViewClient.WEBVIEW_MAIN_URL);
+		}
 	}
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			appView.loadUrl("javascript:try{Unity._backButtonPressed()}catch(e){}");
+			appView.loadUrl("javascript:try{Appverse._backButtonPressed()}catch(e){}");
 			return false;
 		}
 
@@ -860,5 +1089,97 @@ public class MainActivity extends Activity {
 			appView.requestLayout();
 		}
 	}
+	
+	/**
+	 * Initializes the appverse context exposing data to the WebView Javascript DOM.
+	 */
+	private void InitializeAppverseContext (int networkType) {
 
+		long startTime = System.currentTimeMillis();
+
+		try {
+		
+			LOG.Log(Module.GUI,"Before loading the main HTML, platform will expose some information directly to javascript...");
+			
+
+			AndroidSystem systemService = (AndroidSystem)  AndroidServiceLocator
+					.GetInstance().GetService(
+							AndroidServiceLocator.SERVICE_TYPE_SYSTEM);
+			AndroidI18N i18nService = (AndroidI18N)  AndroidServiceLocator
+					.GetInstance().GetService(
+							AndroidServiceLocator.SERVICE_TYPE_I18N);
+			AndroidIO ioService = (AndroidIO)  AndroidServiceLocator
+					.GetInstance().GetService(
+							AndroidServiceLocator.SERVICE_TYPE_IO);
+			IActivityManager am = (IActivityManager)  AndroidServiceLocator
+					.GetInstance().GetService(
+					AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);	
+			
+			
+			// 1. Appverse Context (Appverse.is)
+			UnityContext unityContext = systemService.GetUnityContext();	
+		
+			String unityContextJsonString = JSONSerializer.serialize (unityContext);
+			unityContextJsonString = "_AppverseContext = " + unityContextJsonString;
+			LOG.Log(Module.GUI, "InitializeAppverseContext: "+unityContextJsonString);
+			am.executeJS( unityContextJsonString );		
+
+			// 2. OS Info (Appverse.OSInfo)
+			OSInfo osInfo = systemService.GetOSInfo();
+			
+			String osInfoJsonString = JSONSerializer.serialize (osInfo);
+			osInfoJsonString = "_OSInfo = " + osInfoJsonString;
+			LOG.Log(Module.GUI, "InitializeAppverseContext: "+osInfoJsonString);
+			am.executeJS( osInfoJsonString );
+
+			// 3. Hardware Info (Appverse.HardwareInfo)
+			HardwareInfo hwInfo = systemService.GetOSHardwareInfo();			
+			String hwInfoJsonString = JSONSerializer.serialize (hwInfo);
+			hwInfoJsonString = "_HwInfo = " + hwInfoJsonString;
+			LOG.Log(Module.GUI, "InitializeAppverseContext: "+hwInfoJsonString);
+			am.executeJS( hwInfoJsonString );
+
+			// 4. Get all configured localized keys (Appverse.i18n)
+			Locale[] supportedLocales = i18nService.GetLocaleSupported ();
+			String localizedStrings = "_i18n = {}; _i18n['default'] = '" + i18nService.getDefaultLocale() +"'; ";
+			String localeLiterals = "";
+			for(Locale supportedLocale : supportedLocales) {
+				ResourceLiteralDictionary literals = i18nService.GetResourceLiterals(supportedLocale);				
+				String literalsJsonString = JSONSerializer.serialize (literals);
+				localeLiterals = localeLiterals + " _i18n['" + supportedLocale.toString() + "'] = " + literalsJsonString + "; ";
+			}
+			localizedStrings = localizedStrings + localeLiterals;
+			LOG.Log(Module.GUI, "InitializeAppverseContext: "+localizedStrings);
+			am.executeJS( localizedStrings );
+
+			// 5. Current device locale
+			com.gft.unity.core.system.Locale currentLocale = systemService.GetLocaleCurrent();
+			String currentLocaleJsonString = JSONSerializer.serialize (currentLocale);
+			currentLocaleJsonString = "_CurrentDeviceLocale = " + currentLocaleJsonString;
+			LOG.Log(Module.GUI, "InitializeAppverseContext: "+currentLocaleJsonString);
+			am.executeJS( currentLocaleJsonString );
+
+			// 6. Configured IO services endpoints
+			IOService[] services = ioService.GetServices();
+			String servicesJsonString = "_IOServices = {}; ";
+			for(IOService service : services) {
+				String serviceJson = JSONSerializer.serialize (service);
+				servicesJsonString = servicesJsonString + " _IOServices['" + service.getName() + "-" + JSONSerializer.serialize (service.getType()) + "'] = " + serviceJson + "; ";
+			}
+			LOG.Log(Module.GUI, "InitializeAppverseContext: "+servicesJsonString);
+			am.executeJS( servicesJsonString );
+			
+			String networkStatusString = "_NetworkStatus = " + networkType + ";";
+			LOG.Log(Module.GUI, "InitializeAppverseContext: networkType: "+networkType);
+			am.executeJS( networkStatusString );
+
+		} catch (Exception ex) {			
+			LOG.Log(Module.GUI,"Unable to load Appverse Context. Exception message: " + ex.getMessage());			
+		}
+
+		long timetaken = System.currentTimeMillis() - startTime;
+		LOG.Log(Module.GUI,"# Time elapsed initializing Appverse Context: "+ timetaken);
+		
+	}
+	
 }
