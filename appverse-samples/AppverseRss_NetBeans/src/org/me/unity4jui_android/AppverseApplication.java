@@ -21,7 +21,7 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-package org.appverse.mobile.android.ui;
+package org.me.unity4jui_android;
 
 import android.app.Application;
 import android.content.Context;
