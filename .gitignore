@@ -26,3 +26,8 @@ appverse-platform-android/lib/AppverseCoreJava.jar
 appverse-samples/AppverseRss_NetBeans/libs/AppversePlatformAndroid.jar
 appverse-samples/AppverseRss_NetBeans/libs/AppverseCoreJava.jar
 appverse-platform-android/lib/AppverseCoreJava.jar
+appverse-runtime-android/.idea/.name
+appverse-runtime-android/.idea/compiler.xml
+appverse-runtime-android/.idea/copyright/profiles_settings.xml
+out
+.idea
