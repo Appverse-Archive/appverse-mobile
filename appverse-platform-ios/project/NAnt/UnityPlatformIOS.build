@@ -18,8 +18,10 @@
 	<property name="core.build.file" value="../../../UnityCore/project/NAnt/UnityCoreMonotouch.build" overwrite="true"/>
 	<property name="core.dll" value="../../../UnityCore/project/MonoTouch/UnityCore/UnityCore/bin/${build.mode.dir}/UnityCore.dll"/>
 	
-	<property name="monotouch.bin.dir" value="/Developer/MonoTouch/usr/bin"/>
-	<property name="monotouch.lib.dir" value="/Developer/MonoTouch/usr/lib"/>
+	<!--property name="monotouch.bin.dir" value="/Developer/MonoTouch/usr/bin"/--> 
+    <property name="monotouch.bin.dir" value="/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin"/> 
+	<!--property name="monotouch.lib.dir" value="/Developer/MonoTouch/usr/lib"/-->
+    <property name="monotouch.lib.dir" value="/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib"/>
 	<property name="monotouch.lib.mono" value="mono/Xamarin.iOS"/>
 	<property name="monotouch.command.smcs" value="${monotouch.bin.dir}/smcs"/>
 	<property name="monotouch.command.mtouch" value="${monotouch.bin.dir}/mtouch"/>
