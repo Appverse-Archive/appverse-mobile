@@ -64,7 +64,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="Xamarin.iOS">
-      <HintPath>..\..\..\..\..\..\..\..\..\Library\Frameworks\Xamarin.iOS.framework\Versions\8.9.1.3\lib\mono\Xamarin.iOS\Xamarin.iOS.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\Library\Frameworks\Xamarin.iOS.framework\Versions\8.8.1.9\lib\64bits\Xamarin.iOS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -16,7 +16,7 @@
 	
 	<property name="monotouch.bin.dir" value="/Developer/MonoTouch/usr/bin"/>
 	<property name="monotouch.lib.dir" value="/Developer/MonoTouch/usr/lib"/>
-	<property name="monotouch.lib.mono" value="/mono/2.1"/>
+	<property name="monotouch.lib.mono" value="mono/Xamarin.iOS"/>
 	<property name="monotouch.command.smcs" value="${monotouch.bin.dir}/smcs"/>
 	<property name="monotouch.command.mtouch" value="${monotouch.bin.dir}/mtouch"/>
 	
@@ -30,13 +30,6 @@
         <mkdir dir="${build.dir}" />
 		
 		<echo message="Compiling C# sources to generate UNITY CORE DLL: ${build.dir}/${dll.name}.dll"/>
-		
-		<echo message="#### Mono references: "/>
-		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/System.dll"/>
-		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/System.Xml.dll"/>
-		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/System.Core.dll"/>
-		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/monotouch.dll"/>
-		<echo message="## ${monotouch.lib.dir}/${monotouch.lib.mono}/System.Data.dll"/>
 		
 		<echo message="## Searching for source files on: ${source.dir}"/>
 		<foreach item="File" property="filename">
@@ -54,11 +47,10 @@
 		<exec program="${monotouch.command.smcs}" verbose="true">
 			<arg value="/noconfig"/>
 			<arg value="/out:${build.dir}/${dll.name}.dll"/>
-			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.dll" />
 			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Xml.dll" />
 			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Core.dll" />
-			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/monotouch.dll" />
 			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Data.dll" />
+			<arg value="/r:/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/Xamarin.iOS/Xamarin.iOS.dll" />
 			<arg value="/nologo" />
 			<arg value="/warn:4" />
 			<arg value="/debug:full" if="${mode == 'Debug_Simulator' or mode == 'Debug_Device'}"/>
