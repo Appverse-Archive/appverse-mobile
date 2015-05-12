@@ -20,7 +20,4 @@ Global
 		{8E2036CC-18E2-4008-ACCF-2430DBBD534F}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
 		{8E2036CC-18E2-4008-ACCF-2430DBBD534F}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = UnityCore\UnityCore.csproj
-	EndGlobalSection
 EndGlobal
