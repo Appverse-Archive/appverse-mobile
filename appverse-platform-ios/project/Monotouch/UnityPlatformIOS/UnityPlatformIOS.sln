@@ -20,7 +20,4 @@ Global
 		{572DE6B6-1655-48B7-B248-055876AF5321}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
 		{572DE6B6-1655-48B7-B248-055876AF5321}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = UnityPlatformIOS\UnityPlatformIOS.csproj
-	EndGlobalSection
 EndGlobal
