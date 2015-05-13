@@ -1,18 +1,21 @@
 ﻿<Properties StartupItem="UnityCore/UnityCore.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.iPhone 6+ Appverse" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="../../../../../../Downloads/ImageInverter/ImageInverterExt/Info.plist">
+  <MonoDevelop.Ide.Workbench>
     <Files>
       <File FileName="../../../../../../Downloads/ImageInverter/ImageInverterExt/Info.plist" />
+      <File FileName="../../../../../../Downloads/ImageInverter/ImageInverter/Info.plist" />
+      <File FileName="../../../../../../Downloads/ImageInverter/ImageInverterExt/ImageInverterViewController.cs" Line="93" Column="6" />
+      <File FileName="../../../../appverse-samples/AppverseSample_iOS/FidorLogin/ViewController.cs" Line="14" Column="50" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="AppverseSample_iOS" expanded="True" />
-          <Node name="ImageInverter" expanded="True">
-            <Node name="ImageInverterExt" expanded="True">
-              <Node name="Info.plist" selected="True" />
-            </Node>
+          <Node name="AppverseSample_iOS" expanded="True" selected="True">
+            <Node name="AppverseSample_iOS" expanded="True" />
+            <Node name="FidorLogin" expanded="True" />
           </Node>
+          <Node />
+          <Node name="Share" expanded="True" />
           <Node />
           <Node />
         </State>
