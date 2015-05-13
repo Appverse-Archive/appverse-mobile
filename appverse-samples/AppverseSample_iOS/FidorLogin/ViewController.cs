@@ -25,7 +25,9 @@ namespace FidorLogin
 			// Release any cached data, images, etc that aren't in use.
 		}
 
-		partial void UIButton5_TouchUpInside (UIButton sender)
+
+
+		partial void UIBarButtonItem15_Activated (UIBarButtonItem sender)
 		{
 			var title = "";
 			var msg = "";
@@ -45,7 +47,6 @@ namespace FidorLogin
 
 			// Present Alert
 			PresentViewController (okAlertController, true, null);
-				
 		}
 	}
 }

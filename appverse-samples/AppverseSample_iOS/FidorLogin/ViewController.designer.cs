@@ -26,9 +26,9 @@ namespace FidorLogin
 		[GeneratedCode ("iOS Designer", "1.0")]
 		UITextField PasswordText { get; set; }
 
-		[Action ("UIButton5_TouchUpInside:")]
+		[Action ("UIBarButtonItem15_Activated:")]
 		[GeneratedCode ("iOS Designer", "1.0")]
-		partial void UIButton5_TouchUpInside (UIButton sender);
+		partial void UIBarButtonItem15_Activated (UIBarButtonItem sender);
 
 		void ReleaseDesignerOutlets ()
 		{
