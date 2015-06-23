@@ -5,6 +5,10 @@ This module contains the Android Java implementation of the core interfaces of A
 For more information, please refer to <http://appverse.github.com>.
 This software is licensed under APL 2.0 <http://appverse.org/legal/appverse-license/>.
 
+## Using
+Load project in Eclipse > Export > Java > JAR file > appverse-platform-android\dist\appverse-platform-android.jar
+
+
 ## License
 
     Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
