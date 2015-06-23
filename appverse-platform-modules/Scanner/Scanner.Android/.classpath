@@ -5,6 +5,6 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry kind="lib" path="../../../UnityCore/project/Netbeans/UnityCore/dist/UnityCore-1.1/UnityCore.jar"/>
+	<classpathentry kind="lib" path="../../../appverse-core/project/Eclipse/dist/appverse-core.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
