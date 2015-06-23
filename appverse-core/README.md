@@ -4,6 +4,9 @@ This module contains the Java & C# implementation for the core interfaces of App
 
 For more information, please refer to <http://appverse.github.com>.
 
+## Using
+Load project in Eclipse > Export > Java > JAR file > appverse-core/dist/appverse-core.jar
+
 ## License
 
     Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
