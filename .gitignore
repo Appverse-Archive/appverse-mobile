@@ -29,3 +29,5 @@ appverse-platform-android/lib/AppverseCoreJava.jar
 out
 .idea
 gen
+appverse-core/project/Eclipse/dist/appverse-core.jar
+appverse-platform-android/projects/Eclipse/dist/appverse-platform-android.jar
