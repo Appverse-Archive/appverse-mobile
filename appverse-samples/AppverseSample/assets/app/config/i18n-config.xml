@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<i18n-config>
+	<default id = "en-US" language = "en"/>
+	<supportedLanguages>
+		<supportedLanguage id = "es" language = "es" textlanguage = "Spanish" />
+		<supportedLanguage id = "en" language = "en" textlanguage = "English" />
+                <supportedLanguage id = "spa" language = "spa" textlanguage = "Spanish" />
+                <supportedLanguage id = "eng" language = "eng" textlanguage = "English" />
+	</supportedLanguages>
+</i18n-config>
