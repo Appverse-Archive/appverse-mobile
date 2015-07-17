@@ -1,0 +1,142 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<!--<html class="no-js" manifest="cache.manifest">-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+    <title data-ng-bind="$state.current.name">
+        rss
+    </title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+    <!-- build:css styles/vendor.css -->
+    <link rel="stylesheet" href="bower_components/angular-xeditable/dist/css/xeditable.css">
+    <link rel="stylesheet" type="text/css" href="bower_components/ng-grid/ng-grid.min.css">
+    <!-- endbuild -->
+
+    <!-- build:css(.tmp) styles/styles.css -->
+    <link rel="stylesheet" href="styles/bootstrap.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <link rel="stylesheet" href="styles/grid.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- endbuild -->
+</head>
+
+<!--Include the module with the app scope-->
+
+<body data-ng-app="rssApp">
+    <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+    <!--[if lt IE 9]>
+      <script src="bower_components/es5-shim/es5-shim.js"></script>
+      <script src="bower_components/json3/lib/json3.min.js"></script>
+    <![endif]-->
+
+    <!-- HEADER/NAVIGATION BAR
+     This is the unnamed root, aka index.html
+     You can place here your views in the ui-view points.
+    -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!-- ui-sref is a directive from ui-router for linking a state location with an anchor link.
+                 We should almost always use ui-sref instead of href on our links when we want
+                 then to navigate to a state. When this link is clicked it will take the application
+                 to the 'home' state. Behind the scenes the directive also adds the correct href attr
+                 and url. -->
+            <a class="navbar-brand" ui-sref="home">
+                rss
+            </a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="main-navbar-collapse">
+            <ul class="nav navbar-nav">
+                <!-- Here you can see ui-sref in action again. Also notice the use of $state.includes, which
+                 will set the links to 'active' if, for example on the first link, 'contacts' or any of
+                 its descendant states are activated. -->
+                <li data-ng-class="{ active: $state.includes('home') }">
+                    <a ui-sref="home"><i class="glyphicon glyphicon-home"></i> Home</a>
+                </li>
+                <li data-ng-class="{ active: $state.includes('theme') }">
+                    <a ui-sref="theme"><i class="glyphicon glyphicon-pencil"></i> Theme</a>
+                </li>
+            </ul>
+        </div>
+
+    </nav>
+
+    <!-- MAIN INSERTION POINT
+         Here is the main ui-view (it is unnamed) as the main content insertion point.
+         It replaces the default Angular's ng-view directive.
+         It will be populate by its immediate children's templates/views unless otherwise
+         explicitly named views are targeted.
+     -->
+    <div ui-view="" class="myslide" autoscroll="false"></div>
+
+    <footer class="footer clearfix">
+        <hr>
+        <div class="col-md-2 col-md-offset-5">
+
+            <ul class="list-inline">
+                <li><a href="http://appverse.org/">Appverse.org</a>
+                </li>
+                <li><a href="https://twitter.com/appversed">Twitter</a>
+                </li>
+                <li><a href="https://github.com/Appverse">GitHub</a>
+                </li>
+                <li><a href="https://www.npmjs.com/~appverse">NPM</a>
+                </li>
+            </ul>
+        </div>
+
+
+    </footer>
+
+        <script src="js/appverse.js"></script>
+        <!-- build:js scripts/scripts.js -->
+        <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="bower_components/angular/angular.min.js"></script>
+        <script src="bower_components/angular-touch/angular-touch.min.js"></script>
+        <script src="bower_components/modernizr/modernizr.js"></script>
+        <script src="bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+        <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+        <script src="bower_components/ng-grid/build/ng-grid.min.js"></script>
+        <script src="bower_components/venturocket-angular-slider/build/angular-slider.min.js"></script>
+        <script src="bower_components/angular-animate/angular-animate.min.js"></script>
+        <script src="bower_components/angular-xeditable/dist/js/xeditable.js"></script>
+        <script src="bower_components/appverse-web-html5-core/dist/appverse/appverse.min.js"></script>
+        <script src="bower_components/appverse-web-html5-core/dist/appverse-router/appverse-router.min.js"></script>
+        <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+        <script src="bower_components/appverse-web-html5-core/dist/appverse-utils/appverse-utils.min.js"></script>
+        <script src="bower_components/x2js/xml2json.js"></script>
+        <script src="bower_components/angular-xml/angular-xml.js"></script>
+    <!-- APP SCRIPTS -->
+        <script src="scripts/app.js"></script>
+        <script src="scripts/controllers/home-controller.js"></script>
+        <script src="scripts/states/app-states.js"></script>
+    <!-- REST MODULE -->
+    <script src="bower_components/lodash/lodash.min.js"></script>
+    <script src="bower_components/restangular/dist/restangular.min.js"></script>
+    <script src="bower_components/appverse-web-html5-core/dist/appverse-rest/appverse-rest.min.js"></script>
+    <!-- LOGGING MODULE -->
+    <script src="bower_components/appverse-web-html5-core/dist/appverse-logging/appverse-logging.min.js"></script>
+        <!-- endbuild -->
+</body>
+
+</html>

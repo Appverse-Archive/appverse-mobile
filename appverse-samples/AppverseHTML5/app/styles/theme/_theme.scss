@@ -1,0 +1,495 @@
+// Appverse Theme
+//
+// -----------------------------------------------------
+@mixin btn-shadow($color) {
+    @include gradient-vertical-three-colors(lighten($color, 8%), $color, 60%, darken($color, 4%));
+    filter: none;
+    border-bottom: 1px solid darken($color, 10%);
+}
+
+// Navbar =====================================================================
+.navbar {
+    filter: none;
+    &-default {
+        .badge {
+            background-color: #fff;
+            color: $navbar-default-bg;
+        }
+        .navbar-toggle {
+            border-radius: 5px;
+            .icon-bar {
+                background-color: $text-color;
+            }
+            &[aria-expanded="true"] {
+                border-color: $brand-primary;
+                .icon-bar {
+                    background-color: $brand-primary;
+                }
+            }
+        }
+    }
+    .navbar-nav > li > a,
+    &-brand {
+        text-shadow: none;
+        &:hover {
+            color: $brand-primary !important;
+        }
+    }
+    .navbar-nav > li {
+        &.active {
+            a {
+                border-bottom: 3px solid $brand-primary;
+                padding-bottom: 17px;
+            }
+        }
+    }
+    .navbar-form {
+        input {
+            height: 30px;
+        }
+        margin:15px 0;
+    }
+    &-inverse {
+        filter: none;
+        border-bottom: 1px solid darken($navbar-inverse-bg, 10%);
+        .navbar-nav> li {
+            &.active {
+                a {
+                    border-bottom: 3px solid #fff;
+                    padding-bottom: 17px;
+                }
+            }
+            >a {
+                &:hover {
+                    color: lighten($navbar-inverse-bg, 25%) !important;
+                }
+            }
+        }
+        .badge {
+            background-color: #fff;
+            color: $navbar-inverse-bg;
+        }
+        .navbar-brand {
+            &:hover {
+                color: lighten($navbar-inverse-bg, 25%) !important;
+            }
+        }
+        .dropdown-menu {
+            background-color: #fff;
+            >li {
+                >a {
+                    color: $text-color;
+                    &:hover {
+                        background-color: $brand-primary;
+                        color: #fff;
+                    }
+                }
+                &.divider {
+                    background-color: $gray-light;
+                }
+            }
+        }
+    }
+}
+/*Dropdown toggle*/
+
+.dropdown-toggle {
+    transition: all .1s linear;
+    .caret {
+        transition: all .1s linear;
+    }
+    &[aria-expanded="true"] {
+        .caret {
+            transform: rotate(180deg);
+        }
+    }
+}
+
+.dropdown-menu {
+    transition: all .1s linear;
+}
+/*Input styles*/
+
+.form-control {
+    &:focus {
+        box-shadow: none;
+    }
+}
+/*BUTTONS SECTION*/
+
+.buttons {
+    .btn {
+        margin-bottom: .5em;
+    }
+}
+/*BUTTONS TEXT*/
+
+.btn {
+    text-transform: uppercase;
+    padding-left: 15px;
+    padding-right: 15px;
+    &:focus {
+        outline: none;
+    }
+    &.btn-lg {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+/*BUTTONS OPACITY*/
+
+.btn.disabled {
+    opacity: .5;
+}
+/*BTN ACTION NEW KIND OF BUTTON FOR ACTION BUTTONS LIKE SUBMIT OR SAVE*/
+
+.btn-action {
+    border: 1px solid $btn-action-border;
+    background-color: $btn-action-bg;
+    color: $btn-action-color;
+}
+/*OUT OF TOOLBAR DROPDOWN MENU*/
+
+.btn-group {
+    .dropdown-menu {
+        background-color: #fff;
+        >li {
+            >a {
+                color: $text-color;
+                &:hover {
+                    background-color: $btn-default-bg;
+                    color: #fff;
+                }
+            }
+            &.divider {
+                background-color: $gray-light;
+            }
+        }
+    }
+    .dropdown-toggle {
+        .caret {
+            border-top-color: #fff;
+        }
+    }
+}
+/*BUTTON GROUP THAT WORKS AS A TOGGLE*/
+
+.btn-group-toggle {
+    .btn {
+        background-color: #fff;
+        color: $text-color;
+        text-transform: capitalize;
+        font-size: 1em;
+        border-collapse: collapse;
+        border-color: #d2d2d2;
+        border-right-width: 0;
+        &:last-child {
+            border-right-width: 1px;
+        }
+        &:hover {
+            color: $text-color;
+            background-color: darken(#fff, 5%);
+        }
+        &.active {
+            background-color: $brand-primary;
+            color: #fff;
+        }
+    }
+}
+/*ALERTS*/
+
+.alert {
+    color: #fff;
+    border: none;
+    a {
+        color: #fff !important;
+    }
+    .close {
+        color: #fff;
+        opacity: .7;
+        &:focus {
+            outline: none;
+        }
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+/*FORM LABEL STYLES*/
+
+.form-group {
+    label {
+        font-weight: normal;
+    }
+}
+/*PAGINATION*/
+
+.pagination {
+    background: #fff;
+    border: 1px solid #d2d2d2;
+    height: 45px;
+    >li {
+        display: inline-block;
+        padding: 10px;
+        >a {
+            padding: 1px 6px;
+            border-radius: 50%;
+            height: 23px;
+            width: 23px;
+            line-height: 20px;
+            text-align: center;
+        }
+    }
+    &.pagination-lg {
+        height: 52px;
+        >li {
+            >a {
+                height: 30px;
+                width: 30px;
+                line-height: 27px;
+            }
+        }
+    }
+    &.pagination-sm {
+        height: 38px;
+        >li {
+            >a {
+                height: 18px;
+                width: 18px;
+                line-height: 15px;
+                padding: 1px;
+            }
+        }
+    }
+}
+/*TAB PANEL*/
+
+.nav-tabs {
+    background-color: #fff;
+    border: 1px solid #e1e1e4;
+    >li {
+        a {
+            border: none;
+            color: $text-color;
+            &:hover {
+                color: $brand-primary;
+            }
+        }
+        &.active {
+            a {
+                border: none;
+                border-bottom: 3px solid $brand-primary;
+                &:hover {
+                    border: none;
+                    border-bottom: 3px solid $brand-primary;
+                }
+            }
+        }
+    }
+    .dropdown-menu {
+        background-color: #fff;
+        >li {
+            >a {
+                color: $text-color;
+                &:hover {
+                    background-color: $brand-primary;
+                    color: #fff;
+                }
+            }
+            &.divider {
+                background-color: $gray-light;
+            }
+        }
+    }
+}
+
+.tab-pane {
+    background-color: #fff;
+    padding: 1em;
+}
+/*PILLS PANEL*/
+
+.nav-pills {
+    >li {
+        >a {
+            border-radius: 5px;
+        }
+    }
+    .open {
+        .dropdown-toggle {
+            background-color: $brand-primary !important;
+            color: #fff;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            .caret {
+                border-top-color: #fff;
+            }
+        }
+        .dropdown-menu {
+            margin-top: 0;
+            margin-left: -1px;
+            border-radius: 5px;
+            border-top-left-radius: 0;
+        }
+    }
+}
+/*LIST GROUP*/
+
+.list-group {
+    .list-group-item {
+        padding: 14px 15px;
+        margin-bottom: 5px;
+        border-radius: 3px !important;
+    }
+}
+/*JUMBOTRON*/
+
+.jumbotron {
+    p {
+        font-weight: 300;
+    }
+}
+/*TABLE STYLES*/
+
+.table {
+    border-radius: 5px;
+    tr {
+        th {
+            text-transform: uppercase;
+            color: #a6a6a6;
+            font-weight: 200;
+        }
+        td {
+            color: #606060;
+        }
+        &.info {
+            td {
+                background-color: #cadfed !important;
+            }
+            &:hover {
+                td {
+                    background-color: darken(#cadfed, 5%) !important;
+                }
+            }
+        }
+        &.danger {
+            td {
+                background-color: #fcebe8 !important;
+            }
+            &:hover {
+                td {
+                    background-color: darken(#fcebe8, 5%) !important;
+                }
+            }
+        }
+        &.success {
+            td {
+                background-color: #ecfce8 !important;
+            }
+            &:hover {
+                td {
+                    background-color: darken(#ecfce8, 5%) !important;
+                }
+            }
+        }
+        &.warning {
+            td {
+                background-color: #fdf5cb !important;
+            }
+            &:hover {
+                td {
+                    background-color: darken(#fdf5cb, 5%) !important;
+                }
+            }
+        }
+    }
+}
+/*NG-GRID STYLES*/
+
+.ngGrid {
+    border-radius: 5px;
+    &.gridStyle {
+        border: none;
+        background-color: $ng-grid-bg;
+    }
+    .ngTopPanel {
+        background-color: transparent;
+    }
+    .ngHeaderCell {
+        text-transform: uppercase;
+        color: #a6a6a6;
+        font-weight: 200;
+        background-color: transparent;
+        border-bottom: 2px solid $ng-grid-border-color;
+    }
+    .ngRow {
+        background-color: transparent;
+        .ngCell {
+            color: #606060;
+            background-color: transparent;
+            border-bottom: 1px solid $ng-grid-border-color;
+        }
+    }
+    .ngVerticalBar {
+        display: none;
+    }
+}
+
+@media (max-width: $grid-float-breakpoint-max) {
+    .navbar {
+        .dropdown-header {
+            color: #fff;
+        }
+        .dropdown-menu {
+            a {
+                color: #fff;
+            }
+        }
+    }
+}
+
+// Buttons ====================================================================
+.btn {
+    text-shadow: none;
+    .caret {
+        border-top-color: #fff;
+    }
+}
+
+.btn-default {
+    &:hover {
+        color: $btn-default-color;
+    }
+    .caret {
+        border-top-color: $text-color;
+    }
+}
+
+.btn-default {}
+
+.btn-primary {}
+
+.btn-success {}
+
+.btn-info {}
+
+.btn-warning {}
+
+.btn-danger {}
+
+// Typography =================================================================
+// Tables =====================================================================
+// Forms ======================================================================
+// Navs =======================================================================
+// Indicators =================================================================
+// Progress bars ==============================================================
+// Containers =================================================================
+.panel-primary,
+.panel-success,
+.panel-warning,
+.panel-danger,
+.panel-info {
+    .panel-heading, .panel-title {
+        color: #fff;
+    }
+}
