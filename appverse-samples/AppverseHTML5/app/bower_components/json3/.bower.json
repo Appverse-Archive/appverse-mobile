@@ -1,0 +1,14 @@
+{
+  "name": "json3",
+  "homepage": "https://github.com/bestiejs/json3",
+  "version": "3.2.4",
+  "_release": "3.2.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "v3.2.4",
+    "commit": "a9559aa763cc3777ae996f630e6985b29e33c7bb"
+  },
+  "_source": "git://github.com/bestiejs/json3.git",
+  "_target": "3.2.4",
+  "_originalSource": "json3"
+}
