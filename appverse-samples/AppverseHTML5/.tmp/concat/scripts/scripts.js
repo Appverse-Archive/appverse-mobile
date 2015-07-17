@@ -4638,7 +4638,7 @@ angular.module('App.Controllers')
     
         $scope.open = function(item) {
             try{
-                Appverse.Net.OpenBrowser(item.title,item.link,"Appverse");
+                Appverse.Net.OpenBrowser(item.title.__text,"Appverse",item.link._href);
              } catch (e) {
                 console.log('NO Appverse Mobile');
                 item.linkSplit = item.link.split('/');
@@ -4651,11 +4651,20 @@ angular.module('App.Controllers')
         }
         $scope.greeting = 'Welcome';
         $window.getNews = function(result, id) {
-            $log.debug("News refreshed @ " + new Date(parseFloat(id)));
-            $scope.data = $scope.toJSON(result.Content)
-            $scope.title = $scope.data.rss.channel.title;
-            $scope.items = $scope.data.rss.channel.item;
-            $scope.$evalAsync();
+            if(Appverse){
+                $log.debug("News refreshed @ "+new Date(parseFloat(id)));
+                //$log.debug(result.Content);
+                $scope.data = $scope.toJSON(result.Content);
+                $scope.title = $scope.data.feed.title;
+                $scope.items = $scope.data.feed.entry;
+                $scope.$evalAsync();
+            }else{
+                $log.debug("News refreshed @ " + new Date(parseFloat(id)));            
+                $scope.data = $scope.toJSON(result.Content);
+                $scope.title = $scope.data.rss.channel.title;
+                $scope.items = $scope.data.rss.channel.item;
+                $scope.$evalAsync();
+            }
         };
 
         /*$http.defaults.headers.put = {
@@ -4671,13 +4680,15 @@ angular.module('App.Controllers')
         request.Session = {};
         //Appverse.IO.InvokeService(request,Appverse.IOServices['bbc-4'],null,'getNews',new Date().getTime());
         try {
-            Appverse.IOServices[0].Type = Appverse.IOServices[0] = Appverse.IO.SERVICETYPE_XMLRPC_XML;
-            Appverse.IOServices[0].Endpoint.Host = "http://www.bbc.com";
-            Appverse.IOServices[0].Endpoint.Path = "/mundo/temas/tecnologia/index.xml";
-            Appverse.IO.InvokeService(request, Appverse.IOServices[0], null, 'getNews', new Date().getTime());
+            /*
+            Appverse.IOServices[0].Type = Appverse.IO.SERVICETYPE_XMLRPC_XML;
+            Appverse.IOServices[0].Endpoint.Host = "http://20minutos.feedsportal.com";
+            Appverse.IOServices[0].Endpoint.Path = "/c/32489/f/478284/index.rss";
+            */
+            Appverse.IO.InvokeService(request, Appverse.IOServices["bbc-4"], null, 'getNews', new Date().getTime());
         } catch (e) {
             console.log('NO Appverse Mobile');
-
+            Appverse  = false;
             $http.get('/20m').
             success(function(data, status, headers, config) {
                 // this callback will be called asynchronously

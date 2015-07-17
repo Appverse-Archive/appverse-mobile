@@ -8,6 +8,7 @@
    <service name="bbc" type="XMLRPC_JSON">
   	<end-point host="http://www.bbc.com" path="/mundo/temas/tecnologia/index.xml" />
 	</service>
+	
    </services>
    <!-- include here any other service your application might require -->
 </io-services-config>
