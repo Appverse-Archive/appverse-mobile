@@ -11,9 +11,9 @@ You will find here a bunch of application projects ready to be compiled and exec
 For more information, please refer to <http://appverse.github.com>.
 This software is licensed under APL 2.0 <http://appverse.org/legal/appverse-license/>.
 
+* [Appverse HTML5 Application](#appverseHTML5_application)
 * [Monotouch C# iOS Application](#monotouch_application)
 * [Eclipse Android Application](#eclipse_application)
-* [NetBeans Android Application](#netbeans_application)
 * [Android Known Issues](#android_known_issues)
 
 ## What you need to configure per application?
@@ -21,6 +21,14 @@ This software is licensed under APL 2.0 <http://appverse.org/legal/appverse-lice
 Each mobile application needs to configure some parameters and build properties.
 Appverse provides you with some application project samples with all these properties already configured.
 But when you create your own application project, you should check and reconfigure them in order to attend your own application requirements.
+
+
+
+<a name="appverseHTML5_application"/>
+### Appverse HTML5 Application 
+
+The initial sample application using Appverse HTML5
+
 
 <a name="monotouch_application"/>
 ### Monotouch C# iOS Application 
@@ -206,86 +214,6 @@ MyProject >> Run as >> Run Configurations... >> (setup a custom configuration fo
 Place your proxy settings as the following command line option:
 
 <p>-http-proxy http://proxy_host>:proxy_port</p>
-
-<a name="netbeans_application"/>
-### NetBeans Android Application 
-
-Before you start with your first Android app as a NetBeans project, you will need to check that you have your development environment set up.
-You will need to install the following:
-
-1. Download the Android SDK: [http://developer.android.com/sdk/index.html]
-2. Download and install **NetBeans IDE 7.2** or newer version [https://netbeans.org/downloads/index.html]
-3. Install the NBAndroid Plugin for NetBeans (optional). See instructions here: [http://www.nbandroid.org/p/installation.html]
-	* Configure the Android SDK Location and create your new project using the plugin. See instructions here: [http://kenai.com/projects/nbandroid/pages/Intro] 
-4. Download the latest SDK Tools and platforms using the SDK Manager.
-	* API level 11 is required as it is the Appverse Android default target.
-
-**System requirements**:
-
-*Operating Systems*
-* Windows XP (32-bit), Vista (32- or 64-bit), or Windows 7 (32- or 64-bit)
-* Mac OS X 10.5.8 or later (x86 only)
-* Linux (tested on Ubuntu Linux, Lucid Lynx)
-	* GNU C Library (glibc) 2.7 or later is required.
-	* On Ubuntu Linux, version 8.04 or later is required.
-	* 64-bit distributions must be capable of running 32-bit applications.
-
-*NetBeans IDE*
-* Recommended to install NetBeans IDE 7.2 or newer
-* JDK 6 (JRE alone is not sufficient)
-* Apache Ant 1.8 or later
-* Not compatible with Gnu Compiler for Java (gcj)
-
-
-**Building the app**:
-
-[Disclaimer] You will have to use the File -> Open Project option in order to load the sample folders.
-
-Set the ANDROID_HOME enviroment variable with the android sdk path.
-
-You will need to compile the appverse-runtime-android-zxing. 
-> 1. In order to do so, open the appverse-runtime-android-zxing folder.
-> 2. you will need to set the sdk.dir in the appverse-runtime-android-zxing/local.properties file pointing to android sdk folder. 
-3. Make sure the line 98 of the appverse-runtime-android-zxing/build.xml is uncommented.
-4. Now you can make a clean and build that would be necessary after this point.
-
-Now we are ready to open the appverse-samples\AppverseTwitter_NetBeans folder and make a 'clean and build' and a run after this.
-
-
-**How to embed your Web resources**:
-
-Embeded resources are included in the assets folder.
-
-**Appverse and Third-party Libraries**:
-
-Required libraries are included in the same way as in the Eclipse project. Please, check above the corresponding instructions.
-
-**General Settings**
-
-The settings you could configure in the NetBeans project are the same as in the Eclipse project. Please, check above the corresponding instructions.
-
-**Android Emulator**:
-
-To test the app in the emulator from a NetBeans build you could follow this instruction:
-
- 
-> 1. In NetBeans go to Tools -> AVD Manager
-> 2. Create a new AVD if you have not do this before.
-> 3. Start the AVD and launch it, wait untill the emulator have finished loading. 
-> 4. Open Terminal console, in W7: Run -> cmd
-> 5. Type 'adb devices' to make sure the avd is working properly.
-> 6. Type 'adb pull *apkfile*' [this will be in the appverse-samples\AppverseTwitter_NetBeans\bin folder by default].
-
-
-**Android Emulator behind a Proxy**:
-
-If you need to execute an application that connects to remote servers and you are behind a coporate proxy, you should configure your proxy settings in your NetBeans IDE:
-
-MyProject >> Properties >> Run >> Emulator options
-
-Place your proxy settings as the following command line option:
-
-<p>-http-proxy http://proxy_host:proxy_port</p>
 
 <a name="android_known_issues"/>
 ### Android Known Issues 
