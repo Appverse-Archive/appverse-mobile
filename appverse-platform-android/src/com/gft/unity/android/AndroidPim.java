@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ContentResolver;
@@ -58,6 +59,8 @@ import android.provider.ContactsContract.Intents.Insert;
 import android.provider.ContactsContract.RawContactsEntity;
 import android.util.Base64;
 
+import com.gft.unity.android.activity.AbstractActivityManagerListener;
+import com.gft.unity.android.activity.AndroidActivityManager;
 import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.pim.AbstractPim;
 import com.gft.unity.core.pim.CalendarEntry;
@@ -148,6 +151,20 @@ public class AndroidPim extends AbstractPim {
 	
 	@Override
 	public CalendarEntry CreateCalendarEntry(CalendarEntry entry) {
+		try {	
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.WRITE_CALENDAR, aam.CREATECALENDAR, new CalendarPermissionListener(entry));
+		} catch (Exception ex) {
+			LOGGER_CALENDAR.logError("Call", "Error", ex);
+		} 
+		return null;
+	
+	}
+	
+	public CalendarEntry CreateCalendarEntryOnApproval(CalendarEntry entry) {
 		
 		if (entry != null) {
 			
@@ -305,6 +322,22 @@ public class AndroidPim extends AbstractPim {
 	@Override
 	// TODO handle all contact data fields
 	public Contact CreateContact(Contact contactData) {
+		
+		try {	
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.READ_CONTACTS, aam.CREATECONTACT, new ContactPermissionListener(contactData));
+		} catch (Exception ex) {
+			LOGGER_CONTACTS.logError("Call", "Error", ex);
+		} 
+		return null;
+		
+	}
+	
+	// TODO handle all contact data fields
+	public Contact CreateContactOnApproval(Contact contactData) {
 
 		LOGGER_CONTACTS.logInfo("CreateContact", "creating contact data for " + contactData.getName());
 		ContactAddress[] addresses = contactData.getAddresses();
@@ -420,6 +453,18 @@ public class AndroidPim extends AbstractPim {
 
 	@Override
 	public void GetContact(String id) {
+		try {	
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.READ_CONTACTS, aam.GETCONTACT, new ContactPermissionListener(id));
+		} catch (Exception ex) {
+			LOGGER_CONTACTS.logError("Call", "Error", ex);
+		} 
+	}
+	
+	public void GetContactOnApproval(String id) {
 		Contact contact = new Contact();
 		contact.setID(id.toString());
 		
@@ -618,8 +663,134 @@ public class AndroidPim extends AbstractPim {
 		}
 	}
 	
+	
+	
+
+	private class CalendarPermissionListener extends AbstractActivityManagerListener {
+		
+		private CalendarEntry entry;
+		
+		public CalendarPermissionListener(CalendarEntry entry) {
+			this.entry = entry;
+		}
+
+
+		@Override
+		public void onOk(int requestCode, Intent data) {
+
+			LOGGER_CALENDAR.logInfo("CalendarPermissionListener.onOk", ((data!=null)?data.getDataString(): ""));
+			try {	
+				switch(requestCode){
+				case AndroidActivityManager.CREATECALENDAR:
+					CreateCalendarEntryOnApproval(entry);
+					break;
+					
+				}
+			} catch (Exception ex) {
+				LOGGER_CALENDAR.logError("CalendarPermissionListener.onOk", "Error", ex);
+			} 
+
+		}
+
+
+		@Override
+		public void onCancel(int requestCode, Intent data) {
+			LOGGER_CALENDAR.logInfo("CalendarPermissionListener.onCancel", ((data!=null)?data.getDataString(): ""));
+
+			try {
+				IActivityManager am = (IActivityManager) AndroidServiceLocator
+						.GetInstance().GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+				am.executeJS("Appverse.OnCalendarDenied", null);
+				
+			} catch (Exception ex) {
+				LOGGER_CALENDAR.logError("CalendarPermissionListener.onCancel", "Error", ex);
+			}
+		}
+		
+	}
+	private class ContactPermissionListener extends AbstractActivityManagerListener {
+		
+		private ContactQuery query;
+		private String id;
+		private Contact contactData;
+		
+		public ContactPermissionListener(ContactQuery query) {
+			this.query = query;
+		}
+		
+		public ContactPermissionListener() {
+		}
+		
+
+		public ContactPermissionListener(String id) {
+			this.id = id;
+		}
+
+		public ContactPermissionListener(Contact contactData) {
+			this.contactData = contactData;
+		}
+
+		@Override
+		public void onOk(int requestCode, Intent data) {
+
+			LOGGER_CONTACTS.logInfo("ContactPermissionListener.onOk", ((data!=null)?data.getDataString(): ""));
+			try {	
+				switch(requestCode){
+				case AndroidActivityManager.LISTCONTACTS:
+					if(query != null){
+						LOGGER_CONTACTS.logInfo("ContactPermissionListener.onOk", "With query: "+query.toString());
+						ListContactsOnApproval(query);
+					}else{
+						LOGGER_CONTACTS.logInfo("ContactPermissionListener.onOk", "Without query");
+						ListContactsOnApproval();
+					}
+					break;
+				case AndroidActivityManager.GETCONTACT:
+					GetContactOnApproval(id);
+					break;
+				case AndroidActivityManager.CREATECONTACT:
+					CreateContact(contactData);
+					break;
+				}
+			} catch (Exception ex) {
+				LOGGER_CONTACTS.logError("ContactPermissionListener.onOk", "Error", ex);
+			} 
+
+		}
+
+
+		@Override
+		public void onCancel(int requestCode, Intent data) {
+			LOGGER_CONTACTS.logInfo("ContactPermissionListener.onCancel", ((data!=null)?data.getDataString(): ""));
+
+			try {
+				IActivityManager am = (IActivityManager) AndroidServiceLocator
+						.GetInstance().GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+				am.executeJS("Appverse.OnContactDenied", null);
+				
+			} catch (Exception ex) {
+				LOGGER_CONTACTS.logError("ContactPermissionListener.onCancel", "Error", ex);
+			}
+		}
+		
+	}
+	
 	@Override
 	public void ListContacts(ContactQuery query) {
+		try {	
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.READ_CONTACTS, aam.LISTCONTACTS, new ContactPermissionListener(query));
+		} catch (Exception ex) {
+			LOGGER_CONTACTS.logError("Call", "Error", ex);
+		} 
+	}
+	
+	public void ListContactsOnApproval(ContactQuery query) {
 		
 		LOGGER_CONTACTS.logInfo("ListContacts", "Start listing contacts...");
 		Date startTotal = new Date();
@@ -839,7 +1010,20 @@ public class AndroidPim extends AbstractPim {
 		
 	}
 		
-	public void ListContacts() {
+	
+	public void ListContactsl() {
+		try {	
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.READ_CONTACTS, aam.REQUEST_READ_CONTACT, new ContactPermissionListener());
+		} catch (Exception ex) {
+			LOGGER_CONTACTS.logError("Call", "Error", ex);
+		} 
+	}
+	
+	private void ListContactsOnApproval() {
 		
 		LOGGER_CONTACTS.logInfo("ListContacts", "Start listing contacts...");
 		Date startTotal = new Date();

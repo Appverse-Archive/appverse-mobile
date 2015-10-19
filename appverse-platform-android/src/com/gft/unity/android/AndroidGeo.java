@@ -25,9 +25,11 @@ package com.gft.unity.android;
 
 import java.util.List;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -41,6 +43,9 @@ import android.view.Surface;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.gft.unity.android.activity.AbstractActivityManagerListener;
+import com.gft.unity.android.activity.AndroidActivityManager;
+import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.geo.AbstractGeo;
 import com.gft.unity.core.geo.Acceleration;
 import com.gft.unity.core.geo.DeviceOrientation;
@@ -51,6 +56,7 @@ import com.gft.unity.core.geo.NorthType;
 import com.gft.unity.core.geo.POI;
 import com.gft.unity.core.system.SystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
+import com.gft.unity.core.telephony.CallType;
 
 public class AndroidGeo extends AbstractGeo {
 
@@ -291,6 +297,19 @@ public class AndroidGeo extends AbstractGeo {
 
 	@Override
 	public boolean StartUpdatingHeading() {
+	try {	
+
+		AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+				.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+		
+		aam.requestPermision(Manifest.permission.ACCESS_FINE_LOCATION, aam.REQUEST_COMPASS, new LocationPermissionListener());
+	} catch (Exception ex) {
+		LOG.Log("StartUpdatingLocation Error", ex);
+	} 
+	return true;
+	}
+	
+	public boolean StartUpdatingHeadingOnApproval() {
 		
 		try {
 			if (sensorManager == null) {
@@ -315,9 +334,71 @@ public class AndroidGeo extends AbstractGeo {
 		
 		return true;
 	}
+	
+	private class LocationPermissionListener extends AbstractActivityManagerListener {
+
+		
+		public LocationPermissionListener() {
+		}
+		
+		
+
+		@Override
+		public void onOk(int requestCode, Intent data) {
+			
+
+			LOG.Log("LocationPermissionListener.onOk");
+			try {	
+				switch(requestCode){
+				case AndroidActivityManager.REQUEST_GPS:
+					StartUpdatingLocationOnApproval();
+					break;
+				case AndroidActivityManager.REQUEST_COMPASS:
+					StartUpdatingHeadingOnApproval();
+					break;
+				}
+				
+			} catch (Exception ex) {
+				LOG.Log("LocationPermissionListener.onOk Error", ex);
+			} 
+
+		}
+
+
+		@Override
+		public void onCancel(int requestCode, Intent data) {
+			LOG.Log("LocationPermissionListener.onCancel");
+
+			try {
+				IActivityManager am = (IActivityManager) AndroidServiceLocator
+						.GetInstance().GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+				am.executeJS("Appverse.OnLocationDenied", null);
+				
+			} catch (Exception ex) {
+				LOG.Log("LocationPermissionListener.onCancel Error", ex);
+			}
+		}
+	}
 
 	@Override
 	public boolean StartUpdatingLocation() {
+		
+		
+		try {	
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.ACCESS_FINE_LOCATION, aam.REQUEST_GPS, new LocationPermissionListener());
+		} catch (Exception ex) {
+			LOG.Log("StartUpdatingLocation Error", ex);
+		} 
+		return true;
+	
+	}
+	
+	public boolean StartUpdatingLocationOnApproval() {
 		
 		Context context = AndroidServiceLocator.getContext();
 		if (locationManager == null) {

@@ -51,6 +51,7 @@ import android.view.Surface;
 import android.view.WindowManager;
 
 import com.gft.unity.android.activity.IActivityManager;
+import com.gft.unity.android.helpers.AndroidUtils;
 import com.gft.unity.core.system.AbstractSystem;
 import com.gft.unity.core.system.CPUInfo;
 import com.gft.unity.core.system.DisplayBitDepth;
@@ -641,6 +642,12 @@ public class AndroidSystem extends AbstractSystem {
 	
 	@Override
 	public void LaunchApplication(App app, String query) {
+		
+		IActivityManager aam = (IActivityManager) AndroidServiceLocator
+				.GetInstance()
+				.GetService(
+						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+		
 		try {
 			if(app!=null && app.getAndroidApp()!=null) {
 				
@@ -706,26 +713,24 @@ public class AndroidSystem extends AbstractSystem {
 					
 				}
 				
-				IActivityManager aam = (IActivityManager) AndroidServiceLocator
-						.GetInstance()
-						.GetService(
-								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-				
 				// [AMOB-27] the new activity/application is launched as a new task (not grouped with the launcher app tasks stack)
 				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);   
 				
-				boolean result = aam.startActivity(intent);
-				
-				if(!result) {
-					LOG.Log(Module.PLATFORM, "The system could not open the given url. Please check syntax.");
-				}
+				aam.launchApp(intent);  // special "startActivity" method that handles the exceptions and returns result via JS listener
 				
 			} else {
-				LOG.Log(Module.PLATFORM, "No application provided to launch, please check your first argument on API method invocation");
+				LOG.Log(Module.PLATFORM, "No application provided to launch, please check your first argument on API method invocation");		
+			
+				// sending result back to the app via JS listener
+				aam.executeJS("Appverse.System.onLaunchApplicationResult", new Object[] {false, "METHOD_CALL_SYNTAX_ERROR"});
 			}
 		} catch(Exception e) {
 			LOG.Log(Module.PLATFORM, "An exception has been raised while launching the application.", e);			
+			
+			// sending result back to the app via JS listener
+			aam.executeJS("Appverse.System.onLaunchApplicationResult", new Object[] {false, "METHOD_CALL_SYNTAX_ERROR"});
 		}
+		
 	}
 
 	

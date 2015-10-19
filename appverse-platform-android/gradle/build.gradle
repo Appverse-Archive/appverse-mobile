@@ -1,0 +1,38 @@
+
+// APPVERSE ANDROID PLATFORM GRADLE BUILD
+
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        minSdkVersion 'app.android.target.version'
+        targetSdkVersion 23
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    
+	compile files('lib/gcm.jar')
+	compile files('lib/SpongyCastle_147.jar')
+	compile files('lib/httpclient-cache-4.3.5.jar')
+	compile files('lib/httpclient-4.3.5.jar')
+	compile files('lib/httpcore-4.3.2.jar')
+	compile files('lib/httpmime-4.3.5.jar')
+
+    compile files('../libs/UnityCoreJava.jar')
+}

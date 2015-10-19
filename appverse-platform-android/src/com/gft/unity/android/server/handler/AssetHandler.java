@@ -33,7 +33,7 @@ import java.net.URLDecoder;
 import android.content.res.AssetManager;
 
 import com.gft.unity.android.AndroidServiceLocator;
-import com.gft.unity.android.AndroidUtils;
+import com.gft.unity.android.helpers.AndroidUtils;
 import com.gft.unity.core.storage.filesystem.FileData;
 import com.gft.unity.core.storage.filesystem.IFileSystem;
 import com.gft.unity.core.system.server.net.HttpRequest;

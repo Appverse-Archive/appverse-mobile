@@ -23,6 +23,8 @@
  */
 package com.gft.unity.android.notification;
 
+import com.gft.unity.android.AndroidServiceLocator;
+import com.gft.unity.android.activity.AndroidActivityManager;
 import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.notification.NotificationData;
 import com.gft.unity.core.system.log.Logger;
@@ -39,7 +41,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.webkit.WebView;
 
 /**
  * @author maps
@@ -59,15 +60,15 @@ public class LocalNotificationReceiver extends BroadcastReceiver {
 	//remove if not needed   //public static final String MINUTE = "MINUTES";
 	
 	// Keeping main activity state
-	private static WebView appView;
+	private static AndroidActivityManager activityManager;
 	private static Activity appActivity;
 	
 	private static final String LOGGER_MODULE = "Appverse.LocalNotificationReceiver";
 	private static final Logger LOGGER = Logger.getInstance(
 			LogCategory.PLATFORM, LOGGER_MODULE);
 	
-	public static void initialize(WebView view, Activity context){
-		appView = view;
+	public static void initialize(AndroidActivityManager aam, Activity context){
+		activityManager = aam;
 		appActivity = context;
 	}
 
@@ -106,51 +107,37 @@ public class LocalNotificationReceiver extends BroadcastReceiver {
 		notificationData.setAlertMessage(body);
 		notificationData.setSound(notificationSound);
 		notificationData.setCustomDataJsonString(customJsonData);
+	
+	
+		Notification.Builder mBuilder = new Notification.Builder(context)
+		.setDefaults(0)
+		.setContentIntent(NotificationUtils.getMainActivityAsPendingIntent(context, NotificationUtils.NOTIFICATION_TYPE_LOCAL, ""+notificationId, notificationData))
+		.setSmallIcon(iIconId)
+		//TODO .setLights(Integer.parseInt(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_LED_COLOR_ARGB.toString())), 100, 100)
+		.setTicker(ticker)
+		.setContentText(body)
+		.setContentTitle(title);
 		
-		//Different ways to create the notification depending the API Level restrictions
-		if(Build.VERSION.SDK_INT < 11){
-			notif = new Notification(iIconId, ticker, System.currentTimeMillis());//icon, text, time in millis
-			notif.defaults=0;
-			if(notificationSound!=null && !notificationSound.isEmpty() && !notificationSound.equals("default")){ 
-				notif.sound = Uri.parse(notificationSound);
-			} else {
-				notif.defaults |= Notification.DEFAULT_SOUND;
-			}
-			notif.setLatestEventInfo(context, title, body, 
-					NotificationUtils.getMainActivityAsPendingIntent(context, NotificationUtils.NOTIFICATION_TYPE_LOCAL, ""+notificationId, notificationData));
-			// TODO notif.ledARGB = Integer.parseInt(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_LED_COLOR_ARGB.toString()));
-			notif.ledOffMS = 100;
-			notif.ledOnMS = 100;
-		}else{
-			Notification.Builder mBuilder = new Notification.Builder(context)
-			.setDefaults(0)
-			.setContentIntent(NotificationUtils.getMainActivityAsPendingIntent(context, NotificationUtils.NOTIFICATION_TYPE_LOCAL, ""+notificationId, notificationData))
-			.setSmallIcon(iIconId)
-			//TODO .setLights(Integer.parseInt(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_LED_COLOR_ARGB.toString())), 100, 100)
-			.setTicker(ticker)
-			.setContentText(body)
-			.setContentTitle(title);
-			
-			/** TODO 
-			Bitmap largeIconBMP = null;
-			
-			if(NOTIFICATION_STRUCTURE.containsKey(RemoteNotificationFields.RN_LARGE_ICON.toString())){
-				int iLargeIconId = APP_RESOURCES.getIdentifier(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_LARGE_ICON.toString()), NotificationUtils.DRAWABLE_TYPE, PACKAGE_NAME);
-				largeIconBMP = BitmapFactory.decodeResource(APP_RESOURCES, iLargeIconId);
-			}
-			if(largeIconBMP!=null){
-				mBuilder.setLargeIcon(largeIconBMP);
-			}
-			**/
-			
-			if(notificationSound!=null && !notificationSound.isEmpty() && !notificationSound.equals("default")){ 
-				mBuilder.setSound(Uri.parse(notificationSound));
-			} else {
-				// set default sound
-				mBuilder.setDefaults(Notification.DEFAULT_SOUND);
-			}
-			notif = mBuilder.getNotification();
+		/** TODO 
+		Bitmap largeIconBMP = null;
+		
+		if(NOTIFICATION_STRUCTURE.containsKey(RemoteNotificationFields.RN_LARGE_ICON.toString())){
+			int iLargeIconId = APP_RESOURCES.getIdentifier(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_LARGE_ICON.toString()), NotificationUtils.DRAWABLE_TYPE, PACKAGE_NAME);
+			largeIconBMP = BitmapFactory.decodeResource(APP_RESOURCES, iLargeIconId);
 		}
+		if(largeIconBMP!=null){
+			mBuilder.setLargeIcon(largeIconBMP);
+		}
+		**/
+		
+		if(notificationSound!=null && !notificationSound.isEmpty() && !notificationSound.equals("default")){ 
+			mBuilder.setSound(Uri.parse(notificationSound));
+		} else {
+			// set default sound
+			mBuilder.setDefaults(Notification.DEFAULT_SOUND);
+		}
+		notif = mBuilder.getNotification();
+
 				
 		//check if vibration should be enabled 
 		//notification.vibrate = new long[] { 0, 100, 200, 300 };
@@ -167,15 +154,9 @@ public class LocalNotificationReceiver extends BroadcastReceiver {
 		final NotificationData notifData = notificationData;
 		
 		// TESTING MARGA
-		if(appActivity != null && appView!=null){
-			Runnable rNotification = new Runnable() {
-				@Override
-				public void run() {
-					appView.loadUrl("javascript:try{Unity.OnLocalNotificationReceived(" + JSONSerializer.serialize(notifData) +")}catch(e){}");
-				}
-			};
+		if(appActivity != null && activityManager!=null){
+			activityManager.loadUrlIntoWebView("javascript:try{Unity.OnLocalNotificationReceived(" + JSONSerializer.serialize(notifData) +")}catch(e){}");
 			LOGGER.logDebug("onReceive", "Invoking rNotification on UI thread... ");
-			appActivity.runOnUiThread(rNotification);
 		}
 		
 	}

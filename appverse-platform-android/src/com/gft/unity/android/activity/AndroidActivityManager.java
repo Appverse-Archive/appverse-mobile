@@ -23,9 +23,12 @@
  */
 package com.gft.unity.android.activity;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Dialog;
@@ -33,6 +36,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.view.Display;
 import android.view.Surface;
 import android.view.ViewGroup.LayoutParams;
@@ -42,6 +46,7 @@ import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
+import com.gft.unity.android.AndroidServiceLocator;
 import com.gft.unity.android.AndroidSystemLogger;
 import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.system.SystemLogger;
@@ -49,24 +54,51 @@ import com.gft.unity.core.system.SystemLogger.Module;
 
 public class AndroidActivityManager implements IActivityManager {
 
-	private static final SystemLogger LOG = AndroidSystemLogger.getInstance();
+	protected static final SystemLogger LOG = AndroidSystemLogger.getInstance();
 
+	
+	protected static final String SPLASH_PORTRAIT_ID = "launch_portrait";
+	protected static final String SPLASH_LANDSCAPE_ID = "launch_landscape";
+	protected static final String SPLASH_TABLET_SUFIX_ID = "_tablet";
+	protected static final String SPLASH_STYLE_ID = "SplashScreen";
+	
+	protected static final String DRAWABLE_TYPE = "drawable";
+	protected static final String STYLE_TYPE = "style";
+	
 	public static final int GET_SNAPSHOT_RC = 5000;
 	public static final int TAKE_SNAPSHOT_RC = 5001;
-	
-	private static final String SPLASH_PORTRAIT_ID = "launch_portrait";
-	private static final String SPLASH_LANDSCAPE_ID = "launch_landscape";
-	private static final String SPLASH_TABLET_SUFIX_ID = "_tablet";
-	private static final String SPLASH_STYLE_ID = "SplashScreen";
-	
-	private static final String DRAWABLE_TYPE = "drawable";
-	private static final String STYLE_TYPE = "style";
 
-	private Activity main;
+	public static final int REQUEST_CAMERA = 1000;
+	public static final int REQUEST_READ_CONTACT = 1001;
+	public static final int REQUEST_WRITE_CONTACT = 1012;
+	public static final int REQUEST_STORE = 1002;
+	public static final int REQUEST_CALENDAR = 1003;
+	public static final int REQUEST_SMS = 1004;
+	public static final int REQUEST_PHONE = 1005;
+	public static final int REQUEST_GPS = 1006;
+	public static final int REQUEST_NFC = 1007;
+	public static final int REQUEST_BLUETOOTH = 1008;
+	
+	public static final int TAKESNAPSHOT = 1009;
+	public static final int CALL = 1010;
+	public static final int TAKESNAPSHOTWITHOPTIONS = 1011;
+	public static final int LISTCONTACTS = 1012;
+	public static final int GETCONTACT = 1013;
+	public static final int CREATECONTACT = 1014;
+	public static final int CREATECALENDAR = 1015;
+	public static final int REQUEST_COMPASS = 1016;
+
+
+	public static final int SENDEMAIL = 1017;
+
+	
+
+	protected Activity main;
 	private WebView view;
 	private Map<Integer, IActivityManagerListener> listeners;
-	private Dialog splashDialog = null;
-	private ImageView splashImage = null;
+	private Map<Integer, IActivityManagerListener> permission_listeners;
+	protected Dialog splashDialog = null;
+	protected ImageView splashImage = null;
 	
 	private boolean _notifyLoadingVisible = false;
 
@@ -74,6 +106,7 @@ public class AndroidActivityManager implements IActivityManager {
 		this.main = main;
 		this.view = view;
 		listeners = new HashMap<Integer, IActivityManagerListener>();
+		permission_listeners = new HashMap<Integer, IActivityManagerListener>();
 	}
 	
 	
@@ -106,22 +139,49 @@ public class AndroidActivityManager implements IActivityManager {
 
 		return true;
 	}
+	
+	@Override
+	public void launchApp(Intent intent) {
+
+		AAMStartActivityAction action = new AAMStartActivityAction(intent, this);
+		main.runOnUiThread(action);
+	}
 
 	private class AAMStartActivityAction implements Runnable {
 
 		private Intent intent;
+		IActivityManager aam = null;
 
 		public AAMStartActivityAction(Intent intent) {
 			this.intent = intent;
 		}
+		
+		public AAMStartActivityAction(Intent _intent, IActivityManager _aam) {
+			this.intent = _intent;
+			this.aam = _aam;
+		}
 
 		@Override
 		public void run() {
+			boolean success = true;
+			String message = "SUCCESS";
+			
 			try {
 				main.startActivity(intent);
+				
+			} catch (android.content.ActivityNotFoundException notFoundException) {
+				LOG.Log(Module.PLATFORM, "The system cannot open the given url (probably app is not installed, or Activity referenced not found). Please check syntax.", notFoundException);		
+				success = false;
+				message = "NO_APP_CAN_OPEN_URI_SCHEME";	
+				
 			} catch (Exception ex) {
-				LOG.Log(Module.PLATFORM, "AndroidActivityManager error Starting Activity for intent: " + intent.getAction(),
-						ex);
+				LOG.Log(Module.PLATFORM, "The system failed Starting Activity for intent: " + intent.getAction() +". Please check syntax.");
+				success = false;
+				message = "RESOURCE_CANNOT_BE_OPENED";	
+			} 
+			
+			if(this.aam!= null) {
+				aam.executeJS("Appverse.System.onLaunchApplicationResult", new Object[] {success, message});
 			}
 		}
 	}
@@ -216,6 +276,112 @@ public class AndroidActivityManager implements IActivityManager {
 
 		return true;
 	}
+	
+
+	@Override
+	public boolean requestPermision(String[] permissions, int requestCode, IActivityManagerListener listener) {
+
+		permission_listeners.put(requestCode, listener);
+
+		AAMRequestPermision action = new AAMRequestPermision(
+				permissions, requestCode);
+		main.runOnUiThread(action);
+
+		return true;
+		
+	}
+
+	@Override
+	public boolean requestPermision(String permission, int requestCode,
+			IActivityManagerListener listener) {
+
+		permission_listeners.put(requestCode, listener);
+
+		AAMRequestPermision action = new AAMRequestPermision(
+				permission, requestCode);
+		main.runOnUiThread(action);
+
+		return true;
+	}
+
+	@TargetApi(23)
+	private class AAMRequestPermision implements Runnable {
+
+		private String permission;
+		private int requestCode;
+		private String[] permissions;
+
+		public AAMRequestPermision(String permission, int requestCode) {
+			this.permission = permission;
+			this.requestCode = requestCode;
+		}
+		
+		public AAMRequestPermision(String[] permissions, int requestCode) {
+			this.permissions = permissions;
+			this.requestCode = requestCode;
+		}
+
+		@Override
+		public void run() {
+			if( android.os.Build.VERSION.SDK_INT >= 23){
+				if(permission != null){
+					if(main.checkSelfPermission(permission) == PackageManager.PERMISSION_DENIED) {
+				     // only for gingerbread and newer versions
+				
+					//main.shouldShowRequestPermissionRationale(permission)
+					
+						main.requestPermissions(new String[]{permission}, requestCode);
+					}else permission_listeners.get(requestCode).onOk(requestCode, null);
+				}else if (permissions != null){
+					boolean denied = false;
+					for(String permission: permissions){
+						if(main.checkSelfPermission(permission) == PackageManager.PERMISSION_DENIED) 
+							denied = true;
+					}
+					if(denied)
+						main.requestPermissions(permissions, requestCode);
+				
+				}else permission_listeners.get(requestCode).onOk(requestCode, null);
+				
+			}else permission_listeners.get(requestCode).onOk(requestCode, null);
+			
+			
+		}
+	}
+	
+	
+
+	@Override
+	public boolean publishPermissionResult(int requestCode, String[] permissions, int[] grantResults) {
+		LOG.Log(Module.PLATFORM, "Checking for listener for requestCode: " + requestCode + ", with resultCode:" + grantResults);
+		IActivityManagerListener listener = permission_listeners.get(requestCode);
+		try {
+
+			if (listener != null || grantResults.length<1) {
+				switch (grantResults[0]) {
+				case PackageManager.PERMISSION_GRANTED:
+					listener.onOk(requestCode, null);
+					break;
+				default:
+					listener.onCancel(requestCode, null);
+					break;
+				}
+			} else {
+				LOG.Log(Module.PLATFORM, "No listener found for requestCode: " + requestCode);
+				return false;
+			}
+		} catch (Exception ex) {
+			LOG.Log(Module.PLATFORM, "AndroidActivityManager listener error",
+					ex);
+			return false;
+		}
+
+		listeners.remove(requestCode);
+
+		return true;
+	}
+
+	
 
 	@Override
 	public void executeJS(String method, Object data) {
@@ -327,7 +493,7 @@ public class AndroidActivityManager implements IActivityManager {
                 > Configuration.SCREENLAYOUT_SIZE_LARGE);
 	}
 	
-	private int getSplashId() {
+	protected int getSplashId() {
 		
 		int splashId = 0;
 		boolean isTabletDevice = this.isTabletDevice();

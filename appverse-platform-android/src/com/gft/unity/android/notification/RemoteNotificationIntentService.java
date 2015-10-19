@@ -17,10 +17,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
-import android.webkit.WebView;
 
 import com.gft.unity.android.AndroidServiceLocator;
-import com.gft.unity.android.AndroidUtils;
+import com.gft.unity.android.activity.AndroidActivityManager;
+import com.gft.unity.android.helpers.AndroidUtils;
 import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.notification.NotificationData;
 import com.gft.unity.core.notification.RegistrationError;
@@ -39,7 +39,7 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 	private static final String PACKAGE_NAME = "$REPLACE_PACKAGE_TOKEN$";
 	private static final String APPLICATION_NAME = "$REPLACE_APPNAME_TOKEN$";
 	private static Resources APP_RESOURCES;
-	private static WebView appView;
+	private static AndroidActivityManager activityManager;
 	private static Activity appActivity;
 	private static NotificationData notificationData;
 	private static RegistrationError notificationError;
@@ -65,8 +65,8 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static void loadNotificationOptions(Resources resourcePackage, WebView view, Activity act){
-		appView = view;
+	public static void loadNotificationOptions(Resources resourcePackage, AndroidActivityManager aam, Activity act){
+		activityManager = aam;
 		appActivity = act;
 		APP_RESOURCES = resourcePackage;
 		FIELD_MAP = loadNotificationConfig(null);
@@ -79,7 +79,9 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 			XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 			factory.setNamespaceAware(true);
 			XmlPullParser xpp = factory.newPullParser();
+			
 			xpp.setInput(AndroidUtils.getInstance().getAssetInputStream(context.getAssets(), NOTIFICATION_CONFIG_FILE),
+			
 					DEFAULT_ENCODING);
 			int eventType = xpp.getEventType();
 			String fieldName = "";
@@ -176,50 +178,33 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 			}
 
 			Notification notif=null;
-			//Different ways to create the notification depending the API Level restrictions
-			if(Build.VERSION.SDK_INT < 11){
-				notif = new Notification(iIconId, NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_TICKER.toString()), System.currentTimeMillis());//icon, text, time in millis
-				notif.defaults=0;
-				if(NOTIFICATION_STRUCTURE.containsKey(RemoteNotificationFields.RN_SOUND.toString())){ notif.sound = Uri.parse(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_SOUND.toString()));}
-				else {
-					notif.defaults |= Notification.DEFAULT_SOUND;
-				}
-				notif.setLatestEventInfo(context, NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_TITLE.toString()),NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_BODY.toString()), contentIntent);
-				notif.ledARGB = Integer.parseInt(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_LED_COLOR_ARGB.toString()));
-				notif.ledOffMS = 100;
-				notif.ledOnMS = 100;
-			}else{
-				Notification.Builder mBuilder = new Notification.Builder(context)
-				.setDefaults(0)
-				.setContentIntent(contentIntent)
-				.setSmallIcon(iIconId)
-				.setLights(Integer.parseInt(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_LED_COLOR_ARGB.toString())), 100, 100)
-				.setTicker(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_TICKER.toString()))
-				.setContentText(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_BODY.toString()))
-				.setContentTitle(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_TITLE.toString()));
-				
-				if(largeIconBMP!=null){mBuilder.setLargeIcon(largeIconBMP);}
-				if(NOTIFICATION_STRUCTURE.containsKey(RemoteNotificationFields.RN_SOUND.toString())){ mBuilder.setSound(Uri.parse(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_SOUND.toString())));}
-				else {
-					// set default sound
-					mBuilder.setDefaults(Notification.DEFAULT_SOUND);
-				}
-				notif = mBuilder.getNotification();
-				//if(Build.VERSION.SDK_INT < 16){notif = mBuilder.getNotification();}
-				//else{notif = mBuilder.build();}
+	
+			Notification.Builder mBuilder = new Notification.Builder(context)
+			.setDefaults(0)
+			.setContentIntent(contentIntent)
+			.setSmallIcon(iIconId)
+			.setLights(Integer.parseInt(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_LED_COLOR_ARGB.toString())), 100, 100)
+			.setTicker(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_TICKER.toString()))
+			.setContentText(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_BODY.toString()))
+			.setContentTitle(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_TITLE.toString()));
+			
+			if(largeIconBMP!=null){mBuilder.setLargeIcon(largeIconBMP);}
+			if(NOTIFICATION_STRUCTURE.containsKey(RemoteNotificationFields.RN_SOUND.toString())){ mBuilder.setSound(Uri.parse(NOTIFICATION_STRUCTURE.get(RemoteNotificationFields.RN_SOUND.toString())));}
+			else {
+				// set default sound
+				mBuilder.setDefaults(Notification.DEFAULT_SOUND);
 			}
+			notif = mBuilder.getNotification();
+			//if(Build.VERSION.SDK_INT < 16){notif = mBuilder.getNotification();}
+			//else{notif = mBuilder.build();}
+			
 			notif.flags = Notification.FLAG_SHOW_LIGHTS;
 			notifyManager.notify(notificationId, notif);
 
-			if(appActivity != null && appView!=null){
-				Runnable rNotification = new Runnable() {
-					@Override
-					public void run() {
-						appView.loadUrl("javascript:try{Unity.OnRemoteNotificationReceived(" + JSONSerializer.serialize(notificationData) +")}catch(e){}");
-					}
-				};
-				appActivity.runOnUiThread(rNotification);
+			if(appActivity != null && activityManager!=null){
+				activityManager.loadUrlIntoWebView("javascript:try{Appverse.PushNotifications.OnRemoteNotificationReceived(" + JSONSerializer.serialize(notificationData) +")}catch(e){}");
 			}
+			
 		}catch(Exception ex){/*CANNOT LOG CAUSE CALLING LOGGER WILL PROMPT NULL POINTER EXCEPTION*/} 		
 	}
 
@@ -231,15 +216,11 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 			notificationToken.setStringRepresentation(registrationId);
 			notificationToken.setBinary(registrationId.getBytes());
 			
-			if(appActivity != null && appView!=null){
-				Runnable rNotification = new Runnable() {
-					@Override
-					public void run() {
-						LOGGER.logInfo("onRegistered", "Calling Unity.OnRegisterForRemoteNotificationsSuccess...");
-						appView.loadUrl("javascript:try{Unity.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
-					}
-				};
-				appActivity.runOnUiThread(rNotification);
+			if(appActivity != null && activityManager!=null){
+
+				LOGGER.logInfo("onRegistered", "Calling Appverse.PushNotifications.OnRegisterForRemoteNotificationsSuccess...");
+				activityManager.loadUrlIntoWebView("javascript:try{Appverse.PushNotifications.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
+				
 			}
 		}catch(Exception ex){
 			LOGGER.logError("onRegistered",ex.getMessage());
@@ -255,15 +236,9 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 			NotificationUtils.removeRemoteNotificationsSharedPreference(context, NotificationUtils.RN_PREFERENCE_SENDER_ID);
 			
 			// call platform listener to advise application
-			if(appActivity != null && appView!=null){
-				Runnable rNotification = new Runnable() {
-					@Override
-					public void run() {
-						LOGGER.logInfo("onUnregistered", "Calling Unity.OnUnRegisterForRemoteNotificationsSuccess...");
-						appView.loadUrl("javascript:try{Unity.OnUnRegisterForRemoteNotificationsSuccess()}catch(e){}");
-					}
-				};
-				appActivity.runOnUiThread(rNotification);
+			if(appActivity != null && activityManager!=null){
+				LOGGER.logInfo("onUnregistered", "Calling Appverse.PushNotifications.OnUnRegisterForRemoteNotificationsSuccess...");
+				activityManager.loadUrlIntoWebView("javascript:try{Appverse.PushNotifications.OnUnRegisterForRemoteNotificationsSuccess()}catch(e){}");
 			}
 		} catch(Exception ex){
 			LOGGER.logError("onUnregistered",ex.getMessage());
@@ -275,15 +250,9 @@ public class RemoteNotificationIntentService extends GCMBaseIntentService {
 		notificationError = new RegistrationError();
 		notificationError.setCode(""+NotificationUtils.RN_GCM_SERVER_EXCEPTION);
 		notificationError.setLocalizedDescription(error);
-		if(appActivity != null && appView!=null){
-			Runnable rNotification = new Runnable() {
-				@Override
-				public void run() {
-					LOGGER.logInfo("onError", "Calling Unity.OnRegisterForRemoteNotificationsFailure...");
-					appView.loadUrl("javascript:try{Unity.OnRegisterForRemoteNotificationsFailure(" + JSONSerializer.serialize(notificationError) +")}catch(e){}");
-				}
-			};
-			appActivity.runOnUiThread(rNotification);
+		if(appActivity != null && activityManager!=null){
+			LOGGER.logInfo("onError", "Calling Appverse.PushNotifications.OnRegisterForRemoteNotificationsFaAppverse.PushNotifications...");
+			activityManager.loadUrlIntoWebView("javascript:try{Appverse.PushNotifications.OnRegisterForRemoteNotificationsFailure(" + JSONSerializer.serialize(notificationError) +")}catch(e){}");
 		}
 	}
 }

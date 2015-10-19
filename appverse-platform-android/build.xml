@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="UnityFrameworkAndroid" default="build">
+
+	<property name="src" location="src" />
+	<property name="bin" location="bin" />
+	<property name="lib" location="lib" />
+	<property name="dist" location="dist" />
+	<property name="jar" value="${dist}/UnityPlatformAndroid.jar" />
+
+	<property name="unity.core.jar" location="../UnityCore/dist/UnityCoreJava.jar" />
+
+	<target name="clean">
+		<delete dir="${bin}" />
+		<delete dir="${dist}" />
+	</target>
+
+	<target name="compile">
+		<mkdir dir="${bin}" />
+		<javac srcdir="${src}" destdir="${bin}" target="6" includeantruntime="false" encoding="utf-8">
+			<classpath>
+				<fileset dir="${lib}">
+					<include name="**/*.jar" />
+				</fileset>
+				<pathelement path="${unity.core.jar}" />
+				<pathelement path="${analytics.module.jar}" />
+				<pathelement path="${webtrekk.module.jar}" />
+				<pathelement path="${scanner.module.jar}" />
+				<pathelement path="${nfc.module.jar}" />
+				<pathelement path="${beacon.module.jar}" />
+				<pathelement path="${appsflyer.module.jar}" />
+				<pathelement path="${adform.module.jar}" />
+				<pathelement path="${facebook.module.jar}" />
+				<pathelement path="${rsa.module.jar}" />
+				<pathelement path="${uspg.module.jar}" />
+				<pathelement path="${ssl.module.jar}" />
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="jar" depends="compile">
+		<mkdir dir="${dist}" />
+		<jar destfile="${jar}">
+			<fileset dir="${bin}" />
+		</jar>
+	</target>
+
+	<target name="build" depends="clean, jar" />
+
+</project>

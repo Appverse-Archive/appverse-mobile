@@ -23,11 +23,16 @@
  */
 package com.gft.unity.android;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.telephony.PhoneNumberUtils;
 
+import com.gft.unity.android.activity.AbstractActivityManagerListener;
+import com.gft.unity.android.activity.AndroidActivityManager;
+import com.gft.unity.android.activity.IActivityManager;
+import com.gft.unity.core.media.camera.CameraOptions;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
 import com.gft.unity.core.telephony.AbstractTelephony;
@@ -42,16 +47,30 @@ public class AndroidTelephony extends AbstractTelephony {
 			LogCategory.PLATFORM, LOGGER_MODULE);
 
 	private static final String PHONE_PREFIX = "tel://";
+	private static final int CALL = 0;
 
 	public AndroidTelephony() {
 	}
 
 	@Override
 	public void Call(String number, CallType type) {
-		
-
 		LOGGER.logOperationBegin("Call", new String[] { "number", "type" },
 				new Object[] { number, type });
+
+		
+		try {	
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.CALL_PHONE, aam.CALL, new CallPermissionListener(number, type));
+		} catch (Exception ex) {
+			LOGGER.logError("Call", "Error", ex);
+		} 
+	}
+	
+	private void CallOnApproval(String number, CallType type){
+
 
 		try {
 			Context context = AndroidServiceLocator.getContext();
@@ -67,7 +86,51 @@ public class AndroidTelephony extends AbstractTelephony {
 		} finally {
 			LOGGER.logOperationEnd("Call", "Calling");
 		}
-
 		
+		
+	}
+	
+	private class CallPermissionListener extends AbstractActivityManagerListener {
+
+		private String number;
+		private CallType type;
+		
+		public CallPermissionListener(String number, CallType type) {
+			this.type = type;
+			this.number = number;
+		}
+
+		public CallPermissionListener() {
+		}
+		
+		
+
+		@Override
+		public void onOk(int requestCode, Intent data) {
+
+			LOGGER.logInfo("CallPermissionListener.onOk", ((data!=null)?data.getDataString(): ""));
+			try {	
+				CallOnApproval(number,type);
+			} catch (Exception ex) {
+				LOGGER.logError("CallPermissionListener.onOk", "Error", ex);
+			} 
+
+		}
+
+
+		@Override
+		public void onCancel(int requestCode, Intent data) {
+			LOGGER.logInfo("CallPermissionListener.onCancel", ((data!=null)?data.getDataString(): ""));
+
+			try {
+				IActivityManager am = (IActivityManager) AndroidServiceLocator
+						.GetInstance().GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+				am.executeJS("Appverse.OnPhoneDenied", null);
+				
+			} catch (Exception ex) {
+				LOGGER.logError("CallPermissionListener.onCancel", "Error", ex);
+			}
+		}
 	}
 }

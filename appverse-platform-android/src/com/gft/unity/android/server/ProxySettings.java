@@ -137,6 +137,11 @@ public class ProxySettings {
 	public static boolean setProxy(Context ctx, WebView view, String host,
 			int port) {
 		boolean ret = false;
+		
+		if (view == null) {
+			Log.d(TAG, "No web view provided. Could not set Proxy...");
+			return ret;
+		}
 
 		// if(shouldSetProxySetting) {
 		setSystemProperties(host, port);

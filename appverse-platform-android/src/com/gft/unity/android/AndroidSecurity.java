@@ -30,18 +30,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.gft.unity.android.activity.IActivityManager;
+import com.gft.unity.android.helpers.AndroidUtils;
+import com.gft.unity.core.security.AbstractSecurity;
+import com.gft.unity.core.security.KeyPair;
+import com.gft.unity.core.system.log.Logger;
+import com.gft.unity.core.system.log.Logger.LogCategory;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-
-import com.gft.unity.android.activity.IActivityManager;
-import com.gft.unity.core.security.AbstractSecurity;
-import com.gft.unity.core.security.KeyPair;
-import com.gft.unity.core.system.log.Logger;
-import com.gft.unity.core.system.log.Logger.LogCategory;
+ 
 
 public class AndroidSecurity extends AbstractSecurity {
 	private static final String LOGGER_MODULE = "ISecurity";
@@ -49,7 +51,9 @@ public class AndroidSecurity extends AbstractSecurity {
 			LogCategory.PLATFORM, LOGGER_MODULE);	
 	
 	private String SHARED_PACKAGE_NAME = null;
-	private String PREFERENCES_FILE_NAME = "AppverseSettings"; // default value
+	private String PREFERENCES_FILE_NAME = "AppverseSettings"; // default value	
+	
+	
 	
 	private String[] foldersToCheckWriteAccess = {
 		"/data",
@@ -89,13 +93,19 @@ public class AndroidSecurity extends AbstractSecurity {
 	
 
 	@Override
-	public boolean IsDeviceModified() {		
+	public boolean IsROMModified() {
 		if (checkRootMethod1()){
-			//LOGGER.logInfo("IsDeviceModified: ", "Detected by checkRootMethod1");
+			//LOGGER.logDebug("IsROMModified: ", "Detected by checkRootMethod1");
 	    	return true;
     	}
+		return false;
+	}
+
+	@Override
+	public boolean IsDeviceModified() {		
+		
 		if (checkRootMethod2()){
-			//LOGGER.logInfo("IsDeviceModified: ", "Detected by checkRootMethod2");
+			//LOGGER.logDebug("IsDeviceModified: ", "Detected by checkRootMethod2");
 			return true;
 		}
 
@@ -118,15 +128,15 @@ public class AndroidSecurity extends AbstractSecurity {
 		//https://www.netspi.com/blog/entryid/209/android-root-detection-techniques		
 		//08/07/2014
 		if (checkRootMethod3_0()){
-			//LOGGER.logInfo("IsDeviceModified: ", "Detected by checkRootMethod3_0");
+			//LOGGER.logDebug("IsDeviceModified: ", "Detected by checkRootMethod3_0");
 			return true;
 		}		
 		if (checkRootMethod3_1()){
-			//LOGGER.logInfo("IsDeviceModified: ", "Detected by checkRootMethod3_1");
+			//LOGGER.logDebug("IsDeviceModified: ", "Detected by checkRootMethod3_1");
 			return true;
 		}
 		if (checkRootMethod3_2()){
-			//LOGGER.logInfo("IsDeviceModified: ", "Detected by checkRootMethod3_2");
+			//LOGGER.logDebug("IsDeviceModified: ", "Detected by checkRootMethod3_2");
 			return true;
 		}
 		
@@ -251,7 +261,7 @@ public class AndroidSecurity extends AbstractSecurity {
 		     pm = AndroidServiceLocator.getContext().getPackageManager();
 		     packages = pm.getInstalledApplications(0);
 		     for (ApplicationInfo packageInfo : packages) {
-		    	 //LOGGER.logInfo("PACKAGE NAME: ", packageInfo.packageName);		    	 
+		    	 //LOGGER.logDebug("PACKAGE NAME: ", packageInfo.packageName);		    	 
 		    	 if(apps.contains(packageInfo.packageName)) return true;
 		     }        
 	     } catch (Exception e) { }
@@ -259,36 +269,52 @@ public class AndroidSecurity extends AbstractSecurity {
 	 }
 
 	@Override
-	public void GetStoredKeyValuePair(String keyname) {
+	public void GetStoredKeyValuePair(KeyPair key) {
 		List<KeyPair> foundKeyPairs = new ArrayList<KeyPair>();
 		try {
 			SharedPreferences settings = GetOtherAppSharedPreferences();
 			if(settings!=null){
-				if(settings.contains(keyname)){
-					foundKeyPairs.add(new KeyPair(keyname,settings.getString(keyname, null)));
+				if(settings.contains(key.getKey())){
+					String value = settings.getString(key.getKey(), "");
+					Boolean enc = key.getEncryption();
+					//LOGGER.logDebug("GetStoredKeyValuePairs", "Getting: "+value);
+					//LOGGER.logDebug("StoreKeyValuePair", "encrypt? "+enc.toString());
+					if(enc){						
+						value = AndroidUtils.getInstance().decrypt(value);
+						//LOGGER.logDebug("GetStoredKeyValuePairs", "decrypt: "+value);
+					}
+					foundKeyPairs.add(new KeyPair(key.getKey(),value, enc));
 				}
 			}else LOGGER.logError("GetStoredKeyValuePair", "Storage Unit is null.");
 				
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			LOGGER.logError("GetStoredKeyValuePair", "Exception",e);
 		}
 		
-		LOGGER.logInfo("GetStoredKeyValuePair", "Keys found in storage: " + foundKeyPairs.size());
+		LOGGER.logDebug("GetStoredKeyValuePair", "Keys found in storage: " + foundKeyPairs.size());
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Appverse.OnKeyValuePairsFound",new Object[]{ foundKeyPairs.toArray()});
+		am.executeJS("Appverse.Security.OnKeyValuePairsFound",new Object[]{ foundKeyPairs.toArray()});
 	}
 	
 	@Override
-	public void GetStoredKeyValuePairs(String[] keynames) {
+	public void GetStoredKeyValuePairs(KeyPair[] keys) {
 		List<KeyPair> foundKeyPairs = new ArrayList<KeyPair>();
 		try {
 			SharedPreferences settings = GetOtherAppSharedPreferences();
-			if(settings != null){
-				for(String keyname: keynames){
-					if(settings != null && settings.contains(keyname)){
-						foundKeyPairs.add(new KeyPair(keyname,settings.getString(keyname, null)));
+			if(settings != null){				
+				for(KeyPair key: keys){
+					if(settings != null && settings.contains(key.getKey())){
+						String value = settings.getString(key.getKey(), "");
+						Boolean enc = key.getEncryption();
+						//LOGGER.logDebug("GetStoredKeyValuePairs", "Getting: "+value);
+						if(enc){
+							value = AndroidUtils.getInstance().decrypt(value);
+							//LOGGER.logDebug("GetStoredKeyValuePairs", "decripted: "+value);
+						}
+						
+						foundKeyPairs.add(new KeyPair(key.getKey(),value, enc));
 					}
 				}
 			}else{
@@ -297,16 +323,15 @@ public class AndroidSecurity extends AbstractSecurity {
 		} catch (Exception ex) {
 			
 		}
-		LOGGER.logInfo("GetStoredKeyValuePairs", "Keys found in storage unit: " + foundKeyPairs.size());
+		LOGGER.logDebug("GetStoredKeyValuePairs", "Keys found in storage unit: " + foundKeyPairs.size());
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Appverse.OnKeyValuePairsFound", new Object[]{foundKeyPairs.toArray()});
+		am.executeJS("Appverse.Security.OnKeyValuePairsFound", new Object[]{foundKeyPairs.toArray()});
 		
 	}
 	@Override
-	public void RemoveStoredKeyValuePair(String keyname) {
-		// TODO Auto-generated method stub
+	public void RemoveStoredKeyValuePair(String keyname) {	
 		List<String> successfullKeyPairs = new ArrayList<String>();
 		List<String> failedKeyPairs = new ArrayList<String>(); 
 		SharedPreferences settings = GetOtherAppSharedPreferences();
@@ -321,11 +346,11 @@ public class AndroidSecurity extends AbstractSecurity {
 		}else{
 			LOGGER.logError("RemoveStoredKeyValuePair", "Storage Unit is null.");
 		}
-		LOGGER.logInfo("RemoveStoredKeyValuePair", "Key removed from storage unit: " + successfullKeyPairs.size() + "; Keys Not removed from storage unit: " + failedKeyPairs.size());
+		LOGGER.logDebug("RemoveStoredKeyValuePair", "Key removed from storage unit: " + successfullKeyPairs.size() + "; Keys Not removed from storage unit: " + failedKeyPairs.size());
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Appverse.OnKeyValuePairsRemoveCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		am.executeJS("Appverse.Security.OnKeyValuePairsRemoveCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
 		
 	}
 	@Override
@@ -347,22 +372,30 @@ public class AndroidSecurity extends AbstractSecurity {
 			LOGGER.logError("RemoveStoredKeyValuePairs", "Storage Unit is null.");
 		}
 		
-		LOGGER.logInfo("RemoveStoredKeyValuePairs", "Keys removed from storage unit: " + successfullKeyPairs.size() + "; Keys Not removed from storage unit: " + failedKeyPairs.size());
+		LOGGER.logDebug("RemoveStoredKeyValuePairs", "Keys removed from storage unit: " + successfullKeyPairs.size() + "; Keys Not removed from storage unit: " + failedKeyPairs.size());
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Appverse.OnKeyValuePairsRemoveCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		am.executeJS("Appverse.Security.OnKeyValuePairsRemoveCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
 		
 	}
 	@Override
-	public void StoreKeyValuePair(KeyPair keypair) {
+	public void StoreKeyValuePair(KeyPair keypair) {		
 		List<String> successfullKeyPairs = new ArrayList<String>();
 		List<String> failedKeyPairs = new ArrayList<String>();
-		SharedPreferences settings = GetOtherAppSharedPreferences();
+		SharedPreferences settings = GetOtherAppSharedPreferences();		
 		if(settings!=null){
-			try{
+			try{				
 				Editor ed = settings.edit();
-				ed.putString(keypair.getKey(), keypair.getValue());
+				Boolean enc = keypair.getEncryption();
+				String value = keypair.getValue();
+				//LOGGER.logDebug("StoreKeyValuePair", "Storing: "+value);
+				//LOGGER.logDebug("StoreKeyValuePair", "encrypt? "+enc.toString());
+				if(enc){					
+					value = AndroidUtils.getInstance().encrypt(value);
+					//LOGGER.logDebug("StoreKeyValuePair", "encrypt: "+value);
+				}
+				ed.putString(keypair.getKey(), value);
 				ed.commit();
 				successfullKeyPairs.add(keypair.getKey());
 			}catch(Exception ex){
@@ -372,11 +405,11 @@ public class AndroidSecurity extends AbstractSecurity {
 			LOGGER.logError("StoreKeyValuePair", "Storage Unit is null.");
 		}
 		
-		LOGGER.logInfo("RemoveStoredKeyValuePairs", "Key stored in storage unit: " + successfullKeyPairs.size() + "; Keys Not stored in storage unit: " + failedKeyPairs.size());
+		LOGGER.logDebug("StoreKeyValuePair", "Key stored in storage unit: " + successfullKeyPairs.size() + "; Keys Not stored in storage unit: " + failedKeyPairs.size());
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Appverse.OnKeyValuePairsStoreCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		am.executeJS("Appverse.Security.OnKeyValuePairsStoreCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
 		
 	}
 	@Override
@@ -388,9 +421,13 @@ public class AndroidSecurity extends AbstractSecurity {
 			for(int i=0; i<keypairs.length; i++){
 				try{
 					String keyname = keypairs[i].getKey();
-					String keyvalue = keypairs[i].getValue();
+					String value = keypairs[i].getValue();
 					Editor ed = settings.edit();
-					ed.putString(keyname, keyvalue);
+					Boolean enc = keypairs[i].getEncryption();						
+					if(enc){					
+						value = AndroidUtils.getInstance().encrypt(value);						
+					}
+					ed.putString(keyname, value);
 					ed.commit();
 					successfullKeyPairs.add(keyname);
 				}catch(Exception ex){ failedKeyPairs.add(keypairs[i].getKey());}
@@ -398,11 +435,11 @@ public class AndroidSecurity extends AbstractSecurity {
 		}else{
 			LOGGER.logError("StoreKeyValuePairs", "Storage Unit is null.");
 		}
-		LOGGER.logInfo("StoredKeyValuePairs", "Key stored in storage unit: " + successfullKeyPairs.size() + "; Keys Not stored in storage unit: " + failedKeyPairs.size());
+		LOGGER.logDebug("StoredKeyValuePairs", "Key stored in storage unit: " + successfullKeyPairs.size() + "; Keys Not stored in storage unit: " + failedKeyPairs.size());
 		IActivityManager am = (IActivityManager) AndroidServiceLocator
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		am.executeJS("Appverse.OnKeyValuePairsStoreCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
+		am.executeJS("Appverse.Security.OnKeyValuePairsStoreCompleted", new Object[]{successfullKeyPairs.toArray(), failedKeyPairs.toArray()});
 	}
 	
 	
@@ -418,4 +455,10 @@ public class AndroidSecurity extends AbstractSecurity {
 		}
 		return settings;
 	}
+	
+	
+	
+    
+	
+    
 }

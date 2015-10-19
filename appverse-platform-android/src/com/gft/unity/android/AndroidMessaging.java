@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -36,20 +37,40 @@ import android.os.Build;
 import android.os.Environment;
 import android.telephony.PhoneNumberUtils;
 
+
+import com.gft.unity.android.activity.AbstractActivityManagerListener;
+import com.gft.unity.android.activity.AndroidActivityManager;
+import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.messaging.AbstractMessaging;
 import com.gft.unity.core.messaging.AttachmentData;
 import com.gft.unity.core.messaging.EmailData;
 import com.gft.unity.core.storage.filesystem.FileData;
 import com.gft.unity.core.storage.filesystem.IFileSystem;
 import com.gft.unity.core.system.SystemLogger.Module;
+import com.gft.unity.core.telephony.CallType;
 
 // TODO SendEmail and SendMessageSMS: feedback for user cancels, send errors
 public class AndroidMessaging extends AbstractMessaging {
 
+	
 	@Override
 	// TODO review IMessaging.SendEmail implementation, attachments not working,
 	// find a better way to send e-mails
 	public boolean SendEmail(EmailData emailData) {
+		try {	
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.SEND_SMS, aam.SENDEMAIL, new StoragePermissionListener(emailData));
+		} catch (Exception ex) {
+			AndroidSystemLogger.getInstance().Log("SendEmail Error", ex);
+		} 
+		return true;
+	}
+	// TODO review IMessaging.SendEmail implementation, attachments not working,
+	// find a better way to send e-mails
+	public boolean SendEmailOnApproval(EmailData emailData) {
 		boolean result = false;
 
 		try {
@@ -160,6 +181,22 @@ public class AndroidMessaging extends AbstractMessaging {
 
 	@Override
 	public boolean SendMessageSMS(String phoneNumber, String text) {
+		try {	
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.SEND_SMS, aam.REQUEST_SMS, new SMSPermissionListener(phoneNumber, text));
+		} catch (Exception ex) {
+			AndroidSystemLogger.getInstance().Log(
+					Module.PLATFORM,
+					"SendMessageSMS error [" + text + "] to phone ["
+							+ phoneNumber + "]", ex);
+		} 
+		return true;
+	}
+	
+	public boolean SendMessageSMSOnApproval(String phoneNumber, String text) {
 		boolean result = false;
 
 		try {
@@ -195,6 +232,85 @@ public class AndroidMessaging extends AbstractMessaging {
 							+ phoneNumber + "]", ex);
 		}
 		return result;
+	}
+	
+	private class SMSPermissionListener extends AbstractActivityManagerListener {
+
+		private String phoneNumber;
+		private String text;
+
+		public SMSPermissionListener() {
+		}
+		
+		
+
+		public SMSPermissionListener(String phoneNumber, String text) {
+			this.phoneNumber = phoneNumber;
+			this.text = text;
+		}
+
+
+
+		@Override
+		public void onOk(int requestCode, Intent data) {
+
+			AndroidSystemLogger.getInstance().Log("SMSPermissionListener.onOk");
+			try {	
+				SendMessageSMSOnApproval(phoneNumber, text);
+			} catch (Exception ex) {
+				AndroidSystemLogger.getInstance().Log("SMSPermissionListener.onOk Error", ex);
+			} 
+
+		}
+
+
+		@Override
+		public void onCancel(int requestCode, Intent data) {
+			AndroidSystemLogger.getInstance().Log("SMSPermissionListener.onCancel");
+
+			try {
+				IActivityManager am = (IActivityManager) AndroidServiceLocator
+						.GetInstance().GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+				am.executeJS("Appverse.OnSMSDenied", null);
+				
+			} catch (Exception ex) {
+				AndroidSystemLogger.getInstance().Log("SMSPermissionListener.onCancel Error", ex);
+			}
+		}
+	}
+	
+private class StoragePermissionListener extends AbstractActivityManagerListener {
+		private EmailData emailData;
+		private StoragePermissionListener(EmailData emailData){
+			this.emailData = emailData;
+		}
+		@Override
+		public void onOk(int requestCode, Intent data) {
+			
+			AndroidSystemLogger.getInstance().Log("StoragePermissionListener.onOk");
+			
+			try {
+				SendEmailOnApproval(emailData);
+			} catch (Exception e) {
+				AndroidSystemLogger.getInstance().Log("StoragePermissionListener.onOK Error", e);
+			}
+		}
+		
+		@Override
+		public void onCancel(int requestCode, Intent data) {
+			AndroidSystemLogger.getInstance().Log("StoragePermissionListener.onCancel");
+
+			try {
+				IActivityManager am = (IActivityManager) AndroidServiceLocator
+						.GetInstance().GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+				am.executeJS("Appverse.OnExternalStorageDenied", null);
+				
+			} catch (Exception ex) {
+				AndroidSystemLogger.getInstance().Log("StoragePermissionListener.onCancel Error", ex);
+			}
+		}
 	}
 
 }
