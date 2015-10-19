@@ -42,8 +42,9 @@ import android.content.res.AssetManager;
 import android.os.Build;
 import android.os.ResultReceiver;
 import android.webkit.WebResourceResponse;
-import android.webkit.WebView;
 
+import com.gft.unity.android.activity.IActivityManager;
+import com.gft.unity.android.helpers.AndroidUtils;
 import com.gft.unity.android.server.handler.AssetHandler;
 import com.gft.unity.core.IAppDelegate;
 import com.gft.unity.core.storage.filesystem.FileData;
@@ -69,7 +70,9 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
 	public static final String SERVICE_ANDROID_ACTIVITY_MANAGER = "android.activity";
 
 	private static Context context;
-	private static WebView webView;
+	//NOT ANYMORE NEEDED private static WebView webView;
+	private static IActivityManager activityManager;
+	
 	private static final Semaphore SEMAPHORE = new Semaphore(1);
 	
 	private static String IN_DEBUG_MODE = "$debuggable$";
@@ -92,21 +95,30 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
 		}
 	}
 	
-	public static void setContext(Context context) {
+	public static void setContext(Context context, IActivityManager am) {
 		AndroidServiceLocator.context = context;
+		AndroidServiceLocator.activityManager = am;
 	}
 	
+	/*
 	public static void setContext(Context context, WebView appView) {
 		AndroidServiceLocator.context = context;
 		AndroidServiceLocator.webView = appView;
 	}
-
+	*/
+	
 	public static Context getContext() {
 		return context;
 	}
 	
+	/*
 	public static WebView getApplicationWebView() {
 		return webView;
+	}
+	*/
+	
+	public static IActivityManager getActivityManager() {
+		return activityManager;
 	}
 	
 	public static IServiceLocator GetInstance() {
@@ -156,18 +168,23 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
 		this.RegisterService(new AndroidNotification(),
 				AndroidServiceLocator.SERVICE_TYPE_PUSH);
 		
-		
-		// include services from modules here
-		// START_APPVERSE_MODULES_SERVICES
-
-		// START_HERE_APPVERSE_MODULE_SERVICE
-		// END_HERE_APPVERSE_MODULE_SERVICE
-
-		// END_APPVERSE_MODULES_SERVICES
-
-		// example:
-		//  this.RegisterService(new module.ios.main.class(this.getContext()), "module.api.service.name");
-		
+	}
+	
+	public void initConfigDataForServices() {
+		IAppDelegate[] appDelegates = this.getAppDelegateServices();
+		for (IAppDelegate iAppDelegate : appDelegates) {
+			try {
+				String configDataFile = iAppDelegate.getConfigFilePath();
+				if(configDataFile!=null) {
+					LOG.LogDebug(SystemLogger.Module.PLATFORM, "Found IAppDelegates to load config data at [" + configDataFile +"]");
+					InputStream configData = AndroidUtils.getInstance().getAssetInputStream(context.getAssets(), configDataFile);
+					iAppDelegate.setConfigFileLoadedData(configData);
+				}
+			} catch(Exception ex) {
+				LOG.LogDebug(SystemLogger.Module.PLATFORM, "Error getting config data for module. Exception message: " + ex.getMessage());
+			}
+			
+		} 
 	}
 	
 	public void RegisterResultReceiver(int[] resultCodes, ResultReceiver resultReceiver) {
@@ -184,25 +201,33 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
 	
 	public void sendApplicationEvent(AndroidApplicationEvent event) {
 		
-		IAppDelegate[] appDelegates = this.getAppDelegateServices();
-		LOG.LogDebug(SystemLogger.Module.PLATFORM, "Found IAppDelegates to send event [" + event.toString() +"]: #" + appDelegates.length); 
-		for (IAppDelegate iAppDelegate : appDelegates) {
-			switch (event) {
-			case onPause:
-				iAppDelegate.onPause();
-				break;
-			case onResume:
-				iAppDelegate.onResume();
-				break;	
-			case onStop:
-				iAppDelegate.onStop();
-				break;
-			case onDestroy:
-				iAppDelegate.onDestroy();
-				break;
-			default:
-				break;	
+		try {
+			IAppDelegate[] appDelegates = this.getAppDelegateServices();
+			LOG.LogDebug(SystemLogger.Module.PLATFORM, "Found IAppDelegates to send event [" + event.toString() +"]: #" + appDelegates.length); 
+			for (IAppDelegate iAppDelegate : appDelegates) {
+				switch (event) {
+				case onCreate:
+					iAppDelegate.onCreate();
+					break;
+				case onPause:
+					iAppDelegate.onPause();
+					break;
+				case onResume:
+					iAppDelegate.onResume();
+					break;	
+				case onStop:
+					iAppDelegate.onStop();
+					break;
+				case onDestroy:
+					iAppDelegate.onDestroy();
+					break;
+				default:
+					break;	
+				}
 			}
+		} catch (Exception e) {
+			LOG.LogDebug(SystemLogger.Module.PLATFORM, 
+					"*** catched exception sending application event to the modules... event type: "  + event.toString() + ", exception message: " + e.getMessage());
 		}
 		
 	}

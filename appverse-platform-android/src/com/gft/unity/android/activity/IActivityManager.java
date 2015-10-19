@@ -34,6 +34,8 @@ public interface IActivityManager {
 	public boolean resolveActivity(Intent intent);
 	
 	public boolean startActivity(Intent intent);
+	
+	public void launchApp(Intent intent);
 
 	public boolean startActivityForResult(Intent intent, int requestCode,
 			IActivityManagerListener listener);
@@ -56,4 +58,10 @@ public interface IActivityManager {
 	public void dismissApplication();
 	
 	public void loadUrlIntoWebView(String url);
+	
+	public boolean publishPermissionResult(int requestCode, String[] permissions, int[] grantResults);
+
+	boolean requestPermision(String permission, int requestCode, IActivityManagerListener listener);
+
+	boolean requestPermision(String[] permissions, int requestCode, IActivityManagerListener listener);
 }

@@ -33,10 +33,26 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import com.gft.unity.android.activity.AbstractActivityManagerListener;
+import com.gft.unity.android.activity.AndroidActivityManager;
+import com.gft.unity.android.activity.IActivityManager;
+import com.gft.unity.android.helpers.AndroidUtils;
+import com.gft.unity.core.media.AbstractMedia;
+import com.gft.unity.core.media.MediaMetadata;
+import com.gft.unity.core.media.MediaState;
+import com.gft.unity.core.media.MediaType;
+import com.gft.unity.core.media.camera.CameraOptions;
+import com.gft.unity.core.storage.filesystem.IFileSystem;
+import com.gft.unity.core.system.log.Logger;
+import com.gft.unity.core.system.log.Logger.LogCategory;
+
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -45,26 +61,18 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.webkit.MimeTypeMap;
 
-import com.gft.unity.android.activity.AbstractActivityManagerListener;
-import com.gft.unity.android.activity.AndroidActivityManager;
-import com.gft.unity.android.activity.IActivityManager;
-import com.gft.unity.core.media.AbstractMedia;
-import com.gft.unity.core.media.MediaMetadata;
-import com.gft.unity.core.media.MediaState;
-import com.gft.unity.core.media.MediaType;
-import com.gft.unity.core.storage.filesystem.IFileSystem;
-import com.gft.unity.core.system.log.Logger;
-import com.gft.unity.core.system.log.Logger.LogCategory;
-
 public class AndroidMedia extends AbstractMedia {
 
 	private static final String LOGGER_MODULE = "IMedia";
 	private static final Logger LOGGER = Logger.getInstance(
 			LogCategory.PLATFORM, LOGGER_MODULE);	
 	
+	public static final String FRONTCAMERA = "UseFrontCamera";
+	public static final String OVERLAY = "UseOverlay";	
+	
 	private MediaPlayer mp;
 	private MediaState state;
-
+	
 	public AndroidMedia() {
 		super();
 		mp = null;
@@ -424,7 +432,7 @@ public class AndroidMedia extends AbstractMedia {
 				}
 
 				// copy image to internal storage
-				copyImageToInternalStorage(uri, meta);
+				copyImageToInternalStorage(uri, meta, null);
 
 				imageSelectedJSCallback(meta);
 
@@ -436,11 +444,27 @@ public class AndroidMedia extends AbstractMedia {
 
 	@Override
 	public MediaMetadata TakeSnapshot() {
-		MediaMetadata result = null;
 
 		LOGGER.logOperationBegin("TakeSnapshot", Logger.EMPTY_PARAMS,
 				Logger.EMPTY_VALUES);
 
+		try {	
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.CAMERA, aam.TAKESNAPSHOT, new CameraPermissionListener());
+		} catch (Exception ex) {
+			LOGGER.logError("TakeSnapshotWithOptions", "Error", ex);
+		} 
+		
+		return null;
+		
+	}
+	
+	private MediaMetadata TakeSnapshotOnApproval(){
+		LOGGER.logOperationBegin("TakeSnapshotWithOptions", Logger.EMPTY_PARAMS,
+				Logger.EMPTY_VALUES);
+		MediaMetadata result = null;
 		try {
 
 			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
@@ -448,19 +472,9 @@ public class AndroidMedia extends AbstractMedia {
 					.GetService(
 							AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
 
-			Context context = AndroidServiceLocator.getContext();
-
-			Intent intent = new Intent(
-					android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-			File takeSnapshotPath = new File(context.getExternalCacheDir(),
-					"IMG_" + UUID.randomUUID() + ".jpeg");
-			takeSnapshotPath.getParentFile().mkdirs();
-			intent.putExtra(MediaStore.EXTRA_OUTPUT,
-					Uri.fromFile(takeSnapshotPath));
-
-			aam.startActivityForResult(intent,
-					AndroidActivityManager.TAKE_SNAPSHOT_RC,
-					new TakeSnapshotListener(takeSnapshotPath));
+			//Storage permissions not needed
+			//aam.requestPermision(Manifest.permission.WRITE_EXTERNAL_STORAGE, aam.REQUEST_STORE, new StoragePermissionListener());
+			StoreImage();
 		} catch (Exception ex) {
 			LOGGER.logError("TakeSnapshot", "Error", ex);
 		} finally {
@@ -469,13 +483,203 @@ public class AndroidMedia extends AbstractMedia {
 
 		return result;
 	}
+	
+	@Override
+	public void TakeSnapshotWithOptions(CameraOptions options) {
+		LOGGER.logOperationBegin("TakeSnapshotWithOptions", Logger.EMPTY_PARAMS,
+				Logger.EMPTY_VALUES);
+		try {	
 
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.CAMERA, aam.TAKESNAPSHOTWITHOPTIONS, new CameraPermissionListener(options));
+		} catch (Exception ex) {
+			LOGGER.logError("TakeSnapshotWithOptions", "Error", ex);
+		} 
+		
+	}
+	
+	private void StoreImage(){
+
+		LOGGER.logInfo("StoreImage","Starting eternal Storage");
+		try {
+			Context context = AndroidServiceLocator.getContext();
+			File takeSnapshotPath = new File(context.getExternalCacheDir(),
+					"IMG_" + UUID.randomUUID() + ".jpeg");
+			takeSnapshotPath.getParentFile().mkdirs();
+			Intent intent = new Intent(
+					android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+			
+			intent.putExtra(MediaStore.EXTRA_OUTPUT,
+					Uri.fromFile(takeSnapshotPath));
+
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance()
+					.GetService(
+							AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			aam.startActivityForResult(intent,
+					AndroidActivityManager.TAKE_SNAPSHOT_RC,
+					new TakeSnapshotListener(takeSnapshotPath));
+
+		} catch (Exception e) {
+			LOGGER.logError("StoreImage", "Error", e);
+		}
+	}
+	
+	private void TakeSnapshotWithOptionsOnApproval(CameraOptions options){
+		try {
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			final Context context = AndroidServiceLocator.getContext();
+
+			File takeSnapshotPath = new File(context.getExternalCacheDir(),
+					"IMG_" + UUID.randomUUID() + ".jpeg");
+			takeSnapshotPath.getParentFile().mkdirs();
+			
+			if(options != null) {
+				LOGGER.logDebug("TakeSnapshotWithOptions", "Opening front camera as required...");
+				
+				// start capture activity intent
+				Intent intent = new Intent(AndroidServiceLocator.getContext()
+						.getPackageName() + ".SHOW_CAMERA");
+				
+				intent.putExtra(MediaStore.EXTRA_OUTPUT,
+						Uri.fromFile(takeSnapshotPath));
+				
+				AndroidCameraOptions newOptions = new AndroidCameraOptions(options);
+				LOGGER.logDebug("TakeSnapshotWithOptions", "AndroidCameraOptions: "+newOptions.toString());
+				intent.putExtra(AndroidMedia.OVERLAY, newOptions);
+				
+				aam.startActivityForResult(intent,
+						AndroidActivityManager.TAKE_SNAPSHOT_RC,
+						new TakeSnapshotListener(takeSnapshotPath, options));
+				
+				return;
+			} 
+			
+			/*/ opening default camera, using intent
+			LOGGER.logDebug("TakeSnapshotWithOptions", "Opening default rear camera...");
+			
+			Intent intent = new Intent(
+					android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+			intent.putExtra(MediaStore.EXTRA_OUTPUT,
+					Uri.fromFile(takeSnapshotPath));
+			
+			
+			
+			aam.startActivityForResult(intent,
+					AndroidActivityManager.TAKE_SNAPSHOT_RC,
+					new TakeSnapshotListener(takeSnapshotPath, options));
+
+			*/
+		} catch (Exception ex) {
+			LOGGER.logError("TakeSnapshotWithOptions", "Error", ex);
+		} finally {
+			LOGGER.logOperationEnd("TakeSnapshotWithOptions", "OK");
+		}
+	}
+	
+	
+	private class StoragePermissionListener extends AbstractActivityManagerListener {
+		
+		private StoragePermissionListener(){
+
+		}
+		@Override
+		public void onOk(int requestCode, Intent data) {
+			
+			LOGGER.logInfo("StoragePermissionListener.onOk", "requestCode: "+requestCode);
+
+			try {
+				StoreImage();
+			} catch (Exception e) {
+
+				LOGGER.logError("StoragePermissionListener.onOk", "Error", e);
+			}
+		}
+		
+		@Override
+		public void onCancel(int requestCode, Intent data) {
+			LOGGER.logInfo("StoragePermissionListener.onCancel", ((data!=null)?data.getDataString(): ""));
+
+			try {
+				IActivityManager am = (IActivityManager) AndroidServiceLocator
+						.GetInstance().GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+				am.executeJS("Appverse.OnExternalStorageDenied", null);
+				
+			} catch (Exception ex) {
+				LOGGER.logError("StoragePermissionListener.onCancel", "Error", ex);
+			}
+		}
+	}
+	
+	private class CameraPermissionListener extends AbstractActivityManagerListener {
+
+		private CameraOptions options;
+		
+		public CameraPermissionListener() {
+
+		}
+		
+		public CameraPermissionListener(CameraOptions options) {
+
+			this.options = options;
+		}
+		
+
+		@Override
+		public void onOk(int requestCode, Intent data) {
+
+			LOGGER.logInfo("CameraPermissionListener.onOk", "requestCode: "+requestCode);
+
+
+			try {
+				switch(requestCode){
+				case AndroidActivityManager.TAKESNAPSHOTWITHOPTIONS:
+					TakeSnapshotWithOptionsOnApproval(options);
+					break;
+				case AndroidActivityManager.TAKESNAPSHOT:
+					TakeSnapshotOnApproval();
+					break;
+				}
+				
+			} catch (Exception ex) {
+				LOGGER.logError("CameraPermissionListener.onOk", "Error", ex);
+			}
+		}
+
+
+		@Override
+		public void onCancel(int requestCode, Intent data) {
+			LOGGER.logInfo("CameraPermissionListener.onCancel", ((data!=null)?data.getDataString(): ""));
+
+			try {
+				IActivityManager am = (IActivityManager) AndroidServiceLocator
+						.GetInstance().GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+				am.executeJS("Appverse.OnCameraDenied", null);
+				
+			} catch (Exception ex) {
+				LOGGER.logError("CameraPermissionListener.onCancel", "Error", ex);
+			}
+		}
+	}
+	
 	private class TakeSnapshotListener extends AbstractActivityManagerListener {
 
 		private File targetPath;
+		private CameraOptions cameraOptions = null;
 
 		public TakeSnapshotListener(File targetPath) {
 			this.targetPath = targetPath;
+		}
+		
+		public TakeSnapshotListener(File targetPath, CameraOptions options) {
+			this.targetPath = targetPath;
+			this.cameraOptions = options;
 		}
 
 		@Override
@@ -493,7 +697,7 @@ public class AndroidMedia extends AbstractMedia {
 				meta.setTitle(UUID.randomUUID().toString());
 
 				// copy image to internal storage
-				copyImageToInternalStorage(uri, meta);
+				copyImageToInternalStorage(uri, meta, this.cameraOptions);
 
 				imageSelectedJSCallback(meta);
 
@@ -541,22 +745,94 @@ public class AndroidMedia extends AbstractMedia {
 		return meta;
 	}
 
-	private static void copyImageToInternalStorage(Uri uri, MediaMetadata meta) {
+	
+	public static String getRealPathFromURI(Context context, Uri contentUri) {
+        Cursor cursor = null;
+        try { 
+          String[] proj = { MediaStore.Images.Media.DATA };
+          cursor = context.getContentResolver().query(contentUri,  proj, null, null, null);
+          int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+          cursor.moveToFirst();
+          return cursor.getString(column_index);
+        } finally {
+          if (cursor != null) {
+            cursor.close();
+          }
+        }
+      }
+	
+	private static void copyImageToInternalStorage(Uri uri, MediaMetadata meta, CameraOptions options) {
 
 		BufferedInputStream bis = null;
 		ByteArrayOutputStream baos = null;
 		try {
-
+			if(meta == null) 
+				meta = new MediaMetadata();
+			
+			baos = new ByteArrayOutputStream();
+			
 			// read image data
 			bis = new BufferedInputStream(AndroidServiceLocator.getContext()
 					.getContentResolver().openInputStream(uri));
-			baos = new ByteArrayOutputStream();
-			byte[] buffer = new byte[1024];
-			int length;
-			while ((length = bis.read(buffer)) > 0) {
-				baos.write(buffer, 0, length);
+			
+			if(options!=null && options.getImageScaleFactor() != 1) {
+				float imageScaleFactor = options.getImageScaleFactor();
+				
+				
+				
+				LOGGER.logDebug("Image scale factor", "Changing scale to: " + imageScaleFactor);
+				
+				try {
+					Bitmap bMap= BitmapFactory.decodeStream(bis);
+					LOGGER.logDebug("Image scale factor", "Current byte count: " + bMap.getByteCount());
+					LOGGER.logDebug("Image scale factor", "Current width: " +  bMap.getWidth() +", height: " + bMap.getHeight());
+					int newWidth =  (int) ( bMap.getWidth() / options.getImageScaleFactor());
+					int newHeight = (int) ( bMap.getHeight() / options.getImageScaleFactor());
+					LOGGER.logDebug("Image scale factor", "New width: " + newWidth +", height: " + newHeight);
+		            Bitmap out = Bitmap.createScaledBitmap(bMap,newWidth , newHeight, false);
+		            LOGGER.logDebug("Image scale factor", "New byte count: " + out.getByteCount());
+		            
+		            out.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+		            
+				} catch (java.lang.Throwable ex) {
+					LOGGER.logDebug("Image scale factor", "Exception found: " + ex.getMessage());
+					LOGGER.logDebug("Image scale factor", "Cannot convert image input stream into Bitmap to start scaling... So image will be stored as original");
+					
+					if (bis != null) {
+						try {
+							bis.close();
+						} catch (Exception exc) {
+						}
+					}
+					if (baos != null) {
+						try {
+							baos.close();
+						} catch (Exception exc) {
+						}
+					}
+					
+					baos = new ByteArrayOutputStream();
+					// read image data stream again
+					bis = new BufferedInputStream(AndroidServiceLocator.getContext()
+							.getContentResolver().openInputStream(uri));
+					
+					byte[] buffer = new byte[1024];
+					int length;
+					while ((length = bis.read(buffer)) > 0) {
+						baos.write(buffer, 0, length);
+					}
+				}
+	            
+			} else {
+				
+				byte[] buffer = new byte[1024];
+				int length;
+				while ((length = bis.read(buffer)) > 0) {
+					baos.write(buffer, 0, length);
+				}
+				
 			}
-
+			
 			// store image in the application files folder
 			IFileSystem fileService = (IFileSystem) AndroidServiceLocator
 					.GetInstance().GetService(
@@ -568,9 +844,16 @@ public class AndroidMedia extends AbstractMedia {
 			}
 			String path = fileService.StoreFile(fileService.GetDirectoryRoot()
 					.getFullName(), name, baos.toByteArray());
+			File f = new File(path);
+			LOGGER.logDebug("copyImageToInternalStorage", "uri.path: "+uri.getPath() + " || path: " + path);
+			long size = f.length();
+			LOGGER.logDebug("File Size", "******************************* FILE SIZE: "+size);
 			// TODO StoreFile should return a relative path
 			path = path.substring(path.lastIndexOf('/') + 1);
 			meta.setReferenceUrl(path);
+									
+			meta.setSize(size);
+			
 		} catch (Exception ex) {
 			LOGGER.logError("CopyImageToInternalStorage", "Error", ex);
 		} finally {

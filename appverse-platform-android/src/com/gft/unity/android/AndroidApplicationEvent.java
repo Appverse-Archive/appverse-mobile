@@ -25,6 +25,6 @@ package com.gft.unity.android;
 
 public enum AndroidApplicationEvent {
 
-	onPause, onResume, onStop, onDestroy
+	onPause, onResume, onStop, onDestroy, onCreate
 	
 }

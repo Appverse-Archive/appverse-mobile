@@ -62,7 +62,12 @@ public class AndroidFileSystem extends AbstractFileSystem {
 	public AndroidFileSystem() {
 
 		Context context = AndroidServiceLocator.getContext();
-		rootDirectory = context.getFilesDir().getAbsolutePath();
+		try {
+			rootDirectory = context.getFilesDir().getCanonicalPath();
+		} catch (IOException e) {
+			LOGGER.logDebug(LOGGER_MODULE, "CANNOT GET CANONICAL PATH");
+			rootDirectory = context.getFilesDir().getAbsolutePath();
+		}
 	}
 
 	@Override
@@ -602,8 +607,9 @@ public class AndroidFileSystem extends AbstractFileSystem {
 
 		BufferedOutputStream bos = null;
 		try {
-
-			result = new File(directory, name).getAbsolutePath();
+			//Absolute -> Canonical
+			result = new File(directory, name).getCanonicalPath();
+			
 			result = normalizePath(result);
 			File f = new File(result);
 			

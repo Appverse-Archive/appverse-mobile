@@ -50,7 +50,8 @@ public class AndroidInvocationManager extends AbstractInvocationManager {
 			LogCategory.PLATFORM, LOGGER_MODULE);
 
 	private static final String PARAM_PREFIX = "param";
-	private static final String PACKAGE_PREFIX = "com.gft.unity.";
+	private static final String PACKAGE_PREFIX_CORE = "com.gft.unity.";
+	private static final String PACKAGE_PREFIX_MODULE = "com.gft.appverse.";
 
 	private static IInvocationManager singletonInvocationManager;
 	
@@ -281,7 +282,8 @@ public class AndroidInvocationManager extends AbstractInvocationManager {
 					} else if ((parameter instanceof JSONObject)
 							|| isNullObject) { // bean
 						if (!parameterType.getPackage().getName()
-								.startsWith(PACKAGE_PREFIX) ){
+								.startsWith(PACKAGE_PREFIX_CORE) && !parameterType.getPackage().getName()
+								.startsWith(PACKAGE_PREFIX_MODULE) ){
 							if(parameterType
 								.isAssignableFrom(String.class) && isNullObject) { 
 								// MOBPLAT-201: null strings are allowed and shouldn't be confused with nullable model objects
@@ -293,6 +295,8 @@ public class AndroidInvocationManager extends AbstractInvocationManager {
 								match = false;
 								break;
 							}
+						} else {
+							LOGGER.logDebug("FindMethods","Object is a CORE or MODULE bean");
 						}
 					} else { // primitive
 						if (!parameterType.isEnum()

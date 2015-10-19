@@ -425,13 +425,13 @@ public class AndroidNotification extends AbstractNotification {
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
 		
-		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Appverse.PushNotificaations.OnRegisterForRemoteNotificationsSuccess...");
+		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Appverse.PushNotifications.OnRegisterForRemoteNotificationsSuccess...");
 		
 		RegistrationToken notificationToken = new RegistrationToken();
 		notificationToken.setStringRepresentation(registrationId);
 		notificationToken.setBinary(registrationId.getBytes());
 			
-		am.loadUrlIntoWebView("javascript:try{Appverse.PushNotificaations.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
+		am.loadUrlIntoWebView("javascript:try{Appverse.PushNotifications.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
 	}
 	
 	
@@ -445,12 +445,12 @@ public class AndroidNotification extends AbstractNotification {
 				.GetInstance().GetService(
 						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
 		
-		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Appverse.PushNotificaations.OnRegisterForRemoteNotificationsFailure...");
+		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Appverse.PushNotifications.OnRegisterForRemoteNotificationsFailure...");
 		
 		RegistrationError notificationError = new RegistrationError();
 		notificationError.setCode(exceptionCode);
 		notificationError.setLocalizedDescription(exceptionMessage);
-		am.loadUrlIntoWebView("javascript:try{Appverse.PushNotificaations.OnRegisterForRemoteNotificationsFailure(" + JSONSerializer.serialize(notificationError) +")}catch(e){}");
+		am.loadUrlIntoWebView("javascript:try{Appverse.PushNotifications.OnRegisterForRemoteNotificationsFailure(" + JSONSerializer.serialize(notificationError) +")}catch(e){}");
 	}
 
 	@Override

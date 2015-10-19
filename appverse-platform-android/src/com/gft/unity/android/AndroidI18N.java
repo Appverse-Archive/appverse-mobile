@@ -32,6 +32,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.content.Context;
 
+import com.gft.unity.android.helpers.AndroidUtils;
 import com.gft.unity.android.util.plist.PList;
 import com.gft.unity.android.util.plist.PListParser;
 import com.gft.unity.core.i18n.AbstractI18N;
