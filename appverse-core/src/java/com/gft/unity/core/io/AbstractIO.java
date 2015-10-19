@@ -32,6 +32,9 @@ public abstract class AbstractIO implements IIo {
     protected static final int DEFAULT_RESPONSE_TIMEOUT = 10000;
     protected static Map<ServiceType, String> contentTypes = new HashMap<ServiceType, String>();
     protected IOServicesConfig servicesConfig = new IOServicesConfig();
+    
+    protected static final String FormDataTemplate_Dict = "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"\r\n\r\n{2}\r\n";
+    protected static final String HeaderTemplate_File = "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n";
 
     static {
         contentTypes.put(ServiceType.XMLRPC_JSON, "application/json");
@@ -44,6 +47,8 @@ public abstract class AbstractIO implements IIo {
         contentTypes.put(ServiceType.REMOTING_SERIALIZATION, "");
         contentTypes.put(ServiceType.OCTET_BINARY, "application/octet-stream");
         contentTypes.put(ServiceType.GWT_RPC, "text/x-gwt-rpc; charset=utf-8");
+        // [AMOB-85] v5.0.12  New service type 
+        contentTypes.put(ServiceType.MULTIPART_FORM_DATA,  "multipart/form-data; boundary=");
     }
 
     public AbstractIO() {
@@ -125,4 +130,8 @@ public abstract class AbstractIO implements IIo {
     
     @Override
     public abstract String InvokeServiceForBinary (IORequest request, IOService service, String storePath);
+    
+    @Override
+    public abstract void ClearCookieContainer();
+    
 }

@@ -104,6 +104,12 @@ public class ServerSocketEndPoint implements EndPoint, Runnable {
     protected ServerSocket createSocket(int port) throws IOException {
 
         InetAddress localhostAddress = InetAddress.getLocalHost();
+        
+        //Fixes AMOB-28 ERROR_CONNECT
+        if(!localhostAddress.toString().contains("127.0.0.1"))
+            localhostAddress = InetAddress.getByName("localhost/127.0.0.1");  
+        
+        
         SocketAddress socketAddress = new InetSocketAddress(localhostAddress, port);
         
         //ServerSocket socket = factory.createServerSocket(port, 100, localhostAddress); 

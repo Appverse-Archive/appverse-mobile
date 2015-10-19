@@ -23,6 +23,8 @@
  */
 package com.gft.unity.core;
 
+import java.io.InputStream;
+
 /**
  * Application Delegate interface to be implemented 
  * @author maps
@@ -30,6 +32,20 @@ package com.gft.unity.core;
 public interface IAppDelegate {
     
     public static String ACTIVITY_RESULT_CODE_BUNDLE_KEY = "appverse-result-receiver-activity-result-code";
+    
+    
+    /**
+     * Returns the config file path for this module
+     * @return The module config-file relative path, to be loaded by the runtime. Null if no config file needs to be loaded
+     */
+    public String getConfigFilePath ();
+
+
+    /**
+     * Receives the config file data to be loaded for this module.
+     * @param configData Inputstream with the module configuration data
+     */
+    public void setConfigFileLoadedData (InputStream configData);
     
     /**
      * Called on build time that aware the delegate about the build mode used
@@ -57,6 +73,9 @@ public interface IAppDelegate {
      */
     public void onDestroy();
     
-    
+    /**
+     * Called on application launch (application is opened by the user or the OS)
+     */
+    public void onCreate();
     
 }

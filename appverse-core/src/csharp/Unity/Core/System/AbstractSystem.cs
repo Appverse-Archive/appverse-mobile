@@ -77,6 +77,7 @@ namespace Unity.Core.System
         /// </summary>
         protected void LoadLaunchConfig()
         {
+            launchConfig = new LaunchConfig(); // reset launch config mapping when the services could not be loaded for any reason
             try
             {   // FileStream to read the XML document.
                 byte[] configFileRawData = GetConfigFileBinaryData();
@@ -85,15 +86,10 @@ namespace Unity.Core.System
                     XmlSerializer serializer = new XmlSerializer(typeof(LaunchConfig));
                     launchConfig = (LaunchConfig)serializer.Deserialize(new MemoryStream(configFileRawData));
                 }
-                else
-                {
-                    launchConfig = new LaunchConfig();  // the app has no launch config file available
-                }
             }
             catch (Exception e)
             {
                 SystemLogger.Log(SystemLogger.Module.CORE, "Error when loading launch configuration", e);
-                launchConfig = new LaunchConfig(); // reset launch config mapping when the services could not be loaded for any reason
             }
         }
 
@@ -365,13 +361,7 @@ namespace Unity.Core.System
 		/// <param name="query">Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.</param>
 		public void LaunchApplication (string appName, string query)
 		{
-			App app = this.GetApplication (appName);
-			if (app != null) {
-				this.LaunchApplication (app, query);
-			} else {
-				// TODO - check if an alert notification is required
-				SystemLogger.Log (SystemLogger.Module .CORE, "Application with name [" + appName + "] couldn't be found in the configuration file");
-			}
+			this.LaunchApplication (this.GetApplication (appName), query);
 		}
 
 		/// <summary>

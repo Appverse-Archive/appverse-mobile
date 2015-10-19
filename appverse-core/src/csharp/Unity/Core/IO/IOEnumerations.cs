@@ -40,7 +40,8 @@ namespace Unity.Core.IO
 		AMF_SERIALIZATION,
 		REMOTING_SERIALIZATION,
 		OCTET_BINARY,
-		GWT_RPC
+		GWT_RPC,
+        MULTIPART_FORM_DATA
 	}
 
 	[XmlTypeAttribute()]

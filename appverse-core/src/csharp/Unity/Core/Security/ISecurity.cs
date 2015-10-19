@@ -52,14 +52,14 @@ namespace Unity.Core.Security
         /// <summary>
         /// Returns a previously stored key/value pair. Null if not found
         /// </summary>
-        /// <param name="KeyName">A string with the Key to retrieve</param>
-        void GetStoredKeyValuePair(string KeyName);
+		/// <param name="KeyName">A KeyPair with the Key to retrieve</param>
+		void GetStoredKeyValuePair(KeyPair KeyName);
 
         /// <summary>
         /// Returns a list of previously stored key/value pair. Null if not found
         /// </summary>
-        /// <param name="KeyNames">Array of string containing the Keys to retrieve</param>
-        void GetStoredKeyValuePairs(string[] KeyNames);
+		/// <param name="KeyNames">Array of KeyPair containing the Keys to retrieve</param>
+		void GetStoredKeyValuePairs(KeyPair[] KeyNames);
 
         /// <summary>
         /// Removes - if already exists - a given key/value pair
@@ -103,14 +103,14 @@ namespace Unity.Core.Security
         /// <summary>
         /// Returns a previously stored key/value pair. Null if not found
         /// </summary>
-        /// <param name="keyName">A string with the Key to retrieve</param>
-        Task GetStoredKeyValuePair(string keyName);
+		/// <param name="keyName">A KeyPair with the Key to retrieve</param>
+		Task GetStoredKeyValuePair(KeyPair keyName);
 
         /// <summary>
         /// Returns a list of previously stored key/value pair. Null if not found
         /// </summary>
-        /// <param name="keyNames">Array of string containing the Keys to retrieve</param>
-        Task GetStoredKeyValuePairs(string[] keyNames);
+		/// <param name="keyNames">Array of KeyPair containing the Keys to retrieve</param>
+		Task GetStoredKeyValuePairs(KeyPair[] keyNames);
 
         /// <summary>
         /// Removes - if already exists - a given key/value pair

@@ -31,6 +31,9 @@ public abstract class AbstractSecurity implements ISecurity {
     @Override
     public abstract boolean IsDeviceModified();
     
+    @Override
+    public abstract boolean IsROMModified();
+    
     /**
      * Adds or updates  - if already exists - a key/value pair
      *
@@ -55,7 +58,7 @@ public abstract class AbstractSecurity implements ISecurity {
      * @param keyName A string with the Key to retrieve
      */
     @Override
-    public abstract void GetStoredKeyValuePair(String keyName);
+    public abstract void GetStoredKeyValuePair(KeyPair keyName);
 
     /**
      * Returns a list of previously stored key/value pair. Null if not found
@@ -63,7 +66,7 @@ public abstract class AbstractSecurity implements ISecurity {
      * @param keyNames Array of string containing the Keys to retrieve
      */
     @Override
-    public abstract void GetStoredKeyValuePairs(String[] keyNames);
+    public abstract void GetStoredKeyValuePairs(KeyPair[] keyNames);
 
     /**
      * Removes - if already exists - a given key/value pair

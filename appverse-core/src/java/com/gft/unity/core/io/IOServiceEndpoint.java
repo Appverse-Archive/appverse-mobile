@@ -31,6 +31,7 @@ public class IOServiceEndpoint {
     private String scheme;
     private String proxyUrl;    
     private String fingerprint;
+    private String publicKey;
 
     public IOServiceEndpoint() {
     }
@@ -82,6 +83,15 @@ public class IOServiceEndpoint {
     public void setFingerprint(String fingerprint) {
         this.fingerprint = fingerprint;
     }
+
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(String publicKeyFingerprint) {
+        this.publicKey = publicKeyFingerprint;
+    }
+    
     
 
     @Override
@@ -98,7 +108,9 @@ public class IOServiceEndpoint {
         builder.append(", proxyUrl=");
         builder.append(proxyUrl);
         builder.append(", fingerprint=");
-        builder.append(fingerprint);
+        builder.append(fingerprint); 
+        builder.append(", publickKeyFingerprint=");
+        builder.append(publicKey);
         builder.append("]");
         return builder.toString();
     }

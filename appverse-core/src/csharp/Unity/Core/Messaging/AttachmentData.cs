@@ -27,23 +27,8 @@ using System.Text;
 
 namespace Unity.Core.Messaging
 {
-	public class AttachmentData
-	{
-		/// <summary>
-		/// Parameterless constructor is needed when parsing jsonstring to object.
-		/// </summary>
-		public AttachmentData ()
-		{
-		}
-		
-		public string MimeType { get; set; }
-
-		public string FileName { get; set; }
-
-		public byte[] Data { get; set; }
-
-		public long DataSize { get; set; }
-		
-		public string ReferenceUrl { get; set; }
-	}
+    public class AttachmentData : Unity.Core.AttachmentData
+    {
+        // add here any other fields required specifically for the Messaging API
+    }
 }

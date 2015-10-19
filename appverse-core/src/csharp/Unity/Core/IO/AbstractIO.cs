@@ -52,7 +52,8 @@ namespace Unity.Core.IO
         private static IDictionary<ServiceType, string> contentTypes = new Dictionary<ServiceType, string>();
         private CookieContainer cookieContainer = null;
 
-
+        public const string FormDataTemplate_Dict = "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"\r\n\r\n{2}\r\n";
+        public const string HeaderTemplate_File = "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n";
 
         static AbstractIO()
         {
@@ -66,6 +67,9 @@ namespace Unity.Core.IO
             contentTypes[ServiceType.REMOTING_SERIALIZATION] = "";
             contentTypes[ServiceType.OCTET_BINARY] = "application/octet-stream";
             contentTypes[ServiceType.GWT_RPC] = "text/x-gwt-rpc; charset=utf-8";
+
+            // [AMOB-85] v5.0.12  New service type 
+            contentTypes[ServiceType.MULTIPART_FORM_DATA] = "multipart/form-data; boundary=";
         }
 
         private string _servicesConfigFile = SERVICES_CONFIG_FILE;
@@ -116,6 +120,18 @@ namespace Unity.Core.IO
             }
         }
 
+		protected void removePublicKeys()
+		{
+			IOService[] services = servicesConfig.Services.ToArray();
+			if (services != null)
+			{
+				foreach (IOService serv in services)
+				{
+					serv.Endpoint.PublicKey = null;
+				}
+			}
+		}
+
 
 
         /// <summary>
@@ -123,6 +139,7 @@ namespace Unity.Core.IO
         /// </summary>
         protected void LoadServicesConfig()
         {
+            servicesConfig = new IOServicesConfig(); // reset services config mapping when the services could not be loaded for any reason
             try
             {   // FileStream to read the XML document.
                 byte[] configFileRawData = GetConfigFileBinaryData();
@@ -135,12 +152,13 @@ namespace Unity.Core.IO
             catch (Exception e)
             {
                 SystemLogger.Log(SystemLogger.Module.CORE, "Error when loading services configuration", e);
-                servicesConfig = new IOServicesConfig(); // reset services config mapping when the services could not be loaded for any reason
             }
         }
 
 #if !WP8
         public abstract String GetDirectoryRoot();
+
+        public abstract String GetAttachmentFullPath(String referenceUrl);
 
         /// <summary>
         /// Default method, to be overrided by platform implementation. 
@@ -280,42 +298,233 @@ namespace Unity.Core.IO
 			return requestUriString;
 		}
 
-		private HttpWebRequest BuildWebRequest(IORequest request, IOService service, string requestUriString, string reqMethod) {
+        private void WriteMultipartFormData_FromDict(Dictionary<string, string> dictionary, Stream stream, string mimeBoundary)
+        {
+            if (dictionary == null || dictionary.Count == 0)
+            {
+                return;
+            }
+            if (stream == null)
+            {
+                throw new ArgumentNullException("stream");
+            }
+            if (mimeBoundary == null)
+            {
+                throw new ArgumentNullException("mimeBoundary");
+            }
+            if (mimeBoundary.Length == 0)
+            {
+                throw new ArgumentException("MIME boundary may not be empty.", "mimeBoundary");
+            }
+            foreach (string key in dictionary.Keys)
+            {
+                string item = String.Format(FormDataTemplate_Dict, mimeBoundary, key, dictionary[key]);
+                byte[] itemBytes = Encoding.UTF8.GetBytes(item);
+                stream.Write(itemBytes, 0, itemBytes.Length);
+            }
+        }
 
-			HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create (requestUriString);
-			webReq.Method = reqMethod; // default is POST
-			webReq.ContentType = contentTypes [service.Type];
-			
-			// check specific request ContentType defined, and override service type in that case
-			if (request.ContentType != null && request.ContentType.Length > 0) 
-			{
-				webReq.ContentType = request.ContentType;
-			}
-			
-			SystemLogger.Log (SystemLogger.Module.CORE, "Request content type: " + webReq.ContentType);
-			SystemLogger.Log (SystemLogger.Module.CORE, "Request method: " + webReq.Method);
-			
-			webReq.Accept = webReq.ContentType; // setting "Accept" header with the same value as "Content Type" header, it is needed to be defined for some services.
-			webReq.ContentLength = request.GetContentLength ();
-			SystemLogger.Log (SystemLogger.Module.CORE, "Request content length: " + webReq.ContentLength);
-			webReq.Timeout = DEFAULT_RESPONSE_TIMEOUT; // in millisecods (default is 100 seconds)
-			webReq.ReadWriteTimeout = DEFAULT_READWRITE_TIMEOUT; // in milliseconds
-			webReq.KeepAlive = false;
-			webReq.ProtocolVersion = HttpVersion.Version10;
-			if (request.ProtocolVersion == HTTPProtocolVersion.HTTP11) webReq.ProtocolVersion = HttpVersion.Version11;
+        public void WriteMultipartFormData_FromFile(FileInfo file, Stream stream, string mimeBoundary, string mimeType, string formKey)
+        {
+            if (file == null)
+            {
+                throw new ArgumentNullException("file");
+            }
+            if (!file.Exists)
+            {
+                throw new FileNotFoundException("Unable to find file to write to stream.", file.FullName);
+            }
+            if (stream == null)
+            {
+                throw new ArgumentNullException("stream");
+            }
+            if (mimeBoundary == null)
+            {
+                throw new ArgumentNullException("mimeBoundary");
+            }
+            if (mimeBoundary.Length == 0)
+            {
+                throw new ArgumentException("MIME boundary may not be empty.", "mimeBoundary");
+            }
+            if (mimeType == null)
+            {
+                throw new ArgumentNullException("mimeType");
+            }
+            if (mimeType.Length == 0)
+            {
+                throw new ArgumentException("MIME type may not be empty.", "mimeType");
+            }
+            if (formKey == null)
+            {
+                throw new ArgumentNullException("formKey");
+            }
+            if (formKey.Length == 0)
+            {
+                throw new ArgumentException("Form key may not be empty.", "formKey");
+            }
+            string header = String.Format(HeaderTemplate_File, mimeBoundary, formKey, file.Name, mimeType);
+            byte[] headerbytes = Encoding.UTF8.GetBytes(header);
+            stream.Write(headerbytes, 0, headerbytes.Length);
+            using (FileStream fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read))
+            using (StreamReader sr = new StreamReader(fileStream))
+            {
+                //string sContent = sr.ReadToEnd();
+                byte[] buffer = new byte[1024];
+                int bytesRead = 0;
+                while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
+                {
+                    stream.Write(buffer, 0, bytesRead);
+                }
+                //stream.Write(Encoding.UTF8.GetBytes(sContent), 0, Encoding.UTF8.GetBytes(sContent).Length);
+            }
+            byte[] newlineBytes = Encoding.UTF8.GetBytes("\r\n");
+            stream.Write(newlineBytes, 0, newlineBytes.Length);
+        }
+
+        /// <summary>
+        /// Creates a multipart/form-data boundary.
+        /// </summary>
+        /// <returns>
+        /// A dynamically generated form boundary for use in posting multipart/form-data requests.
+        /// </returns>
+        private string CreateFormDataBoundary()
+        {
+            return "---------------------------" + DateTime.Now.Ticks.ToString("x");
+        }
+
+
+        private HttpWebRequest BuildMultipartWebRequest(HttpWebRequest webReq, IORequest request, IOService service, string requestUriString)
+        {
+            webReq.Method = "POST";
+            webReq.KeepAlive = true;
+            SystemLogger.Log(SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. Request method fixed to 'POST' (only this is allowed for a form-data), and KeepAlive true");
+            
+            string boundary = CreateFormDataBoundary();
+            webReq.ContentType = contentTypes[service.Type] + boundary;
+            SystemLogger.Log(SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. Adding boundary to content-type: " + webReq.ContentType);
+            webReq.Accept = contentTypes[service.Type]; // setting "Accept" header with the same value as "Content Type" header, it is needed to be defined for some services.
+
+            Dictionary<string, string> postData = new Dictionary<string, string>();
+
+            if (request.Content != null)
+            {
+                SystemLogger.Log(SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. Getting form data from request Content...");
+
+                // example of format accepted "key1=value1&key2=value2&key3=value3&"
+                string[] items = request.Content.TrimEnd('&').Split('&');
+                foreach (string item in items)
+                {
+                    string[] keyValue = item.Split('=');
+                    postData.Add(keyValue[0], keyValue[1]);
+                }
+                SystemLogger.Log(SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. POST data form fields count: #" + postData.Count);
+            }
+
+            byte[] bContent;
+            using (var ms = new MemoryStream())
+            {
+                WriteMultipartFormData_FromDict(postData, ms, boundary);
+                
+                if (request.Attachment != null)
+                {
+				   SystemLogger.Log (SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. Processing attachment files, count: " + request.Attachment.Length);
+				   int attchCount = 0;
+                   foreach (AttachmentData attachData in request.Attachment)
+                    {
+						try {
+							if (attachData != null && attachData.ReferenceUrl != null) {
+								string refUrl = this.GetAttachmentFullPath (attachData.ReferenceUrl);
+								FileInfo fileToUpload = new FileInfo (refUrl);
+								if (fileToUpload.Exists) {
+									SystemLogger.Log (SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. #" + attchCount+ " Attaching file from referenced URL: " + refUrl);
+									String fileMimeType = attachData.MimeType;
+									String fileFormKey = attachData.FormFieldKey;
+
+									WriteMultipartFormData_FromFile (fileToUpload, ms, boundary, fileMimeType, fileFormKey);
+								} else {
+									SystemLogger.Log (SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. #" + attchCount+ " File from referenced URL: " + refUrl + ", does not exists in filesystem, please check provided ReferenceUrl!");
+								}
+							} else {
+								SystemLogger.Log (SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. #" + attchCount+ " Attached file does not contain a valid ReferenceUrl field. IGNORED");
+							}
+						} catch(Exception ex) {
+							SystemLogger.Log (SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. #" + attchCount+ " Exception attaching file, exception message: "+ ex.Message);
+						}
+						attchCount++;
+                    }
+                }
+
+                var endBytes = Encoding.UTF8.GetBytes("--" + boundary + "--");
+                ms.Write(endBytes, 0, endBytes.Length);
+                ms.Flush();
+                bContent = ms.ToArray();
+            }
+
+            SystemLogger.Log(SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. Sending data on the request stream... (POST)");
+            SystemLogger.Log(SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. Request data length: " + bContent.Length);
+            using (Stream requestStream = webReq.GetRequestStream())
+            {
+                requestStream.Write(bContent, 0, bContent.Length);
+            }
+
+            return webReq;
+        }
+        
+        private HttpWebRequest BuildWebRequest(IORequest request, IOService service, string requestUriString, string reqMethod) {
+
+            HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(requestUriString);
+
+            webReq.Timeout = DEFAULT_RESPONSE_TIMEOUT; // in millisecods (default is 100 seconds)
+            webReq.ReadWriteTimeout = DEFAULT_READWRITE_TIMEOUT; // in milliseconds
 
             // [MOBPLAT-200] ... Allow Gzip or Deflate decompression methods
             webReq.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 			
-			// user agent needs to be informed - some servers check this parameter and send 500 errors when not informed.
-			webReq.UserAgent = this.IOUserAgent;
-			SystemLogger.Log (SystemLogger.Module.CORE, "Request UserAgent : " + webReq.UserAgent);
+            if (ServiceType.MULTIPART_FORM_DATA.Equals(service.Type))
+            {
+                SystemLogger.Log(SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. Building specific WebRequest...");
+                webReq = BuildMultipartWebRequest(webReq, request, service, requestUriString);
+            }
+            else
+            {  
+                webReq.Method = reqMethod; // default is POST
+                webReq.ContentType = contentTypes[service.Type];
 
-			/*************
-			 * HEADERS HANDLING
-			 *************/
+                // check specific request ContentType defined, and override service type in that case
+                if (request.ContentType != null && request.ContentType.Length > 0)
+                {
+                    webReq.ContentType = request.ContentType;
+                }
 
-			// add specific headers to the request
+                SystemLogger.Log(SystemLogger.Module.CORE, "Request content type: " + webReq.ContentType);
+                SystemLogger.Log(SystemLogger.Module.CORE, "Request method: " + webReq.Method);
+
+                webReq.Accept = webReq.ContentType; // setting "Accept" header with the same value as "Content Type" header, it is needed to be defined for some services.
+
+                if (!reqMethod.Equals(RequestMethod.GET.ToString()) && request.Content != null)
+                {
+                    webReq.ContentLength = request.GetContentLength();
+                    SystemLogger.Log(SystemLogger.Module.CORE, "Setting request ContentLength (not needed for GET): " + webReq.ContentLength);
+                }
+
+                SystemLogger.Log(SystemLogger.Module.CORE, "Request content length: " + webReq.ContentLength);
+                webReq.KeepAlive = false;
+            
+            }
+
+            webReq.AllowAutoRedirect = !request.StopAutoRedirect; // each request could decide if 302 redirection are automatically followed, or not. Default behaviour is to follow redirections and do not send back the 302 status code
+            webReq.ProtocolVersion = HttpVersion.Version10;
+            if (request.ProtocolVersion == HTTPProtocolVersion.HTTP11) webReq.ProtocolVersion = HttpVersion.Version11;
+
+            // user agent needs to be informed - some servers check this parameter and send 500 errors when not informed.
+            webReq.UserAgent = this.IOUserAgent;
+            SystemLogger.Log (SystemLogger.Module.CORE, "Request UserAgent : " + webReq.UserAgent);
+
+            /*************
+             * HEADERS HANDLING
+             *************/
+
+            // add specific headers to the request
 			if (request.Headers != null && request.Headers.Length > 0) {
 				foreach (IOHeader header in request.Headers) {
 					webReq.Headers.Add (header.Name, header.Value);
@@ -336,7 +545,7 @@ namespace Unity.Core.IO
 				foreach (IOCookie cookie in request.Session.Cookies) {
 					if (cookie != null && cookie.Name != null) {
 						webReq.CookieContainer.Add (webReq.RequestUri, new Cookie (cookie.Name, cookie.Value));
-						SystemLogger.Log (SystemLogger.Module.CORE, "Added cookie [" + cookie.Name + "] to request.");
+                        SystemLogger.Log(SystemLogger.Module.CORE, "Added cookie [" + cookie.Name + "] to request. [" + cookie.Value + "]");
 					}
 				}
 			}
@@ -380,17 +589,18 @@ namespace Unity.Core.IO
 
 		private IOResponse ReadWebResponse(HttpWebRequest webRequest, HttpWebResponse webResponse, IOService service) {
 			IOResponse response = new IOResponse ();
-
+            
+            
 			// result types (string or byte array)
 			byte[] resultBinary = null;
 			string result = null;
-
+            
 			string responseMimeTypeOverride = webResponse.GetResponseHeader ("Content-Type");
-
+            
 			using (Stream stream = webResponse.GetResponseStream()) {
 				SystemLogger.Log (SystemLogger.Module.CORE, "getting response stream...");
 				if (ServiceType.OCTET_BINARY.Equals (service.Type)) {
-					
+                    
 					int lengthContent = -1;
 					if (webResponse.GetResponseHeader ("Content-Length") != null && webResponse.GetResponseHeader ("Content-Length") != "") {
 						lengthContent = Int32.Parse (webResponse.GetResponseHeader ("Content-Length"));
@@ -401,7 +611,7 @@ namespace Unity.Core.IO
 					if (lengthContent >= 0 && lengthContent<=bufferReadSize) {
 						bufferReadSize = lengthContent;
 					}
-					
+                    
 					if(lengthContent>MAX_BINARY_SIZE) {
 						SystemLogger.Log (SystemLogger.Module.CORE, 
 						                  "WARNING! - file exceeds the maximum size defined in platform (" + MAX_BINARY_SIZE+ " bytes)");
@@ -426,6 +636,7 @@ namespace Unity.Core.IO
 						result = reader.ReadToEnd ();
 					}
 				}
+
 			}
 
 			/*************
@@ -433,6 +644,7 @@ namespace Unity.Core.IO
 			 *************/
 
 			// preserve cache-control header from remote server, if any
+            /*
 			string cacheControlHeader = webResponse.GetResponseHeader ("Cache-Control");
 			if (cacheControlHeader != null && cacheControlHeader != "") {
 				SystemLogger.Log (SystemLogger.Module.CORE, "Found Cache-Control header on response: " + cacheControlHeader + ", using it on internal response...");
@@ -444,6 +656,26 @@ namespace Unity.Core.IO
 				cacheHeader.Value = cacheControlHeader;
 				response.Headers[0] = cacheHeader;
 			}
+             */
+
+            
+            /*************
+			 * HEADERS HANDLING
+			 *************/
+            if (webResponse.Headers != null)
+            {   
+                response.Headers = new IOHeader[webResponse.Headers.Count];
+                
+                int size = 0;
+                foreach(string headerKey in webResponse.Headers.AllKeys) {
+                    string headerValue = webResponse.GetResponseHeader(headerKey);
+                    IOHeader objHeader = new IOHeader();
+				    objHeader.Name = headerKey;
+				    objHeader.Value = headerValue;
+                    SystemLogger.Log(SystemLogger.Module.CORE, "Found Header on response: " + headerKey + "=" + headerValue);
+                    response.Headers[size++] = objHeader;
+                }
+            }
 
 			/*************
 			 * COOKIES HANDLING
@@ -454,6 +686,7 @@ namespace Unity.Core.IO
 				response.Session = new IOSessionContext ();
 				
 			}
+            
 			response.Session.Cookies = new IOCookie[this.cookieContainer.Count];
 			IEnumerator enumerator = this.cookieContainer.GetCookies (webRequest.RequestUri).GetEnumerator ();
 			int i = 0;
@@ -479,7 +712,7 @@ namespace Unity.Core.IO
 				response.Content = result;
 			}
 
-
+            
 			return response;
 
 		}
@@ -522,6 +755,11 @@ namespace Unity.Core.IO
 			}
 		}
 
+		public virtual void ClearCookieContainer() {
+			SystemLogger.Log (SystemLogger.Module.CORE, "***** As per project demand... clearing cookie container");
+			this.cookieContainer = new CookieContainer();
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -537,8 +775,8 @@ namespace Unity.Core.IO
 				if (service.Endpoint == null) {
 					SystemLogger.Log (SystemLogger.Module .CORE, "No endpoint configured for this service name: " + service.Name);
 					return response;
-				} 
-
+				}
+                SystemLogger.Log(SystemLogger.Module.CORE, "Endpoint: " + service.Endpoint.Host+service.Endpoint.Path);
 				SystemLogger.Log (SystemLogger.Module .CORE, "Request content: " + request.Content);
 				byte[] requestData = request.GetRawContent ();
                 
@@ -561,7 +799,7 @@ namespace Unity.Core.IO
 					timeoutThread.Start(webReq);
 
 					// POSTING DATA using timeout
-                    if (!reqMethod.Equals(RequestMethod.GET.ToString()) && requestData != null)
+                    if (!reqMethod.Equals(RequestMethod.GET.ToString()) && requestData != null && !ServiceType.MULTIPART_FORM_DATA.Equals(service.Type))
                     {
 						// send data only for POST method.
 						SystemLogger.Log (SystemLogger.Module.CORE, "Sending data on the request stream... (POST)");
@@ -570,13 +808,14 @@ namespace Unity.Core.IO
 							SystemLogger.Log (SystemLogger.Module.CORE, "request stream: " + requestStream);
 							requestStream.Write (requestData, 0, requestData.Length);
 						}
-					}
-	
-					using (HttpWebResponse webResp = (HttpWebResponse)webReq.GetResponse()) {
-
-						SystemLogger.Log (SystemLogger.Module.CORE, "getting response...");
-						response = this.ReadWebResponse(webReq, webResp, service);
-					}
+					} 
+                    
+                    using (HttpWebResponse webResp = (HttpWebResponse)webReq.GetResponse())
+                    {
+                        
+                        SystemLogger.Log(SystemLogger.Module.CORE, "getting response...");
+                        response = this.ReadWebResponse(webReq, webResp, service);
+                    }
 
 				} catch (WebException ex) {
 					SystemLogger.Log (SystemLogger.Module .CORE, "WebException requesting service: " + requestUriString + ".", ex);
@@ -643,7 +882,7 @@ namespace Unity.Core.IO
 					timeoutThread.Start(webReq);
 					
 					// POSTING DATA using timeout
-					if (!reqMethod.Equals(RequestMethod.GET.ToString()) && requestData != null)
+                    if (!reqMethod.Equals(RequestMethod.GET.ToString()) && requestData != null && !ServiceType.MULTIPART_FORM_DATA.Equals(service.Type))
 					{
 						// send data only for POST method.
 						SystemLogger.Log (SystemLogger.Module.CORE, "Sending data on the request stream... (POST)");

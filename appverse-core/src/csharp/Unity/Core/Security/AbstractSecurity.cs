@@ -21,15 +21,14 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-using Unity.Core.System;
+
+#if !WP8
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
-using System;
-using Unity.Core.IO;
-using System.Collections.Generic;
-
-
-#if WP8
+using Unity.Core.System;
+#else
 using System.Threading.Tasks;
 #endif
 
@@ -38,11 +37,13 @@ namespace Unity.Core.Security
     public abstract class AbstractSecurity : ISecurity
     {
 
-		private static string SECURITY_CONFIG_FILE = "app/config/security-config.xml";
-		private string _securityConfigFile = SECURITY_CONFIG_FILE;
+        #region Configuration Security
+#if !WP8
+        private static readonly string SECURITY_CONFIG_FILE = "app/config/security-config.xml";
+        private string _securityConfigFile = SECURITY_CONFIG_FILE;
 		private SecurityConfig securityConfig = new SecurityConfig();  // empty configuration
 
-		public virtual string SecurityConfigFile
+        public virtual string SecurityConfigFile
 		{
 			get
 			{
@@ -56,9 +57,7 @@ namespace Unity.Core.Security
 
 
 		public AbstractSecurity() {
-			#if !WP8			
 			this.LoadConfiguration();
-			#endif
 		}
 
 		public List<String> GetPasscodeProtectedKeys() {
@@ -70,6 +69,8 @@ namespace Unity.Core.Security
 		/// </summary>
 		protected void LoadConfiguration()
 		{
+            securityConfig = new SecurityConfig(); // reset services config mapping when the services could not be loaded for any reason
+
 			try
 			{   // FileStream to read the XML document.
 				byte[] configFileRawData = GetConfigFileBinaryData();
@@ -82,8 +83,7 @@ namespace Unity.Core.Security
 			catch (Exception e)
 			{
 				//if(!(e is FileNotFoundException))
-					SystemLogger.Log(SystemLogger.Module.CORE, "Error when loading services configuration", e);
-				securityConfig = new SecurityConfig(); // reset services config mapping when the services could not be loaded for any reason
+					SystemLogger.Log(SystemLogger.Module.CORE, "Error when loading security configuration", e);
 			}
 
 			SystemLogger.Log (SystemLogger.Module.CORE, "# Security config passcode protected keys #" + securityConfig.ProtectedKeys.Count);
@@ -109,6 +109,9 @@ namespace Unity.Core.Security
 				return null;
 			}
 		}
+#else
+#endif
+        #endregion
 
         #region ISecurity implementation
 #if !WP8
@@ -118,9 +121,9 @@ namespace Unity.Core.Security
 
         public abstract void StoreKeyValuePairs(KeyPair[] keypairs);
 
-        public abstract void GetStoredKeyValuePair(string KeyName);
+		public abstract void GetStoredKeyValuePair(KeyPair KeyName);
 
-        public abstract void GetStoredKeyValuePairs(string[] KeyNames);
+		public abstract void GetStoredKeyValuePairs(KeyPair[] KeyNames);
 
         public abstract void RemoveStoredKeyValuePair(string KeyName);
 
@@ -132,8 +135,8 @@ namespace Unity.Core.Security
         public abstract Task<bool> IsDeviceModified();
         public abstract Task StoreKeyValuePair(KeyPair keypair);
         public abstract Task StoreKeyValuePairs(KeyPair[] keypairs);
-        public abstract Task GetStoredKeyValuePair(string keyName);
-        public abstract Task GetStoredKeyValuePairs(string[] keyNames);
+		public abstract Task GetStoredKeyValuePair(KeyPair keyName);
+		public abstract Task GetStoredKeyValuePairs(KeyPair[] keyNames);
         public abstract Task RemoveStoredKeyValuePair(string keyName);
         public abstract Task RemoveStoredKeyValuePairs(string[] keyNames);
 #endif

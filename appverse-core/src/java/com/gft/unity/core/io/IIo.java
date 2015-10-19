@@ -110,4 +110,9 @@ public interface IIo {
      * @return The reference Url for the stored file (if success, null otherwise.
      */
     public String InvokeServiceForBinary (IORequest request, IOService service, String storePath);
+    
+    /**
+     * Clears the native cookie container
+     */
+    public void ClearCookieContainer();
 }

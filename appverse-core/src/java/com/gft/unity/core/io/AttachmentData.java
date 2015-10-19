@@ -21,55 +21,31 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-package com.gft.unity.core.security;
+package com.gft.unity.core.io;
 
 /**
  *
- * @author ddbc
+ * @author maps
  */
-public class KeyPair {
-    private String key;
-    private String value;
-    private boolean encryption;
-    
-    public KeyPair(){
-    }
-    
-    public KeyPair(String keyName, String value){
-        setKey(keyName);
-        setValue(value);
-    }
-    
-    public KeyPair(String keyName, String value, boolean encryption){
-        setKey(keyName);
-        setValue(value);
-        setEncryption(encryption);
-    }
-    
-    public void setKey (String keyName){
-        this.key = keyName;
-    }
-    
-    public void setValue (String value){
-        this.value = value;
-    }
-    
-    public String getKey(){
-        return this.key;
-    }
-    
-    public String getValue(){
-        return this.value;
+public class AttachmentData extends com.gft.unity.core.AttachmentData {
+    private String formFieldKey;
+
+    /**
+     * @return the formFieldKey
+     */
+    public String getFormFieldKey() {
+        return formFieldKey;
     }
 
-    public boolean getEncryption() {
-        return encryption;
+    /**
+     * @param formFieldKey the formFieldKey to set
+     */
+    public void setFormFieldKey(String formFieldKey) {
+        this.formFieldKey = formFieldKey;
     }
-
-    public void setEncryption(boolean encryption) {
-        this.encryption = encryption;
+    
+    @Override
+    public String toString() {
+        return "AttachmentData{" + "data=" + data + ", dataSize=" + size + ", fileName=" + fileName + ", mimeType=" + mimeType + ", referenceUrl=" + referenceUrl + ", formFieldKey=" + formFieldKey + '}';
     }
-
-    
-    
 }

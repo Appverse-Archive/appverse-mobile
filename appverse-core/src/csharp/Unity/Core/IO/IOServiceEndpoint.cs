@@ -48,5 +48,8 @@ namespace Unity.Core.IO
 
 		[XmlAttributeAttribute(AttributeName = "fingerprint", DataType = "string")]
 		public string Fingerprint { get; set; }
+
+		[XmlAttributeAttribute(AttributeName = "public-key", DataType = "string")]
+		public string PublicKey { get; set; }
 	}
 }

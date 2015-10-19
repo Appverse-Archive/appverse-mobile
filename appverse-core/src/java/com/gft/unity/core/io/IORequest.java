@@ -32,6 +32,8 @@ public class IORequest extends IOHeaders {
     
     private String method;
     private HTTPProtocolVersion protocolVersion;
+    private boolean stopAutoRedirect;
+    private AttachmentData[] attachment;
     
      public String getMethod() {
         return method;
@@ -48,7 +50,22 @@ public class IORequest extends IOHeaders {
     public void setProtocolVersion(HTTPProtocolVersion protocolVersion) {
         this.protocolVersion = protocolVersion;
     }
+
+    public boolean getStopAutoRedirect() {
+        return stopAutoRedirect;
+    }
+
+    public void setStopAutoRedirect(boolean stopRedirect) {
+        this.stopAutoRedirect = stopRedirect;
+    }
     
+    public AttachmentData[] getAttachment(){
+        return this.attachment;    
+    }
+    
+    public void setAttachment(AttachmentData[] attachment){
+        this.attachment = attachment;
+    }
     
 
     @Override
@@ -66,6 +83,8 @@ public class IORequest extends IOHeaders {
         builder.append(getMethod());
         builder.append(", getProtocolVersion()=");
         builder.append(getProtocolVersion().toString());
+        builder.append(", getStopAutoRedirect()=");
+        builder.append(getStopAutoRedirect());
         builder.append("]");
         return builder.toString();
     }
