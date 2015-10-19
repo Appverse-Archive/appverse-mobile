@@ -29,9 +29,38 @@ namespace Unity.Core
 {
 	public interface IWeakDelegateManager
 	{
-		void InitializeWeakDelegate();
-
 		void WebViewLoadingFinished (UIApplicationState applicationState, NSDictionary options);
+
+		void FinishedLaunching (UIApplication application, NSDictionary launchOptions);
+
+		/// <summary>
+		/// Returns the config file path for this module.
+		/// </summary>
+		/// <returns>The module config-file relative path, to be loaded by the runtime. Null if no config file needs to be loaded </returns>
+		string GetConfigFilePath ();
+
+		/// <summary>
+		/// Receives the config file data to be loaded for this module.
+		/// </summary>
+		/// <param name="configData">Byte array with the module configuration data</param>
+		void ConfigFileLoadedData (byte[] configData);
+
+
+		/**
+		 * WEAK DELEGATE METHODS 
+		 */
+
+		// Application events
+		void OnActivated (UIApplication application);
+		void WillTerminate (UIApplication application);
+
+		// Remote Notifications
+		void DidRegisterUserNotificationSettings (UIApplication application, UIUserNotificationSettings notificationSettings);
+		void RegisteredForRemoteNotifications (UIApplication application, NSData deviceToken);
+		void FailedToRegisterForRemoteNotifications (UIApplication application, NSError error);
+		void ReceivedRemoteNotification (UIApplication application, NSDictionary userInfo);
+
+
 	}
 }
 

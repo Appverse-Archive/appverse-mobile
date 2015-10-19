@@ -22,7 +22,10 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-#if WP8
+#if APPVERSE_EMULATOR
+using System.IO;
+#endif
+#if WP8 || APPVERSE_EMULATOR
 using System.Diagnostics;
 #endif
 
@@ -38,6 +41,31 @@ namespace Unity.Core.System
             GENERAL
         }
 		;
+
+#if APPVERSE_EMULATOR
+        static SystemLogger()
+        {
+
+            try
+            {
+                string mobileEmulatorDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MobileEmulator");
+                string mobileEmulatorLogDir = Path.Combine(mobileEmulatorDir, "Log");
+                string mobileEmulatorSettingsDir = Path.Combine(mobileEmulatorDir, "Settings");
+                string mobileEmulatorLogConsoleDir = Path.Combine(mobileEmulatorLogDir, "Console");
+
+                String sFileName = String.Concat(DateTime.Now.ToUniversalTime().ToShortDateString().ToString().Replace("/", ""), "_CORE.txt");
+                TextWriterTraceListener twtl = new TextWriterTraceListener(mobileEmulatorDir, sFileName);
+                twtl.TraceOutputOptions = TraceOptions.DateTime;
+                twtl.Name = "TextLogger";
+                Trace.Listeners.Add(twtl);
+                Trace.AutoFlush = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not initialize Trace File");
+            }
+        }
+#endif
 
         public static void Log(string message)
         {
@@ -56,6 +84,16 @@ namespace Unity.Core.System
 
         public static void Log(Module module, string message, Exception ex)
         {
+
+#if APPVERSE_EMULATOR
+            Trace.WriteLine(module + ": " + message);
+			if (ex!=null) {
+                Trace.WriteLine(module + ": Exception=[" + ex.Message + "] Source=[" + ex.Source + "]");
+                Trace.WriteLine(module + ": Stacktrace ---------------------");
+                Trace.WriteLine(module + ": " + ex.StackTrace);
+			}	
+#endif
+
 
 #if DEBUG   && !WP8
 			Console.WriteLine(module+": "+message);

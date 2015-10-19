@@ -70,6 +70,7 @@ namespace Unity.Core.Media
 		public abstract MediaMetadata GetSnapshot ();
 
 		public abstract MediaMetadata TakeSnapshot ();
+		public abstract void TakeSnapshotWithOptions (CameraOptions options);
 
         #endregion
 
@@ -101,6 +102,7 @@ namespace Unity.Core.Media
         public abstract Task<bool> StopVideoRecording();
         public abstract Task<MediaMetadata> GetSnapshot();
         public abstract Task<MediaMetadata> TakeSnapshot();
+        public abstract Task TakeSnapshotWithOptions(CameraOptions options);
 #endif
     }
 }

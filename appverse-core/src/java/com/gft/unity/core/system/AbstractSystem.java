@@ -240,12 +240,7 @@ public abstract class AbstractSystem implements IDisplay, IHumanInteraction,
      */
     @Override
     public void LaunchApplication(String appName, String query) {
-        App app = this.GetApplication (appName);
-        if (app != null) {
-            this.LaunchApplication (app, query);
-        } else {
-            LOGGER.logWarning("LaunchApplication", "Application with name [" + appName + "] couldn't be found in the configuration file");
-        }
+        this.LaunchApplication (this.GetApplication (appName), query);
     }
 
     /**

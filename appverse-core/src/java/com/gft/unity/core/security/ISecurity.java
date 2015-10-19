@@ -33,6 +33,13 @@ public interface ISecurity {
     public boolean IsDeviceModified();
     
     /**
+     * Checks if the device has its ROM modified.
+     *
+     * @return TRUE if the device ROM is modified, otherwise FALSE
+     */
+    public boolean IsROMModified();
+    
+    /**
      * Adds or updates  - if already exists - a key/value pair
      *
      * @param keypair KeyPair object to store
@@ -53,14 +60,14 @@ public interface ISecurity {
      *
      * @param keyName A string with the Key to retrieve
      */
-    public void GetStoredKeyValuePair(String keyName);
+    public void GetStoredKeyValuePair(KeyPair keyName);
 
     /**
      * Returns a list of previously stored key/value pair. Null if not found
      *
      * @param keyNames Array of string containing the Keys to retrieve
      */
-    public void GetStoredKeyValuePairs(String[] keyNames);
+    public void GetStoredKeyValuePairs(KeyPair[] keyNames);
 
     /**
      * Removes - if already exists - a given key/value pair

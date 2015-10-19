@@ -42,4 +42,10 @@ public interface ICamera {
      * user cancels.
      */
     public MediaMetadata TakeSnapshot();
+    
+    /**
+     * Take picture with a customized camera options
+     * @param options 
+     */
+    public void TakeSnapshotWithOptions (CameraOptions options);
 }

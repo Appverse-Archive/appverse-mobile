@@ -35,10 +35,19 @@ public class MediaMetadata {
     private String title;
     private MediaType type;
     private String referenceUrl;
-
+    private long size;
+    
     public MediaMetadata() {
     }
 
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+    
     public String getAlbum() {
         return album;
     }

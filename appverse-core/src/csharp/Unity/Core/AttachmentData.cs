@@ -21,48 +21,29 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-package com.gft.unity.core.media;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-public class MediaQRContent {
-    private String Text;
-    private BarCodeType BarcodeType;
-    private QRType QRType;
+namespace Unity.Core
+{
+	public class AttachmentData
+	{
+		/// <summary>
+		/// Parameterless constructor is needed when parsing jsonstring to object.
+		/// </summary>
+		public AttachmentData ()
+		{
+		}
+		
+		public string MimeType { get; set; }
 
-    public String getText() {
-        return Text;
-    }
+		public string FileName { get; set; }
 
-    public void setText(String Text) {
-        this.Text = Text;
-    }
+		public byte[] Data { get; set; }
 
-    public BarCodeType getBarcodeType() {
-        return BarcodeType;
-    }
-
-    public void setBarcodeType(BarCodeType BarcodeType) {
-        this.BarcodeType = BarcodeType;
-    }
-
-    public QRType getQRType() {
-        return QRType;
-    }
-
-    public void setQRType(QRType QRType) {
-        this.QRType = QRType;
-    }  
-    
-
-    public MediaQRContent ()
-    {
-            Text = "";
-            BarcodeType = BarCodeType.QR_CODE;
-            QRType = QRType.TEXT;
-    }
-    public MediaQRContent (String text, BarCodeType barcodeType, QRType qrType)
-    {
-            Text = text;
-            BarcodeType=barcodeType;
-            QRType = qrType;
-    }
+		public long DataSize { get; set; }
+		
+		public string ReferenceUrl { get; set; }
+	}
 }

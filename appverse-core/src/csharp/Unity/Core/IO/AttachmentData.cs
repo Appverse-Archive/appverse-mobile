@@ -21,18 +21,16 @@
  ARISING  IN  ANY WAY OUT  OF THE USE  OF THIS  SOFTWARE,  EVEN  IF ADVISED OF THE 
  POSSIBILITY OF SUCH DAMAGE.
  */
-package com.gft.unity.core.media;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-public enum QRType {
-    ADDRESSBOOK,
-    EMAIL_ADDRESS,
-    PRODUCT,
-    URI,
-    TEXT,
-    GEO,
-    TEL,
-    SMS,
-    CALENDAR,
-    WIFI,
-    ISBN
+namespace Unity.Core.IO
+{
+	public class AttachmentData : Unity.Core.AttachmentData
+	{ 
+        // add here any other fields required specifically for the IOServices API
+
+        public string FormFieldKey { get; set; }
+	}
 }

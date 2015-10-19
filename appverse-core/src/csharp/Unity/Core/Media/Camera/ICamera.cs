@@ -41,6 +41,12 @@ namespace Unity.Core.Media.Camera
 		/// </summary>
 		/// <returns>Photo metadata.</returns>
 		MediaMetadata TakeSnapshot ();
+
+		/// <summary>
+		/// Takes the snapshot with options.
+		/// </summary>
+		/// <param name="options">Camera options.</param>
+		void TakeSnapshotWithOptions (CameraOptions options);
 #else
         /// <summary>
         /// Select picture.
@@ -53,6 +59,12 @@ namespace Unity.Core.Media.Camera
         /// </summary>
         /// <returns>Photo metadata.</returns>
         Task<MediaMetadata> TakeSnapshot();
+
+		/// <summary>
+		/// Takes the snapshot with options.
+		/// </summary>
+		/// <param name="options">Camera options.</param>
+		Task TakeSnapshotWithOptions (CameraOptions options);
 #endif
 
     }//end ICamera
