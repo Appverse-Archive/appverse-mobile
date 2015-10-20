@@ -22,7 +22,7 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-using CoreGraphics;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -58,8 +58,6 @@ namespace UnityUI.iOS
 		private static HttpServer httpServer = null;
                 
         private static string NOT_IMPORTANT_VARIABLE = "$replace_me$";
-		private bool disableThumbnails = false;
-		private bool blockRooted = false;
 		private bool securityChecksPerfomed = false;
 		private bool securityChecksPassed = false;
 		private static string DEFAULT_LOCKED_HTML = "/app/config/error_rooted.html";
@@ -142,16 +140,7 @@ namespace UnityUI.iOS
 
 		public void loadApplicationPreferences() {
 			try {
-				var disableThumbnailskey = NSBundle.MainBundle.ObjectForInfoDictionary("Unity_DisableThumbnails");
-				disableThumbnails = Convert.ToBoolean(Convert.ToInt32(""+disableThumbnailskey));
-
-				var blockRootedkey = NSBundle.MainBundle.ObjectForInfoDictionary("Appverse_BlockRooted");
-				blockRooted = Convert.ToBoolean(Convert.ToInt32(""+blockRootedkey));
-
-#if DEBUG
-				log ("Disable Background Snapshot? " + disableThumbnails);
-				log ("Should block jailbroken device? " + blockRooted);
-#endif
+				//TODO place here app prefference loading
 			} catch(Exception ex) {
 #if DEBUG
 				log ("Exception getting application preferences: " + ex.Message);
@@ -165,6 +154,10 @@ namespace UnityUI.iOS
 			#if DEBUG
 			log ("FinishedLaunching");
 			#endif
+
+			// inform other weak delegates (if exist) about the application finished launching event
+			IPhoneServiceLocator.FinishedLaunching(application, null);
+
 			//MainAppWindow ().AddSubview (MainViewController ().View);
 			//MainAppWindow ().MakeKeyAndVisible ();
 
@@ -184,6 +177,10 @@ namespace UnityUI.iOS
 			#if DEBUG
 			log ("FinishedLaunching with NSDictionary");
 			#endif
+
+			// inform other weak delegates (if exist) about the application finished launching event
+			IPhoneServiceLocator.FinishedLaunching(application, launchOptions);
+
 			//MainAppWindow ().AddSubview (MainViewController ().View);
 			//MainAppWindow ().MakeKeyAndVisible ();
 
@@ -421,6 +418,7 @@ namespace UnityUI.iOS
 			
 				// loading application using internal server
 				string applicationUrl = AppDelegate.MAIN_HTML_PATTERN;
+
 				int listeningPort = this.GetListeningPort();
 				//TO BE REMOVED --> string applicationUrl = String.Format (AppDelegate.MAIN_HTML_PATTERN, listeningPort);
 			
@@ -456,7 +454,7 @@ namespace UnityUI.iOS
 				#endif
 
 				using (var pool = new NSAutoreleasePool ()) {
-					Thread thread = new Thread (InitializeUnityServer);// as ThreadStart
+					Thread thread = new Thread (InitializeUnityServer as ThreadStart);
 					thread.Priority = ThreadPriority.AboveNormal;
 					thread.Start ();
 				
@@ -481,56 +479,10 @@ namespace UnityUI.iOS
 			//  initialize variable
 			securityChecksPassed = false;
 
-			if (blockRooted) {
+			//TODO BLOCKROOTED
+			//@@BLOCKROOTED@@
 
-				#if DEBUG
-				log ("Checking device jailbroken (this app is not allowed to run in those devices)... ");
-				#endif
 
-				ISecurity securityService = (ISecurity)IPhoneServiceLocator.GetInstance ().GetService ("security");
-				bool IsDeviceModified = securityService.IsDeviceModified ();
-
-				if (IsDeviceModified) {
-
-					#if DEBUG
-					log ("Device is jailbroken. Application is blocked as per build configuration demand");
-					#endif
-
-					UIApplication.SharedApplication.InvokeOnMainThread (delegate { 
-
-						#if DEBUG
-						log ("Loading error page...");
-						#endif
-						try {
-							// loading error page from file system
-							string basePath = IPhoneUtils.GetInstance().GetDefaultBasePath();
-							string htmlErrorPageFile = "file://" + basePath + DEFAULT_LOCKED_HTML;
-
-							MainViewController ().loadWebView(htmlErrorPageFile);
-
-						} catch (Exception ex) {
-							#if DEBUG
-							log ("Unable to load error page on Appverse WebView. Exception message: " + ex.Message);
-							#endif
-						}
-
-					});
-
-					this.DismissSplashScreen();
-
-				} else {
-					securityChecksPassed = true;
-					#if DEBUG
-					log ("Device is NOT jailbroken.");
-					#endif
-				}
-
-			} else { 
-				securityChecksPassed = true;
-				#if DEBUG
-				log ("This app could be used in jailbroken devices");
-				#endif
-			}
 
 			securityChecksPerfomed = true;
 			return securityChecksPassed;
@@ -544,7 +496,7 @@ namespace UnityUI.iOS
 				openSocketListener (settings);
 				//InitializeUnityView ();
 			using (var pool = new NSAutoreleasePool ()) {	
-				Thread thread = new Thread (InitializeUnityView);// as ThreadStart
+				Thread thread = new Thread (InitializeUnityView as ThreadStart);
 				thread.Priority = ThreadPriority.BelowNormal;
 				Thread.Sleep (100); // testing race condition when starting server and view load threads
 				thread.Start ();
@@ -616,6 +568,8 @@ namespace UnityUI.iOS
 				
 			}
 			*/
+
+			IPhoneServiceLocator.UIApplicationWeakDelegate.OnActivated (application);
 		}
 		
 		public override void OnResignActivation (UIApplication application)
@@ -630,15 +584,15 @@ namespace UnityUI.iOS
 			#if DEBUG
 			log ("DidEnterBackground");
 			#endif
-			
-			if(disableThumbnails) {
-				// security reasons; the splash screen is shown when application enters in background (hiding sensitive data)
-				// it will be dismissed on "WillEnterForeground" method
-				UIInterfaceOrientation orientation =  UIApplication.SharedApplication.StatusBarOrientation;
-				this.ShowSplashScreen(orientation);
-			}
+
+
+			//TODO THUMBNAILS 1
+			//@@DISABLETHUMBNAILS_1@@
+
+
+
 			using (var pool = new NSAutoreleasePool ()) {
-				Thread thread = new Thread (NotifyEnterBackground);// as ThreadStart
+				Thread thread = new Thread (NotifyEnterBackground as ThreadStart);
 				thread.Priority = ThreadPriority.BelowNormal;
 				thread.Start ();
 				
@@ -653,14 +607,14 @@ namespace UnityUI.iOS
 			#if DEBUG
 			log ("WillEnterForeground");
 			#endif
-			
-			if(disableThumbnails) {
-				// security reasons
-				this.DismissSplashScreen();
-			}
-			
+
+
+			//TODO THUMBNAILS 2
+			//@@DISABLETHUMBNAILS_2@@
+
+
 			using (var pool = new NSAutoreleasePool ()) {
-				Thread thread = new Thread (NotifyEnterForeground); // as ThreadStart
+				Thread thread = new Thread (NotifyEnterForeground as ThreadStart);
 				thread.Priority = ThreadPriority.BelowNormal;
 				thread.Start ();
 				
@@ -734,9 +688,53 @@ namespace UnityUI.iOS
 			#if DEBUG
 			log ("WillTerminate");
 			#endif
+
+			IPhoneServiceLocator.UIApplicationWeakDelegate.WillTerminate (application);
+
 			// Close Listener.
 			this.closeOpenedSocketListener ();
 		}
+
+		/* ALLOW_PUSH_NOTIFICATIONS_START 
+
+		public override void DidRegisterUserNotificationSettings (UIApplication application, UIUserNotificationSettings notificationSettings) {
+			#if DEBUG
+			log ("DidRegisterUserNotificationSettings");
+			#endif
+
+			IPhoneServiceLocator.UIApplicationWeakDelegate.DidRegisterUserNotificationSettings (application, notificationSettings);
+		}
+
+		public override void RegisteredForRemoteNotifications (UIApplication application, NSData deviceToken)
+		{
+			#if DEBUG
+			log("RegisteredForRemoteNotifications");
+			#endif
+
+			IPhoneServiceLocator.UIApplicationWeakDelegate.RegisteredForRemoteNotifications (application, deviceToken);
+		}
+
+		public override void FailedToRegisterForRemoteNotifications (UIApplication application, NSError error)
+		{
+			#if DEBUG
+			log("FailedToRegisterForRemoteNotifications");
+			#endif
+
+			IPhoneServiceLocator.UIApplicationWeakDelegate.FailedToRegisterForRemoteNotifications (application, error);
+		}
+
+
+		public override void ReceivedRemoteNotification (UIApplication application, NSDictionary userInfo)
+		{
+			#if DEBUG
+			log ("ReceivedRemoteNotification");
+			#endif
+
+			IPhoneServiceLocator.UIApplicationWeakDelegate.ReceivedRemoteNotification (application, userInfo);
+		}
+
+		ALLOW_PUSH_NOTIFICATIONS_END */
+
 		#if DEBUG
 		public override void ApplicationSignificantTimeChange (UIApplication application)
 		{
