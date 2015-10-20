@@ -1,6 +1,14 @@
-﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget" />
-  <MonoDevelop.Ide.Workbench />
+﻿<Properties StartupItem="Scanner.iOS/Scanner.iOS.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhoneSimulator" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneSimulatorTarget.IPhone4s.8.4" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../UnityRuntimeIOS/AppDelegate.cs">
+    <Files>
+      <File FileName="../Beacon/Beacon.iOS/IPhoneBeacon.cs" Line="247" Column="17" />
+      <File FileName="../USPG/USPG.iOS/IUSPG.cs" Line="58" Column="7" />
+      <File FileName="../USPG/USPG.iOS/AbstractUSPG.cs" Line="86" Column="3" />
+      <File FileName="../USPG/USPG.iOS/IPhoneUSPG.cs" Line="37" Column="4" />
+      <File FileName="../../UnityRuntimeIOS/AppDelegate.cs" Line="186" Column="34" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

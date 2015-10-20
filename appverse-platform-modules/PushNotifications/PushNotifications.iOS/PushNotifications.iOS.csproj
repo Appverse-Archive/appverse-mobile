@@ -70,7 +70,6 @@
     <Compile Include="IPushNotifications.cs" />
     <Compile Include="AbstractPushNotifications.cs" />
     <Compile Include="IPhonePushNotifications.cs" />
-    <Compile Include="UIApplicationWeakDelegate.cs" />
     <Compile Include="RegistrationToken.cs" />
     <Compile Include="PushNotificationsUtils.cs" />
     <Compile Include="RegistrationError.cs" />

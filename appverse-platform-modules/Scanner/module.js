@@ -13,7 +13,7 @@
  * @constructor Constructs a new Scanner interface.
  * @return {Appverse.Scanner} A new Scanner interface.
  */
-Scanner = function() {
+Scanner = function () {
     /**
      * @cfg {String}
      * Scanner service name (as configured on Platform Service Locator).
@@ -111,12 +111,31 @@ Scanner = function() {
      * <br> Method to be overrided by JS applications, to handle this event.
      * @aside guide application_listeners
      * <br> @version 3.9
-     * @method
+     * @event
      * @param {Appverse.Scanner.MediaQRContent} QRCodeContent The scanned QR Code data read
      * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
      * 
      */
-    this.onQRCodeDetected = function(QRCodeContent) {
+    this.onQRCodeDetected = function (QRCodeContent) {
+        console.log(arguments);
+        console.log('%c Override this method! ', 'background: #222; color: #bada55');
+    };
+
+    /**
+     * @event onGeneratedQR Fired when a QR Code has been generated, and its data is returned to the app in order to perform the desired javascript code on this case.
+     * <br> For further information see, {@link Appverse.Scanner.MediaQRContent MediaQRContent}.
+     * <br> Method to be overrided by JS applications, to handle this event.
+     * @aside guide application_listeners
+     * <br> @version 5.0.12
+     * @event
+     * @param {Appverse.Scanner.MediaQRContent} metaData The generated QR Code data
+     * <br> Use with Appverse.DOCUMENTS_RESOURCE_URI+MetaData.ReferenceUrl to access the stored image.
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+     * 
+     */
+    this.onGeneratedQR = function (metaData) {
+        console.log(arguments);
+        console.log('%c Override this method! ', 'background: #222; color: #bada55');
     };
 };
 
@@ -130,10 +149,23 @@ Appverse.Scanner = new Scanner();
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
-Scanner.prototype.DetectQRCode = function(autoHandleQR)
-{
+Scanner.prototype.DetectQRCode = function (autoHandleQR) {
     post_to_url_async(Appverse.Scanner.serviceName, "DetectQRCode", get_params([autoHandleQR]), null, null);
 };
+
+/**
+ * Fires the camera to detected and process a QRCode image from the front camera
+ * <br> @version 5.0
+ * @param {Boolean} autoHandleQR True value to indicates that the detected QRCode should be handled by the platform (if possible) automatically, or False to just be get data returned.
+ * QRCode data is provided via the proper event handled by the "Appverse.Scanner.onQRCodeDetected" method; please, override to handle the event.
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
+ */
+Scanner.prototype.DetectQRCodeFront = function (autoHandleQR) {
+    post_to_url_async(Appverse.Scanner.serviceName, "DetectQRCodeFront", get_params([autoHandleQR]), null, null);
+};
+
+
 
 /**
  * Handles the given QRCode data to be processed (if possible) by the system. <br/>For further information see, {@link Appverse.Scanner.MediaQRContent MediaQRContent}.
@@ -148,7 +180,18 @@ Scanner.prototype.DetectQRCode = function(autoHandleQR)
  * @method
  * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/> *mock data</pre>
  */
-Scanner.prototype.HandleQRCode = function(mediaQRContent, callbackFunctionName, callbackId)
-{
+Scanner.prototype.HandleQRCode = function (mediaQRContent, callbackFunctionName, callbackId) {
     post_to_url_async(Appverse.Scanner.serviceName, "HandleQRCode", get_params([mediaQRContent]), callbackFunctionName, callbackId);
+};
+
+
+/**
+ * Generate a QRCode with the given data
+ * <br> @version 5.0.12
+ * @param {Appverse.Scanner.MediaQRContent} mediaQRContent The QRCode data to generate
+ * @method
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/>s</pre>
+ */
+Scanner.prototype.GenerateQRCode = function (mediaQRContent) {
+    post_to_url_async(Appverse.Scanner.serviceName, "GenerateQRCode", get_params([mediaQRContent]), null, null);
 };

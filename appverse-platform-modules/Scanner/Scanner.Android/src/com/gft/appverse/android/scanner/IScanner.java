@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (“APL v2.0”).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  (â€œAPL v2.0â€�).  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -23,9 +23,11 @@
  */
 package com.gft.appverse.android.scanner;
 
+import com.gft.unity.core.media.MediaMetadata;
+
 public interface IScanner {
 
-    /**
+	/**
      * Detects the QR code..
      *
      * @return The QR code.
@@ -33,10 +35,27 @@ public interface IScanner {
     
     public void DetectQRCode(boolean autoHandleQR);
     
+    /**
+     * Detects the QR code from the frontal camera.
+     *
+     * @return The QR code.
+     */
+    
+    public void DetectQRCodeFront(boolean autoHandleQR);
+    
+    
      /**
      * Handles the QR code.
      *
      * @return The QR code type.
      */
     public QRType HandleQRCode(MediaQRContent mediaQRContent);
+    
+    /**
+     * Generate QR code
+     * @param content
+     * @return the Image media meta data
+     */
+
+    public void GenerateQRCode (MediaQRContent content);
 }

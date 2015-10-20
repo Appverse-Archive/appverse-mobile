@@ -116,8 +116,16 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private String characterSet;
   private HistoryManager historyManager;
   private InactivityTimer inactivityTimer;
-  private BeepManager beepManager;
+  //REMOVED DUE TO FAIL WITH THE BEEP AFTER USING GRADLE
+  //private BeepManager beepManager;
   private AmbientLightManager ambientLightManager;
+  
+  private static Activity captureActivity;
+  
+  
+  public static Activity getActivity(){
+	  return captureActivity;
+  }
 
   ViewfinderView getViewfinderView() {
     return viewfinderView;
@@ -143,12 +151,13 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     historyManager = new HistoryManager(this);
     historyManager.trimHistory();
     inactivityTimer = new InactivityTimer(this);
-    beepManager = new BeepManager(this);
+    //beepManager = new BeepManager(this);
     ambientLightManager = new AmbientLightManager(this);
 
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
     showHelpOnFirstLaunch();
+    captureActivity = this;
   }
 
   @Override
@@ -184,7 +193,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
       surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
-    beepManager.updatePrefs();
+    //beepManager.updatePrefs();
     ambientLightManager.start(cameraManager);
 
     inactivityTimer.onResume();
@@ -412,7 +421,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     if (fromLiveScan) {
       historyManager.addHistoryItem(rawResult, resultHandler);
       // Then not from history, so beep/vibrate and we have an image to draw on
-      beepManager.playBeepSoundAndVibrate();
+      
+      //beepManager.playBeepSoundAndVibrate();
       drawResultPoints(barcode, scaleFactor, rawResult);
     }
 

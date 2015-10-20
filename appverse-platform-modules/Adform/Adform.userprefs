@@ -1,0 +1,20 @@
+﻿<Properties StartupItem="Adform.iOS/Adform.iOS.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Adform.iOS/IPhoneAdform.cs">
+    <Files>
+      <File FileName="../../MonotouchBindings/Adform/Adform/AdformTracking.linkwith.cs" Line="4" Column="80" />
+      <File FileName="Adform.iOS/IPhoneAdform.cs" Line="29" Column="3" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Adform.iOS" expanded="True" selected="True" />
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

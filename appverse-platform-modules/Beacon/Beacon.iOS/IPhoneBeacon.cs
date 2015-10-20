@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  ("APL v2.0").  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  (“APL v2.0”).  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -33,10 +33,9 @@ using Foundation;
 using UIKit;
 using CoreLocation;
 
-using Robotics.Mobile.Core.Bluetooth.LE;
-using Robotics.Mobile.Core.iOS;
-using Robotics.Mobile.Core.Utils;
+using Estimote;
 using System.Timers;
+
 
 namespace Appverse.Platform.IPhone
 {
@@ -48,192 +47,22 @@ namespace Appverse.Platform.IPhone
 	public class IPhoneBeacon : IBeacon
 	{
 
-		IDictionary<String,Beacon> rangingBeacons = new Dictionary<String,Beacon>();
-		IDictionary<String,Beacon> rangedBeacons = new Dictionary<String,Beacon>();
-		IAdapter adapter;
+		BeaconManager beaconManager = null;
+		BeaconRegion region;
+		Timer tmr;
+		Dictionary<string, Appverse.Core.iBeacon.Beacon> beaconDict = new Dictionary<string, Appverse.Core.iBeacon.Beacon>();
+		//List<Appverse.Core.iBeacon.Beacon> beaconArray;
 
-		List<CLBeacon> [] beaconsLocation;
-		CLLocationManager locationManager;
-		List<CLBeaconRegion> regionRanged;
-
-		CLBeaconRegion regionLocation = null;
-
-		Timer timeStop;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Unity.Platform.IPhone.IPhoneBeacon"/> class.
-		/// </summary>
-		public IPhoneBeacon()
-		{
-
-			locationManager = new CLLocationManager ();
-			locationManager.DidRangeBeacons += HandleDidRangeBeacons;
-			locationManager.DidStartMonitoringForRegion += HandleStartMonitoringForRegion;
-			locationManager.RangingBeaconsDidFailForRegion += HandleFail;
-
-			adapter = Adapter.Current;
-			List<Beacon> beacons = new List<Beacon>();
-
-			adapter.DeviceDiscovered += (object sender, DeviceDiscoveredEventArgs e) => {
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "DeviceDiscovered: "+ e.Device.ID);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "DeviceDiscovered: "+ e.Device.NativeDevice);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "DeviceDiscovered: "+ e.Device.Name);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "DeviceDiscovered: "+ e.Device.Rssi);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "DeviceDiscovered: "+ e.Device.Services);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "DeviceDiscovered: "+ e.Device.State);
-
-
-				Beacon AppverseBeacon = FromDevice(e.Device);
-				String id = uniqueIDForBeacon(AppverseBeacon);
-				if (!rangingBeacons.ContainsKey(id)){
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** ADDED ADAPTER: "+AppverseBeacon.Distance.ToString());
-					rangingBeacons.Add(id,AppverseBeacon);
-				}else{
-					rangingBeacons[id] = AppverseBeacon;
-
-				}
-				//rangingBeacons.Add(e.Device.ID.ToString(),FromDevice(e.Device));
-			};
-
-			adapter.ScanTimeoutElapsed += (sender, e) => {
-
-				this.StopMonitoringBeacons();
-				//adapter.StopScanningForDevices(); // not sure why it doesn't stop already, if the timeout elapses... or is this a fake timeout we made?
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Bluetooth scan timeout elapsed");
-
-			};
-		}
-
-		void HandleDidRangeBeacons (object sender, CLRegionBeaconsRangedEventArgs e)
-		{
-			Unknowns.Clear ();
-			Immediates.Clear ();
-			Nears.Clear ();
-			Fars.Clear ();
-
-			SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** HandleDidRangeBeacons Identifier: "+e.Region.Identifier);
-			int i = 0;
-			foreach (CLBeacon beacon in e.Beacons) {
-
-				switch (beacon.Proximity) {
-				case CLProximity.Immediate:
-					Immediates.Add (beacon);
-					break;
-				case CLProximity.Near:
-					Nears.Add (beacon);
-					break;
-				case CLProximity.Far:
-					Fars.Add (beacon);
-					break;
-				case CLProximity.Unknown:
-					Unknowns.Add (beacon);
-					break;
-				}
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** HandleDidRangeBeacons Accuracy: "+beacon.Accuracy);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** HandleDidRangeBeacons Proximity: "+beacon.Proximity);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** HandleDidRangeBeacons Description: "+beacon.Description);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** HandleDidRangeBeacons Major: "+beacon.Major);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** HandleDidRangeBeacons Minor: "+beacon.Minor);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** HandleDidRangeBeacons Rssi: "+beacon.Rssi);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** HandleDidRangeBeacons ProximityUuid: "+beacon.ProximityUuid);
-
-
-				Beacon AppverseBeacon = FromCLBeacon (beacon);
-				String id = uniqueIDForBeacon (AppverseBeacon);
-				if (!rangingBeacons.ContainsKey (id)) {
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** ADDED LOCATION: "+AppverseBeacon.Distance.ToString());
-					rangingBeacons.Add (id, AppverseBeacon);
-				}else{
-					rangingBeacons[id] = AppverseBeacon;
-
-				}
-			}
-
-		}
-
-		void HandleStartMonitoringForRegion (object sender, CLRegionEventArgs e)
-		{
-			SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** HandleStartMonitoringForRegion");
-		}
-
-		void HandleFail (object sender, CLRegionBeaconsFailedEventArgs e)
-		{
-			SystemLogger.Log(SystemLogger.Module.PLATFORM, "************************** HandleFail");
-		}
-
-		List<CLBeacon> Unknowns { get; set; }
-		List<CLBeacon> Immediates { get; set; }
-		List<CLBeacon> Nears { get; set; }
-		List<CLBeacon> Fars { get; set; }
-
-		/// <summary>
-		/// Uniques the identifier for beacon.
-		/// </summary>
-		/// <returns>The identifier for beacon.</returns>
-		/// <param name="beacon">Beacon.</param>
-		private static String uniqueIDForBeacon(Beacon beacon) {
-			return (beacon.UUID + "#" + beacon.Major + "#" + beacon
-				.Minor).ToUpper();
-		}
-
-		/// <summary>
-		/// return a Beacon from the device.
-		/// </summary>
-		/// <returns>Beacon</returns>
-		/// <param name="device">Device</param>
-		private Beacon FromDevice(IDevice device){
-
-			Beacon beacon = new Beacon();
-
-			beacon.UUID = device.ID.ToString();
-			beacon.Name = device.Name;
-
-			return beacon;
-
-		}
-
-		private Beacon FromCLBeacon(CLBeacon device){
-
-			Beacon beacon = new Beacon();
-
-			beacon.Minor = device.Minor.Int16Value;
-			beacon.Major = device.Major.Int16Value;
-			DistanceType d = DistanceType.UNKNOWN;
-			switch (device.Proximity) {
-			case CLProximity.Immediate:
-				d = DistanceType.INMEDIATE;
-				break;
-			case CLProximity.Near:
-				d = DistanceType.NEAR;
-				break;
-			case CLProximity.Far:
-				d = DistanceType.FAR;
-				break;
-			case CLProximity.Unknown:
-
-				break;
-			}
-
-			beacon.Distance = d;
-
-			return beacon;
-
-		}
-
+		#region IBeacon implementation
 		/// <summary>
 		/// Starts the monitoring all regions.
 		/// </summary>
 		public void StartMonitoringAllRegions ()
 		{
-			rangingBeacons.Clear ();
+			//StartMonitoringRegion (null);
 
-			if (adapter != null) {
-				if (adapter.IsScanning) {
-					this.StopMonitoringBeacons ();
-				}
-				adapter.StartScanningForDevices (Guid.Empty);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "adapter.StartScanningForDevices(all)");
-			}
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "All Region not supported in iOS ");
+
 		}
 
 		/// <summary>
@@ -242,50 +71,172 @@ namespace Appverse.Platform.IPhone
 		/// <param name="UUID">UUI.</param>
 		public void StartMonitoringRegion (string UUID)
 		{
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				// REQUIRED TO BE INVOKED ONN UI MAIN THREAD
 
-			rangingBeacons.Clear ();
+				if (beaconManager == null) {
 
-			if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
-				#if DEBUG
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Using new iOS 8 Location Services Authorization");
-				#endif
-				locationManager.RequestWhenInUseAuthorization();  //only requests for authorization in app running (foreground)
-			}
-			/*if (adapter != null) {
-				if (adapter.IsScanning) {
-					this.StopMonitoringBeacons ();
+					beaconManager = new BeaconManager ();
+					beaconManager.ReturnAllRangedBeaconsAtOnce = true;
+					beaconManager.AuthorizationStatusChanged += (sender, e) => StartRangingBeacons (UUID);
+					beaconManager.RangedBeacons += (sender, e) => 
+					{
+						SystemLogger.Log (SystemLogger.Module.PLATFORM, "Ranged Beacon [found]");
+						Estimote.Beacon[] beacons = e.Beacons;
+						//new UIAlertView("Beacons Found", "Just found: " + e.Beacons.Length + " beacons.", null, "OK").Show();
+
+						foreach (Estimote.Beacon beacon in beacons) {
+							var b = new Appverse.Core.iBeacon.Beacon ();
+							b.Address = beacon.MacAddress;
+							b.Major = beacon.Major;
+							b.Minor = beacon.Minor;
+							b.Name = beacon.Name;
+							b.UUID = beacon.ProximityUUID.AsString();
+							CLProximity proximity = beacon.Proximity;
+							DistanceType proximityB;
+							switch (proximity) {
+							case CLProximity.Far:
+								proximityB = DistanceType.FAR;
+								break;
+							case CLProximity.Immediate:
+								proximityB = DistanceType.INMEDIATE;
+								break;
+							case CLProximity.Near:
+								proximityB = DistanceType.FAR;
+								break;
+							default:
+								proximityB = DistanceType.UNKNOWN;
+								break;
+
+							}
+							b.setDistance (proximityB);
+							b.Meters = (double)beacon.Distance;
+
+							/*
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "K: DeviceDiscovered UUID: " + b.UUID);
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "K: DeviceDiscovered Name: " + b.Name);
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "K: DeviceDiscovered Distance: " + b.Distance);			
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "K: DeviceDiscovered Meters: " + b.Meters);
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "K: DeviceDiscovered Major: " + b.Major);
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "K: DeviceDiscovered Minor: " + b.Minor);
+					*/
+							var key = UniqueKey(b);
+							if (beaconDict.ContainsKey(key))
+							{
+								beaconDict[key] = b;
+							}else{
+								beaconDict.Add(key, b);
+							}
+							//beaconArray.Add (b);
+
+
+						}
+
+					
+					};
 				}
-				Guid region = new Guid (UUID);
-				adapter.StartScanningForDevices (region); 
-				SystemLogger.Log("adapter.StartScanningForDevices(" + UUID +")");
-			}*/
 
-			Unknowns = new List<CLBeacon> ();
-			Immediates = new List<CLBeacon> ();
-			Nears = new List<CLBeacon> ();
-			Fars = new List<CLBeacon> ();
-			beaconsLocation = new List<CLBeacon> [4] { Unknowns, Immediates, Nears, Fars };
-			NSUuid uuid;
-			if (UUID != null && UUID.Any ()) {
-				uuid = new NSUuid (UUID);
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "uuid: " + UUID );
-				regionLocation = new CLBeaconRegion (uuid, uuid.AsString ());
+				StartRangingBeacons (UUID);
+			});
+		}
 
-				locationManager.StartRangingBeacons (regionLocation);
+		private string UniqueKey(Appverse.Core.iBeacon.Beacon beacon)
+		{
+			return beacon.UUID + "-" + beacon.Major + "-" + beacon.Minor;
+		}
+
+
+		/// <summary>
+		/// Starts the ranging beacons.
+		/// </summary>
+		private void StartRangingBeacons(string UUID)
+		{
+
+
+			var status = BeaconManager.AuthorizationStatus ();
+
+
+
+			if (status == CLAuthorizationStatus.NotDetermined)
+			{
+				if (!UIDevice.CurrentDevice.CheckSystemVersion(8, 0)) {
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "CLAuthorizationStatus.NotDetermined (under 8)");
+					RangedBeacons(UUID);
+				} else {
+					beaconManager.RequestWhenInUseAuthorization ();
+				}
 			}
-			timeStop = new Timer ();
-			timeStop.Interval = 5000;
-			timeStop.Start ();
-			timeStop.Elapsed += (x, y) => {
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "STOPPED!" );
-				if (timeStop != null) timeStop.Stop();
-				this.StopMonitoringBeacons();
-			};
-			//timeStop.Elapsed += this.StopMonitoringBeacons ();
-			//NSTimer.CreateScheduledTimer(new TimeSpan(5000), new Action
+			else if(status == CLAuthorizationStatus.AuthorizedWhenInUse)
+			{
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "CLAuthorizationStatus.AuthorizedWhenInUse");
+				RangedBeacons(UUID);
+			}
+			else if(status == CLAuthorizationStatus.AuthorizedAlways)
+			{
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "CLAuthorizationStatus.AuthorizedAlways");
+				RangedBeacons(UUID);
+			}/*
+			else if(status == CLAuthorizationStatus.AuthorizedAlways)
+			{
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "K: AuthorizedAlways " + UUID);
+				RangedBeacons(UUID);
+			}*/
+			else if(status == CLAuthorizationStatus.Denied)
+			{
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "Denied " + UUID);
+
+
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+					BeaconUtils.FireUnityJavascriptEvent ("Appverse.OnLocationDenied", null);
+				});
+			}
+			else if(status == CLAuthorizationStatus.Restricted)
+			{
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "Restricted " + UUID);
+
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+					BeaconUtils.FireUnityJavascriptEvent ("Appverse.OnLocationDenied", null);
+				});
+			}
+
+		}
+
+
+		/// <summary>
+		/// Rangeds the beacons.
+		/// </summary>
+		/// <param name="UUID">UUI.</param>
+		void RangedBeacons (string UUID)
+		{
+			
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "RangedBeacons UUID " + UUID);
+			if (UUID != null) {
+				var uuid = new NSUuid (UUID);
+				region = new BeaconRegion (uuid, "BeaconSample");
+			} else {
+				region = new BeaconRegion (null, "BeaconSample");
+			}
+
+			beaconManager.StartRangingBeacons(region);
+			//TODO should call other appverse listeners? 
+			beaconDict.Clear();
+			//beaconArray = new List<Appverse.Core.iBeacon.Beacon> ();
+
+
+			try{
+				// Declare a timer: same steps in C# and VB
+				tmr = new Timer();
+				tmr.AutoReset = false;
+				tmr.Interval = 5000; // 0.1 second
+				tmr.Elapsed += timerHandler; // We'll write it in a bit
+				tmr.Start(); // The countdown is launched!
+			}catch(Exception e){
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "Could not create the timer, STOP mannually. Exception: " + e.Message);
+			}
 
 
 		}
+
 
 
 
@@ -295,90 +246,32 @@ namespace Appverse.Platform.IPhone
 		public void StopMonitoringBeacons ()
 		{
 
-			if (adapter != null && adapter.IsScanning) {
-				adapter.StopScanningForDevices ();
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, "adapter.StopScanningForDevices()");
-			}
-			if(regionLocation != null)
-				locationManager.StopRangingBeacons(regionLocation);
-			regionLocation = null;
-
-			List<Beacon> onEnterBeaconsArray = new List<Beacon>();
-			List<Beacon> onDiscoverBeaconsArray = new List<Beacon>();
-			List<Beacon> onExitBeaconsArray = new List<Beacon>();
-			List<string> allBeaconsUIDs = new List<string>();
-
-			foreach (Beacon beacon in rangingBeacons.Values) {
-				string beaconUID = uniqueIDForBeacon(beacon);
-				allBeaconsUIDs.Add(beaconUID);
-				if (!rangedBeacons.Keys.Contains(beaconUID)) {
-					onDiscoverBeaconsArray.Add(beacon);
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, 
-						"Beacon onDiscoverBeaconsArray:" + onDiscoverBeaconsArray.Count);				
-				} else {
-					onEnterBeaconsArray.Add(beacon);
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, 
-						"Beacon onEnterBeaconsArray:" + onEnterBeaconsArray.Count);				
-				}
-			}
-			foreach (string key in rangedBeacons.Keys) {
-				if (!allBeaconsUIDs.Contains(key)) {
-					Beacon beacon;
-					bool get = rangedBeacons.TryGetValue(key, out beacon);
-					if(get)
-						onExitBeaconsArray.Add(beacon);
-					SystemLogger.Log(SystemLogger.Module.PLATFORM, 
-						"Beacon onExitBeaconsArray:" + onExitBeaconsArray.Count);
-				}
-			}
-			if (!onEnterBeaconsArray.Any()) {
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, 
-					"Beacon OnEntered");
-				//executeJS("Appverse.Beacon.OnEntered", new Object[]{ onEnterBeaconsArray.ToArray()});
-			}
-
-			SystemLogger.Log(SystemLogger.Module.PLATFORM, 
-				"Beacon OnDiscover");
-			//executeJS("Appverse.Beacon.OnDiscover", new Object[]{ onDiscoverBeaconsArray.ToArray()});
-
-
-			if (!onExitBeaconsArray.Any()) {
-				SystemLogger.Log(SystemLogger.Module.PLATFORM, 
-					"Beacon OnExited");
-				//executeJS("Appverse.Beacon.OnExited", new Object[]{ onExitBeaconsArray.ToArray()});
-			}
-
-			foreach (String UUID in rangingBeacons.Keys) {
-				if (rangedBeacons.ContainsKey(UUID)) {
-					Beacon beacon; 
-					bool get1 = rangingBeacons.TryGetValue(UUID, out beacon);
-					Beacon beaconranged;
-					bool get2 = rangedBeacons.TryGetValue(UUID, out beaconranged);
-					if (!get1 || !get2) {
-						continue;
-					}
-					DistanceType oldProximity = beaconranged.Distance;
-					DistanceType newProximity = beacon.Distance;
-					if (oldProximity != newProximity) {
-						UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-							//executeJS("Appverse.Beacon.OnUpdateProximity",new Object[] { beacon, oldProximity, newProximity });
-							BeaconUtils.FireUnityJavascriptEvent("Appverse.Beacon.OnUpdateProximity", new Object[] { beacon, oldProximity, newProximity });
-						});
-					}
-				}
-
-			}		
-
-			rangedBeacons.Clear();
-			rangedBeacons = new Dictionary<string, Beacon>(rangingBeacons);
-			rangingBeacons.Clear();
-
-			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-				BeaconUtils.FireUnityJavascriptEvent("Appverse.Beacon.OnEntered", new Object[]{ onEnterBeaconsArray.ToArray()});
-				BeaconUtils.FireUnityJavascriptEvent("Appverse.Beacon.OnExited", new Object[]{ onExitBeaconsArray.ToArray()});
-				BeaconUtils.FireUnityJavascriptEvent("Appverse.Beacon.OnDiscover", new Object[]{ onDiscoverBeaconsArray.ToArray()});
-			});
+			beaconManager.StopRangingBeacons (region);
+			beaconManager.StopEstimoteBeaconDiscovery ();
 		}
+		#endregion
+
+		void timerHandler (object sender, ElapsedEventArgs e)
+		{
+			try{
+				SystemLogger.Log (SystemLogger.Module.PLATFORM,"ELAPSED!!!! beaconDict Size: "+beaconDict.Count);
+
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+					BeaconUtils.FireUnityJavascriptEvent ("Appverse.Beacon.OnEntered", new Object[]{ beaconDict.Values.ToArray()});
+					beaconDict.Clear();
+				});
+
+				StopMonitoringBeacons ();
+				tmr.Stop ();
+				tmr.Close ();
+			}catch(Exception ex){
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "Could not create the timer, STOP mannually. Exception: " + ex.Message);
+			}
+		}
+
+
+
+
 
 
 	}

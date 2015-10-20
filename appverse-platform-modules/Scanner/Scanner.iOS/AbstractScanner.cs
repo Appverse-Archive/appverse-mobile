@@ -22,17 +22,34 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
-namespace  Appverse.Core.Scanner
+namespace Appverse.Core.Scanner
 {
-	public abstract class AbstractScanner : IScanner
-	{
-
+    public abstract class AbstractScanner : IScanner
+    {
+#if !WP8
 		public abstract void DetectQRCode (bool autoHandleQR);
 
-		public abstract QRType HandleQRCode (MediaQRContent mediaQRContent);
-	}
+		public abstract void DetectQRCodeFront (bool autoHandleQR);
 
+		public abstract QRType HandleQRCode (MediaQRContent mediaQRContent);
+
+		public abstract void GenerateQRCode (MediaQRContent content);
+#else
+        public abstract Task DetectQRCode(bool autoHandleQR);
+
+        public abstract Task DetectQRCodeFront(bool autoHandleQR);
+
+        public abstract Task<QRType> HandleQRCode(MediaQRContent mediaQRContent);
+
+        public abstract Task GenerateQRCode(MediaQRContent content);
+#endif
+
+    }
+#if !WP8
 	public static class SystemLogger
 	{
 		public enum Module
@@ -60,15 +77,16 @@ namespace  Appverse.Core.Scanner
 
 		public static void Log (Module module, string message, Exception ex)
 		{
-			#if DEBUG
+#if DEBUG
 			Console.WriteLine(module+": "+message);
 			if (ex!=null) {
 				Console.WriteLine(module+": Exception=["+ex.Message+"] Source=["+ex.Source+"]");
 				Console.WriteLine(module+": Stacktrace ---------------------");
 				Console.WriteLine(module+": "+ex.StackTrace);
 			}	
-			#endif
+#endif
 		}
 	}
+#endif
 }
 

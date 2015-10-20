@@ -46,17 +46,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.iOS" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>lib\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Robotics.Mobile.Core">
-      <HintPath>lib\Robotics.Mobile.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Robotics.Mobile.Core.iOS">
-      <HintPath>lib\Robotics.Mobile.Core.iOS.dll</HintPath>
-    </Reference>
     <Reference Include="UnityCore">
       <HintPath>..\..\..\UnityCore\project\MonoTouch\UnityCore\UnityCore\bin\iPhone\Release\UnityCore.dll</HintPath>
+    </Reference>
+    <Reference Include="Estimote">
+      <HintPath>lib\Estimote.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

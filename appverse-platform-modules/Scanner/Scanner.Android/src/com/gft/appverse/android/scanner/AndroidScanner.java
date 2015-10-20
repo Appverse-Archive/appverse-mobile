@@ -23,27 +23,46 @@
  */
 package com.gft.appverse.android.scanner;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.UUID;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.PhoneNumberUtils;
-import android.webkit.WebView;
+import android.webkit.MimeTypeMap;
 import android.app.Activity;
 import android.app.AlertDialog;
 
-import com.gft.unity.core.json.JSONSerializer;
+import com.gft.unity.android.AndroidServiceLocator;
+import com.gft.unity.android.activity.IActivityManager;
+import com.gft.unity.core.media.MediaMetadata;
+import com.gft.unity.core.media.MediaType;
+import com.gft.unity.core.storage.filesystem.IFileSystem;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.Result;
+import com.google.zxing.WriterException;
 import com.google.zxing.client.result.ParsedResult;
 import com.google.zxing.client.result.ResultParser;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import com.google.zxing.qrcode.encoder.ByteMatrix;
 
 public class AndroidScanner extends AbstractScanner {
 
@@ -54,20 +73,24 @@ public class AndroidScanner extends AbstractScanner {
 	private static final String PHONE_PREFIX = "tel://";
 
 	private Context context;
-	private WebView webView;
+	private IActivityManager activityManager;
+		
 	
-	
-	public AndroidScanner(Context ctx, WebView appView) {
+	public AndroidScanner(Context ctx, IActivityManager aam) {
 		super();
 		LOGGER.logInfo("Init", "Initializing Scanner Module Service");
 		context = ctx;
-		webView = appView;
+		activityManager = aam;
+		
 	}
 
+	
+	
 	@Override
 	public void DetectQRCode(boolean autoHandleQR) {			
 		try {
-
+			CameraPreferences.getInstance().setFront(false);
+			
 			final Activity mainActivity = (Activity) context;
 			
 			final Intent intent = new Intent("com.google.zxing.client.android.SCAN");
@@ -98,6 +121,46 @@ public class AndroidScanner extends AbstractScanner {
 			LOGGER.logError("DetectQRCode", "Error", ex);
 		}      	
 	}
+	
+	
+	@Override
+	public void DetectQRCodeFront(boolean autoHandleQR) {			
+		try {
+
+			CameraPreferences.getInstance().setFront(true);
+			
+			final Activity mainActivity = (Activity) context;
+			
+			final Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+			intent.setPackage(context.getPackageName());
+			intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
+			
+			
+			final boolean autoHandle = autoHandleQR;
+			
+			final PackageManager pckmanager = context.getPackageManager();
+			List<ResolveInfo> resolveInfo = pckmanager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+			if(resolveInfo.size()>0) {
+				
+				mainActivity.runOnUiThread(new Runnable() {
+					
+					@Override
+					public void run() {
+						if(autoHandle)
+							mainActivity.startActivityForResult(intent, ScannerResultReceiver.QRCODE_DETECT_RC_AUTOHANDLE);
+						else
+							mainActivity.startActivityForResult(intent, ScannerResultReceiver.QRCODE_DETECT_RC_NOT_AUTOHANDLE);
+					}
+				});
+				
+			} else {
+				LOGGER.logWarning("DetectQRCode", "Intent 'com.google.zxing.client.android.SCAN', is not found. Please verify you have configured it in your manifest.");
+			}
+		} catch (Exception ex) {
+			LOGGER.logError("DetectQRCode", "Error", ex);
+		}      	
+	}
+	
 	
 	@Override
 	public QRType HandleQRCode(MediaQRContent mediaQRContent) {
@@ -204,36 +267,11 @@ public class AndroidScanner extends AbstractScanner {
 	
 	private void executeJS(Activity main, String method, Object data) {
  
-		if (this.webView != null) {
-			String jsonData = "null";
-			if(data != null) {
-				jsonData = JSONSerializer.serialize(data);
-			}
-			String jsCallbackFunction = "javascript:if(" + method + "){" + method + "("
-					+ jsonData + ");}";
-
-			main.runOnUiThread(new AAMExecuteJS(this.webView, jsCallbackFunction));
+		if (this.activityManager != null) {
+			
+			this.activityManager.executeJS(method, data);
 		}
 
-	}
-	
-	private class AAMExecuteJS implements Runnable {
-
-		private String javascript;
-		private WebView view;
-		
-
-		public AAMExecuteJS(WebView view, String javascript) {
-			this.javascript = javascript;
-			this.view = view;
-		}
-
-		@Override
-		public void run() {
-			if(this.view != null) {
-				this.view.loadUrl(this.javascript);
-			}
-		}
 	}
 	
 	private void notifyAlert(Activity mainActivity, String title, String message,
@@ -283,5 +321,244 @@ public class AndroidScanner extends AbstractScanner {
 		fields[1] = text.split("\\?")[1].split("\\&")[0].substring(8);
 		fields[2] = text.split("\\?")[1].split("\\&")[1].substring(5);
 		return fields;		
+	}
+
+	@Override
+	public void GenerateQRCode(MediaQRContent content) {
+		MediaMetadata meta = null;
+		try {
+			
+		    // generate a 150x150 QR code
+		    //Bitmap bm = encodeAsBitmap(content.getText(), BarcodeFormat.QR_CODE, 150, 150);
+			content = encodeQRCodeContents(content);		
+			Bitmap bm = generateQrCode(content);
+		    if(bm != null) {
+		    	try {
+		    		meta = new MediaMetadata();
+		    		String title = "QR_" + UUID.randomUUID();
+					File qrPath = new File(context.getExternalCacheDir(),
+							title + ".jpeg");
+					
+				    FileOutputStream fOut = new FileOutputStream(qrPath);					
+					bm.compress(Bitmap.CompressFormat.JPEG, 100, fOut); // bmp is your Bitmap instance
+				    fOut.flush();
+				    fOut.close();
+					
+				    Uri uri = Uri.fromFile(qrPath);
+
+					// retrieve image metadata
+					
+					meta.setType(MediaType.Photo);
+					meta.setMimeType("image/jpeg");
+					meta.setTitle(title);
+
+					// copy image to internal storage
+					copyImageToInternalStorage(uri, meta);
+
+					
+					
+
+				} catch (Exception ex) {
+					LOGGER.logError("GenerateQRCode", "Error", ex);
+				}
+		    }
+		} catch (WriterException e) { 
+			
+		}
+		this.executeJS((Activity)context, "Appverse.Scanner.onGeneratedQR", meta);
+	}
+	
+	
+	public static Bitmap generateQrCode(MediaQRContent myCode) throws WriterException {
+        Hashtable<EncodeHintType, ErrorCorrectionLevel> hintMap = new Hashtable<EncodeHintType, ErrorCorrectionLevel>();
+        hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H); // H = 30% damage
+        
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        int size = myCode.getSize(); 
+        if(size == 0)
+        	 size = 256;         
+
+        BitMatrix bitMatrix = qrCodeWriter.encode(myCode.getText(),BarcodeFormat.QR_CODE, size, size, hintMap);
+        int width = bitMatrix.getWidth();
+        Bitmap bmp = Bitmap.createBitmap(width, width, Bitmap.Config.RGB_565);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < width; y++) {
+                bmp.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+            }
+        }
+        return bmp;
+    }
+	
+	private static String trim(String s) {
+        if (s == null) { return null; }
+        String result = s.trim();
+        return result.length() == 0 ? null : result;
+    }
+		
+	private static String escapeMECARD(String input) {
+        if (input == null || (input.indexOf(':') < 0 && input.indexOf(';') < 0)) { return input; }
+        int length = input.length();
+        StringBuilder result = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            char c = input.charAt(i);
+            if (c == ':' || c == ';') {
+                result.append('\\');
+            }
+            result.append(c);
+        }
+        return result.toString();
+    }
+	 
+	private MediaQRContent encodeQRCodeContents(MediaQRContent qrCode) {
+       if (qrCode.getQRType().equals(QRType.EMAIL_ADDRESS)) {
+            String data = trim(qrCode.getText());
+            if (data != null) {
+            	qrCode.setText("mailto:" + data);
+                
+            }
+        } else if (qrCode.getQRType().equals(QRType.TEL)) {
+        	String data = trim(qrCode.getText());
+            if (data != null) {
+            	qrCode.setText("tel:" + data);
+                
+            }
+        } else if (qrCode.getQRType().equals(QRType.SMS)) {
+        	String data = trim(qrCode.getText());
+            if (data != null) {
+            	qrCode.setText("sms:" + data);
+                
+            }
+        } else if (qrCode.getQRType().equals(QRType.ADDRESSBOOK)) {
+        	
+            if (qrCode.getContact() != null) {
+            	
+                StringBuilder newContents = new StringBuilder(100);
+                
+                newContents.append("MECARD:");
+ 
+                String name = trim(qrCode.getContact().getName());
+                if (name != null) {
+                    newContents.append("N:").append(escapeMECARD(name)).append(';');
+                    
+                }
+ 
+                String address = trim(qrCode.getContact().getAddress());
+                if (address != null) {
+                    newContents.append("ADR:").append(escapeMECARD(address)).append(';');
+                    
+                }
+ 
+                String phone = trim(qrCode.getContact().getPhone());
+                if (phone != null) {
+                
+                    newContents.append("TEL:").append(escapeMECARD(phone)).append(';');
+                    
+                }
+                
+                String email = trim(qrCode.getContact().getEmail());
+                if (email != null) {
+                    newContents.append("EMAIL:").append(escapeMECARD(email)).append(';');
+                    
+                }
+ 
+                String url = trim(qrCode.getContact().getUrl());
+                if (url != null) {
+                    // escapeMECARD(url) -> wrong escape e.g. http\://zxing.google.com
+                    newContents.append("URL:").append(url).append(';');
+                    
+                }
+ 
+                String note = trim(qrCode.getContact().getNote());
+                if (note != null) {
+                    newContents.append("NOTE:").append(escapeMECARD(note)).append(';');
+                    
+                }
+ 
+                // Make sure we've encoded at least one field.
+                if (newContents.length() > 0) {
+                    newContents.append(';');
+                    qrCode.setText(newContents.toString());
+                    
+                } else {
+                	qrCode.setText(null);
+                }
+ 
+            }
+        } else if (qrCode.getQRType().equals(QRType.GEO)) {
+        	Coordinate coord = qrCode.getCoord();
+            if (coord != null) {
+                // These must use Bundle.getFloat(), not getDouble(), it's part of the API.
+                float latitude = coord.getLatitude();
+                float longitude = coord.getLongitude();
+                if (latitude != Float.MAX_VALUE && longitude != Float.MAX_VALUE) {
+                	qrCode.setText("geo:" + latitude + ',' + longitude);                    
+                }
+            }
+        }
+       	
+       return qrCode;
+    }
+	
+	
+	private static void copyImageToInternalStorage(Uri uri, MediaMetadata meta) {
+
+		BufferedInputStream bis = null;
+		ByteArrayOutputStream baos = null;
+		try {
+			if(meta == null) 
+				meta = new MediaMetadata();
+			// read image data
+			bis = new BufferedInputStream(AndroidServiceLocator.getContext()
+					.getContentResolver().openInputStream(uri));
+			baos = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			int length;
+			while ((length = bis.read(buffer)) > 0) {
+				baos.write(buffer, 0, length);
+			}
+
+			// store image in the application files folder
+			IFileSystem fileService = (IFileSystem) AndroidServiceLocator
+					.GetInstance().GetService(
+							AndroidServiceLocator.SERVICE_TYPE_FILESYSTEM);
+			String extension = getExtension(meta.getMimeType());
+			String name = meta.getTitle();
+			if (!name.endsWith(".jpg") && !name.endsWith(".jpeg")) {
+				name += "." + extension;
+			}
+			String path = fileService.StoreFile(fileService.GetDirectoryRoot()
+					.getFullName(), name, baos.toByteArray());
+			File f = new File(path);
+			LOGGER.logDebug("copyImageToInternalStorage", "uri.path: "+uri.getPath() + " || path: " + path);
+			long size = f.length();
+			LOGGER.logDebug("File Size", "******************************* FILE SIZE: "+size);
+			// TODO StoreFile should return a relative path
+			path = path.substring(path.lastIndexOf('/') + 1);
+			meta.setReferenceUrl(path);
+			
+			
+						
+			meta.setSize(size);
+			
+		} catch (Exception ex) {
+			LOGGER.logError("CopyImageToInternalStorage", "Error", ex);
+		} finally {
+			if (bis != null) {
+				try {
+					bis.close();
+				} catch (Exception ex) {
+				}
+			}
+			if (baos != null) {
+				try {
+					baos.close();
+				} catch (Exception ex) {
+				}
+			}
+		}
+	}
+	
+	private static String getExtension(String mimeType) {
+		return MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
 	}
 }

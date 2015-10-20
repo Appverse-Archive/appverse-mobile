@@ -24,8 +24,8 @@
 -verbose
 
 -keepattributes *Annotation*
--keep public class com.google.vending.licensing.ILicensingService
--keep public class com.android.vending.licensing.ILicensingService
+# REMOVED due to proguard issues (unknown class) -keep public class com.google.vending.licensing.ILicensingService
+# REMOVED due to proguard issues (unknown class) -keep public class com.android.vending.licensing.ILicensingService
 
 # ADDED
 -keep class com.google.zxing.client.android.camera.open.**

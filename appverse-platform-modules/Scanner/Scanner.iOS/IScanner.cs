@@ -22,11 +22,16 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
+using Unity.Core.Media;
+#if WP8
+using System.Threading.Tasks;
+#endif
 
 namespace Appverse.Core.Scanner
 {
-	public interface IScanner
-	{
+    public interface IScanner
+    {
+#if !WP8
 		/// <summary>
 		/// Detects the QR code.
 		/// </summary>
@@ -34,11 +39,52 @@ namespace Appverse.Core.Scanner
 		void DetectQRCode(bool autoHandleQR);
 
 		/// <summary>
+		/// Detects the QR code from front camera
+		/// </summary>
+		/// <returns>The QR code.</returns>
+		void DetectQRCodeFront(bool autoHandleQR);
+
+		/// <summary>
 		/// Handles the QR code.
 		/// </summary>
 		/// <returns>The QR code type.</returns>
 		QRType HandleQRCode(MediaQRContent mediaQRContent);
 
-	}
+		/// <summary>
+		/// Generates the QR code.
+		/// </summary>
+		/// <returns>The QR code.</returns>
+		/// <param name="content">Content.</param>
+		void GenerateQRCode (MediaQRContent content);
+#else
+        /// <summary>
+        /// Detects the QR code.
+        /// </summary>
+        /// <returns>The QR code.</returns>
+        Task DetectQRCode(bool autoHandleQR);
+
+        /// <summary>
+        /// Detects the QR code from front camera
+        /// </summary>
+        /// <returns>The QR code.</returns>
+        Task DetectQRCodeFront(bool autoHandleQR);
+
+        /// <summary>
+        /// Handles the QR code.
+        /// </summary>
+        /// <returns>The QR code type.</returns>
+        Task<QRType> HandleQRCode(MediaQRContent mediaQRContent);
+
+        /// <summary>
+        /// Generates the QR code.
+        /// </summary>
+        /// <returns>The QR code.</returns>
+        /// <param name="content">Content.</param>
+        Task GenerateQRCode(MediaQRContent content);
+#endif
+
+
+
+    }
 }
 

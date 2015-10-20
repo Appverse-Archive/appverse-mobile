@@ -77,6 +77,8 @@
     <Compile Include="MediaQRContent.cs" />
     <Compile Include="AbstractScanner.cs" />
     <Compile Include="IPhoneScanner.cs" />
+    <Compile Include="VCard.cs" />
+    <Compile Include="Coordinate.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>

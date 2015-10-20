@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<project name="Build Appverse Platform iOS - Facebook Module" default="compile-c">
+   
+	<property name="dll.name" value="Facebook.iOS" overwrite="true"/>
+	
+	<property name="output.dir" value="./Facebook.iOS/bin" overwrite="true"/>
+	<property name="source.dir" value="./Facebook.iOS" overwrite="true"/>
+	<property name="mode" value="Debug_Device" overwrite="true"/>
+	
+	<property name="build.mode.dir" value="iPhone/Debug" if="${mode == 'Debug_Device'}" />
+	<property name="build.mode.dir" value="iPhone/Release" if="${mode == 'Release_Device'}" />
+	
+	<property name="build.dir" value="${output.dir}/${build.mode.dir}" />
+	
+	<property name="monotouch.bin.dir" value="/Developer/MonoTouch/usr/bin"/>
+	<property name="monotouch.lib.dir" value="/Developer/MonoTouch/usr/lib"/>
+	<property name="monotouch.lib.mono" value="mono/Xamarin.iOS"/>
+	<property name="monotouch.command.smcs" value="${monotouch.bin.dir}/smcs"/>
+	<property name="monotouch.command.mtouch" value="${monotouch.bin.dir}/mtouch"/>
+	
+	<property name="source.files" value=""/>
+	
+	<target name="clean">
+		<delete dir="${build.dir}" />
+    </target>
+
+    <target name="compile-c" depends="clean">
+        <mkdir dir="${build.dir}" />
+
+		<echo message="Compiling C# sources to generate Facebook Module iOS DLL: ${build.dir}/${dll.name}.dll"/>
+		
+		<echo message="## Searching for source files on: ${source.dir}"/>
+		<foreach item="File" property="filename">
+			<in>
+				<items basedir="${source.dir}">
+					<include name="*.cs" />
+					<include name="Properties/*.cs" />
+				</items>
+			</in>
+		    <do>
+		    	<echo message="## Added source file: ${filename}"/>
+				<property name="source.files" value="${source.files}${filename} "/>
+		    </do>
+		</foreach>
+		
+		<exec program="${monotouch.command.smcs}" verbose="true">
+			<arg value="/noconfig"/>
+			<arg value="/out:${build.dir}/${dll.name}.dll"/>
+			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Xml.dll" />
+			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Core.dll" />
+			<arg value="/r:/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/Xamarin.iOS/Xamarin.iOS.dll" />
+			<arg value="/r:${lib.core.dll}" />
+			<arg value="/r:./Facebook.iOS/lib/Facebook.dll" />
+			<arg value="/nologo" />
+			<arg value="/warn:4" />
+			<arg value="/debug:full" if="${mode == 'Debug_Device'}"/>
+			<arg value="/optimize-" />
+			<arg value="/codepage:utf8" />
+			<arg value="/define:DEBUG;MONOTOUCH" if="${mode == 'Debug_Device'}"/>
+			<arg value="/t:library" />
+			<arg line="${source.files}" />
+		</exec>
+	</target>
+	
+	<target name="include-plist-keys">
+		<echo message="Including PLIST keys for Facebook module at: ${plist.build.dir}"/>
+		
+		<echo message="Reading values from config file at: ${config.files.dir}/facebook-config.xml"/>
+		<xmlpeek
+		    file="${config.files.dir}/facebook-config.xml"
+		    xpath="/facebook-config/@app-id"
+		    property="facebook.app.id">
+		</xmlpeek>
+		
+		<xmlpeek
+		    file="${config.files.dir}/facebook-config.xml"
+		    xpath="/facebook-config/@display-name"
+		    property="facebook.display.name">
+		</xmlpeek>
+		
+		<!-- Example of adding uri scheme to xmlpeek task
+		
+			The example provided assumes that the following XML file (App.config) exists in the current build directory.
+
+			<?xml version="1.0" encoding="utf-8" ?>
+			<configuration xmlns="http://www.gordic.cz/shared/project-config/v_1.0.0.0">
+			    <appSettings>
+			        <add key="server" value="testhost.somecompany.com" />
+			    </appSettings>
+			</configuration>
+    
+			The example will read the server value from the above configuration file.
+
+			<xmlpeek
+			    file="App.config"
+			    xpath="/x:configuration/x:appSettings/x:add[@key = 'server']/@value"
+			    property="configuration.server">
+			    <namespaces>
+			        <namespace prefix="x" uri="http://www.gordic.cz/shared/project-config/v_1.0.0.0" />
+			    </namespaces>
+			</xmlpeek>
+    
+		-->
+		
+		<echo message="*** facebook.app.id: ${facebook.app.id}"/>
+		<echo message="*** facebook.display.name: ${facebook.display.name}"/>
+		
+		<!-- Facebook integration Info.plist Keys-->
+		
+		<exec program="/usr/libexec/PlistBuddy">
+			<arg value="-c"/>
+			<arg value="Add :FacebookAppID string '${facebook.app.id}'"/>
+			<arg value="${plist.build.dir}"/>
+		</exec>
+		
+		<exec program="/usr/libexec/PlistBuddy">
+			<arg value="-c"/>
+			<arg value="Add :FacebookDisplayName string '${facebook.display.name}'"/>
+			<arg value="${plist.build.dir}"/>
+		</exec>
+		
+		<exec program="/usr/libexec/PlistBuddy" failonerror="false">
+			<arg value="-c"/>
+			<arg value="Add :CFBundleURLTypes array"/>
+			<arg value="${plist.build.dir}"/>
+		</exec>
+	
+		<exec program="/usr/libexec/PlistBuddy" failonerror="false">
+			<arg value="-c"/>
+			<arg value="Add :CFBundleURLTypes:0 dict"/>
+			<arg value="${plist.build.dir}"/>
+		</exec>
+		
+		<exec program="/usr/libexec/PlistBuddy" failonerror="false">
+			<arg value="-c"/>
+			<arg value="Add :CFBundleURLTypes:0:CFBundleTypeRole string 'Editor'"/>
+			<arg value="${plist.build.dir}"/>
+		</exec>
+		
+		<exec program="/usr/libexec/PlistBuddy" failonerror="false">
+			<arg value="-c"/>
+			<arg value="Add :CFBundleURLTypes:0:CFBundleURLSchemes array"/>
+			<arg value="${plist.build.dir}"/>
+		</exec>
+	
+		<exec program="/usr/libexec/PlistBuddy" failonerror="false">
+			<arg value="-c"/>
+			<arg value="Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string 'fb${facebook.app.id}'"/>
+			<arg value="${plist.build.dir}"/>
+		</exec>
+		
+	</target>
+	
+	
+</project>
