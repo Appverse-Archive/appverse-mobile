@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="UnityFrameworkAndroid" default="build">
 
-	<property name="src" location="src" />
+	<property name="src" location="../../src/java" />
 	<property name="bin" location="bin" />
 	<property name="lib" location="lib" />
 	<property name="dist" location="dist" />
