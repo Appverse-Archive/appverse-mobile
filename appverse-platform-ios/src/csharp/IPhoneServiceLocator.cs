@@ -33,6 +33,7 @@ using System.Runtime.CompilerServices;
 using Unity.Core.System.Server.Net;
 using Unity.Core;
 using Unity.Core.System.Resource;
+using AntiDebuggingBinding;
 
 namespace Unity.Platform.IPhone
 {
@@ -53,13 +54,24 @@ namespace Unity.Platform.IPhone
 		public static string APPVERSE_DOCUMENT_URI = APPVERSE_HOST + APPVERSE_DOCUMENT_PATH;
 
 		private static List<string> managedServices = new List<string> ();
-		
+
+		private static UIApplicationWeakDelegate uiApplicationWeakDelegate;
+
 		public static IPhoneUIApplicationDelegate CurrentDelegate {
 			get {
 				return uiApplicationDelegate;
 			}
 			set {
 				uiApplicationDelegate = value;
+			}
+		}
+
+		public static UIApplicationWeakDelegate UIApplicationWeakDelegate {
+			get {
+				return uiApplicationWeakDelegate;
+			}
+			set {
+				uiApplicationWeakDelegate = value;
 			}
 		}
 
@@ -110,14 +122,13 @@ namespace Unity.Platform.IPhone
             {
                 singletonServiceLocator = new IPhoneServiceLocator();
 
-
 				// initialize UIApplication weak delegates
 				var tsEnumerator = typedServices.GetEnumerator ();
 				while (tsEnumerator.MoveNext())
 				{
 					var typedService = tsEnumerator.Current;
 					if (typedService.Value is IWeakDelegateManager) {
-						(typedService.Value as IWeakDelegateManager).InitializeWeakDelegate ();
+						IPhoneServiceLocator.UIApplicationWeakDelegate.RegisterWeakDelegate((typedService.Value as IWeakDelegateManager), typedService.Key);
 					}
 				}
 
@@ -126,6 +137,48 @@ namespace Unity.Platform.IPhone
             }
             return singletonServiceLocator;
         }
+
+		public static void FinishedLaunching (UIApplication application, NSDictionary launchOptions) {
+
+			#if DEBUG
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "# Application is in DEBUG mode");
+			# else
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "# Application is in RELEASE mode (activating antidebugging techniques");
+				try { 
+					AntiDebugging.Disable_gdb();
+				} catch (Exception ex) { }
+			#endif
+
+			// Add notification observer for "userdidtakescreenshot" event
+			UIApplication.Notifications.ObserveUserDidTakeScreenshot (delegate(object sender, NSNotificationEventArgs e) {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "NOTIFICATIONS ObserveUserDidTakeScreenshot - " + e.Notification.Name);
+
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.UserDidTakeScreenshot", null);
+			});
+
+
+			// informs the UIApplication Weak delegates (if any) about the application loading finished event
+			var tsEnumerator = typedServices.GetEnumerator ();
+			while (tsEnumerator.MoveNext())
+			{
+				var typedService = tsEnumerator.Current;
+				if (typedService.Value is IWeakDelegateManager) {
+
+					string loadConfigFilePath = null;
+					try {
+						loadConfigFilePath = (typedService.Value as IWeakDelegateManager).GetConfigFilePath ();
+						if (loadConfigFilePath != null) {
+							loadConfigFilePath = IPhoneUtils.GetInstance().GetFileFullPath(loadConfigFilePath);
+							(typedService.Value as IWeakDelegateManager).ConfigFileLoadedData(IPhoneUtils.GetInstance().GetResourceAsBinary(loadConfigFilePath, true));
+						}
+					} catch (Exception ex) {
+						SystemLogger.Log (SystemLogger.Module.PLATFORM, "# Cannot load config file for module: " + loadConfigFilePath);
+					}
+
+					(typedService.Value as IWeakDelegateManager).FinishedLaunching (application, launchOptions);
+				}
+			}
+		}
 
 		public static void WebViewLoadingFinished(UIApplicationState applicationState, NSDictionary options) {
 			// informs the UIApplication Weak delegates (if any) about the web view loading finished  event
@@ -352,7 +405,7 @@ namespace Unity.Platform.IPhone
 						serviceURIHandler.ProcessAsyncPOSTResult (serviceInvocationManager, service, methodName, query);
 
 						NSData nsDataResponse = NSData.FromString ("MANAGED SERVICE (data returned using callback or global listener)");
-						NSUrlResponse response = new NSUrlResponse (newRequest.Url, "text/html", (nint) nsDataResponse.Length, "utf-8");
+						NSUrlResponse response = new NSUrlResponse (newRequest.Url, "text/html", (nint)nsDataResponse.Length, "utf-8");
 						SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneNSUrlProtocol MANAGED SERVICE - Service executed (data will be returned using callback or global listener)");
 						Client.ReceivedResponse (this, response, NSUrlCacheStoragePolicy.NotAllowed);
 						Client.DataLoaded (this, nsDataResponse);
@@ -370,7 +423,7 @@ namespace Unity.Platform.IPhone
 							SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneNSUrlProtocol MANAGED WEB RESOURCE no data bytes - " + requestUrl);
 							nsDataResponse = NSData.FromString ("MANAGED WEB RESOURCE : no data bytes");
 						}
-						NSUrlResponse response = new NSUrlResponse (newRequest.Url, mimeType, (nint) nsDataResponse.Length, "utf-8");
+						NSUrlResponse response = new NSUrlResponse (newRequest.Url, mimeType, (nint)nsDataResponse.Length, "utf-8");
 						Client.ReceivedResponse (this, response, NSUrlCacheStoragePolicy.NotAllowed);
 						Client.DataLoaded (this, nsDataResponse);
 
@@ -378,14 +431,14 @@ namespace Unity.Platform.IPhone
 
 						SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneNSUrlProtocol MANAGED DOCUMENT RESOURCE");
 
-						String resourcePath = newRequest.Url.Path.Substring(IPhoneServiceLocator.APPVERSE_DOCUMENT_PATH.Length);
-						String mimeType = resourceURIHandler.GetWebResourceMimeType (resourcePath.ToLower(), false);
+						String resourcePath = newRequest.Url.Path.Substring (IPhoneServiceLocator.APPVERSE_DOCUMENT_PATH.Length);
+						String mimeType = resourceURIHandler.GetWebResourceMimeType (resourcePath.ToLower (), false);
 						NSData nsDataResponse = resourceURIHandler.ProcessDocumentResource (resourcePath);
 						if (nsDataResponse == null) {
 							SystemLogger.Log (SystemLogger.Module.PLATFORM, "# IPhoneNSUrlProtocol MANAGED DOCUMENT RESOURCE no data bytes - " + requestUrl);
 							nsDataResponse = NSData.FromString ("MANAGED DOCUMENT RESOURCE : no data bytes");
 						}
-						NSUrlResponse response = new NSUrlResponse (newRequest.Url, mimeType, (nint) nsDataResponse.Length, "utf-8");
+						NSUrlResponse response = new NSUrlResponse (newRequest.Url, mimeType, (nint)nsDataResponse.Length, "utf-8");
 						Client.ReceivedResponse (this, response, NSUrlCacheStoragePolicy.NotAllowed);
 						Client.DataLoaded (this, nsDataResponse);
 					}

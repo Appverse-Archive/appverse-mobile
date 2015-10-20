@@ -18,10 +18,8 @@
 	<property name="core.build.file" value="../../../UnityCore/project/NAnt/UnityCoreMonotouch.build" overwrite="true"/>
 	<property name="core.dll" value="../../../UnityCore/project/MonoTouch/UnityCore/UnityCore/bin/${build.mode.dir}/UnityCore.dll"/>
 	
-	<!--property name="monotouch.bin.dir" value="/Developer/MonoTouch/usr/bin"/--> 
-    <property name="monotouch.bin.dir" value="/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/bin"/> 
-	<!--property name="monotouch.lib.dir" value="/Developer/MonoTouch/usr/lib"/-->
-    <property name="monotouch.lib.dir" value="/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib"/>
+	<property name="monotouch.bin.dir" value="/Developer/MonoTouch/usr/bin"/>
+	<property name="monotouch.lib.dir" value="/Developer/MonoTouch/usr/lib"/>
 	<property name="monotouch.lib.mono" value="mono/Xamarin.iOS"/>
 	<property name="monotouch.command.smcs" value="${monotouch.bin.dir}/smcs"/>
 	<property name="monotouch.command.mtouch" value="${monotouch.bin.dir}/mtouch"/>
@@ -31,49 +29,69 @@
 	<property name="modules.dir" value="../../../UnityPlatformModules"/>
 
 	<property name="platform.iOS.lib" value="../UnityPlatformIOS/lib"/>
-	<!-- Analytics module properties -->
-	<property name="modules.analytics.dir" value="${modules.dir}/Analytics"/>
-	<property name="modules.analytics.build.file" value="${modules.analytics.dir}/Analytics.iOS.build"/>
-	<property name="modules.analytics.properties.file" value="${modules.analytics.dir}/module.properties"/>
-	<property name="modules.analytics.javascript.file" value="${modules.analytics.dir}/module.js"/>
-	<property name="analytics.dll" value="${modules.analytics.dir}/Analytics.iOS/bin/${build.mode.dir}/Analytics.iOS.dll"/>
-	
-	<!-- Scanner module properties -->
-	<property name="modules.scanner.dir" value="${modules.dir}/Scanner"/>
-	<property name="modules.scanner.build.file" value="${modules.scanner.dir}/Scanner.iOS.build"/>
-	<property name="modules.scanner.properties.file" value="${modules.scanner.dir}/module.properties"/>
-	<property name="modules.scanner.javascript.file" value="${modules.scanner.dir}/module.js"/>
-	<property name="scanner.dll" value="${modules.scanner.dir}/Scanner.iOS/bin/${build.mode.dir}/Scanner.iOS.dll"/>
-	
-	<!-- Webtrekk settings -->
-	<property name="modules.webtrekk.dir" value="${modules.dir}/Webtrekk"/>
-	<property name="modules.webtrekk.build.file" value="${modules.webtrekk.dir}/Webtrekk.iOS.build"/>
-	<property name="modules.webtrekk.properties.file" value="${modules.webtrekk.dir}/module.properties"/>
-	<property name="modules.webtrekk.javascript.file" value="${modules.webtrekk.dir}/module.js"/>
-	<property name="webtrekk.dll" value="${modules.webtrekk.dir}/Webtrekk.iOS/bin/${build.mode.dir}/Webtrekk.iOS.dll"/>
-	<!-- check if necessary to include the native A library -->
-	<property name="webtrekk.lib.name" value="libWebtrekk.a"/>
-	<property name="webtrekk.lib" value="${platform.iOS.lib}/${webtrekk.lib.name}"/>
-	<property name="webtrekk.gcc.flags" value="${build.dir}/${webtrekk.lib.name}"/> <!-- not anymore necessary the "-force_load" option -->
-		
-		
-	<!-- Push Notifications module properties -->
-	<property name="modules.push.dir" value="${modules.dir}/PushNotifications"/>
-	<property name="modules.push.build.file" value="${modules.push.dir}/PushNotifications.iOS.build"/>
-	<property name="modules.push.properties.file" value="${modules.push.dir}/module.properties"/>
-	<property name="modules.push.javascript.file" value="${modules.push.dir}/module.js"/>
-	<property name="push.dll" value="${modules.push.dir}/PushNotifications.iOS/bin/${build.mode.dir}/PushNotifications.iOS.dll"/>
-	
-	<!-- Beacon module properties -->
-	<property name="modules.beacon.dir" value="${modules.dir}/Beacon"/>
-	<property name="modules.beacon.build.file" value="${modules.beacon.dir}/Beacon.iOS.build"/>
-	<property name="modules.beacon.properties.file" value="${modules.beacon.dir}/module.properties"/>
-	<property name="modules.beacon.javascript.file" value="${modules.beacon.dir}/module.js"/>
-	<property name="beacon.dll" value="${modules.beacon.dir}/Beacon.iOS/bin/${build.mode.dir}/Beacon.iOS.dll"/>
 	
 	<target name="clean">
 		<delete dir="${build.dir}" />
     </target>
+	
+	<target name="compile-module">
+		
+		<echo message="########## COMPILE MODULE #########"/>  
+		
+		<echo message="## Should compile ${module.name} module?: ${compile.module.check}" />
+		<if test="${compile.module.check=='true'}">
+			<echo message="## Compiling ${module.name} module..." />
+			
+			<property name="module.dir" value="${modules.dir}/${module.project.name}"/>
+			<property name="module.build.file" value="${module.dir}/${module.project.name}.iOS.build"/>
+			<property name="lib.file.dll" value="../../lib/modules/${module.project.name}.iOS.dll" />
+			<property name="module.dll" value="${module.dir}/${module.project.name}.iOS/bin/${build.mode.dir}/${module.project.name}.iOS.dll"/>
+			<property name="module.properties.file" value="${module.dir}/module.properties"/>
+			<property name="module.javascript.file" value="${module.dir}/module.js"/>
+			
+			<nant buildfile="${module.build.file}">
+				<properties>
+					<property name="dll.name" value="${module.project.name}.iOS" />
+					<property name="mode" value="${mode}" />
+					<property name="lib.core.dll" value="../../UnityCore/project/MonoTouch/UnityCore/UnityCore/bin/${build.mode.dir}/UnityCore.dll" />
+				</properties>
+			</nant>
+			
+			<copy file="${module.dll}" tofile="${lib.file.dll}" overwrite="true" />
+			<echo message="## ../../lib/modules/${module.project.name}.iOS.dll"/>
+			
+			<loadproperties file="${module.properties.file}" failonerror ="true"/>
+			<property name="module.required.libs" value="" overwrite="true"/> <!-- default required libs : none -->
+		
+			<foreach item="String" in="${module.ios.lib.references}" delim="," trim="Both" property="module.reference" >
+	    		<echo message="${module.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" />
+				<copy file="${module.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" tofile="../../lib/modules/${module.reference}" overwrite="true" />
+				<property name="module.required.libs" value="${module.required.libs} /r:../../lib/modules/${module.reference}"/>
+	    	</foreach>
+			
+			<echo message="## ${module.project.name} module - main class: ${module.ios.main.class}"/>
+			<echo message="## ${module.project.name} module - service name: ${module.api.service.name}"/>
+			
+			<exec program="/usr/bin/ant" failonerror="false">
+				<arg value="-file"/>
+	            <arg value="../../../UnityBuild/appverse_modules_tasks.xml"/>
+				<arg value="-Dmodule.main.class=${module.ios.main.class}"/>
+				<arg value="-Dmodule.service.name=${module.api.service.name}"/>
+	            <arg value="add-module-ios"/>
+	        </exec>
+			
+			<copy file="${module.javascript.file}" tofile="../../lib/modules/module-${module.api.service.name}.js" overwrite="true" failonerror="false"/>
+			
+		</if>
+		
+		<property name="reference.lib.dll" value="${module.required.libs} /r:${lib.file.dll}" if="${compile.module.check == 'true'}"/>
+		<property name="reference.lib.dll" value="" if="${compile.module.check != 'true'}" />
+		
+		<echo message="reference.lib.dll (${module.name}):  ${reference.lib.dll}" if="${compile.module.check == 'true'}" />
+		
+		<echo message="##################################"/>
+		
+	</target>
 
     <target name="compile-c" depends="clean">
         <mkdir dir="${build.dir}" />
@@ -94,247 +112,92 @@
 		<copy file="${core.dll}" tofile="${lib.core.dll}" />
 		<echo message="## ${lib.core.dll}" />
 		
+		<loadtasks assembly="../../../UnityBuild/nantcontrib-0.92/bin/NAnt.Contrib.Tasks.dll" />
 		
 		<!-- START -Compiling Modules -->
-			
-		<loadtasks assembly="../../../UnityBuild/nantcontrib-0.92/bin/NAnt.Contrib.Tasks.dll" />
-   
+		
+		<!-- Compiling AppsFlyer Module (if requested) -->
+		<property name="module.name" value="appsflyer"/>
+		<property name="module.project.name" value="AppsFlyer"/>
+		<property name="compile.module.check" value="${compile.module.appsflyer}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.appsflyer.dll" value="${reference.lib.dll}"/>
+		
+		<!-- Compiling Adform Module (if requested) -->
+		<property name="module.name" value="adform"/>
+		<property name="module.project.name" value="Adform"/>
+		<property name="compile.module.check" value="${compile.module.adform}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.adform.dll" value="${reference.lib.dll}"/>
+		
 		<!-- Compiling Analytics Module (if requested) -->
-		<echo message="## Should compile Analytics module?: ${compile.module.analytics}" />
-		<if test="${compile.module.analytics=='true'}">
-			<echo message="## Compiling Analytics module..." />
-			<nant buildfile="${modules.analytics.build.file}">
-				<properties>
-					<property name="dll.name" value="Analytics.iOS" />
-					<property name="mode" value="${mode}" />
-				</properties>
-			</nant>
-		
-			<property name="lib.analytics.dll" value="../../lib/modules/Analytics.iOS.dll" />
-		
-			<copy file="${analytics.dll}" tofile="${lib.analytics.dll}" overwrite="true" />
-			<echo message="## ${lib.analytics.dll}"/>
-		
-			<loadproperties file="${modules.analytics.properties.file}" failonerror ="true"/>
-			<property name="modules.analytics.required.libs" value="" overwrite="true"/>
-		
-			<foreach item="String" in="${module.ios.lib.references}" delim="," trim="Both" property="module.reference" >
-	    		<echo message="${modules.analytics.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" />
-				<copy file="${modules.analytics.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" tofile="../../lib/modules/${module.reference}" overwrite="true" />
-				<property name="modules.analytics.required.libs" value="${modules.analytics.required.libs} /r:../../lib/modules/${module.reference}"/>
-	    	</foreach>
-			
-			<echo message="## Analytics module - main class: ${module.ios.main.class}"/>
-			<echo message="## Analytics module - service name: ${module.api.service.name}"/>
-			
-			<exec program="/usr/bin/ant" failonerror="false">
-				<arg value="-file"/>
-	            <arg value="../../../UnityBuild/appverse_modules_tasks.xml"/>
-				<arg value="-Dmodule.main.class=${module.ios.main.class}"/>
-				<arg value="-Dmodule.service.name=${module.api.service.name}"/>
-	            <arg value="add-module-ios"/>
-	        </exec>
-			
-			<copy file="${modules.analytics.javascript.file}" tofile="../../lib/modules/module-${module.api.service.name}.js" overwrite="true" failonerror="false"/>
-			
-		</if>
-		
-		<property name="reference.lib.analytics.dll" value="${modules.analytics.required.libs} /r:${lib.analytics.dll}" if="${compile.module.analytics == 'true'}"/>
-		<!--property name="reference.lib.analytics.dll" value="/r:${lib.analytics.dll}" if="${compile.module.analytics == 'true'}"/-->
-		<property name="reference.lib.analytics.dll" value="" if="${compile.module.analytics != 'true'}" />
-		
-		<echo message="reference.lib.analytics.dll:  ${reference.lib.analytics.dll}" if="${compile.module.analytics}" />
+		<property name="module.name" value="analytics"/>
+		<property name="module.project.name" value="Analytics"/>
+		<property name="compile.module.check" value="${compile.module.analytics}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.analytics.dll" value="${reference.lib.dll}"/>
 		
 		<!-- Compiling Scanner Module (if requested) -->
-		<echo message="## Should compile Scanner module?: ${compile.module.scanner}" />
-		<if test="${compile.module.scanner=='true'}">
-			<echo message="## Compiling Scanner module..." />
-			<nant buildfile="${modules.scanner.build.file}">
-				<properties>
-					<property name="dll.name" value="Scanner.iOS" />
-					<property name="mode" value="${mode}" />
-					<property name="lib.core.dll" value="../../UnityCore/project/MonoTouch/UnityCore/UnityCore/bin/${build.mode.dir}/UnityCore.dll" />
-				</properties>
-			</nant>
-			
-			<property name="lib.scanner.dll" value="../../lib/modules/Scanner.iOS.dll" />
-		
-			<copy file="${scanner.dll}" tofile="${lib.scanner.dll}" overwrite="true" />
-			<echo message="## ${lib.scanner.dll}"/>
-			
-			<loadproperties file="${modules.scanner.properties.file}" failonerror ="true"/>
-			<property name="modules.scanner.required.libs" value="" overwrite="true"/>
-		
-			<foreach item="String" in="${module.ios.lib.references}" delim="," trim="Both" property="module.reference" >
-	    		<echo message="${modules.scanner.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" />
-				<copy file="${modules.scanner.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" tofile="../../lib/modules/${module.reference}" overwrite="true" />
-				<property name="modules.scanner.required.libs" value="${modules.scanner.required.libs} /r:../../lib/modules/${module.reference}"/>
-	    	</foreach>
-			
-			<echo message="## Scanner module - main class: ${module.ios.main.class}"/>
-			<echo message="## Scanner module - service name: ${module.api.service.name}"/>
-			
-			<exec program="/usr/bin/ant" failonerror="false">
-				<arg value="-file"/>
-	            <arg value="../../../UnityBuild/appverse_modules_tasks.xml"/>
-				<arg value="-Dmodule.main.class=${module.ios.main.class}"/>
-				<arg value="-Dmodule.service.name=${module.api.service.name}"/>
-	            <arg value="add-module-ios"/>
-	        </exec>
-			
-			<copy file="${modules.scanner.javascript.file}" tofile="../../lib/modules/module-${module.api.service.name}.js" overwrite="true" failonerror="false"/>
-			
-		</if>
-		
-		<property name="reference.lib.scanner.dll" value="${modules.scanner.required.libs} /r:${lib.scanner.dll}" if="${compile.module.scanner == 'true'}"/>
-		<!--property name="reference.lib.scanner.dll" value="/r:${lib.scanner.dll}" if="${compile.module.scanner == 'true'}"/-->
-		<property name="reference.lib.scanner.dll" value="" if="${compile.module.scanner != 'true'}" />
-		
-		<echo message="reference.lib.scanner.dll:  ${reference.lib.scanner.dll}" if="${compile.module.scanner}" />
+		<property name="module.name" value="scanner"/>
+		<property name="module.project.name" value="Scanner"/>
+		<property name="compile.module.check" value="${compile.module.scanner}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.scanner.dll" value="${reference.lib.dll}"/>
 		
 		<!-- Compiling Wetrekk Module (if requested) -->
-		<echo message="## Should compile Webtrekk module?: ${compile.module.webtrekk}" />
-		<if test="${compile.module.webtrekk=='true'}">
-			<echo message="## Compiling Webtrekk module..." />
-			<nant buildfile="${modules.webtrekk.build.file}">
-				<properties>
-					<property name="dll.name" value="Webtrekk.iOS" />
-					<property name="mode" value="${mode}" />
-				</properties>
-			</nant>
-		
-			<property name="lib.webtrekk.dll" value="../../lib/modules/Webtrekk.iOS.dll" />
-		
-			<copy file="${webtrekk.dll}" tofile="${lib.webtrekk.dll}" overwrite="true" />
-			<echo message="## ${lib.webtrekk.dll}"/>
-		
-			<loadproperties file="${modules.webtrekk.properties.file}" failonerror ="true"/>
-			<property name="modules.webtrekk.required.libs" value="" overwrite="true"/>
-		
-			<foreach item="String" in="${module.ios.lib.references}" delim="," trim="Both" property="module.reference" >
-	    		<echo message="${modules.webtrekk.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" />
-				<copy file="${modules.webtrekk.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" tofile="../../lib/modules/${module.reference}" overwrite="true" />
-				<property name="modules.webtrekk.required.libs" value="${modules.webtrekk.required.libs} /r:../../lib/modules/${module.reference}"/>
-	    	</foreach>
+		<property name="module.name" value="webtrekk"/>
+		<property name="module.project.name" value="Webtrekk"/>
+		<property name="compile.module.check" value="${compile.module.webtrekk}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.webtrekk.dll" value="${reference.lib.dll}"/>
 			
-			<echo message="## Webtrekk module - main class: ${module.ios.main.class}"/>
-			<echo message="## Webtrekk module - service name: ${module.api.service.name}"/>
-			
-			<exec program="/usr/bin/ant" failonerror="false">
-				<arg value="-file"/>
-	            <arg value="../../../UnityBuild/appverse_modules_tasks.xml"/>
-				<arg value="-Dmodule.main.class=${module.ios.main.class}"/>
-				<arg value="-Dmodule.service.name=${module.api.service.name}"/>
-	            <arg value="add-module-ios"/>
-	        </exec>
-			
-			<copy file="${modules.webtrekk.javascript.file}" tofile="../../lib/modules/module-${module.api.service.name}.js" overwrite="true" failonerror="false"/>
-			
-		</if>
-		
-		<property name="reference.lib.webtrekk.dll" value="${modules.webtrekk.required.libs} /r:${lib.webtrekk.dll}" if="${compile.module.webtrekk == 'true'}"/>
-		<property name="reference.lib.webtrekk.dll" value="" if="${compile.module.webtrekk != 'true'}" />
-		
-		<echo message="reference.lib.webtrekk.dll:  ${reference.lib.webtrekk.dll}" if="${compile.module.webtrekk}" />
-		
 		<!-- check if it is necessary to copy the native A library, as done before in the iOS main build
 		<echo message="Copying Webtrekk library..."/>
 		<copy file="${webtrekk.lib}" tofile="${build.dir}/${webtrekk.lib.name}" />
 		-->
 		
 		<!-- Compiling Push Notifications Module (if requested) -->
-		<echo message="## Should compile Push Notifications module?: ${compile.module.push}" />
-		<if test="${compile.module.push=='true'}">
-			<echo message="## Compiling Push Notifications module..." />
-			<nant buildfile="${modules.push.build.file}">
-				<properties>
-					<property name="dll.name" value="PushNotifications.iOS" />
-					<property name="mode" value="${mode}" />
-					<property name="lib.core.dll" value="../../UnityCore/project/MonoTouch/UnityCore/UnityCore/bin/${build.mode.dir}/UnityCore.dll" />
-				</properties>
-			</nant>
-		
-			<property name="lib.push.dll" value="../../lib/modules/PushNotifications.iOS.dll" />
-		
-			<copy file="${push.dll}" tofile="${lib.push.dll}" overwrite="true" />
-			<echo message="## ${lib.push.dll}"/>
-		
-			<loadproperties file="${modules.push.properties.file}" failonerror ="true"/>
-			<property name="modules.push.required.libs" value="" overwrite="true"/>
-		
-			<foreach item="String" in="${module.ios.lib.references}" delim="," trim="Both" property="module.reference" >
-	    		<echo message="${modules.push.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" />
-				<copy file="${modules.push.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" tofile="../../lib/modules/${module.reference}" overwrite="true" />
-				<property name="modules.push.required.libs" value="${modules.push.required.libs} /r:../../lib/modules/${module.reference}"/>
-	    	</foreach>
-			
-			<echo message="## Push Notifications module - main class: ${module.ios.main.class}"/>
-			<echo message="## Push Notifications module - service name: ${module.api.service.name}"/>
-			
-			<exec program="/usr/bin/ant" failonerror="false">
-				<arg value="-file"/>
-	            <arg value="../../../UnityBuild/appverse_modules_tasks.xml"/>
-				<arg value="-Dmodule.main.class=${module.ios.main.class}"/>
-				<arg value="-Dmodule.service.name=${module.api.service.name}"/>
-	            <arg value="add-module-ios"/>
-	        </exec>
-			
-			<copy file="${modules.push.javascript.file}" tofile="../../lib/modules/module-${module.api.service.name}.js" overwrite="true" failonerror="false"/>
-			
-		</if>
-		
-		<property name="reference.lib.push.dll" value="${modules.push.required.libs} /r:${lib.push.dll}" if="${compile.module.push == 'true'}"/>
-		<property name="reference.lib.push.dll" value="" if="${compile.module.push != 'true'}" />
-		
-		<echo message="reference.lib.push.dll:  ${reference.lib.push.dll}" if="${compile.module.push}" />
-		
+		<property name="module.name" value="push"/>
+		<property name="module.project.name" value="PushNotifications"/>
+		<property name="compile.module.check" value="${compile.module.push}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.push.dll" value="${reference.lib.dll}"/>
 		
 		<!-- Compiling Beacon Module (if requested) -->
-		<echo message="## Should compile Beacon module?: ${compile.module.beacon}" />
-		<if test="${compile.module.beacon=='true'}">
-			<echo message="## Compiling Beacon module..." />
-			<nant buildfile="${modules.beacon.build.file}">
-				<properties>
-					<property name="dll.name" value="Beacon.iOS" />
-					<property name="mode" value="${mode}" />
-					<property name="lib.core.dll" value="../../UnityCore/project/MonoTouch/UnityCore/UnityCore/bin/${build.mode.dir}/UnityCore.dll" />
-				</properties>
-			</nant>
+		<property name="module.name" value="beacon"/>
+		<property name="module.project.name" value="Beacon"/>
+		<property name="compile.module.check" value="${compile.module.beacon}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.beacon.dll" value="${reference.lib.dll}"/>
+        
+        <!-- Compiling InfoCert Module (if requested) -->
+		<property name="module.name" value="infocert"/>
+		<property name="module.project.name" value="InfoCert"/>
+		<property name="compile.module.check" value="${compile.module.infocert}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.infocert.dll" value="${reference.lib.dll}"/>
 		
-			<property name="lib.beacon.dll" value="../../lib/modules/Beacon.iOS.dll" />
+		<!-- Compiling Facebook Module (if requested) -->
+		<property name="module.name" value="facebook"/>
+		<property name="module.project.name" value="Facebook"/>
+		<property name="compile.module.check" value="${compile.module.facebook}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.facebook.dll" value="${reference.lib.dll}"/>
 		
-			<copy file="${beacon.dll}" tofile="${lib.beacon.dll}" overwrite="true" />
-			<echo message="## ${lib.beacon.dll}"/>
+		<!-- Compiling RSA Module (if requested) -->
+		<property name="module.name" value="rsa"/>
+		<property name="module.project.name" value="RSA"/>
+		<property name="compile.module.check" value="${compile.module.rsa}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.rsa.dll" value="${reference.lib.dll}"/>
 		
-			<loadproperties file="${modules.beacon.properties.file}" failonerror ="true"/>
-			<property name="modules.beacon.required.libs" value="" overwrite="true"/>
-		
-			<foreach item="String" in="${module.ios.lib.references}" delim="," trim="Both" property="module.reference" >
-	    		<echo message="${modules.beacon.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" />
-				<copy file="${modules.beacon.dir}/${module.name}.iOS/${module.ios.lib.folder}/${module.reference}" tofile="../../lib/modules/${module.reference}" overwrite="true" />
-				<property name="modules.beacon.required.libs" value="${modules.beacon.required.libs} /r:../../lib/modules/${module.reference}"/>
-	    	</foreach>
+		<!-- Compiling USPG Module (if requested) -->
+		<property name="module.name" value="uspg"/>
+		<property name="module.project.name" value="USPG"/>
+		<property name="compile.module.check" value="${compile.module.uspg}"/>
+		<call target="compile-module"/>
+		<property name="reference.lib.uspg.dll" value="${reference.lib.dll}"/>
 			
-			<echo message="## Beacon module - main class: ${module.ios.main.class}"/>
-			<echo message="## Beacon module - service name: ${module.api.service.name}"/>
-			
-			<exec program="/usr/bin/ant" failonerror="false">
-				<arg value="-file"/>
-	            <arg value="../../../UnityBuild/appverse_modules_tasks.xml"/>
-				<arg value="-Dmodule.main.class=${module.ios.main.class}"/>
-				<arg value="-Dmodule.service.name=${module.api.service.name}"/>
-	            <arg value="add-module-ios"/>
-	        </exec>
-			
-			<copy file="${modules.beacon.javascript.file}" tofile="../../lib/modules/module-${module.api.service.name}.js" overwrite="true" failonerror="false"/>
-			
-		</if>
-		
-		<property name="reference.lib.beacon.dll" value="${modules.beacon.required.libs} /r:${lib.beacon.dll}" if="${compile.module.beacon == 'true'}"/>
-		<property name="reference.lib.beacon.dll" value="" if="${compile.module.beacon != 'true'}" />
-		
-		<echo message="reference.lib.beacon.dll:  ${reference.lib.beacon.dll}" if="${compile.module.beacon}" />
-		
 		<!-- END - Compiling Modules -->
 		
 		<echo message="## Searching for source files on: ${source.dir}"/>
@@ -361,11 +224,18 @@
 			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Data.dll" />
 			<arg value="/r:../../lib/BouncyCastle.Crypto.dll" />
 			<arg value="/r:../../lib/SharpZipLib.dll" />
+            <arg value="/r:../../lib/AntiDebuggingBinding.dll" />
 			<arg line="${reference.lib.analytics.dll}"/>
 			<arg line="${reference.lib.scanner.dll}"/>
 			<arg line="${reference.lib.webtrekk.dll}"/>
 			<arg line="${reference.lib.push.dll}"/>
 			<arg line="${reference.lib.beacon.dll}"/>
+			<arg line="${reference.lib.appsflyer.dll}"/>
+			<arg line="${reference.lib.adform.dll}"/>
+            <arg line="${reference.lib.infocert.dll}"/>
+            <arg line="${reference.lib.facebook.dll}"/>
+            <arg line="${reference.lib.rsa.dll}"/>
+            <arg line="${reference.lib.uspg.dll}"/>
 			<arg value="/nologo" />
 			<arg value="/warn:4" />
 			<arg value="/debug:full" if="${mode == 'Debug_Simulator' or mode == 'Debug_Device'}"/>
@@ -379,8 +249,43 @@
 		<exec program="/usr/bin/ant" failonerror="false">
 			<arg value="-file"/>
             <arg value="../../../UnityBuild/appverse_modules_tasks.xml"/>
+			<arg value="-Dplatform=ios"/>
             <arg value="clean-modules-tokens"/>
         </exec>
 		
 	</target>
+	
+	<target name="include-modules-plist-keys">
+		
+		<echo message="########## INCLUDE MODULES PLIST KEYS #########"/>  
+		
+		<!-- Include Facebook Module Info.plist (if requested) -->
+		<property name="module.name" value="facebook"/>
+		<property name="module.project.name" value="Facebook"/>
+		<property name="compile.module.check" value="${compile.module.facebook}"/>
+		<call target="include-module-plist-keys"/>
+		
+	</target>
+	
+	<target name="include-module-plist-keys">
+		
+		<if test="${compile.module.check=='true'}">
+			<echo message="## Including INFO.plist keys for ${module.name} module..." />
+			
+			<property name="module.dir" value="${modules.dir}/${module.project.name}"/>
+			<property name="module.build.file" value="${module.dir}/${module.project.name}.iOS.build"/>
+			
+			<nant buildfile="${module.build.file}" target="include-plist-keys">
+				<properties>
+					<property name="mode" value="${mode}" />
+					<property name="plist.build.dir" value="${plist.build.dir}" />
+					<property name="config.files.dir" value="${config.files.dir}" />
+				</properties>
+			</nant>
+		</if>
+			
+		<echo message="##################################"/>
+		
+	</target>
+	
 </project>

@@ -133,6 +133,8 @@ namespace Unity.Core.Media
 
         public long Duration { get; set; }
 
+		public long Size { get; set; }
+
         //public byte[] DataBytes { get; set; }
         //public string DataBase64Encoded { get; set; }
         public string ReferenceUrl { get; set; }

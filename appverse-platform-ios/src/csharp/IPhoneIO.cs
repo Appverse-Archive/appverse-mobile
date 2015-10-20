@@ -28,6 +28,7 @@ using Unity.Core.IO;
 using System.IO;
 using Unity.Core.Notification;
 using Unity.Core.System;
+using Unity.Core.Storage.FileSystem;
 
 namespace Unity.Platform.IPhone
 {
@@ -37,13 +38,17 @@ namespace Unity.Platform.IPhone
 		private static string _VALIDATECERTIFICATES = "$ValidateCertificates$";
 
 		public static IDictionary<string, string[]> fingerprints; 
+		public static IDictionary<string, string[]> PublicKey;
+
+
 
 		public IPhoneIO()
 		{
-			IPhoneIO.fingerprints = GetFingerprints ();
+			IPhoneIO.fingerprints = SetFingerprints ();
+			IPhoneIO.PublicKey = SetPublicKey ();
 		}
 
-		public IDictionary<string, string[]> GetFingerprints (){
+		public IDictionary<string, string[]> SetFingerprints (){
 			Dictionary<string, string[]> result = new Dictionary<string, string[]> ();
 			foreach(IOService serv in GetServices()){
 				if (serv.Endpoint.Fingerprint != null) {
@@ -59,6 +64,26 @@ namespace Unity.Platform.IPhone
 			}
 
 			removeFingerprints ();
+
+			return result;
+		}
+
+		private IDictionary<string, string[]> SetPublicKey (){
+			Dictionary<string, string[]> result = new Dictionary<string, string[]> ();
+			foreach(IOService serv in GetServices()){
+				if (serv.Endpoint.PublicKey != null) {
+					string requestUriString = String.Format ("{0}:{1}{2}", serv.Endpoint.Host, serv.Endpoint.Port, serv.Endpoint.Path);
+					if (serv.Endpoint.Port == 0) 
+					{
+						requestUriString = String.Format ("{0}{1}", serv.Endpoint.Host, serv.Endpoint.Path);
+					}
+					result.Add(requestUriString, serv.Endpoint.PublicKey.Split(new char[]{','}));
+					//SystemLogger.Log (SystemLogger.Module.CORE, "*************** serv PublicKey: " + requestUriString + " : " + serv.Endpoint.PublicKey);
+				}
+
+			}
+
+			removePublicKeys ();
 
 			return result;
 		}
@@ -93,6 +118,13 @@ namespace Unity.Platform.IPhone
 	    {
 	    	return IPhoneUtils.GetInstance().GetResourceAsBinary(this.ServicesConfigFile, true);
 	    }
+
+		public override String GetAttachmentFullPath(String referenceUrl)
+		{
+			IFileSystem fileSystemService = (IFileSystem)IPhoneServiceLocator.GetInstance ().GetService ("file");
+			DirectoryData rootDir = fileSystemService.GetDirectoryRoot();
+			return Path.Combine(rootDir.FullName, referenceUrl);
+		}
 
 		public override bool ValidateWebCertificates (object sender, System.Security.Cryptography.X509Certificates.X509Certificate certificate, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
 		{

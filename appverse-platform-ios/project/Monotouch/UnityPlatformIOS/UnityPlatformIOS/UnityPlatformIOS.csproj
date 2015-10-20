@@ -70,7 +70,10 @@
       <HintPath>..\..\..\..\lib\SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="UnityCore">
-      <HintPath>..\..\..\..\..\appverse-core\project\MonoTouch\UnityCore\UnityCore\bin\iPhone\Release\UnityCore.dll</HintPath>
+      <HintPath>..\..\..\..\lib\Unity\Release\UnityCore.dll</HintPath>
+    </Reference>
+    <Reference Include="AntiDebuggingBinding">
+      <HintPath>..\..\..\..\lib\AntiDebuggingBinding.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
@@ -102,5 +105,8 @@
     <Compile Include="..\..\..\..\src\csharp\IPhoneServiceURIHandler.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneAppLoader.cs" />
     <Compile Include="..\..\..\..\src\csharp\IPhoneWKScriptMessageHandler.cs" />
+    <Compile Include="..\..\..\..\src\csharp\UIApplicationWeakDelegate.cs" />
+    <Compile Include="..\..\..\..\src\csharp\ImageResizer.cs" />
+    <Compile Include="..\..\..\..\src\csharp\CameraOverlayView.cs" />
   </ItemGroup>
 </Project>

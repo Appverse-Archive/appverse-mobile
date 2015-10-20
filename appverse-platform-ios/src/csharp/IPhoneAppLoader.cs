@@ -281,7 +281,7 @@ namespace Unity.Platform.IPhone
 
 							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Loading module at path: " + path);
 							NSUrl nsUrl = new NSUrl(Uri.EscapeUriString(path));
-							NSUrlRequest request = new NSUrlRequest (nsUrl, NSUrlRequestCachePolicy.ReturnCacheDataElseLoad, 3600.0);
+							NSUrlRequest request = new NSUrlRequest (nsUrl, NSUrlRequestCachePolicy.ReloadIgnoringLocalAndRemoteCacheData, 3600.0);
 
 							IPhoneServiceLocator.CurrentDelegate.LoadRequest(request);
 						} else {

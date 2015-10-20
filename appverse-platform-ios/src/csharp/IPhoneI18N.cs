@@ -57,45 +57,37 @@ namespace Unity.Platform.IPhone
 		}
 
 		protected override XmlTextReader getXmlTextReader(string textFilePath) {
-			if(IPhoneUtils.GetInstance().ResourcesZipped) {
-				Stream stream = IPhoneUtils.GetInstance().GetResourceAsStream(textFilePath);
-				return new XmlTextReader(stream);
-				
-			} else {
-				return base.getXmlTextReader(textFilePath);
-			}
+			
+			return base.getXmlTextReader(textFilePath);
+
 		}
 
 		protected override string readFromPlistFile (string file, string key)
 		{
 
-			if(IPhoneUtils.GetInstance().ResourcesZipped) {
-				// if resource is zipped, we will need to parse the file as an xml file (done in abstract class)
-				return base.readFromPlistFile(file, key);
-			} else {
-				string result = string.Empty;
-				if (this.FileExists (file)) {
-					NSDictionary resourcesLiteral = loadResourcesLiteral (file);
-					if (resourcesLiteral != null) {
-						result = getResourceLiteralValue(key, file, resourcesLiteral);
-					}
-					result = (result ==  null || result == string.Empty) ? String.Format ("&lt;{0}&gt;", key) : result;
-				} else {
-					// if file does not exists, means that requested locale is not supported by application
-					// try then to get default locale string
-					return this.GetResourceLiteral(key);
+
+			string result = string.Empty;
+			if (this.FileExists (file)) {
+				NSDictionary resourcesLiteral = loadResourcesLiteral (file);
+				if (resourcesLiteral != null) {
+					result = getResourceLiteralValue(key, file, resourcesLiteral);
 				}
-				return result;
+				result = (result ==  null || result == string.Empty) ? String.Format ("&lt;{0}&gt;", key) : result;
+			} else {
+				// if file does not exists, means that requested locale is not supported by application
+				// try then to get default locale string
+				return this.GetResourceLiteral(key);
 			}
+			return result;
 		}
+
 
 
 		protected override ResourceLiteralDictionary readAllFromPlistFile (string file)
 		{
-			if(IPhoneUtils.GetInstance().ResourcesZipped) {
-				// if resource is zipped, we will need to parse the file as an xml file (done in abstract class)
-				return base.readAllFromPlistFile(file);
-			} else {
+			
+			try
+			{
 				ResourceLiteralDictionary result = null;
 				if (this.FileExists (file)) {
 					result = new ResourceLiteralDictionary();
@@ -109,8 +101,14 @@ namespace Unity.Platform.IPhone
 					// if file does not exists, means that requested locale is not supported by application
 					// try then to get default locale string
 					return this.GetResourceLiterals();
-				}		
+				}
+			} catch(Exception ex) {
+				#if DEBUG
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "reading PLIST file (" + file + ")in iPhonei18N: Exception message:" + ex.Message);
+				#endif
+				return null;
 			}
+	
 		}
 		
 		private NSDictionary loadResourcesLiteral (string fullPathFilePlist)
