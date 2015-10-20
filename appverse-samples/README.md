@@ -48,12 +48,9 @@ The initial sample application using Appverse HTML5
 	* AppverseCoreIOS.dll
 	* AppversePlatformIOS.dll
 * Other *third-party* needed libraries You could find them at the **appverse-mobile/appverse-platform-ios/lib** project):
-	* GoogleAnalytics.dll (analytics)
-	* Webtrekk.dll (analytics)
 	* SharpZipLib.dll  (security)
 	* BouncyCastle.Crypto.dll  (security)
-	* ZXing.Net.Mobile.dll and zxing.monotouch.dll (QR)
-
+	
 **General Settings**
 * **Bundle Name**: the short display name of the bundle (the name of the final binary application).
 	* Configure it at *Info.plist* file using the property *CFBundleName*, or in the *Project Options*>*IPhone Application* settings > *Advanced* tab > *Bundle Name* property.
@@ -131,7 +128,7 @@ You will need to install the following:
 1. Download the Android SDK: [http://developer.android.com/sdk/index.html]
 2. Install the ADT Plugin for Eclipse. See instructions here: [http://developer.android.com/tools/sdk/eclipse-adt.html] and [http://developer.android.com/sdk/installing/installing-adt.html]
 3. Download the latest SDK Tools and platforms using the SDK Manager.
-	* API level 11 is required as it is the Appverse Android default target.
+	* API level 23 is required as it is the Appverse Android default target.
 	
 * **Note**: Once the project as been loaded into Eclipse, go to the project's **Java Build Path --> Order and Export**, select (checkbox should be checked) Android Private Libraries and modify the order by sending it up, then down. This is made to prevent and error in which Eclipse does not reload the libraries.
 
@@ -162,17 +159,6 @@ You will need to install the following:
 
 **Appverse and Third-party Libraries**:
 * The **Android dependencies** in an Eclipse project are automatically included if you place the corresponding JAR libraries in the  _"libs"_ Eclipse project folder.
-* You should compile and copy the **Appverse** libraries, from Core Java (**appverse-mobile/appverse-core**) and Platform Android (**appverse-mobile/appverse-platfrom-android**) projects to the _"libs"_ project folder.
-	* AppverseCoreJava.jar
-	* AppversePlatformAndroid.jar
-* Other *third-party* needed libraries You could find them at the **appverse-mobile/appverse-runtime-android** project):
-	* libGoogleAnalytics.jar (analytics)
-	* WebtrekkAndroidTrackingLibrary.jar (analytics)
-	* SpongyCastle_147.jar  (security)
-	* gcm.jar (notifications)
-	* zxingCore2_2.jar (QR)
-
-* To use QR Code functionality you should add the **appverse-mobile/appverse-runtime-android-zxing** project as library.
 
 **General Settings**
 
