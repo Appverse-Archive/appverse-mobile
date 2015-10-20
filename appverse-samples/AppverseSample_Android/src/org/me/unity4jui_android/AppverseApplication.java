@@ -59,4 +59,18 @@ public class AppverseApplication extends Application {
 	public static Context getAppContext() {
 		return applicationContext;
 	}
+
+	@Override
+	protected void attachBaseContext(Context base) {
+		
+		super.attachBaseContext(base);
+		
+		// enable multidex
+		//MultiDex.install(this) ;
+				
+	}
+	
+	
+	
+	
 }

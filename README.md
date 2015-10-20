@@ -1,6 +1,6 @@
 # Appverse Mobile
 
-## UPDATE IN PROGRESS
+
 ##### Current Version: 5.1.2 (20th Oct 2015) 
  
 
