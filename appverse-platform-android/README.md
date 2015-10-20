@@ -6,7 +6,13 @@ For more information, please refer to <http://appverse.github.com>.
 This software is licensed under APL 2.0 <http://appverse.org/legal/appverse-license/>.
 
 ## Using
-Load project in Eclipse > Export > Java > JAR file > appverse-platform-android\dist\appverse-platform-android.jar
+Load project in Eclipse:
+1. Import
+2. Existing Android Code into Workspace
+3. Navigate to Project path and Import
+4. Fix Build Path Errors
+5. Select build.xml
+6. Run as > Ant Build
 
 
 ## License

@@ -3,11 +3,10 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
-	<classpathentry kind="lib" path="../appverse-core/project/Eclipse/dist/appverse-core.jar"/>
-	<classpathentry kind="lib" path="../appverse-platform-android/projects/Eclipse/dist/appverse-platform-android.jar"/>
-	<classpathentry kind="lib" path="../appverse-runtime-android/libs/gcm.jar"/>
-	<classpathentry kind="lib" path="../appverse-runtime-android/libs/SpongyCastle_147.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="lib" path="/UnityPlatformAndroid/dist/UnityPlatformAndroid.jar"/>
+	<classpathentry kind="lib" path="/UnityCoreAndroid/dist/UnityCoreAndroid.jar"/>
+	<classpathentry kind="lib" path="C:/Android/sdk/extras/android/support/multidex/library/libs/android-support-multidex.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
