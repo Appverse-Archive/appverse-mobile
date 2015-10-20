@@ -25,10 +25,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Unity.Core.Messaging
+namespace Unity.Core.IO
 {
-    public class AttachmentData : Unity.Core.AttachmentData
-    {
-        // add here any other fields required specifically for the Messaging API
-    }
+	public class AttachmentData : Unity.Core.AttachmentData
+	{ 
+        // add here any other fields required specifically for the IOServices API
+
+        public string FormFieldKey { get; set; }
+	}
 }

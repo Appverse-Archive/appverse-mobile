@@ -32,5 +32,9 @@ namespace Unity.Core.IO
         public String Method {get;set;}
 
         public HTTPProtocolVersion ProtocolVersion { get; set; }
+
+        public bool StopAutoRedirect { get; set; }
+
+        public AttachmentData[] Attachment { get; set; }
 	}
 }

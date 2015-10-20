@@ -34,6 +34,8 @@ namespace Unity.Core.Security
         private string key = String.Empty;
         private string value = String.Empty;
 
+        public bool Encryption { get; set; }
+
         [XmlElement]
         /// <summary>
         /// Name of the Key
@@ -62,6 +64,14 @@ namespace Unity.Core.Security
         {
             this.Key = KeyName;
             this.Value = Value;
+            this.Encryption = false;
+        }
+
+        public KeyPair(string KeyName, string Value, bool enc)
+        {
+            this.Key = KeyName;
+            this.Value = Value;
+            this.Encryption = enc;
         }
     }
 }

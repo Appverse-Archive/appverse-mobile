@@ -56,6 +56,8 @@ namespace Unity.Core.IO
 		/// <param name="service">Service.</param>
 		/// <param name="storePath">Store path (realtive path under application Documents folder).</param>
 		string InvokeServiceForBinary (IORequest request, IOService service, string storePath);
+
+		void ClearCookieContainer ();
 #else
         Task<IOService[]> GetServices();
 

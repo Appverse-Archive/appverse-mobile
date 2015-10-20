@@ -72,7 +72,10 @@ namespace Unity.Platform.IPhone
 			#if DEBUG
 			log ("IPhoneUIApplicationDelegate constructor default");
 			#endif
+
 			IPhoneServiceLocator.CurrentDelegate = this;
+			IPhoneServiceLocator.UIApplicationWeakDelegate = new UIApplicationWeakDelegate ();
+
 			#if DEBUG
 			log ("IPhoneUIApplicationDelegate creating event store instance");
 			#endif

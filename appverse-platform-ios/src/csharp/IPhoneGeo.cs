@@ -364,18 +364,24 @@ namespace Unity.Platform.IPhone
 
 		private void initMapDatabase ()
 		{
-			if (!mapDDBB.ExistsDatabase (mapDDBBName)) {
+			try {
+				if (!mapDDBB.ExistsDatabase (mapDDBBName)) {
+					#if DEBUG
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, mapDDBBName + " database does not exist; creating database");
+					#endif
+					mapDDBB.CreateDatabase (mapDDBBName);
+					initTable (poiTable, poiColumDefinition);
+					initTable (locationCoordinateTable, locationCoordinateColumDefinition);
+					initTable (locationDescriptionTable, locationDescriptionColumnDefinition);
+					initTable (secondaryCategoryTable, secondaryCategoryColumnDefinition);
+				} else {
+					#if DEBUG
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, mapDDBBName + " database exists");
+					#endif
+				}
+			} catch (Exception ex) {
 				#if DEBUG
-				SystemLogger.Log (SystemLogger.Module.PLATFORM, mapDDBBName + " database does not exist; creating database");
-				#endif
-				mapDDBB.CreateDatabase (mapDDBBName);
-				initTable (poiTable, poiColumDefinition);
-				initTable (locationCoordinateTable, locationCoordinateColumDefinition);
-				initTable (locationDescriptionTable, locationDescriptionColumnDefinition);
-				initTable (secondaryCategoryTable, secondaryCategoryColumnDefinition);
-			} else {
-				#if DEBUG
-				SystemLogger.Log (SystemLogger.Module.PLATFORM, mapDDBBName + " database exists");
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "Exception initializing MAP database. Message: " + ex.Message);
 				#endif
 			}
 		}
@@ -420,17 +426,23 @@ namespace Unity.Platform.IPhone
 
 		private void initAccelerometre ()
 		{
-			acceleration = new Acceleration ();
-			uiAcceleration = new UIAcceleration ();
-			UIAccelerometer.SharedAccelerometer.UpdateInterval = 1 / 10;
-			//This value could be set, in a new development, as a parameter
-			UIAccelerometer.SharedAccelerometer.Acceleration += delegate(object sender, UIAccelerometerEventArgs e) {
-				uiAcceleration = e.Acceleration;
-				acceleration.X = (float)uiAcceleration.X;
-				acceleration.Y = (float)uiAcceleration.Y;
-				acceleration.Z = (float)uiAcceleration.Z;
-				acceleration.Accel = (float)Math.Sqrt (Math.Pow (acceleration.X, 2) + Math.Pow (acceleration.Y, 2) + Math.Pow (acceleration.Z, 2));
-			};
+			try {
+				acceleration = new Acceleration ();
+				uiAcceleration = new UIAcceleration ();
+				UIAccelerometer.SharedAccelerometer.UpdateInterval = 1 / 10;
+				//This value could be set, in a new development, as a parameter
+				UIAccelerometer.SharedAccelerometer.Acceleration += delegate(object sender, UIAccelerometerEventArgs e) {
+					uiAcceleration = e.Acceleration;
+					acceleration.X = (float)uiAcceleration.X;
+					acceleration.Y = (float)uiAcceleration.Y;
+					acceleration.Z = (float)uiAcceleration.Z;
+					acceleration.Accel = (float)Math.Sqrt (Math.Pow (acceleration.X, 2) + Math.Pow (acceleration.Y, 2) + Math.Pow (acceleration.Z, 2));
+				};
+			} catch (Exception ex) {
+				#if DEBUG
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "Exception initializing Accelerometer. Message: " + ex.Message);
+				#endif
+			}
 		}
 
 		public override Acceleration GetAcceleration ()
