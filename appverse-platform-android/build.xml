@@ -7,7 +7,7 @@
 	<property name="dist" location="dist" />
 	<property name="jar" value="${dist}/UnityPlatformAndroid.jar" />
 
-	<property name="unity.core.jar" location="../UnityCore/dist/UnityCoreJava.jar" />
+	<property name="unity.core.jar" location="../appverse-core/project/Eclipse/dist/UnityCoreAndroid.jar" />
 
 	<target name="clean">
 		<delete dir="${bin}" />
