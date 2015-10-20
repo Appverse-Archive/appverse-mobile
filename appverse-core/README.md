@@ -4,8 +4,14 @@ This module contains the Java & C# implementation for the core interfaces of App
 
 For more information, please refer to <http://appverse.github.com>.
 
-## Using
-Load project in Netbeans > Clean and Build
+## Using Netbeans
+Load project in Netbeans Folder > Clean and Build
+
+
+## Using Eclipse
+Load project in Eclipse Folder > Right Click build.xml > Ant Build
+
+
 
 ## License
 
