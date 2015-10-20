@@ -23,13 +23,19 @@
  */
 package com.gft.appverse.android.scanner;
 
+import com.gft.unity.core.media.MediaMetadata;
+
 public abstract class AbstractScanner implements IScanner {
 
 	@Override
     public abstract void DetectQRCode (boolean autoHandleQR);
+	
+	@Override
+    public abstract void DetectQRCodeFront (boolean autoHandleQR);	
 
     @Override
     public abstract QRType HandleQRCode (MediaQRContent mediaQRContent);
 
-   
+    @Override
+    public abstract void GenerateQRCode (MediaQRContent content);
 }

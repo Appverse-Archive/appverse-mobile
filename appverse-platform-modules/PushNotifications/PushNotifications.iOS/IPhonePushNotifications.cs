@@ -29,6 +29,7 @@ using Foundation;
 using Unity.Core.IO.ScriptSerialization;
 using WebKit;
 using System.Xml;
+using Unity.Core.System;
 
 namespace Appverse.Platform.IPhone
 {

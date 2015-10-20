@@ -23,6 +23,7 @@
  */
 package com.gft.appverse.android.beacon;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -35,14 +36,11 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.ResultReceiver;
-import android.webkit.WebView;
 
-import com.gft.unity.core.IAppDelegate;
+import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
@@ -54,7 +52,7 @@ public class AndroidBeacon extends AbstractBeacon {
 			LogCategory.PLATFORM, LOGGER_MODULE);
 	
 	private Context context;
-	private WebView webView;
+	private IActivityManager activityManager;
 	
 	private BluetoothAdapter mBluetoothAdapter;
 	// TODO REMOVE ON RELEASE
@@ -68,11 +66,11 @@ public class AndroidBeacon extends AbstractBeacon {
 
 	public AndroidBeacon() {}
 	
-	public AndroidBeacon(Context ctx, WebView view) {
+	public AndroidBeacon(Context ctx, IActivityManager aam) {
 		
 		super();
 		this.context = ctx;
-		this.webView = view;
+		this.activityManager = aam;
 
 		mHandler = new Handler(Looper.getMainLooper());
 		
@@ -88,6 +86,18 @@ public class AndroidBeacon extends AbstractBeacon {
 	}
 	
 	
+	
+	@Override
+	public String getConfigFilePath() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setConfigFileLoadedData(InputStream arg0) {
+		// TODO Auto-generated method stub
+	}
+
 	/* (non-Javadoc)
 	 * @see com.gft.unity.core.IAppDelegate#buildMode(boolean)
 	 */
@@ -96,7 +106,7 @@ public class AndroidBeacon extends AbstractBeacon {
 		// TODO Auto-generated method stub
 		
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see com.gft.unity.core.IAppDelegate#onDestroy()
 	 */
@@ -132,6 +142,15 @@ public class AndroidBeacon extends AbstractBeacon {
 	 */
 	@Override
 	public void onStop() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.gft.unity.core.IAppDelegate#onCreate()
+	 */
+	@Override
+	public void onCreate() {
 		// TODO Auto-generated method stub
 		
 	}
@@ -418,70 +437,21 @@ public class AndroidBeacon extends AbstractBeacon {
 	*/
 	
 	public void executeJS(Activity main, String method, Object[] dataArray) {
-		if (this.webView != null) {
-			String dataJSONString = "null";
-			if(dataArray!=null) {
-				StringBuilder builder = new StringBuilder();
-				int numObjects = 0;
-				for(Object data : dataArray) {
-					if(numObjects>0) {
-						builder.append(",");
-					}
-					if (data == null) {
-						builder.append("null");
-					}
-					if (data instanceof String) {
-						builder.append("'"+ (String)data +"'");
-					} else {
-						builder.append(JSONSerializer.serialize (data));
-					}
-					numObjects++;
-				}
-				dataJSONString = builder.toString();
-			}
-			
-			
-			String jsCallbackFunction = "javascript:if(" + method + "){" + method + "("
-					+ dataJSONString + ");}";
-
-			main.runOnUiThread(new AAMExecuteJS(this.webView, jsCallbackFunction));
+		if (this.activityManager != null) {
+			this.activityManager.executeJS(method, dataArray);
 		}
 	}
 	
 	/*
 	private void executeJS(Activity main, String method, Object data) {
 		 
-		if (this.webView != null) {
-			String jsonData = "null";
-			if(data != null) {
-				jsonData = JSONSerializer.serialize(data);
-			}
-			String jsCallbackFunction = "javascript:if(" + method + "){" + method + "("
-					+ jsonData + ");}";
-
-			main.runOnUiThread(new AAMExecuteJS(this.webView, jsCallbackFunction));
+		if (this.activityManager != null) {
+			this.activityManager.executeJS(method, data);
 		}
 
 	}
 	*/
 	
-	private class AAMExecuteJS implements Runnable {
-
-		private String javascript;
-		private WebView view;
-		
-
-		public AAMExecuteJS(WebView view, String javascript) {
-			this.javascript = javascript;
-			this.view = view;
-		}
-
-		@Override
-		public void run() {
-			if(this.view != null) {
-				this.view.loadUrl(this.javascript);
-			}
-		}
-	}
+	
 
 }

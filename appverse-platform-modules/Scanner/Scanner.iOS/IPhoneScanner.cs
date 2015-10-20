@@ -32,14 +32,133 @@ using WebKit;
 using Foundation;
 using System.Threading;
 using MessageUI;
+using ZXing.QrCode;
+using ZXing;
+using ZXing.Common;
+using Unity.Core.Media; 
+using Unity.Core.Storage.FileSystem;
+using System.IO;
+using System.Text;
+
 
 namespace Appverse.Platform.IPhone
 {
 	public class IPhoneScanner : AbstractScanner
 	{
 
+		public static string DEFAULT_ROOT_PATH = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+
 		public IPhoneScanner ()
 		{
+		}
+
+		#region implemented abstract members of AbstractScanner
+
+		public override void GenerateQRCode(MediaQRContent content)
+		{
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "1");
+			try{
+				MediaMetadata mediaData = new MediaMetadata();
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "2");
+
+				int size = content.Size;
+				if (size == 0) {
+					size = 256;
+				}
+				var writer = new ZXing.BarcodeWriter
+				{ 
+					Format = BarcodeFormat.QR_CODE, 
+					Options = new EncodingOptions { Height = size, Width = size } 
+				};
+				//var img = writer.Write(content.Text);
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "3");
+
+				var uuid = Guid.NewGuid ();
+				string s = uuid.ToString ();
+				String filename = "QR_" + s;
+				NSError err;
+				DirectoryData dest = new DirectoryData(DEFAULT_ROOT_PATH);
+				string path = Path.Combine(dest.FullName, filename+".png");
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "4");
+				content = encodeQRCodeContents(content);
+				using(UIImage img = writer.Write(content.Text)) {
+					
+					using (var data = img.AsPNG ()) {
+						data.Save (path, true, out err);
+					}
+				}
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "5");
+
+				mediaData.ReferenceUrl = filename+".png";
+				mediaData.Title = filename;
+
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "6");
+
+				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+					UIViewController viewController = UIApplication.SharedApplication.KeyWindow.RootViewController;
+					FireUnityJavascriptEvent(viewController, "Appverse.Scanner.onGeneratedQR", mediaData);
+
+				});
+			}catch(Exception ex)
+			{
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "GenerateQRCode - exception: " + ex.Message);
+			}
+		}
+
+		private MediaQRContent encodeQRCodeContents(MediaQRContent qrCode)
+		{
+			var data = qrCode.Text;
+
+			switch (qrCode.QRType) 
+			{
+			case QRType.EMAIL_ADDRESS:
+				qrCode.Text = "mailto:" + data;
+				break;
+			case QRType.GEO:
+				var coord = qrCode.Coord;
+				if(coord != null)
+					qrCode.Text = "geo:" + coord.Latitude +","+ coord.Longitude;
+				break;
+			case QRType.SMS:
+				qrCode.Text = "sms:" + data;
+				break;
+			case QRType.TEL:
+				qrCode.Text = "tel:" + data;
+				break;
+			case QRType.ADDRESSBOOK:
+				StringBuilder sb = new StringBuilder ("MECARD:");
+				var name = qrCode.Contact.Name;
+				if (string.IsNullOrEmpty (name) == true)
+					sb.Append ("N:" + name + ";");
+
+				var address = qrCode.Contact.Address;
+				if (string.IsNullOrEmpty (address) == true)
+					sb.Append ("ADR:" + address + ";");
+
+				var phone = qrCode.Contact.Phone;
+				if (string.IsNullOrEmpty (phone) == true)
+					sb.Append ("TEL:" + phone + ";");
+
+				var email = qrCode.Contact.Email;
+				if (string.IsNullOrEmpty (email) == true)
+					sb.Append ("EMAIL:" + email + ";");
+
+				var url = qrCode.Contact.Url;
+				if (string.IsNullOrEmpty (url) == true)
+					sb.Append ("URL:" + url + ";");
+
+				var note = qrCode.Contact.Note;
+				if (string.IsNullOrEmpty (note) == true)
+					sb.Append ("NOTE:" + note + ";");
+				
+				qrCode.Text = sb.ToString();
+				break;
+			default:
+				break;
+			}
+
+			return qrCode;
+
 		}
 
 		public override void DetectQRCode (bool autoHandleQR)
@@ -49,7 +168,39 @@ namespace Appverse.Platform.IPhone
 				UIViewController viewController = UIApplication.SharedApplication.KeyWindow.RootViewController;
 
 				MobileBarcodeScanner scanner = new MobileBarcodeScanner(viewController);
+
+		
 				scanner.Scan().ContinueWith(t => {   
+					MediaQRContent resultQRContent = null;
+					if (t.Result != null){
+						resultQRContent = new MediaQRContent(t.Result.Text, ZxingToBarcode(t.Result.BarcodeFormat), getQRTypeFromCode(t.Result));
+						//SystemLogger.Log(SystemLogger.Module.PLATFORM, "QR CODE returnValue: " + resultQRContent);
+					}
+
+					UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+						FireUnityJavascriptEvent(viewController, "Appverse.Scanner.onQRCodeDetected", resultQRContent);
+						if(autoHandleQR) HandleQRCode(resultQRContent);
+					});
+
+				});
+				// TODO: check how to do this
+				//IPhoneServiceLocator.CurrentDelegate.SetMainUIViewControllerAsTopController(false);
+			});
+
+		}
+
+		public override void DetectQRCodeFront (bool autoHandleQR)
+		{
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+
+				UIViewController viewController = UIApplication.SharedApplication.KeyWindow.RootViewController;
+
+				MobileBarcodeScanner scanner = new MobileBarcodeScanner(viewController);
+
+				var options = new ZXing.Mobile.MobileBarcodeScanningOptions();
+				options.UseFrontCameraIfAvailable = true;
+				//TODO OR NOT TODO FLASH
+				scanner.Scan(options).ContinueWith(t => {   
 					MediaQRContent resultQRContent = null;
 					if (t.Result != null){
 						resultQRContent = new MediaQRContent(t.Result.Text, ZxingToBarcode(t.Result.BarcodeFormat), getQRTypeFromCode(t.Result));
@@ -230,6 +381,9 @@ namespace Appverse.Platform.IPhone
 			}
 
 		}
+
+		#endregion
+
 	}
 }
 

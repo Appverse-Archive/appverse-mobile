@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (“APL v2.0”).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  (â€œAPL v2.0â€�).  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -27,8 +27,36 @@ public class MediaQRContent {
     private String Text;
     private BarCodeType BarcodeType;
     private QRType QRType;
+    private int Size;
+    private VCard Contact;
+    private Coordinate Coord;
+        
 
-    public String getText() {
+    public Coordinate getCoord() {
+		return Coord;
+	}
+
+	public void setCoord(Coordinate coord) {
+		Coord = coord;
+	}
+
+	public VCard getContact() {
+		return Contact;
+	}
+
+	public void setContact(VCard contact) {
+		this.Contact = contact;
+	}
+
+	public int getSize() {
+		return Size;
+	}
+
+	public void setSize(int size) {
+		this.Size = size;
+	}
+
+	public String getText() {
         return Text;
     }
 

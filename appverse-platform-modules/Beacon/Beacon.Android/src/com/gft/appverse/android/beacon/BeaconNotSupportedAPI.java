@@ -23,11 +23,11 @@
  */
 package com.gft.appverse.android.beacon;
 
+import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
 
 import android.content.Context;
-import android.webkit.WebView;
 
 /**
  * Class to be used in runtime, instead of AndroidBeacon, as main module class for Android API level < 18
@@ -40,7 +40,7 @@ public class BeaconNotSupportedAPI implements IBeacon{
 	protected static final Logger LOGGER = Logger.getInstance(
 			LogCategory.PLATFORM, LOGGER_MODULE);
 	
-	public BeaconNotSupportedAPI(Context ctx, WebView view) {
+	public BeaconNotSupportedAPI(Context ctx, IActivityManager aam) {
 		super(); // same constructor as main module class (AndroidBeacon)
 	}
 

@@ -27,6 +27,7 @@ using WebKit;
 using Foundation;
 using System.Collections.Generic;
 using Unity.Core.IO.ScriptSerialization;
+using System.Text;
 
 namespace Appverse.Core.iBeacon
 {
@@ -52,6 +53,67 @@ namespace Appverse.Core.iBeacon
 			string jsCallbackFunction = "if("+method+"){"+method+"("+dataJSONString+");}";
 			//only for testing 
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript (single object): " + method + ", dataJSONString: " + dataJSONString);
+
+			bool webViewFound = false;
+			if (viewController != null && viewController.View != null) {
+
+				UIView[] subViews = viewController.View.Subviews;
+
+				foreach(UIView subView in subViews) {
+					if (subView is UIWebView) {
+						webViewFound = true;
+
+						// evaluate javascript as a UIWebView
+						(subView as UIWebView).EvaluateJavascript (jsCallbackFunction);
+
+					} else if (subView is WKWebView) {
+						webViewFound = true;
+
+						// evaluate javascript as a WKWebView
+						(subView as WKWebView).EvaluateJavaScript (new NSString(jsCallbackFunction), delegate (NSObject result, NSError error) {
+							SystemLogger.Log (SystemLogger.Module.PLATFORM, "NotifyJavascript COMPLETED (" + method + ")");
+						});
+					}
+				}
+			} 
+
+			if (webViewFound) {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "NotifyJavascript EVALUATED (" + method + ")");
+			} else {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "It was not possible to find a WebView to evaluate the javascript method");
+			}
+
+		}
+
+		public static void FireUnityJavascriptEvent (string method, object[] dataArray)
+		{
+
+			UIViewController viewController = UIApplication.SharedApplication.KeyWindow.RootViewController;
+
+			JavaScriptSerializer Serialiser = new JavaScriptSerializer (); 
+			string dataJSONString = "null";
+			if (dataArray != null) {
+				StringBuilder builder = new StringBuilder ();
+				int numObjects = 0;
+				foreach (object data in dataArray) {
+					if (numObjects > 0) {
+						builder.Append (",");
+					}
+					if (data == null) {
+						builder.Append ("null");
+					}
+					if (data is String) {
+						builder.Append ("'" + (data as String) + "'");
+					} else {
+						builder.Append (Serialiser.Serialize (data));
+					}
+					numObjects++;
+				}
+				dataJSONString = builder.ToString ();
+			}
+			string jsCallbackFunction = "if("+method+"){"+method+"("+dataJSONString+");}";
+			//only for testing 
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "NotifyJavascript (multiple arguments): " + method + ", dataJSONString: " + dataJSONString);
 
 			bool webViewFound = false;
 			if (viewController != null && viewController.View != null) {

@@ -30,6 +30,9 @@ namespace Appverse.Core.Scanner
 		public string Text { get; set; }
 		public BarCodeType BarcodeType { get; set; }
 		public QRType QRType {get;set;}
+		public VCard Contact { get; set; }
+		public int Size { get; set; }
+		public Coordinate Coord { get; set; }
 
 		public MediaQRContent ()
 		{

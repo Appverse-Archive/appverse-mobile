@@ -20,12 +20,16 @@
 
 	<property name="Beacon.lib" value="../../UnityPlatformModules/Beacon/Beacon.iOS/lib"/>
 	
-	<!-- BLE libraries -->
+	<!-- BLE libraries
 	<property name="system.runtime.dll" value="${Beacon.lib}/System.Runtime.dll"/>
 	<property name="newtonsoft.dll" value="${Beacon.lib}/Newtonsoft.Json.dll"/>
 	<property name="robotics.dll" value="${Beacon.lib}/Robotics.Mobile.Core.dll"/>
 	<property name="robotics.ios.dll" value="${Beacon.lib}/Robotics.Mobile.Core.iOS.dll"/>
-	
+	 -->
+            
+	<property name="estimote.dll" value="${Beacon.lib}/Estimote.dll"/>
+    
+    
 	<property name="source.files" value=""/>
 	
 	<target name="clean">
@@ -50,7 +54,10 @@
 				<property name="source.files" value="${source.files}${filename} "/>
 		    </do>
 		</foreach>
-		
+		<!--arg value="-r:${system.runtime.dll}" />	
+			<arg value="-r:${newtonsoft.dll}" />	
+			<arg value="-r:${robotics.dll}" />
+			<arg value="-r:${robotics.ios.dll}" /-->
 		<exec program="${monotouch.command.smcs}" verbose="true">
 			<arg value="/noconfig"/>
 			<arg value="/out:${build.dir}/${dll.name}.dll"/>
@@ -58,10 +65,8 @@
 			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Core.dll" />
 			<arg value="/r:/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/Xamarin.iOS/Xamarin.iOS.dll" />
 			<arg value="/r:${lib.core.dll}" />
-			<arg value="-r:${system.runtime.dll}" />	
-			<arg value="-r:${newtonsoft.dll}" />	
-			<arg value="-r:${robotics.dll}" />
-			<arg value="-r:${robotics.ios.dll}" />
+			
+            <arg value="-r:${estimote.dll}" />
 			
 			<arg value="/nologo" />
 			<arg value="/warn:4" />

@@ -1,0 +1,15 @@
+﻿<Properties StartupItem="Facebook.iOS/Facebook.iOS.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Facebook.iOS/IPhoneFacebook.cs">
+    <Files>
+      <File FileName="Facebook.iOS/IPhoneFacebook.cs" Line="32" Column="16" />
+      <File FileName="../AppsFlyer/AppsFlyer.iOS/IPhoneAppsFlyer.cs" Line="39" Column="34" />
+      <File FileName="Facebook.iOS/FacebookInit.cs" Line="32" Column="3" />
+      <File FileName="../AppsFlyer/AppsFlyer.iOS/AppsFlyerInitialization.cs" Line="25" Column="14" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
