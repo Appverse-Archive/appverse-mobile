@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppverseSample_iOS", "AppverseSample_iOS\AppverseSample_iOS.csproj", "{E7A4AD86-70FC-4468-8793-604B37DD3B18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FidorLogin", "FidorLogin\FidorLogin.csproj", "{17EFF3BC-69D0-431E-8C82-2936D3E4357C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|iPhoneSimulator = Debug|iPhoneSimulator
@@ -15,18 +13,6 @@ Global
 		AppStore|iPhone = AppStore|iPhone
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.Ad-Hoc|iPhone.ActiveCfg = Release|iPhone
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.Ad-Hoc|iPhone.Build.0 = Release|iPhone
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.AppStore|iPhone.ActiveCfg = Release|iPhone
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.AppStore|iPhone.Build.0 = Release|iPhone
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.Debug|iPhone.ActiveCfg = Debug|iPhone
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.Debug|iPhone.Build.0 = Debug|iPhone
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.Release|iPhone.ActiveCfg = Release|iPhone
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.Release|iPhone.Build.0 = Release|iPhone
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
-		{17EFF3BC-69D0-431E-8C82-2936D3E4357C}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 		{E7A4AD86-70FC-4468-8793-604B37DD3B18}.Ad-Hoc|iPhone.ActiveCfg = Ad-Hoc|iPhone
 		{E7A4AD86-70FC-4468-8793-604B37DD3B18}.Ad-Hoc|iPhone.Build.0 = Ad-Hoc|iPhone
 		{E7A4AD86-70FC-4468-8793-604B37DD3B18}.AppStore|iPhone.ActiveCfg = AppStore|iPhone

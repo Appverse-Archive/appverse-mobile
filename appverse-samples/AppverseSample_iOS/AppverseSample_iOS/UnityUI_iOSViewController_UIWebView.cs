@@ -22,7 +22,7 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-using CoreGraphics;
+using System.Drawing;
 using Unity.Platform.IPhone;
 using Foundation;
 using UIKit;
@@ -75,6 +75,22 @@ namespace UnityUI.iOS
 
 		public override void CustomizeWebView() {
 			// nothing to customize in this webview
+
+			if (this.webView != null) {
+				bool KeyboardDisplayRequiresUserAction = true;
+				try {
+					
+					var KeyboardDisplayRequiresUserActionKey = NSBundle.MainBundle.ObjectForInfoDictionary("Appverse_KeyboardDisplayRequiresUserAction");
+					KeyboardDisplayRequiresUserAction = Convert.ToBoolean(Convert.ToInt32(""+KeyboardDisplayRequiresUserActionKey));
+
+					log ("Keyboard displays requires user action (default value is true)? " + KeyboardDisplayRequiresUserAction);
+				} catch(Exception ex) {
+					log ("Exception getting KeyboardDisplayRequiresUserAction preference: " + ex.Message);
+				}
+
+				this.webView.KeyboardDisplayRequiresUserAction = KeyboardDisplayRequiresUserAction; // TODO customize this flag by project using build property
+			}
+
 		}
 
 		public override void ApplyAutoresizingMask () {
