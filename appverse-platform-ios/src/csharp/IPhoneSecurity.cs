@@ -33,6 +33,8 @@ using UIKit;
 using LocalAuthentication;
 using System.Xml.Serialization;
 using System.ComponentModel.Design.Serialization;
+using System.Text;
+using System.Security.Cryptography;
 
 
 namespace Unity.Platform.IPhone
@@ -167,22 +169,35 @@ namespace Unity.Platform.IPhone
 			List<KeyPair> successfullKeyPairs = new List<KeyPair>();
 			List<KeyPair> failedKeyPairs = new List<KeyPair>();
 			foreach (KeyPair kp in keypairs) {
-				SecRecord srNewEntry = new SecRecord (SecKind.GenericPassword){
+				//SystemLogger.Log (SystemLogger.Module.PLATFORM, "Storing: " + kp.Value);
+				if (kp.Encryption) {
+					kp.Value = Encrypt (kp.Value);
+					//SystemLogger.Log (SystemLogger.Module.PLATFORM, "Encrypted: " + kp.Value);
+				}
+				SecRecord srNewEntry = new SecRecord (SecKind.GenericPassword) {
 					Account = kp.Key,
-					Generic = NSData.FromString(kp.Key),
-					ValueData = NSData.FromString(kp.Value)
+					Generic = NSData.FromString (kp.Key),
+					ValueData = NSData.FromString (kp.Value)
 				};
 
 				if (sAccessGroup != null)
 					srNewEntry.AccessGroup = sAccessGroup;
-
-
-				if (this.GetPasscodeProtectedKeys ().Contains (kp.Key)) {
-					if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+			
+				if (UIDevice.CurrentDevice.CheckSystemVersion (8, 0)) {
+					if (this.GetPasscodeProtectedKeys ().Contains (kp.Key)) {
 						SystemLogger.Log (SystemLogger.Module.PLATFORM, 
 							"StoreKeyValuePairs - Passcode protection applied to this keychain item (as configured in security-config.xml)");
 						srNewEntry.AccessControl = new SecAccessControl (SecAccessible.WhenPasscodeSetThisDeviceOnly, SecAccessControlCreateFlags.UserPresence);
 					} else {
+						srNewEntry.Accessible = SecAccessible.WhenUnlockedThisDeviceOnly;
+						SystemLogger.Log (SystemLogger.Module.PLATFORM, 
+							"StoreKeyValuePairs - Applied Accessible WhenUnlockedThisDeviceOnly  (ios 8)");
+					}
+				} else {
+					srNewEntry.Accessible = SecAccessible.WhenUnlockedThisDeviceOnly;
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, 
+						"StoreKeyValuePairs - Applied Accessible WhenUnlockedThisDeviceOnly  (ios 7)");
+					if (this.GetPasscodeProtectedKeys ().Contains (kp.Key)) {
 						SystemLogger.Log (SystemLogger.Module.PLATFORM, 
 							"StoreKeyValuePairs - Passcode protection is requested for this keychain item, but protection couldn't be applied due to device is iOS<8");
 					}
@@ -209,24 +224,24 @@ namespace Unity.Platform.IPhone
 
 			SystemLogger.Log(SystemLogger.Module.PLATFORM,"StoreKeyValuePairs - Success: " + successfullKeyPairs.Count + ", Failed: " + failedKeyPairs.Count);
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {		
-				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.OnKeyValuePairsStoreCompleted", new object[]{successfullKeyPairs, failedKeyPairs});
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Security.OnKeyValuePairsStoreCompleted", new object[]{successfullKeyPairs, failedKeyPairs});
 			});
 		}
 
 
-		public override void GetStoredKeyValuePair (string keyname)
+		public override void GetStoredKeyValuePair (KeyPair keyname)
 		{
-			GetStoredKeyValuePairs (new string[] { keyname });
+			GetStoredKeyValuePairs (new KeyPair[] { keyname });
 		}
 
-		public override void GetStoredKeyValuePairs (string[] keynames)
+		public override void GetStoredKeyValuePairs (KeyPair[] keynames)
 		{
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 				string sAccessGroup = KeyChainAccessGroup;
 				List<KeyPair> foundKeyPairs = new List<KeyPair>();
-				foreach(string key in keynames){
+				foreach(KeyPair key in keynames){
 					SecRecord srSearchCriteria = new SecRecord (SecKind.GenericPassword){
-						Account = key
+						Account = key.Key
 					};
 
 					if (sAccessGroup != null)
@@ -235,13 +250,22 @@ namespace Unity.Platform.IPhone
 					SecStatusCode keyResult;
 					SecRecord srFoundKey = SecKeyChain.QueryAsRecord (srSearchCriteria, out keyResult);
 					if (keyResult == SecStatusCode.Success) {
-						if(srFoundKey!=null) foundKeyPairs.Add(SecRecordToKeyPair(srFoundKey));
+						if(srFoundKey!=null){
+							KeyPair found = SecRecordToKeyPair(srFoundKey);
+							//SystemLogger.Log(SystemLogger.Module.PLATFORM,"GetStoredKeyValuePairs - Found: "+found.Value);
+							if(key.Encryption){
+								found.Value = Decrypt(found.Value);
+
+								//SystemLogger.Log(SystemLogger.Module.PLATFORM,"GetStoredKeyValuePairs - Decrypt: "+found.Value);
+							}
+							foundKeyPairs.Add(found);
+						}
 					}
 				}
 
 				SystemLogger.Log(SystemLogger.Module.PLATFORM,"GetStoredKeyValuePairs - Found: " + foundKeyPairs.Count);
 
-				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.OnKeyValuePairsFound", foundKeyPairs);
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Security.OnKeyValuePairsFound", foundKeyPairs);
 			});
 		}
 
@@ -273,7 +297,7 @@ namespace Unity.Platform.IPhone
 				}
 				SystemLogger.Log(SystemLogger.Module.PLATFORM,"RemoveStoredKeyValuePair - Success: " + successfullKeyPairs.Count + ", Failed: " + failedKeyPairs.Count);
 					
-				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.OnKeyValuePairsRemoveCompleted", new object[]{successfullKeyPairs, failedKeyPairs});
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Security.OnKeyValuePairsRemoveCompleted", new object[]{successfullKeyPairs, failedKeyPairs});
 			});	
 		}
 
@@ -286,7 +310,11 @@ namespace Unity.Platform.IPhone
 			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
 
 				SystemLogger.Log (SystemLogger.Module.PLATFORM, "StartLocalAuthenticationWithTouchID - checking Touch ID available in this device"); 
-
+				if(reason==null) {
+					reason = "";
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, 
+						"StartLocalAuthenticationWithTouchID - *** WARNING ***: no reason text provided. App should provide a text to explain why Touch ID authentication is needed");
+				}
 				bool available = this.CanEvaluatePolicy();
 				if(available) {
 					SystemLogger.Log (SystemLogger.Module.PLATFORM, "StartLocalAuthenticationWithTouchID - start device owner authenticaiton using biometrics");
@@ -379,6 +407,20 @@ namespace Unity.Platform.IPhone
 		}
 
 		#endregion
+
+	
+		private static string Encrypt(string plainText)
+		{
+			//TODO IMPLEMENT CRYPTO
+			return plainText;
+		}
+
+		private static string Decrypt(string encryptedText)
+		{
+
+			//TODO IMPLEMENT CRYPTO
+			return encryptedText;
+		}
 	}
 }
 

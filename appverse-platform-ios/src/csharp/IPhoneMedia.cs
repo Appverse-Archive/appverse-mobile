@@ -38,6 +38,7 @@ using System.Text.RegularExpressions;
 using Unity.Core.Storage.FileSystem;
 using System.Drawing;
 using CoreGraphics;
+using Unity.Core.Media.Camera;
 
 namespace Unity.Platform.IPhone
 {
@@ -49,6 +50,8 @@ namespace Unity.Platform.IPhone
 		UIPopoverController popover = null;
 		
 		public static string ASSETS_PATH = "assets";
+
+		private static CameraOptions cameraOptions = null;
 
         public override MediaMetadata GetCurrentMedia()
         {
@@ -94,6 +97,8 @@ namespace Unity.Platform.IPhone
 		}
 		public override MediaMetadata TakeSnapshot ()
 		{
+			cameraOptions = null; // rest values for camera options
+
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "Getting picture from camera");
 			using (var pool = new NSAutoreleasePool ()) {
 				var thread = new Thread (ShowCameraView);
@@ -103,6 +108,17 @@ namespace Unity.Platform.IPhone
 			//TODO change method signature to "void" return.
 			return null;
 		}
+
+		public override void TakeSnapshotWithOptions (CameraOptions options)
+		{
+			cameraOptions = options; // reset image scale factor
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "Getting picture from camera with specific camera options...");
+			using (var pool = new NSAutoreleasePool ()) {
+				var thread = new Thread (ShowCameraView);
+				thread.Start ();
+			};
+		}
+
 		
 		[Export("ShowCameraView")]
 		private void ShowCameraView ()
@@ -113,6 +129,45 @@ namespace Unity.Platform.IPhone
 
 				UIImagePickerController imagePickerController = new UIImagePickerController();
 				imagePickerController.SourceType = UIImagePickerControllerSourceType.Camera;
+				
+				if(cameraOptions != null) {
+					if(cameraOptions.UseFrontCamera) {
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Setting front camera...");
+						imagePickerController.CameraDevice = UIImagePickerControllerCameraDevice.Front;
+					}
+
+					if(cameraOptions.UseCustomCameraOverlay) {
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Using custom overlay...");
+						
+						UIScreen screen = UIScreen.MainScreen;
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "device bounds width " + screen.Bounds.Width);
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "device bounds height " + screen.Bounds.Height);
+						CameraOverlayView overlay = new CameraOverlayView(imagePickerController, cameraOptions, 
+								new CGRect(0, 0, screen.Bounds.Width, screen.Bounds.Height));
+
+						// Hide the controls
+						imagePickerController.ShowsCameraControls = false; // hide native camera controls
+						imagePickerController.NavigationBarHidden = true;  // hide navigation bar
+						imagePickerController.ToolbarHidden = true;  // hide toolbar (bottom)
+
+						// Make camera view full screen:
+						imagePickerController.WantsFullScreenLayout = true;
+
+							nfloat cameraViewHeight = screen.Bounds.Width * CameraOverlayView.CAMERA_ASPECT_RATIO; 
+						nfloat cameraVerticalOffset = (screen.Bounds.Height - cameraViewHeight) / 2f; // moves the preview exactly in the middle of the screen
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "camera view height " + cameraViewHeight);
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "camera vertical offset " + cameraVerticalOffset);
+
+						CGAffineTransform translate = CGAffineTransform.Translate( imagePickerController.CameraViewTransform, 0.0f, cameraVerticalOffset); 
+						imagePickerController.CameraViewTransform = translate;
+
+						CGAffineTransform scale = CGAffineTransform.Scale(imagePickerController.CameraViewTransform, CameraOverlayView.CAMERA_ASPECT_RATIO, CameraOverlayView.CAMERA_ASPECT_RATIO);
+						imagePickerController.CameraViewTransform = scale;
+
+						// Insert the overlay in the picker controller
+						imagePickerController.CameraOverlayView = overlay;
+					}
+				}
 				
 				imagePickerController.FinishedPickingMedia += HandleCameraFinishedPickingMedia;
 				imagePickerController.Canceled += HandleImagePickerControllerCanceled;
@@ -192,20 +247,31 @@ namespace Unity.Platform.IPhone
 			try {
 				NSString mediaType = (NSString) e.Info.ValueForKey(UIImagePickerController.MediaType);
 				UIImage image = (UIImage) e.Info.ValueForKey(UIImagePickerController.OriginalImage);
-				
+
 				if(image != null && mediaType !=null && mediaType == "public.image") { // "public.image" is the default UTI (uniform type) for images. 
 					mediaData.Type = MediaType.Photo;
 					mediaData.MimeType = MediaMetadata.GetMimeTypeFromExtension(".jpg");
 					mediaData.Title = (image.GetHashCode() & 0x7FFFFFFF) + ".JPG";
-					
+
 					NSData imageData = image.AsJPEG();
-					
+
 					if(imageData !=null) {
+						mediaData.Size = (long)imageData.Length;
+
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Getting image file size: "+mediaData.Size);
+
 						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Getting image data raw data...");
 						
 						byte[] buffer = new byte[imageData.Length];
 						Marshal.Copy(imageData.Bytes, buffer,0,buffer.Length);
-						
+
+						if(cameraOptions!=null) {
+							buffer = ResizeImage(buffer, image.Size.Width / cameraOptions.ImageScaleFactor , image.Size.Height / cameraOptions.ImageScaleFactor);
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Getting image file size (SCALED by " + cameraOptions.ImageScaleFactor + "): "+buffer.Length);
+							mediaData.Size = (long)buffer.Length;
+							SystemLogger.Log(SystemLogger.Module.PLATFORM, "Getting image file size (SCALED): "+mediaData.Size);
+						}
+
 						IFileSystem fileSystemService = (IFileSystem)IPhoneServiceLocator.GetInstance ().GetService ("file");
 						SystemLogger.Log(SystemLogger.Module.CORE, "Storing media file on application filesystem...");
 			
@@ -260,7 +326,8 @@ namespace Unity.Platform.IPhone
 					}
 					
 					if(imageData !=null) {
-						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Getting image data raw data...");
+						mediaData.Size = (long)imageData.Length;
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "Getting image file size: "+mediaData.Size);
 						
 						byte[] buffer = new byte[imageData.Length];
 						Marshal.Copy(imageData.Bytes, buffer,0,buffer.Length);
@@ -480,6 +547,17 @@ namespace Unity.Platform.IPhone
 		
 		
 		#region Private Methods
+
+		private byte[] ResizeImage(byte[] imageData, nfloat width, nfloat height) {
+			try {
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "Resizing image...");
+				return ImageResizer.ResizeImage(imageData, (float)width, (float)height); // in this byte-array the resized image is given back
+			} catch(Exception ex) {
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "Error resizing media file: " + ex.Message, ex);
+				return imageData;
+			}
+		}	
+
 		
 		private NSUrl GetNSUrlFromPath(string path, bool localPath) {
 			NSUrl nsUrl = null;

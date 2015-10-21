@@ -22,7 +22,7 @@
  POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-using CoreGraphics;
+using System.Drawing;
 using Unity.Platform.IPhone;
 using Foundation;
 using UIKit;
