@@ -26,4 +26,7 @@
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <DisabledProjects>
+    <String>FidorLogin/FidorLogin.csproj</String>
+  </DisabledProjects>
 </Properties>

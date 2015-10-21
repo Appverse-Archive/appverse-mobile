@@ -61,26 +61,49 @@ namespace Unity.Platform.IPhone
 		/// <param name="query">Query string in the format: "relative_url?param1=value1&param2=value2". Set it to null for not sending extra launch data.</param>
 		public override void LaunchApplication (App application, string query)
 		{
-			if (application != null && application.IOSApp != null) {
-				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-					string doubleSlash = "";
-					if(!application.IOSApp.RemoveUriDoubleSlash) {
-						doubleSlash = "//";
-					}
-					string urlString = application.IOSApp.UriScheme + ":" + doubleSlash + query;
-					urlString = Uri.EscapeUriString(urlString); // MOBPLAT-201: avoid crash when using blanck spaces in the URL query
-					NSUrl urlParam = new NSUrl (urlString);
-					SystemLogger.Log (SystemLogger.Module.PLATFORM, "Launching application by URL: " + urlParam.AbsoluteString);
-					bool result = UIApplication.SharedApplication.OpenUrl (urlParam);
-					if(!result) {
-						SystemLogger.Log (SystemLogger.Module.PLATFORM, 
-						                  "The system could not open the given url. Please check syntax.");
-					}
-				});
-			} else {
-				SystemLogger.Log (SystemLogger.Module.PLATFORM, 
-				                  "No application provided to launch, please check your first argument on API method invocation");
-			}
+			UIApplication.SharedApplication.InvokeOnMainThread (delegate {
+				bool canOpen = true;
+				string canOpenMessage = "SUCCESS";
+
+				if (application != null && application.IOSApp != null) {
+					
+						string doubleSlash = "";
+						if(!application.IOSApp.RemoveUriDoubleSlash) {
+							doubleSlash = "//";
+						}
+						string urlString = application.IOSApp.UriScheme + ":" + doubleSlash + query;
+						urlString = Uri.EscapeUriString(urlString); // MOBPLAT-201: avoid crash when using blanck spaces in the URL query
+						NSUrl urlParam = new NSUrl (urlString);
+						SystemLogger.Log (SystemLogger.Module.PLATFORM, "Launching application by URL: " + urlParam.AbsoluteString);
+
+						if(UIApplication.SharedApplication.CanOpenUrl(urlParam)) {
+							
+							bool result = UIApplication.SharedApplication.OpenUrl (urlParam);
+							if(!result) {
+								SystemLogger.Log (SystemLogger.Module.PLATFORM, 
+								                  "The system failed opening the given url. Please check syntax.");
+								canOpen = false;
+								canOpenMessage = "RESOURCE_CANNOT_BE_OPENED";
+							}
+						} else {
+							SystemLogger.Log (SystemLogger.Module.PLATFORM, 
+								"The system cannot open the given url. Please check syntax.");
+							canOpen = false;
+							canOpenMessage = "NO_APP_CAN_OPEN_URI_SCHEME";
+						}
+
+				} else {
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, 
+						"No application provided to launch, please check your first argument on API method invocation. " +
+						"Check that the app referenced is present in the config file, and it contains the ios node");
+					canOpenMessage = "METHOD_CALL_SYNTAX_ERROR";
+					canOpen = false;
+				}
+
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "Launching application by URL (result): " + canOpen + "," + canOpenMessage);
+
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.System.onLaunchApplicationResult", new object[] { canOpen, canOpenMessage });
+			});
 		}
 
 		public override UnityContext GetUnityContext()
