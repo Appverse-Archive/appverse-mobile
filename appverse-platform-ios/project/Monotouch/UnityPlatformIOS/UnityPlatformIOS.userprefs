@@ -1,26 +1,12 @@
 ﻿<Properties StartupItem="UnityPlatformIOS/UnityPlatformIOS.csproj">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.iPhone 6+ Appverse" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../../../../../../../Library/Frameworks/Xamarin.iOS.framework/Versions/9.0.1.29/lib/mono/2.1/Xamarin.iOS.Common.targets">
     <Files>
-      <File FileName="../../../../../../Downloads/ImageInverter/ImageInverterExt/Info.plist" />
-      <File FileName="../../../../../../Downloads/ImageInverter/ImageInverter/Info.plist" />
-      <File FileName="../../../../../../Downloads/ImageInverter/ImageInverterExt/ImageInverterViewController.cs" Line="93" Column="6" />
-      <File FileName="../../../../appverse-samples/AppverseSample_iOS/FidorLogin/ViewController.cs" Line="14" Column="50" />
+      <File FileName="../../../../appverse-core/src/csharp/Unity/Core/System/Server/Net/HandlerThread.cs" Line="28" Column="7" />
+      <File FileName="../../../../appverse-core/src/csharp/Unity/Core/Messaging/AttachmentData.cs" Line="30" Column="46" />
+      <File FileName="../../../src/csharp/IPhoneDatabase.cs" Line="29" Column="13" />
+      <File FileName="../../../../../../../../Library/Frameworks/Xamarin.iOS.framework/Versions/9.0.1.29/lib/mono/2.1/Xamarin.iOS.Common.targets" Line="478" Column="17" />
     </Files>
-    <Pads>
-      <Pad Id="ProjectPad">
-        <State name="__root__">
-          <Node name="AppverseSample_iOS" expanded="True" selected="True">
-            <Node name="AppverseSample_iOS" expanded="True" />
-            <Node name="FidorLogin" expanded="True" />
-          </Node>
-          <Node />
-          <Node name="Share" expanded="True" />
-          <Node />
-          <Node />
-        </State>
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />

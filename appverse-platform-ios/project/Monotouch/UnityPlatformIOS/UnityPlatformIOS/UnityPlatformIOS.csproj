@@ -69,11 +69,11 @@
     <Reference Include="SharpZipLib">
       <HintPath>..\..\..\..\lib\SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="UnityCore">
-      <HintPath>..\..\..\..\lib\Unity\Release\UnityCore.dll</HintPath>
-    </Reference>
     <Reference Include="AntiDebuggingBinding">
       <HintPath>..\..\..\..\lib\AntiDebuggingBinding.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityCore">
+      <HintPath>..\..\..\..\..\appverse-core\project\MonoTouch\UnityCore\UnityCore\bin\iPhone\Release\UnityCore.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
