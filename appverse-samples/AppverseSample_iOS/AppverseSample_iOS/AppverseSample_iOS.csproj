@@ -3,157 +3,153 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
-    <ProjectGuid>{E7A4AD86-70FC-4468-8793-604B37DD3B18}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{CD9C7BA9-D7ED-4E73-9DD3-CAD1D8BC83BC}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>AppverseSample_iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <TargetFrameworkIdentifier>Xamarin.iOS</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
     <AssemblyName>AppverseSample_iOS</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
-    <DebugSymbols>True</DebugSymbols>
+    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>False</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
-    <MtouchDebug>True</MtouchDebug>
-    <MtouchProfiling>True</MtouchProfiling>
-    <MtouchI18n>west</MtouchI18n>
-    <MtouchSdkVersion>6.0</MtouchSdkVersion>
-    <MtouchArch>ARMv7</MtouchArch>
+    <ConsolePause>false</ConsolePause>
+    <MtouchArch>i386</MtouchArch>
+    <MtouchLink>None</MtouchLink>
+    <MtouchDebug>true</MtouchDebug>
+    <MtouchProfiling>true</MtouchProfiling>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhone\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchArch>ARMv7, ARM64</MtouchArch>
+    <ConsolePause>false</ConsolePause>
+    <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
-    <DebugType>none</DebugType>
-    <Optimize>True</Optimize>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
     <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
+    <MtouchArch>i386</MtouchArch>
+    <ConsolePause>false</ConsolePause>
     <MtouchLink>None</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
-    <DebugSymbols>True</DebugSymbols>
+    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>False</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\iPhone\Debug</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
+    <ConsolePause>false</ConsolePause>
+    <MtouchArch>ARMv7, ARM64</MtouchArch>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchProfiling>true</MtouchProfiling>
     <CodesignKey>iPhone Developer</CodesignKey>
-    <MtouchDebug>True</MtouchDebug>
-    <MtouchProfiling>True</MtouchProfiling>
-    <IpaPackageName>
-    </IpaPackageName>
-    <MtouchI18n>
-    </MtouchI18n>
-    <MtouchArch>ARMv7</MtouchArch>
-    <MtouchUseRefCounting>true</MtouchUseRefCounting>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
-    <DebugType>none</DebugType>
-    <Optimize>True</Optimize>
-    <OutputPath>bin\iPhone\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
-    <CodesignKey>iPhone Developer</CodesignKey>
-    <MtouchArch>ARMv7, ARM64</MtouchArch>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Ad-Hoc|iPhone' ">
-    <DebugType>none</DebugType>
-    <Optimize>True</Optimize>
-    <OutputPath>bin\iPhone\Ad-Hoc</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
-    <BuildIpa>True</BuildIpa>
-    <CodesignKey>iPhone Distribution</CodesignKey>
-    <MtouchArch>ARMv7, ARM64</MtouchArch>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'AppStore|iPhone' ">
-    <DebugType>none</DebugType>
-    <Optimize>True</Optimize>
-    <OutputPath>bin\iPhone\AppStore</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
-    <CodesignKey>iPhone Distribution</CodesignKey>
-    <MtouchArch>ARMv7, ARM64</MtouchArch>
+    <MtouchDebug>true</MtouchDebug>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
+    <Reference Include="Xamarin.iOS" />
+    <Reference Include="AntiDebuggingBinding">
+      <HintPath>lib\AntiDebuggingBinding.dll</HintPath>
+    </Reference>
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="SharpZipLib">
       <HintPath>lib\SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="Xamarin.iOS">
-      <HintPath>..\..\..\..\..\..\..\Library\Frameworks\Xamarin.iOS.framework\Versions\8.8.1.9\lib\64bits\Xamarin.iOS.dll</HintPath>
+    <Reference Include="UnityCore">
+      <HintPath>lib\UnityCore.dll</HintPath>
     </Reference>
-    <Reference Include="Xamarin.iOS" />
+    <Reference Include="UnityPlatformIOS">
+      <HintPath>lib\UnityPlatformIOS.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterfaceDefinition Include="Resources\LaunchScreen.xib" />
+    <InterfaceDefinition Include="UnityUI_iOSViewController_iPad.xib" />
+    <InterfaceDefinition Include="UnityUI_iOSViewController_iPhone.xib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
+    <None Include="WebResources\.DS_Store" />
+    <None Include="WebResources\www\.DS_Store" />
+    <None Include="WebResources\www\Archive.zip" />
+    <None Include="WebResources\www\index.html" />
+    <None Include="WebResources\www\fonts\15527459.glyphicons-halflings-regular.eot" />
+    <None Include="WebResources\www\fonts\89889688.glyphicons-halflings-regular.svg" />
+    <None Include="WebResources\www\fonts\966e41c3.glyphicons-halflings-regular.woff" />
+    <None Include="WebResources\www\fonts\c328f73b.glyphicons-halflings-regular.ttf" />
+    <None Include="WebResources\www\fonts\c83069ec.glyphicons-halflings-regular.woff2" />
+    <None Include="WebResources\www\js\appverse.js" />
+    <None Include="WebResources\www\resources\i18n\angular\angular-locale_ar-eg.js" />
+    <None Include="WebResources\www\resources\i18n\angular\angular-locale_en-us.js" />
+    <None Include="WebResources\www\resources\i18n\angular\angular-locale_es-es.js" />
+    <None Include="WebResources\www\resources\i18n\angular\angular-locale_ja-jp.js" />
+    <None Include="WebResources\www\scripts\6b4b6ca9.scripts.js" />
+    <None Include="WebResources\www\styles\26f5d48c.vendor.css" />
+    <None Include="WebResources\www\styles\47ebca11.styles.css" />
+    <None Include="WebResources\www\views\home.html" />
+    <None Include="app\.DS_Store" />
     <None Include="app\app.config" />
+    <None Include="app\config\en.plist" />
+    <None Include="app\config\error_rooted.html" />
+    <None Include="app\config\es.plist" />
+    <None Include="app\config\i18n-config.xml" />
+    <None Include="app\config\io-services-config.xml" />
   </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
-    <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
     <Compile Include="AppDelegate_UIWebView.cs" />
-    <Compile Include="UnityUI_iOSViewController_UIWebView.designer.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="UnityUI_iOSViewController.cs" />
     <Compile Include="UnityUI_iOSViewController_UIWebView.cs" />
+    <Compile Include="UnityUI_iOSViewController_UIWebView.designer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Icon-72.png" />
-    <Content Include="Icon-72%402x.png" />
-    <Content Include="Icon.png" />
-    <Content Include="Icon%402x.png" />
-    <Content Include="Icon-Small-50.png" />
-    <Content Include="Icon-Small-50%402x.png" />
-    <Content Include="Icon-Small.png" />
-    <Content Include="Icon-Small%402x.png" />
-    <Content Include="Default.png" />
-    <Content Include="Default%402x.png" />
-    <Content Include="Default-568h%402x.png" />
-    <Content Include="Default-Landscape.png" />
-    <Content Include="Default-Landscape%402x.png" />
-    <Content Include="Default-Portrait.png" />
-    <Content Include="Default-Portrait%402x.png" />
-    <Content Include="app\config\en.plist" />
-    <Content Include="app\config\es.plist" />
-    <Content Include="app\config\i18n-config.xml" />
-    <Content Include="app\config\io-services-config.xml" />
-    <Content Include="WebResources\www\js\appverse.js" />
-    <Content Include="WebResources\www\app.js" />
-    <Content Include="WebResources\www\index.html" />
-    <Content Include="WebResources\www\resources\css\app.css" />
-    <Content Include="WebResources\www\resources\images\bg_login%403x-min.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="app\" />
-    <Folder Include="WebResources\" />
-  </ItemGroup>
-  <ItemGroup>
+    <BundleResource Include="Default-568h%402x.png" />
+    <BundleResource Include="Default-Landscape.png" />
+    <BundleResource Include="Default-Landscape%402x.png" />
+    <BundleResource Include="Default-Portrait.png" />
+    <BundleResource Include="Default-Portrait%402x.png" />
+    <BundleResource Include="Default.png" />
+    <BundleResource Include="Default%402x.png" />
     <BundleResource Include="Icon-40.png" />
     <BundleResource Include="Icon-40%402x.png" />
     <BundleResource Include="Icon-60.png" />
     <BundleResource Include="Icon-60%402x.png" />
+    <BundleResource Include="Icon-72.png" />
+    <BundleResource Include="Icon-72%402x.png" />
     <BundleResource Include="Icon-76.png" />
     <BundleResource Include="Icon-76%402x.png" />
+    <BundleResource Include="Icon-Small-50.png" />
+    <BundleResource Include="Icon-Small-50%402x.png" />
+    <BundleResource Include="Icon-Small.png" />
+    <BundleResource Include="Icon-Small%402x.png" />
+    <BundleResource Include="Icon.png" />
+    <BundleResource Include="Icon%402x.png" />
+    <BundleResource Include="bg_login%403x-min.png" />
+    <BundleResource Include="WebResources\www\styles\images\23aed1ad.logo_inverse.png" />
+    <BundleResource Include="WebResources\www\styles\images\b2942aa5.logo.png" />
   </ItemGroup>
-  <ItemGroup>
-    <InterfaceDefinition Include="UnityUI_iOSViewController_iPad.xib" />
-    <InterfaceDefinition Include="UnityUI_iOSViewController_iPhone.xib" />
-  </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
