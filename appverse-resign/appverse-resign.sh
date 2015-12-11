@@ -67,9 +67,9 @@ fi
 echo "Resigning application using certificate: $CERTIFICATE" >&2
 if [ "$ENTITLEMENTS" != "" ]; then
 	echo "Using Entitlements: $ENTITLEMENTS" >&2
-	/usr/bin/codesign -f -s "$CERTIFICATE" --entitlements="$ENTITLEMENTS" --resource-rules="temp/Payload/$APP_NAME/ResourceRules.plist" "temp/Payload/$APP_NAME"
+	/usr/bin/codesign -f -s "$CERTIFICATE" --entitlements="$ENTITLEMENTS" "temp/Payload/$APP_NAME"
 else
-	/usr/bin/codesign -f -s "$CERTIFICATE" --resource-rules="temp/Payload/$APP_NAME/ResourceRules.plist" "temp/Payload/$APP_NAME"
+	/usr/bin/codesign -f -s "$CERTIFICATE" "temp/Payload/$APP_NAME"
 fi
  
 # Repackage quietly
