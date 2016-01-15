@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<i18n-config>
+	<default id = "en-US" language = "en" country = "US" />
+	<supportedLanguages>
+		<supportedLanguage id = "es-ES" language = "es" country = "ES" />
+		<supportedLanguage id = "es"    language = "es"                />
+		<supportedLanguage id = "en-US" language = "en" country = "US" />
+		<supportedLanguage id = "en"    language = "en"                />
+		<supportedLanguage id = "id-ID" language = "id" country = "ID" />
+		<supportedLanguage id = "zh-CN" language = "zh" country = "CN" />
+		<supportedLanguage id = "hu-HU" language = "hu" country = "HU" />
+	</supportedLanguages>
+</i18n-config>

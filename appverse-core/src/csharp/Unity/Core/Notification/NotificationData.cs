@@ -41,6 +41,8 @@ namespace Unity.Core.Notification
 
 		public string CustomDataJsonString { get;set; } 
 
+		public Boolean AppWasRunning { get;set; }
+
 	}
 }
 

@@ -2,7 +2,7 @@
  Copyright (c) 2012 GFT Appverse, S.L., Sociedad Unipersonal.
 
  This Source  Code Form  is subject to the  terms of  the Appverse Public License 
- Version 2.0  (“APL v2.0”).  If a copy of  the APL  was not  distributed with this 
+ Version 2.0  (â€œAPL v2.0â€�).  If a copy of  the APL  was not  distributed with this 
  file, You can obtain one at http://appverse.org/legal/appverse-license/.
 
  Redistribution and use in  source and binary forms, with or without modification, 
@@ -88,12 +88,12 @@ public abstract class AbstractNotification implements INotification {
     @Override
     public abstract void UpdateNotifyLoading(float progress);
     
-    @Override
+    /*@Override
     public abstract void RegisterForRemoteNotifications (String senderId, RemoteNotificationType[] types);
 
     @Override
     public abstract void UnRegisterForRemoteNotifications ();
-    
+    */
     @Override
     public abstract void PresentLocalNotificationNow(NotificationData notification);
 

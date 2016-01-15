@@ -1,0 +1,56 @@
+﻿<Page
+    x:Class="UnityRuntimeWindowsPhone.CameraViewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UnityRuntimeWindowsPhone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Transitions>
+        <TransitionCollection>
+            <NavigationThemeTransition>
+                <NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                    <SlideNavigationTransitionInfo/>
+                </NavigationThemeTransition.DefaultNavigationTransitionInfo>
+            </NavigationThemeTransition>
+        </TransitionCollection>
+    </Page.Transitions>
+    <Page.Resources>
+        <Storyboard x:Name="CameraGridFadeInStoryBoard" x:Key="CameraGridFadeInStoryBoard" Completed="CameraGridFadeInStoryBoard_Completed">
+            <DoubleAnimation Storyboard.TargetName="CameraGrid" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:.2"></DoubleAnimation>
+        </Storyboard>
+        <Storyboard x:Name="CameraGridFadeOutStoryBoard" x:Key="CameraGridFadeOutStoryBoard" Completed="CameraGridFadeOutStoryBoard_OnCompleted">
+            <DoubleAnimation Storyboard.TargetName="CameraGrid" Storyboard.TargetProperty="Opacity" From="1" To="0" Duration="0:0:.2"></DoubleAnimation>
+        </Storyboard>
+    </Page.Resources>
+
+    <Grid x:Name="CameraGrid" Grid.Row="0" Margin="0,0,0,1" Background="Black" >
+        <CaptureElement x:Name="PhotoPreview" Stretch="UniformToFill" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+        <!--Polyline x:Name="ULGuideMark" StrokeThickness="4"></>
+            <Polyline x:Name="URGuideMark" StrokeThickness="4"></Polyline>
+            <Polyline x:Name="BLGuideMark" StrokeThickness="4"></Polyline>
+            <Polyline x:Name="BRGuideMark" StrokeThickness="4"></Polyline-->
+        <Image x:Name="CameraPreviewOverlay" Source="Assets/background.png"/>
+
+        <TextBlock x:Name="CameraDescriptionTextBlockShadow4" HorizontalAlignment="Center" VerticalAlignment="Bottom" Opacity="0.3" Margin="6 6 0 0" TextAlignment="Center" TextWrapping="Wrap"/>
+        <TextBlock x:Name="CameraDescriptionTextBlockShadow3" HorizontalAlignment="Center" VerticalAlignment="Bottom" Opacity="0.3" Margin="5 5 0 0" TextAlignment="Center" TextWrapping="Wrap"/>
+        <TextBlock x:Name="CameraDescriptionTextBlockShadow2" HorizontalAlignment="Center" VerticalAlignment="Bottom" Opacity="0.3" Margin="4 4 0 0" TextAlignment="Center" TextWrapping="Wrap"/>
+        <TextBlock x:Name="CameraDescriptionTextBlockShadow1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Opacity="0.3" Margin="3 3 0 0" TextAlignment="Center" TextWrapping="Wrap"/>
+        <TextBlock x:Name="CameraDescriptionTextBlock" HorizontalAlignment="Center" VerticalAlignment="Bottom" TextAlignment="Center" TextWrapping="Wrap"/>
+
+        <Grid x:Name="CameraButtonsGrid" VerticalAlignment="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="ShutterButton" HorizontalAlignment="Center" VerticalAlignment="Center" Click="CameraShutter_Click" BorderThickness="0" Grid.Column="1" Width="75" Height="75">
+                <Image x:Name="ImageCameraButton" Source="Assets/CameraIcon.png" Stretch="Uniform"/>
+            </Button>
+            <Button x:Name="CancelCameraButton" HorizontalAlignment="Right" VerticalAlignment="Center" Click="CancelCameraButton_OnClick" BorderThickness="0" Grid.Column="0">
+                Cancel
+            </Button>
+        </Grid>
+    </Grid>
+</Page>

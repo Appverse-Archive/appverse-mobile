@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- GENERAL ··································································· -->
+    
+    <string name="appverse_widget_app_widget_name">Showcase Widget</string>	
+    <string name="appverse_widget_image_description">Showcase</string>
+    <string name="appverse_widget_empty"></string>
+    <string name="appverse_widget_euro">&#8364;</string>
+
+     <!-- COLORS ···································································· -->
+    <color name="appverse_widget_orange">#F28400</color>
+    <color name="appverse_widget_orange_pressed">#bf6800</color>
+    <color name="appverse_widget_orange_dark">#CD710E</color>
+    <color name="appverse_widget_white">#FFFFFF</color>
+    <color name="appverse_widget_gray">#666666</color>
+    <color name="appverse_widget_gray_pressed">#4d4d4d</color>
+    <color name="appverse_widget_blue">#004C8A</color>
+    <color name="appverse_widget_blue_dark">#003D73</color>
+    <color name="appverse_widget_blue_dark_pressed">#002F5A</color>
+    <color name="appverse_widget_red">#DE2C26</color>
+    <color name="appverse_widget_transparent_pressed">#F0F0F0</color>
+
+    <!-- BUTTONS ··································································· -->
+    <string name="appverse_widget_btn_cancel">Cancel</string>
+    <string name="appverse_widget_btn_home">Home</string>
+    <string name="appverse_widget_btn_test">Testcase</string>
+    <string name="appverse_widget_placeholder">Execute Testcase</string>
+    
+    
+    <string name="appverse_widget_synchronous">M</string>
+    <string name="appverse_widget_store">S</string>
+    <string name="appverse_widget_get_enc">E</string>
+    <string name="appverse_widget_key">G</string>
+    <string name="appverse_widget_remove">R</string>
+    
+
+    <!-- SCREEN HOME(1) ·································································· 
+    <string name="appverse_widget_scn1_text1">Click</string>-->
+
+    <!-- SCREEN CARTA(2) ·································································· 
+    <string name="appverse_widget_scn2_text1">Numero di carta</string>-->
+
+    <!-- SCREEN WAITING(3) ·································································· 
+    <string name="appverse_widget_scn3_text1">In attesa\ndi connessione&#8230;</string>
+    <string name="appverse_widget_scn3_text2">Impossibile connettersi al POS. Riprova</string>-->
+    
+    <!-- SCREEN SUCCESS(4) ·································································· 
+    <string name="appverse_widget_scn4_text1">Operazione completata correttamente.</string>
+    <string name="appverse_widget_scn4_text2">Numero di carta</string>
+    <string name="appverse_widget_scn4_text3">Importo</string>
+    <string name="appverse_widget_scn4_text4">Data</string>
+    <string name="appverse_widget_scn4_text5">alle</string>-->
+    
+	<!-- SCREEN BALANCE ·································································· 
+    <string name="appverse_widget_balance_text">SALDO:</string>
+    <string name="appverse_widget_hour_text">ORA:</string>
+    <string name="appverse_widget_date_text">DATA:</string>
+    <string name="appverse_widget_default_balance_text">000,00 &#8364;</string>
+    <string name="appverse_widget_default_hour_text">00:00</string>
+    <string name="appverse_widget_default_date_text">00.00.0000</string>
+    <string name="appverse_widget_nd">n.d.</string>-->
+    
+    <!-- MESSAGES - ERRORS
+    <string name="appverse_widget_error_settings_title">Impossibile abilitare il widget</string>
+    <string name="appverse_widget_K_NFCNOTSUP">Servizio indisponibile: antenna NFC disattiva, verificare le impostazioni del telefono</string>
+    <string name="appverse_widget_K_NFCROOTPRIV">Il servizio Pago contactless di appverse_ PAY non è utilizzabile. Il tuo dispositivo risulta avere un sistema operativo non conforme. Aggiorna il tuo sistema operativo scaricando sul telefono l\'ultimo aggiornamento della versione ufficiale. Per qualsiasi chiarimento contatta la tua filiale oppure il Servizio Clienti al numero verde 800.500.200 (dall\'estero +39.030.2471209).</string>
+    <string name="appverse_widget_K_NFCWALTELCO">Per utilizzare la funzione è necessario installare la app del proprio operatore telefonico</string>
+    <string name="appverse_widget_K_NFC_OPEFAILED">Per utilizzare la funzione Pago Contactless effettuare l\'accesso al Wallet TIM</string>
+    <string name="appverse_widget_K_NFC_GENERR">Errore generico</string>
+    <string name="appverse_widget_K_NFC_SECERR">Controlli di sicurezza non superati</string> -->
+    
+    <!-- SIAPTPE-166 (fnva: 14/08/2014): Change texts 
+    <string name="appverse_widget_K_NFC_CARDLNF">Servizio indisponibile: nessuna carta appverse_ caricata sulla SIM</string>
+    <string name="appverse_widget_K_NFC_ERRCARD">Servizio indisponibile: errore di comunicazione con la SIM</string>
+    <string name="appverse_widget_error_payment">Richiesta di pagamento non riuscita. Verificare motivo sul terminale POS dell\'esercente</string>
+    <string name="appverse_widget_cancel_payment">Richiesta di pagamento annullata correttamente</string>    -->
+    
+    <!-- (SIAPTPE-159) New error message for widget payment enabled/disabled 
+    <string name="appverse_widget_K_NFC_PAYSTS">Per utilizzare la funzione Pago contactless dal widget devi accedere alla app appverse_ PAY e abilitare il widget dalle impostazioni</string>
+    -->
+</resources>
