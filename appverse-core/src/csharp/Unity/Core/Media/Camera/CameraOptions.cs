@@ -66,6 +66,7 @@ namespace Unity.Core.Media.Camera
 		public float ImageScaleFactor { get; set; }
 		public bool UseFrontCamera { get; set; }
 		public bool UseCustomCameraOverlay { get; set; }
+		public string Overlay { get; set; }
 
 		// guidelines customization
 		public int GuidelinesMargins { get; set; }

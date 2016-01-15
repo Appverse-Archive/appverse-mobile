@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnityPlatformWindows", "UnityPlatformWindows\UnityPlatformWindows.csproj", "{D96980D3-7C11-4973-9638-EFF37B25D5DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D96980D3-7C11-4973-9638-EFF37B25D5DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D96980D3-7C11-4973-9638-EFF37B25D5DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D96980D3-7C11-4973-9638-EFF37B25D5DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D96980D3-7C11-4973-9638-EFF37B25D5DA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = UnityPlatformWindows\UnityPlatformWindows.csproj
+		version = 1.1
+	EndGlobalSection
+EndGlobal

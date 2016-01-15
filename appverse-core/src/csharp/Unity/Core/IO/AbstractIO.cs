@@ -402,7 +402,8 @@ namespace Unity.Core.IO
             string boundary = CreateFormDataBoundary();
             webReq.ContentType = contentTypes[service.Type] + boundary;
             SystemLogger.Log(SystemLogger.Module.CORE, "**** [MULTIPART_FORM_DATA]. Adding boundary to content-type: " + webReq.ContentType);
-            webReq.Accept = contentTypes[service.Type]; // setting "Accept" header with the same value as "Content Type" header, it is needed to be defined for some services.
+            // KO in some servers if Accept header is filled 
+            //webReq.Accept = contentTypes[service.Type]; // setting "Accept" header with the same value as "Content Type" header, it is needed to be defined for some services.
 
             Dictionary<string, string> postData = new Dictionary<string, string>();
 

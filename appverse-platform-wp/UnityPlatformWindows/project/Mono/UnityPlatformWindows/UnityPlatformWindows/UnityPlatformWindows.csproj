@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{D96980D3-7C11-4973-9638-EFF37B25D5DA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Unity.Platform.Windows</RootNamespace>
+    <AssemblyName>UnityPlatformWindows</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <BaseDirectory>..\..\..\..\src\csharp</BaseDirectory>
+    <newfilesearch>OnLoadAutoInsert</newfilesearch>
+    <ReleaseVersion>1.1</ReleaseVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Core">
+    </Reference>
+    <Reference Include="System.Data.SQLite, Version=1.0.66.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\lib\clr\System.Data.SQLite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq, Version=2.0.38.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\lib\clr\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityCore, Version=1.1.3973.35718, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\lib\unity\Release\UnityCore.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Compile Include="..\..\..\..\src\csharp\AssemblyInfo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsDatabase.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsFileSystem.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsGeo.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsI18N.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsIO.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsMedia.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsMessaging.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsNet.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsNotification.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsPim.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsServiceLocator.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsSystem.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsTelephony.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsLog.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsAnalytics.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsSecurity.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsWebtrekk.cs" />
+    <Compile Include="..\..\..\..\src\csharp\WindowsAppLoader.cs" />
+  </ItemGroup>
+</Project>

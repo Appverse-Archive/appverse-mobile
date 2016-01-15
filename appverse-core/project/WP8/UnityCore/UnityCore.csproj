@@ -1,0 +1,242 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F390F16B-6A40-4093-8D63-F3BA4262053F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UnityCore</RootNamespace>
+    <AssemblyName>UnityCore</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <TargetPlatformVersion>8.1</TargetPlatformVersion>
+    <MinimumVisualStudioVersion>12</MinimumVisualStudioVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{76F1466A-8B6D-4E39-A767-685A06062A39};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NETFX_CORE;WINDOWS_PHONE_APP;WP8</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_PHONE_APP;WP8</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\ARM\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NETFX_CORE;WINDOWS_PHONE_APP;WP8</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM'">
+    <OutputPath>bin\ARM\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_PHONE_APP;WP8</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NETFX_CORE;WINDOWS_PHONE_APP;WP8</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_PHONE_APP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\FormatUtils.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOHeader.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Net\NetworkData.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Telephony\AbstractTelephony.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Telephony\ICallControl.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Telephony\ITelephony.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Telephony\TelephonyEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\AbstractSystem.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\CPUInfo.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\DisplayInfo.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\HardwareInfo.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\IDisplay.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\IHumanInteraction.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\IMemory.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\IOperatingSystem.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\IPower.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\IProcessor.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Locale.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\MemoryStatus.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\OSInfo.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\PowerInfo.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\SystemEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\SystemLogger.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Service\AbstractInvocationManager.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Service\AbstractServiceLocator.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Service\IInvocationManager.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Service\IServiceLocator.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Service\ResourceInvocationManager.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Service\Service.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Service\ServiceInvocationManager.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Service\ServicesConfig.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Server\ServerEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Server\Net\HttpResponse.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Server\Net\Parameter.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Server\Net\ParameterType.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Resource\Resource.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Resource\ResourceEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Storage\Share\AbstractShare.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Storage\Share\IShare.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Storage\FileSystem\AbstractFileSystem.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Storage\FileSystem\DirectoryData.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Storage\FileSystem\FileData.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Storage\FileSystem\IFileSystem.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Storage\Database\AbstractDatabase.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Storage\Database\Database.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Storage\Database\IDatabase.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Security\AbstractSecurity.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Security\ISecurity.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Security\KeyPair.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\AbstractPim.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\CalendarAlarm.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\CalendarAttendee.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\CalendarEntry.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\CalendarRecurrence.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\Contact.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\ContactAddress.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\ContactEmail.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\ContactPhone.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\ICalendar.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\IContacts.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\PimEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Notification\AbstractNotification.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Notification\ActionSheet.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Notification\INotification.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Net\AbstractNet.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Net\BrowserCommand.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Net\INet.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Net\NetEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Messaging\AbstractMessaging.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Messaging\AttachmentData.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Messaging\EmailAddress.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Messaging\EmailData.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Messaging\IMessaging.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Media\AbstractMedia.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Media\IMediaOperations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Media\MediaEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Media\MediaMetadata.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Media\Video\IVideo.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Media\Camera\ICamera.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Media\Audio\IAudio.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\AbstractIO.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IIo.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOHeaders.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IORequest.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOResponse.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOResponseHandle.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOResponseHandler.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOService.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOServiceEndpoint.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOServicesConfig.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOSessionContext.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\ScriptSerialization\ScriptIgnoreAttribute.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\I18N\AbstractI18N.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\I18N\II18N.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\I18N\ResourceLiteralDictionary.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\AbstractGeo.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\Acceleration.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\GeoDecoderAttributes.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\GeoEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\GeoUtils.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\ILocation.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\IMap.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\LocationCategory.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\LocationCoordinate.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\LocationDescription.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Geo\POI.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Log\AbstractLog.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Log\ILog.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Log\LogEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\AssemblyInfo.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\IO\IOCookie.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\UnityContext.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Notification\NotificationEnumerations.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Notification\NotificationData.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Notification\SchedulingData.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\AppLoader\ILoader.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\AppLoader\Module.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\AppLoader\ModuleParam.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\AppLoader\ModuleVersion.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\AppLoader\AbstractLoader.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\AppLoader\ModuleContext.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Launch\LaunchConfig.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Launch\App.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Launch\LaunchData.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\System\Launch\IOSApp.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\ContactLite.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Pim\ContactQuery.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Net\SecondaryBrowserOptions.cs" />
+    <Compile Include="..\..\..\..\appverse-core\src\csharp\Unity\Core\Media\Camera\CameraOptions.cs" />
+    <Compile Include="RegistrationError.cs" />
+    <Compile Include="RegistrationToken.cs" />
+    <Compile Include="AbstractPushNotification.cs" />
+    <Compile Include="AbstractScanner.cs" />
+    <Compile Include="Coordinate.cs" />
+    <Compile Include="IPushNotifications.cs" />
+    <Compile Include="IScanner.cs" />
+    <Compile Include="LocaleI18N.cs" />
+    <Compile Include="AttachmentData_Core.cs" />
+    <Compile Include="AttachmentData_Core_IO.cs" />
+    <Compile Include="MediaQRContent.cs" />
+    <Compile Include="VCard.cs" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
+    <VisualStudioVersion>12.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetPlatformIdentifier)' == '' ">
+    <TargetPlatformIdentifier>WindowsPhoneApp</TargetPlatformIdentifier>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

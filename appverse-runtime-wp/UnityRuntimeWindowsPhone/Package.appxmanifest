@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
+  <Identity Name="AppversePackage" Publisher="CN=AppversePublisherCN" Version="vMaj.vMin.vBuild.vRev" />
+  <mp:PhoneIdentity PhoneProductId="b964f39a-1af8-402c-9088-5161190560f0" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  <Properties>
+    <DisplayName>AppverseStoreName</DisplayName>
+    <PublisherDisplayName>AppversePublisher</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Prerequisites>
+    <OSMinVersion>6.3.1</OSMinVersion>
+    <OSMaxVersionTested>6.3.1</OSMaxVersionTested>
+  </Prerequisites>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="UnityRuntimeWindowsPhone.App">
+      <m3:VisualElements DisplayName="AppverseDisplayName" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\SmallLogo.png" Description="Appverse Mobile Framework Application" ForegroundText="light" BackgroundColor="AppverseTileBG" ToastCapable="true">
+        <m3:DefaultTile Wide310x150Logo="Assets\WideLogo.png" Square71x71Logo="Assets\Square71x71Logo.png">
+		  <!--TileNames-m3:ShowNameOnTiles-TileNames-->
+            <!--NormalTileName-m3:ShowOn Tile="square150x150Logo" /-NormalTileName-->
+            <!--WideTileName-m3:ShowOn Tile="wide310x150Logo" /-WideTileName-->
+          <!--TileNames-/m3:ShowNameOnTiles-TileNames-->
+        </m3:DefaultTile>
+        <m3:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="AppverseSplashBG" />
+        <m3:InitialRotationPreference>
+          <!--ORIPortraitm3:Rotation Preference="portrait" /ORIPortrait-->
+          <!--ORILandscapem3:Rotation Preference="landscape" /ORILandscape-->
+          <!--ORILandFlippedm3:Rotation Preference="landscapeFlipped" /ORILandFlipped-->
+        </m3:InitialRotationPreference>
+      </m3:VisualElements>
+	  <!--Extensions>
+        <Extension Category="windows.protocol">
+          <Protocol Name="PROTOCOL_NAME">
+            <DisplayName>APP_NAME</DisplayName>
+          </Protocol>
+        </Extension>
+      </Extensions-->
+    </Application>
+  </Applications>
+  <Capabilities>
+    <Capability Name="internetClientServer" />
+    <!--Contactsm3:Capability Name="contacts" /Contacts-->
+    <!--Appointmentsm3:Capability Name="appointments" /Appointments-->
+    <!--LibraryCapability Name="musicLibrary" /Library-->
+    <!--LibraryCapability Name="picturesLibrary" /Library-->
+    <!--LibraryCapability Name="videosLibrary" /Library-->
+    <!--CameraDeviceCapability Name="webcam" /Camera-->
+    <!--GeoDeviceCapability Name="location" /Geo-->
+    <!--NFCDeviceCapability Name="proximity" /NFC-->
+  </Capabilities>
+  <Extensions>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>VideoEffects.WindowsPhone.dll</Path>
+        <ActivatableClass ActivatableClassId="VideoEffects.CanvasEffect" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="VideoEffects.LumiaEffect" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="VideoEffects.LumiaAnalyzer" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="VideoEffects.ShaderEffectBgrx8" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="VideoEffects.ShaderEffectNv12" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="VideoEffects.SquareEffect" ThreadingModel="both" />
+      </InProcessServer>
+    </Extension>
+  </Extensions>
+</Package>

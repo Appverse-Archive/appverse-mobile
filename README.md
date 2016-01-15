@@ -1,7 +1,7 @@
 # Appverse Mobile
 
 
-##### Current Version: 5.1.2 (20th Oct 2015) 
+##### Current Version: 5.1.4.1 (15 Jan 2016) 
  
 
 This repository contains the Java, C# and HTML implementations for the core interfaces, platform specific code and runtime of the Appverse Mobile platform. Appverse Mobile is a multi-platform mobile development framework allows developers to use HTML5, JavaScript, CSS3 and to leverage native functionalities of a mobile device to build apps from a common codebase.
@@ -12,6 +12,8 @@ The following modules are contained within this repository:
 * **appverse-core-webresources** - This module contains the common Web **Resources** of Appverse.
 * **appverse-platform-ios** - This module contains the Monotouch **C#** implementation of the core interfaces.
 * **appverse-platform-android** - This module contains the Android **Java** implementation of the core interfaces.
+* * **appverse-platform-wp** - This module contains the Windows Phone 8.1 **C#** implementation of the core interfaces.
+* **appverse-runtime-wp** - This module contains the Windows Phone 8.1 **C#** implementation of the Appverse platform. SDK Windows Phone 8.1
 * **appverse-runtime-ios** - This module contains the iOS Monotouch **C#** implementation of the Appverse platform. Min SDK iOS 7.x
 * **appverse-runtime-android** - This module contains the Android **Java** implementation of the Appverse platform. Min API LVL 14
 

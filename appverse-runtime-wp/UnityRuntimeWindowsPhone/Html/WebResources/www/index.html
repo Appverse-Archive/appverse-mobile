@@ -1,0 +1,231 @@
+﻿<!DOCTYPE HTML>
+<html manifest="" lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>Showcase</title>
+    <style type="text/css">
+	    /**
+		* Example of an initial loading indicator.
+		* It is recommended to keep this as minimal as possible to provide instant feedback
+		* while other resources are still being loaded for the first time
+		*/
+	    body {
+		margin: 0;
+		height: 100%;
+		background-color: #f2f2f2;
+		background-image: url("resources/images/pattern.png") !important;
+		background-size: 36px auto;
+		background-repeat: repeat;
+	    }
+
+	    #appLoadingIndicator {
+		position: absolute;
+		top: 50%;
+		margin-top: -10px;
+		text-align: center;
+		width: 100%;
+		height: 20px;
+	    }
+
+	    #appLoadingIndicator > * {
+		background-color: #2e68b1;
+		display: inline-block;
+		height: 20px;
+		/**border-radius: 8px;**/
+		margin: 0 5px;
+		width: 20px;
+		animation-name: appLoadingIndicator;
+		animation-duration: 0.8s;
+		animation-iteration-count: infinite;
+		animation-direction: linear;
+
+		-moz-animation-name: appLoadingIndicator;
+		-moz-animation-duration: 0.8s;
+		-moz-animation-iteration-count: infinite;
+		-moz-animation-direction: linear;
+
+		-webkit-animation-name: appLoadingIndicator;
+		-webkit-animation-duration: 0.8s;
+		-webkit-animation-iteration-count: infinite;
+		-webkit-animation-direction: linear;
+		opacity: 0.3;
+	    }
+
+	    #appLoadingIndicator > :nth-child(1) {
+		animation-delay: 0.18s;
+		-moz-animation-delay: 0.18s;
+		-webkit-animation-delay: 0.18s;
+	    }
+
+	    #appLoadingIndicator > :nth-child(2) {
+		animation-delay: 0.42s;
+		-moz-animation-delay: 0.42s;
+		-webkit-animation-delay: 0.42s;
+	    }
+
+	    #appLoadingIndicator > :nth-child(3) {
+		animation-delay: 0.54s;
+		-moz-animation-delay: 0.54s;
+		-webkit-animation-delay: 0.54s;
+	    }
+
+	    @-webkit-keyframes appLoadingIndicator{
+		0% {
+		    opacity: 0.3;
+		}
+		50% {
+		    opacity: 1;
+		    background-color:#2e68b1;
+		}
+		100% {
+		    opacity:0.3;
+		}
+	    }
+
+	    @keyframes appLoadingIndicator{
+		0% {
+		    opacity: 0.3;
+		}
+		50% {
+		    opacity: 1;
+		    background-color:#2e68b1;
+		}
+		100% {
+		    opacity:0.3;
+		}
+	    }
+
+        button{
+            height: 300px;
+            width: auto;
+            font-size: 60px;
+            margin-left: 35%;
+            padding: 30px;
+            margin-right: auto;
+        }
+	</style>
+    <!-- The line below must be kept intact for Sencha Command to build your application
+   
+    <script type="text/javascript">(function(e){var c=e.document.head||e.document.getElementsByTagName("head")[0],b=e.Ext;if(typeof b=="undefined"){e.Ext=b={}}function d(f){document.write(f)}function a(f,g){var h=document.createElement("meta");h.setAttribute("name",f);h.setAttribute("content",g);c.appendChild(h)}b.blink=function(q){var k=q.js||[],o=q.css||[],m,n,p,h,l,g;if(navigator.userAgent.match(/IEMobile\/10\.0/)){var j=document.createElement("style");j.appendChild(document.createTextNode("@media screen and (orientation: portrait) {@-ms-viewport {width: 320px !important;}}@media screen and (orientation: landscape) {@-ms-viewport {width: 560px !important;}}"));document.getElementsByTagName("head")[0].appendChild(j)}a("viewport","width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no");a("apple-mobile-web-app-capable","yes");a("apple-touch-fullscreen","yes");b.microloaded=true;var f=window.Ext.filterPlatform=function(u){var D=false,s=navigator.userAgent,w,A;u=[].concat(u);function z(E){var i=/Mobile(\/|\s)/.test(E);return/(iPhone|iPod)/.test(E)||(!/(Silk)/.test(E)&&(/(Android)/.test(E)&&(/(Android 2)/.test(E)||i)))||(/(BlackBerry|BB)/.test(E)&&i)||/(Windows Phone)/.test(E)}function y(i){return !z(i)&&(/iPad/.test(i)||/Android|Silk/.test(i)||/(RIM Tablet OS)/.test(i)||(/MSIE 10/.test(i)&&/; Touch/.test(i)))}var r=window.location.search.substr(1),t=r.split("&"),v={},B,x;for(x=0;x<t.length;x++){var C=t[x].split("=");v[C[0]]=C[1]}B=v.platform;if(B){return u.indexOf(B)!=-1}for(w=0,A=u.length;w<A;w++){switch(u[w]){case"phone":D=z(s);break;case"tablet":D=y(s);break;case"desktop":D=!z(s)&&!y(s);break;case"ios":D=/(iPad|iPhone|iPod)/.test(s);break;case"android":D=/(Android|Silk)/.test(s);break;case"blackberry":D=/(BlackBerry|BB)/.test(s);break;case"safari":D=/Safari/.test(s)&&!(/(BlackBerry|BB)/.test(s));break;case"chrome":D=/Chrome/.test(s);break;case"ie10":D=/MSIE 10/.test(s);break;case"windows":D=/MSIE 10/.test(s)||/Trident/.test(s);break;case"tizen":D=/Tizen/.test(s);break;case"firefox":D=/Firefox/.test(s)}if(D){return true}}return false};for(m=0,n=o.length;m<n;m++){p=o[m];if(typeof p!="string"){h=p.platform;g=p.exclude;l=p.theme;p=p.path}if(h){if(!f(h)||f(g)){continue}if(!b.theme){b.theme={}}if(!b.theme.name){b.theme.name=l||"Default"}}d('<link rel="stylesheet" href="'+p+'">')}for(m=0,n=k.length;m<n;m++){p=k[m];if(typeof p!="string"){h=p.platform;g=p.exclude;p=p.path}if(h){if(!f(h)||f(g)){continue}}d('<script src="'+p+'"><\/script>')}}})(this);Ext.blink({id:"8fd87473-3a2a-4bd3-aa63-888c4bd71f8e",js:[{path:"js/appverse.js"},{path:"js/jquery-1.11.3.min.js"},{path:"js/utils.js"},{path:"js/locale.js"},{path:"js/callbacks.js"},{path:"js/testcases/analytics.js"},{path:"js/testcases/apploader.js"},{path:"js/testcases/database.js"},{path:"js/testcases/filesystem.js"},{path:"js/testcases/geo.js"},{path:"js/testcases/i18n.js"},{path:"js/testcases/ioservices.js"},{path:"js/testcases/media.js"},{path:"js/testcases/messaging.js"},{path:"js/testcases/net.js"},{path:"js/testcases/notifications.js"},{path:"js/testcases/pim.js"},{path:"js/testcases/security.js"},{path:"js/testcases/beacon.js"},{path:"js/testcases/system.js"},{path:"js/testcases/telephony.js"},{path:"js/testcases/nfc.js"},{path:"js/testcases/private.js"},{path:"js/Config.js"},{path:"app.js",update:"delta"}],css:[{path:"resources/css/font-awesome.css",update:"delta"},{path:"resources/css/app.css",update:"delta"}]});</script>
+     --><script type="text/javascript" src="./js/appverse.js"></script>
+</head>
+<body>
+    <br /><br />
+    <button id="defaultB" onclick="defaultFn();">Default</button>
+    <br /><br />
+    <button id="portraitB" onclick="portraitFn();">portrait</button>
+    <br /><br />
+    <button id="houseB" onclick="houseFn();">house</button>
+    <br /><br />
+    <button id="randomB" onclick="randomFn();">house</button>
+    <br /><br />
+    <button id="deleteB" onclick="deleteFn();">delete</button>
+
+    <script type="text/javascript">
+       
+        var testMediaCameraOptions = {
+            "ImageScaleFactor": 2,
+            "UseFrontCamera": false,
+            "UseCustomCameraOverlay": true,
+            "GuidelinesColorHexadecimal": "#CACACA",
+            "ScanButtonColorHexadecimal": "#F28400",
+            "ScanButtonPressedColorHexadecimal": "#B95800",
+            "ScanButtonMarginBottom": 20,
+            "GuidelinesMargins": 15,
+            "CancelButtonText": "Annulla",
+            "DescriptionLabelText": "Inquadra tutto il documento\nnei segni sullo schermo",
+            "DescriptionLabelFontFamilyName": "Ubuntu",
+            "CancelButtonFontFamilyName": "Ubuntu"
+        };
+        defaultFn = function () {
+            if (Appverse) {
+                Appverse.Media.TakeSnapshotWithOptions(testMediaCameraOptions);
+            }else
+                alert("No Appverse");
+        }
+        
+        var testMediaCameraOptions1 = {
+            "ImageScaleFactor": 2,
+            "UseFrontCamera": false,
+            "UseCustomCameraOverlay": true,
+            "GuidelinesColorHexadecimal": "#CACACA",
+            "ScanButtonColorHexadecimal": "#F28400",
+            "ScanButtonPressedColorHexadecimal": "#B95800",
+            "ScanButtonMarginBottom": 20,
+            "GuidelinesMargins": 15,
+            "CancelButtonText": "Annulla",
+            "DescriptionLabelText": "Inquadra tutto il documento\nnei segni sullo schermo",
+            "DescriptionLabelFontFamilyName": "Ubuntu",
+            "CancelButtonFontFamilyName": "Ubuntu",
+            "Overlay": "portrait"
+        };
+        portraitFn = function () {
+            if (Appverse) {
+                Appverse.Media.TakeSnapshotWithOptions(testMediaCameraOptions1);
+            } else
+                alert("No Appverse");
+        }
+       
+        var testMediaCameraOptions2 = {
+            "ImageScaleFactor": 2,
+            "UseFrontCamera": false,
+            "UseCustomCameraOverlay": true,
+            "GuidelinesColorHexadecimal": "#CACACA",
+            "ScanButtonColorHexadecimal": "#F28400",
+            "ScanButtonPressedColorHexadecimal": "#B95800",
+            "ScanButtonMarginBottom": 20,
+            "GuidelinesMargins": 15,
+            "CancelButtonText": "Annulla",
+            "DescriptionLabelText": "Inquadra tutto il documento\nnei segni sullo schermo",
+            "DescriptionLabelFontFamilyName": "Ubuntu",
+            "CancelButtonFontFamilyName": "Ubuntu",
+            "Overlay": "house"
+        };
+        houseFn = function () {
+            if (Appverse) {
+                Appverse.Media.TakeSnapshotWithOptions(testMediaCameraOptions2);
+            } else
+                alert("No Appverse");
+        }
+        
+        var testMediaCameraOptions3 = {
+            "ImageScaleFactor": 2,
+            "UseFrontCamera": false,
+            "UseCustomCameraOverlay": true,
+            "GuidelinesColorHexadecimal": "#CACACA",
+            "ScanButtonColorHexadecimal": "#F28400",
+            "ScanButtonPressedColorHexadecimal": "#B95800",
+            "ScanButtonMarginBottom": 20,
+            "GuidelinesMargins": 15,
+            "CancelButtonText": "Annulla",
+            "DescriptionLabelText": "Inquadra tutto il documento\nnei segni sullo schermo",
+            "DescriptionLabelFontFamilyName": "Ubuntu",
+            "CancelButtonFontFamilyName": "Ubuntu",
+            "Overlay": "hoaause"
+        };
+
+        randomFn = function () {
+            if (Appverse) {
+                Appverse.Media.TakeSnapshotWithOptions(testMediaCameraOptions3);
+            } else
+                alert("No Appverse");
+        }
+		
+		test = function(){console.log(arguments);};
+		
+		deleteFn = function () {
+            if (Appverse) {
+				Appverse.unescapeNextRequestData = true;
+				request = {};
+				request.Session = {};
+				request.Method = 'DELETE';
+				Appverse.IOServices["opencpu-4"].Endpoint.Path += "1/"+encodeURI(encodeURI("asd asd"))+'/'+encodeURI(encodeURI(encodeURI("asd asd")))
+                Appverse.IO.InvokeService(request,Appverse.IOServices["opencpu-4"],null,'test','test');
+            }else
+                alert("No Appverse");
+        }
+    </script>
+
+
+</body>
+</html>
