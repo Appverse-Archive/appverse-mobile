@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/UnityPlatformAndroid"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/android-support-multidex"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry kind="lib" path="/UnityPlatformAndroid/dist/UnityPlatformAndroid.jar"/>
-	<classpathentry kind="lib" path="/UnityCoreAndroid/dist/UnityCoreAndroid.jar"/>
-	<classpathentry kind="lib" path="C:/Android/sdk/extras/android/support/multidex/library/libs/android-support-multidex.jar"/>
+	<classpathentry kind="lib" path="/UnityCoreAndroid/bin/unitycoreandroid.jar"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

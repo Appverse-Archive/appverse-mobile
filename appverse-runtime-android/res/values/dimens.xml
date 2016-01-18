@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <dimen name="Help_Text_Margin">130dp</dimen>
     <dimen name="frameMargin">10dp</dimen>
     <dimen name="CancelTextLeftMargin">30dp</dimen>
@@ -7,4 +8,7 @@
     <dimen name="scanButtonMargin">25dp</dimen>
     <dimen name="DescriptionHeight">60dp</dimen>
     <dimen name="help_margin">10dp</dimen>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
 </resources>

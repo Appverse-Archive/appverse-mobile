@@ -11,6 +11,18 @@
      </SurfaceView>
 
     <FrameLayout
+        android:id="@+id/scanOverlayLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginBottom="@dimen/frameMargin"
+        android:layout_marginLeft="@dimen/frameMargin"
+        android:layout_marginRight="@dimen/frameMargin"
+        android:layout_marginTop="@dimen/frameMargin"
+        android:background="@drawable/background"
+        android:visibility="visible" >
+    </FrameLayout>
+
+    <FrameLayout
         android:id="@+id/photo_button_holder"
         android:layout_width="match_parent"
         android:layout_height="109dp"
@@ -73,19 +85,6 @@
 	           
 	    </FrameLayout>
            
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/scanOverlayLayout"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginBottom="@dimen/frameMargin"
-        android:layout_marginLeft="@dimen/frameMargin"
-        android:layout_marginRight="@dimen/frameMargin"
-        android:layout_marginTop="@dimen/frameMargin"
-        android:background="@drawable/background"
-        android:visibility="visible" >
-
     </FrameLayout>
     
    	<FrameLayout
