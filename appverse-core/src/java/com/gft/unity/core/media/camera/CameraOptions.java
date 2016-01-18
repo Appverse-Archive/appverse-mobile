@@ -33,6 +33,9 @@ public class CameraOptions {
     private boolean useFrontCamera = false;
     private boolean useCustomCameraOverlay = false;
     
+    
+    private String overlay;
+    
     // guidelines customization
     private int guidelinesMargins;
     private String guidelinesColorHexadecimal;
@@ -122,8 +125,16 @@ public class CameraOptions {
     public void setUseCustomCameraOverlay(boolean useFrame) {
         this.useCustomCameraOverlay = useFrame;
     }
+    
+    public String getOverlay() {
+		return overlay;
+	}
 
-    public int getGuidelinesMargins() {
+	public void setOverlay(String overlay) {
+		this.overlay = overlay;
+	}
+
+	public int getGuidelinesMargins() {
         return guidelinesMargins;
     }
 

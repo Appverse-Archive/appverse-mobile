@@ -18,3 +18,102 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# Specifies to write out some more information during processing. 
+# If the program terminates with an exception, this option will print out the entire stack trace, instead of just the exception message.
+-verbose
+
+# Specifies to write out the entire configuration that has been parsed, with included files and replaced variables. 
+# The structure is printed to the standard output or to the given file. 
+# This can sometimes be useful for debugging configurations, or for converting XML configurations into a more readable format
+-printconfiguration config.txt
+
+# Specifies to print the mapping from old names to new names for classes and class members that have been renamed. 
+# The mapping is printed to the standard output or to the given file. 
+# For example, it is required for subsequent incremental obfuscation, or if you ever want to make sense again of obfuscated stack traces. 
+# Only applicable when obfuscating.
+-printmapping mapping.txt
+
+
+#  Note: there were 2 classes trying to access generic signatures using reflection.
+#        You should consider keeping the signature attributes
+#        (using '-keepattributes Signature').
+#        (http://proguard.sourceforge.net/manual/troubleshooting.html#attributes)
+-keepattributes Signature
+
+
+#  Note: there were 59 unkept descriptor classes in kept class members.
+#        You should consider explicitly keeping the mentioned classes
+#        (using '-keep').
+#        (http://proguard.sourceforge.net/manual/troubleshooting.html#descriptorclass)
+-keep,includedescriptorclasses class * {
+    native <methods>;
+}
+
+#  Note: there were 2 references to unknown classes.
+#        You should check your configuration for typos.
+#      	 (http://proguard.sourceforge.net/manual/troubleshooting.html#unknownclass)
+#  Note: the configuration refers to the unknown class 'com.google.vending.licensing.ILicensingService'
+#  Note: the configuration refers to the unknown class 'com.android.vending.licensing.ILicensingService'
+#  Found keep configuration in 'proguard-android.txt', but LicensingService is not used
+-dontnote **ILicensingService
+
+#  Note: there were 16 unresolved dynamic references to classes or interfaces.
+#        You should check if you need to specify additional program jars.
+#        (http://proguard.sourceforge.net/manual/troubleshooting.html#dynamicalclass)
+
+# Note: there were 1 class casts of dynamically created class instances.
+#       You might consider explicitly keeping the mentioned classes and/or
+#      their implementations (using '-keep').
+#       (http://proguard.sourceforge.net/manual/troubleshooting.html#dynamicalclasscast)
+# Note: com.appsflyer.MultipleInstallBroadcastReceiver calls '(android.content.BroadcastReceiver)Class.forName(variable).newInstance()'
+-keep class android.content.BroadcastReceiver
+-keep class * implements android.content.BroadcastReceiver
+
+
+# Warning: there were 315 unresolved references to classes or interfaces.
+#           You may need to add missing library jars or update their versions.
+#           If your code works fine without the missing classes, you can suppress
+#           the warnings with '-dontwarn' options.
+#          (http://proguard.sourceforge.net/manual/troubleshooting.html#unresolvedclass)
+-keep class org.simalliance.openmobileapi.** { *; }
+-dontwarn org.simalliance.openmobileapi.**
+-keep class javax.naming.** { *; }
+-dontwarn javax.naming.**
+
+# Remove duplicated references from libraries that contain duplicates of the android.http classes, 
+# which are already present in the Android runtime
+-keep class org.apache.commons.** { *; }
+-dontwarn org.apache.commons.**
+-keep class org.apache.http.** { *; }
+-dontwarn org.apache.http.**
+
+# keep Javascript interface 
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# Keep Appverse services on implementation classes
+-keepclassmembers class * extends com.gft.unity.core.**.Abstract* { public *; }
+
+# Keep Appverse Modules services on implementation classes
+-keepclassmembers public class com.gft.appverse.android.**.Android* { public *; }
+
+# Keep Appverse data model beans (allow JSON parsing)
+-keepclassmembers public class com.gft.unity.core.**.* { 
+	 public void set*(***);
+	 public *** get*();
+}
+
+# Keep Appverse Modules data model beans (allow JSON parsing)
+-keepclassmembers public class com.gft.appverse.android.**.* { 
+	 public void set*(***);
+	 public *** get*();
+}
+
+# Keep 3rd party libraries (for the moment, only the ones that fails in proguard compilation or runtime)
+#-keep public class nfc.payment.engine.** { public *; }
+-keepclassmembers class * {
+    public final void serviceConnected(org.simalliance.openmobileapi.SEService.CallBack);
+}
+
