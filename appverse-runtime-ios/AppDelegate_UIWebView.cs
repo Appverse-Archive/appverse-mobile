@@ -69,6 +69,10 @@ namespace UnityUI.iOS
 
 			// do not detect data types automatically (phone links, etc)
 			((UnityUI_iOSViewController_UIWebView) MainViewController ()).webView.DataDetectorTypes = UIDataDetectorType.None;
+
+			// TODO use another method to setup other webview properties
+			((UnityUI_iOSViewController_UIWebView) MainViewController ()).webView.MediaPlaybackRequiresUserAction=false;
+
 		}
 
 		public override void DetectWebViewLoadFinishedEvent (UIApplication application, NSDictionary launchOptions) {
