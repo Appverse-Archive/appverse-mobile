@@ -33,8 +33,11 @@ using ObjCRuntime;
 
 namespace Unity.Platform.IPhone
 {
-    public class IPhoneSystem : AbstractSystem
+	public class IPhoneSystem : AbstractSystem
     {
+		#region implemented abstract members of AbstractSystem
+
+		#endregion
 
 		public override string LaunchConfigFile { 
 			get {

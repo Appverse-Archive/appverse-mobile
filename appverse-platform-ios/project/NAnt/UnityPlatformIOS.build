@@ -72,7 +72,7 @@
 			<echo message="## ${module.project.name} module - main class: ${module.ios.main.class}"/>
 			<echo message="## ${module.project.name} module - service name: ${module.api.service.name}"/>
 			
-			<exec program="/usr/bin/ant" failonerror="false">
+			<exec program="bash" commandline="../../../UnityBuild/ant_task.sh" failonerror="false">
 				<arg value="-file"/>
 	            <arg value="../../../UnityBuild/appverse_modules_tasks.xml"/>
 				<arg value="-Dmodule.main.class=${module.ios.main.class}"/>
@@ -169,13 +169,29 @@
 		<property name="compile.module.check" value="${compile.module.beacon}"/>
 		<call target="compile-module"/>
 		<property name="reference.lib.beacon.dll" value="${reference.lib.dll}"/>
-        
-        <!-- Compiling InfoCert Module (if requested) -->
-		<property name="module.name" value="infocert"/>
-		<property name="module.project.name" value="InfoCert"/>
-		<property name="compile.module.check" value="${compile.module.infocert}"/>
-		<call target="compile-module"/>
-		<property name="reference.lib.infocert.dll" value="${reference.lib.dll}"/>
+		
+		
+        <if test="${compile.module.infocert.ubi!='true'}">
+			<echo message="## Compiling Infocert Module (if requested)..." />
+			<property name="reference.lib.infocert.ubi.dll" value=""/>
+			<!-- Compiling InfoCert Module (if requested) -->
+			<property name="module.name" value="infocert"/>
+			<property name="module.project.name" value="InfoCert"/>
+			<property name="compile.module.check" value="${compile.module.infocert}"/>
+			<call target="compile-module"/>
+			<property name="reference.lib.infocert.dll" value="${reference.lib.dll}"/>
+		</if>
+		
+		<if test="${compile.module.infocert.ubi=='true'}">
+			<echo message="## Compiling Infocert UBI Module (if requested)..." />
+			<property name="reference.lib.infocert.dll" value=""/>
+			<!-- Compiling InfoCert Module (if requested) -->
+			<property name="module.name" value="infocert"/>
+			<property name="module.project.name" value="InfoCertUBI"/>
+			<property name="compile.module.check" value="${compile.module.infocert.ubi}"/>
+			<call target="compile-module"/>
+			<property name="reference.lib.infocert.ubi.dll" value="${reference.lib.dll}"/>
+		</if>
 		
 		<!-- Compiling Facebook Module (if requested) -->
 		<property name="module.name" value="facebook"/>
@@ -191,12 +207,27 @@
 		<call target="compile-module"/>
 		<property name="reference.lib.rsa.dll" value="${reference.lib.dll}"/>
 		
-		<!-- Compiling USPG Module (if requested) -->
-		<property name="module.name" value="uspg"/>
-		<property name="module.project.name" value="USPG"/>
-		<property name="compile.module.check" value="${compile.module.uspg}"/>
-		<call target="compile-module"/>
-		<property name="reference.lib.uspg.dll" value="${reference.lib.dll}"/>
+		<if test="${compile.module.uspg.prod!='true'}">
+			<echo message="## Compiling USPG Module (if requested)..." />
+			<property name="reference.lib.uspg.prod.dll" value=""/>
+			<!-- Compiling USPG Module (if requested) -->
+			<property name="module.name" value="uspg"/>
+			<property name="module.project.name" value="USPG"/>
+			<property name="compile.module.check" value="${compile.module.uspg}"/>
+			<call target="compile-module"/>
+			<property name="reference.lib.uspg.dll" value="${reference.lib.dll}"/>
+		</if>
+		
+		<if test="${compile.module.uspg.prod=='true'}">
+			<echo message="## Compiling USPG PROD Module (if requested)..." />
+			<property name="reference.lib.uspg.dll" value=""/>
+			<!-- Compiling USPG PROD Module (if requested) -->
+			<property name="module.name" value="uspg"/>
+			<property name="module.project.name" value="USPG.prod"/>
+			<property name="compile.module.check" value="${compile.module.uspg.prod}"/>
+			<call target="compile-module"/>
+			<property name="reference.lib.uspg.prod.dll" value="${reference.lib.dll}"/>
+		</if>
 			
 		<!-- END - Compiling Modules -->
 		
@@ -232,10 +263,12 @@
 			<arg line="${reference.lib.beacon.dll}"/>
 			<arg line="${reference.lib.appsflyer.dll}"/>
 			<arg line="${reference.lib.adform.dll}"/>
+			<arg line="${reference.lib.infocert.ubi.dll}"/>
             <arg line="${reference.lib.infocert.dll}"/>
             <arg line="${reference.lib.facebook.dll}"/>
             <arg line="${reference.lib.rsa.dll}"/>
             <arg line="${reference.lib.uspg.dll}"/>
+            <arg line="${reference.lib.uspg.prod.dll}"/>
 			<arg value="/nologo" />
 			<arg value="/warn:4" />
 			<arg value="/debug:full" if="${mode == 'Debug_Simulator' or mode == 'Debug_Device'}"/>
@@ -246,7 +279,7 @@
 			<arg line="${source.files}" />
 		</exec>
 		
-		<exec program="/usr/bin/ant" failonerror="false">
+		<exec program="bash" commandline="../../../UnityBuild/ant_task.sh" failonerror="false">
 			<arg value="-file"/>
             <arg value="../../../UnityBuild/appverse_modules_tasks.xml"/>
 			<arg value="-Dplatform=ios"/>
