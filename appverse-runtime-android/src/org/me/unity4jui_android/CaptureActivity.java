@@ -280,6 +280,7 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
 						 * px2dp(cameraOptions.getScanButtonIconHeight());
 						 * btnScan.requestLayout();
 						 */
+						
 	
 						// btnBG change Color
 						LOG.LogDebug(Module.GUI, "btnBG change Color");
@@ -302,7 +303,24 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
 						// Overlay Color
 						LOG.LogDebug(Module.GUI, "Overlay color");
 						tint = Color.parseColor(cameraOptions.getGuidelinesColorHexadecimal());
-						int backgroundId = getResources().getIdentifier("background", "drawable", getPackageName());
+						String overlayImage = cameraOptions.getOverlay();
+						int backgroundId = 0;
+						// FIX 23/11/2015 (maps) - When the overlay is not set in the JSON, this arrive here as the string "null", not as a null value.
+						// I think that the parceable data echange between the Media API and the CaptureActivity is the culprit
+						LOG.LogDebug(Module.GUI, "Checking overlay to use...");
+						if(overlayImage == null || overlayImage.toLowerCase().equals("null")) {
+							LOG.LogDebug(Module.GUI, "No custom overlay provided. Using default one (background)");
+							overlayImage = "background";
+						}
+						LOG.LogDebug(Module.GUI, "Overlay: "+overlayImage);
+							
+						try
+						{
+							backgroundId = getResources().getIdentifier(overlayImage, "drawable", getPackageName());
+						}catch(Exception ex){
+							LOG.LogDebug(Module.GUI, "Overlay: " + overlay +" Not found: "+ex.getMessage());
+						}
+						
 						Drawable background = getResources().getDrawable(backgroundId);
 						background.mutate().setColorFilter(tint, Mode.MULTIPLY);
 						scanOverlayLayout.setBackground(background);
@@ -313,6 +331,7 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
 						params.gravity = Gravity.BOTTOM;
 						params.leftMargin = cameraOptions.getDescriptionLabelMarginLeftRight();
 						params.rightMargin = cameraOptions.getDescriptionLabelMarginLeftRight();
+						params.bottomMargin = cameraOptions.getDescriptionLabelMarginBottom();
 						helpText.setLayoutParams(params);
 						helpText.requestLayout();
 	
@@ -450,12 +469,17 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
 				selectedCamera = 0;
 				camera = Camera.open(selectedCamera);
 			}
-	
-			Camera.Parameters params = camera.getParameters();
-			//*EDIT*//params.setFocusMode("continuous-picture");
-			//It is better to use defined constraints as opposed to String, thanks to AbdelHady
-			params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-			camera.setParameters(params);
+			
+			try {
+				Camera.Parameters params = camera.getParameters();
+				//*EDIT*//params.setFocusMode("continuous-picture");
+				//It is better to use defined constraints as opposed to String, thanks to AbdelHady
+				params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+				if(camera != null)
+					camera.setParameters(params);
+			} catch (Exception e) {
+				LOG.LogDebug("captureActiviy - Set Parameters failure: "+e.getMessage());
+			}
 			
 			// Install a SurfaceHolder.Callback so we get notified when the
 			// underlying surface is created and destroyed.
@@ -581,8 +605,6 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
 
 			try {
 
-				Bitmap bitmap = BitmapFactory.decodeByteArray(pictureBuffer, 0, pictureBuffer.length);
-
 				LOG.LogDebug(Module.GUI, "AppversePictureCallback # BitmatRotate");
 
 				Matrix matrix = new Matrix();
@@ -602,12 +624,14 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
 				else
 					matrix.postRotate(90);
 				
-				Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,
-						true);
-				
-				LOG.LogDebug(Module.GUI, "AppversePictureCallback # BitmatCompress");
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
-				rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+				Bitmap rotatedBitmap = getSmallerRotatedBitmap(pictureBuffer, matrix, 1);
+				
+				if(rotatedBitmap!= null) {
+					LOG.LogDebug(Module.GUI, "AppversePictureCallback # BitmatCompress");
+					rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+				}
+				
 				byte[] byteArray = stream.toByteArray();
 
 				LOG.LogDebug(Module.GUI, "AppversePictureCallback # BitmatSave");
@@ -628,6 +652,39 @@ public class CaptureActivity extends Activity implements SurfaceHolder.Callback 
 			setResult(RESULT_OK, data);
 
 			finish();
+		}
+		
+		/**
+		 * Get the appropriate size of the bitmap that fits the device memory allocations
+		 * @param pictureBuffer
+		 * @param matrix
+		 * @param inSampleSize
+		 * @return
+		 */
+		private Bitmap getSmallerRotatedBitmap(byte[] pictureBuffer, Matrix matrix, int inSampleSize) {
+		
+			Bitmap rotatedBitmap = null;
+			Bitmap bitmap = null;
+			try {
+				if(inSampleSize > 1) {
+					LOG.LogDebug(Module.GUI, "Requesting the decoder to subsample the sample the original image, returning a smaller image to save memory... inSampleSize: " + inSampleSize);
+					BitmapFactory.Options options = new BitmapFactory.Options();
+					options.inSampleSize = inSampleSize;
+					
+					bitmap = BitmapFactory.decodeByteArray(pictureBuffer, 0, pictureBuffer.length, options);
+				} else {
+					bitmap = BitmapFactory.decodeByteArray(pictureBuffer, 0, pictureBuffer.length);
+				}
+				
+				rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+				
+			}  catch (OutOfMemoryError ofm) {
+				LOG.LogDebug(Module.GUI, "AppversePictureCallback # Getting out of memory exception creating bitmap : " + ofm.getMessage());
+				
+				return this.getSmallerRotatedBitmap(pictureBuffer, matrix, inSampleSize * 2);
+				
+			}
+			return rotatedBitmap;
 		}
 
 	}

@@ -1,0 +1,33 @@
+
+##### CONFIGURATION
+
+-verbose
+-printconfiguration config.txt
+-printmapping mapping.txt
+
+##### OBFUSCATION PROPERTIES
+
+-keepattributes Signature, InnerClasses
+
+-keep,includedescriptorclasses class * { native <methods>; }
+
+-dontnote **ILicensingService
+
+-keep class android.content.BroadcastReceiver
+-keep class * implements android.content.BroadcastReceiver
+
+-keep class org.simalliance.openmobileapi.** { *; }
+-dontwarn org.simalliance.openmobileapi.**
+-keep class javax.naming.** { *; }
+-dontwarn javax.naming.**
+
+-keep class org.apache.commons.** { *; }
+-dontwarn org.apache.commons.**
+-keep class org.apache.http.** { *; }
+-dontwarn org.apache.http.**
+
+-keep public class com.google.android.gms.* { public *; }
+-dontwarn com.google.android.gms.**
+
+# Just obfuscate security classes in the platform/runtime
+-keep class !com.gft.unity.android.helpers.* { *; }

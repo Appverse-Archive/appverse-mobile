@@ -1,0 +1,211 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "22.0.1"
+
+	defaultConfig {
+        applicationId "com.gft.UNITYAPPLICATIONID"
+        minSdkVersion 'app.android.target.version'
+        targetSdkVersion 23
+
+        // Enabling multidex support.
+        multiDexEnabled true
+
+        // needed for xwalk module
+        enforceUniquePackageName false
+    }
+
+	signingConfigs {
+
+		debug {
+            storeFile file("STORE_FILE")
+            storePassword "STORE_PASSWORD"
+            keyAlias "KEY_ALIAS"
+            keyPassword "KEY_PASSWORD"
+        }
+
+        release {
+            storeFile file("STORE_FILE")
+            storePassword "STORE_PASSWORD"
+            keyAlias "KEY_ALIAS"
+            keyPassword "KEY_PASSWORD"
+        }
+	}
+
+    lintOptions {
+        abortOnError false
+    }
+
+    buildTypes {
+        release {
+
+        	// enable proguard
+        	minifyEnabled true
+
+            // default ProGuard settings from the Android SDK tools/proguard/ folder
+            // add custom ProGuard rules specific to the current project in the 'proguard-project.txt' file
+
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project-security.txt'
+
+			//signingConfig signingConfigs.release
+        }
+
+		debug {
+
+			//signingConfig signingConfigs.debug
+		}
+    }
+
+    dexOptions {
+        preDexLibraries = false
+        javaMaxHeapSize "4g"
+    }
+
+    project.tasks.withType(com.android.build.gradle.tasks.Dex) {
+        additionalParameters=['--core-library']
+    }
+	
+	productFlavors {
+		unsigned { }
+		
+		signed { signingConfig signingConfigs.MODESIGN }
+	
+	  }
+
+    packagingOptions {
+    	exclude 'META-INF/DEPENDENCIES'
+    	exclude 'META-INF/NOTICE'
+    	exclude 'META-INF/LICENSE'
+    	exclude 'META-INF/LICENSE.txt'
+    	exclude 'META-INF/NOTICE.txt'
+    }
+}
+
+dependencies {
+
+	compile project(':platform')
+
+	compile 'com.android.support:multidex:1.0.0'
+
+    // appverse_modules_automatically_included_here
+}
+
+task beforeRuntimePackageDebug << {
+    println '********************************************************************************************************* BEFORE onRuntimePackageDebug task'
+
+    ant {
+      //using ant checksum task to store the file checksum in the checksumOut ant property
+      checksum(property: 'checksumOut', file: 'build/intermediates/dex/signed/debug/classes.dex')
+
+      //we can refer to the ant property created by checksum task:
+      //println "******************************************************************************************************* The classes.dex checksum is: " + checksumOut
+
+      unzip(src: 'build/intermediates/res/resources-signed-debug.ap_', dest: 'build/intermediates/res/resources-debug.ap_out')
+
+      exec(executable: 'openssl', dir: 'build/intermediates/res/resources-debug.ap_out/assets') {
+      	arg(line : 'enc -aes-128-cbc -pass pass:' + checksumOut + ' -in app-stored.zip -out app-encrypted.zip')
+      }
+
+      delete(file: 'build/intermediates/res/resources-debug.ap_out/assets/app-stored.zip')
+      delete(file: 'build/intermediates/res/resources-debug.ap_')
+	  
+      zip(destfile: 'build/intermediates/res/resources-signed-debug.ap_', basedir: 'build/intermediates/res/resources-debug.ap_out')
+
+      delete(dir: 'build/intermediates/res/resources-debug.ap_out')
+
+	 
+
+    }
+
+    println '********************************************************************************************************* END onRuntimePackageDebug task'
+}
+
+task beforeRuntimePackageRelease << {
+    println '********************************************************************************************************* BEFORE onRuntimePackageRelease task'
+
+    ant {
+      //using ant checksum task to store the file checksum in the checksumOut ant property
+      checksum(property: 'checksumOut', file: 'build/intermediates/dex/signed/release/classes.dex')
+
+	  //we can refer to the ant property created by checksum task:
+      //println "******************************************************************************************************* The classes.dex checksum is: " + checksumOut
+
+      unzip(src: 'build/intermediates/res/resources-signed-release.ap_', dest: 'build/intermediates/res/resources-release.ap_out')
+
+      exec(executable: 'openssl', dir: 'build/intermediates/res/resources-release.ap_out/assets') {
+      	arg(line : 'enc -aes-128-cbc -pass pass:' + checksumOut + ' -in app-stored.zip -out app-encrypted.zip')
+      }
+
+      delete(file: 'build/intermediates/res/resources-release.ap_out/assets/app-stored.zip')
+      delete(file: 'build/intermediates/res/resources-release.ap_')
+
+      zip(destfile: 'build/intermediates/res/resources-signed-release.ap_', basedir: 'build/intermediates/res/resources-release.ap_out')
+
+      delete(dir: 'build/intermediates/res/resources-release.ap_out')
+
+    }
+
+    println '********************************************************************************************************* END onRuntimePackageRelease task'
+
+}
+
+
+tasks.whenTaskAdded { task ->;
+	if (task.name == 'validateDebugSigning') {
+        task.dependsOn beforeRuntimePackageDebug
+    }
+	if (task.name == 'dexUnsignedDebug') {
+        task.doLast {
+			println '********************************************************************************************************* BEFORE beforeRuntimePackageUnsignedDebug task'
+			ant {
+				checksum(property: 'checksumOutunsigned', file: 'build/intermediates/dex/unsigned/debug/classes.dex')
+				
+				//we can refer to the ant property created by checksum task:
+				//println "******************************************************************************************************* The classes.dex checksum is: " + checksumOutunsigned
+				
+				unzip(src: 'build/intermediates/res/resources-unsigned-debug.ap_', dest: 'build/intermediates/res/resources-unsigned-debug.ap_out')
+				
+				exec(executable: 'openssl', dir: 'build/intermediates/res/resources-unsigned-debug.ap_out/assets') {
+				  arg(line : 'enc -aes-128-cbc -pass pass:' + checksumOutunsigned + ' -in app-stored.zip -out app-encrypted.zip')
+				}
+				
+				delete(file: 'build/intermediates/res/resources-unsigned-debug.ap_out/assets/app-stored.zip')
+				delete(file: 'build/intermediates/res/resources-unsigned-debug.ap_')
+		  
+				zip(destfile: 'build/intermediates/res/resources-unsigned-debug.ap_', basedir: 'build/intermediates/res/resources-unsigned-debug.ap_out')
+				
+				delete(dir: 'build/intermediates/res/resources-unsigned-debug.ap_out')
+			  }
+			  println '********************************************************************************************************* END beforeRuntimePackageUnsignedDebug task'
+		}
+    }
+    if (task.name == 'validateReleaseSigning') {
+        task.dependsOn beforeRuntimePackageRelease
+    }
+    if (task.name == 'dexUnsignedRelease') {
+        task.doLast  {
+			println '********************************************************************************************************* BEFORE beforeRuntimePackageUnsignedRelease task'
+			ant {
+				checksum(property: 'checksumOutunsigned', file: 'build/intermediates/dex/unsigned/release/classes.dex')
+				
+				//we can refer to the ant property created by checksum task:
+				//println "******************************************************************************************************* The classes.dex checksum is: " + checksumOutunsigned
+				
+				unzip(src: 'build/intermediates/res/resources-unsigned-release.ap_', dest: 'build/intermediates/res/resources-unsigned-release.ap_out')
+				
+				exec(executable: 'openssl', dir: 'build/intermediates/res/resources-unsigned-release.ap_out/assets') {
+				  arg(line : 'enc -aes-128-cbc -pass pass:' + checksumOutunsigned + ' -in app-stored.zip -out app-encrypted.zip')
+				}
+				
+				delete(file: 'build/intermediates/res/resources-unsigned-release.ap_out/assets/app-stored.zip')
+				delete(file: 'build/intermediates/res/resources-unsigned-release.ap_')
+		  
+				zip(destfile: 'build/intermediates/res/resources-unsigned-release.ap_', basedir: 'build/intermediates/res/resources-unsigned-release.ap_out')
+				
+				delete(dir: 'build/intermediates/res/resources-unsigned-release.ap_out')
+			  }
+			  println '********************************************************************************************************* END beforeRuntimePackageUnsignedRelease task'
+		}
+    }
+}

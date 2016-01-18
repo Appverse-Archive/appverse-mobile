@@ -27,6 +27,7 @@ public class NotificationData {
     private String alertMessage,customDataJsonString;
     private String sound = "default"; // default alert sound
     private int badge = -1; // -1 value to indicate that the current badge should not be changed, 0 will indicate to remove the current badge icon.
+    private boolean appWasRunning;
     
     public NotificationData (){
     }
@@ -41,6 +42,16 @@ public class NotificationData {
     public void setSound(String value) { sound=value; }
 
     public String getCustomDataJsonString() { return customDataJsonString; } 
-    public void setCustomDataJsonString(String value) { customDataJsonString=value; } 
+    public void setCustomDataJsonString(String value) { customDataJsonString=value; }
+
+	public boolean getAppWasRunning() {
+		return appWasRunning;
+	}
+
+	public void setAppWasRunning(boolean appWasRunning) {
+		this.appWasRunning = appWasRunning;
+	} 
+    
+    
     
 }

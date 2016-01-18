@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
 	android:versionCode="1" android:versionName="1.0.0"
 	package="com.gft.UNITYAPPLICATIONID"
 	android:sharedUserId="com.gft.appverse.SHAREDUSERID">
@@ -39,13 +40,6 @@
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
-	<!-- $START_TOKEN_REMOTE_NOTIFICATIONS$
-	<permission android:name="com.gft.UNITYAPPLICATIONID.permission.C2D_MESSAGE" android:protectionLevel="signature" />
-	<uses-permission android:name="com.gft.UNITYAPPLICATIONID.permission.C2D_MESSAGE" />
-	<uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-	<uses-permission android:name="android.permission.GET_ACCOUNTS" />
-	<uses-permission android:name="android.permission.WAKE_LOCK" />
-	$END_TOKEN_REMOTE_NOTIFICATIONS$-->
 
 	<!-- $START_TOKEN_LOCAL_NOTIFICATIONS$
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -103,8 +97,10 @@
 	    android:label="@string/app_name"
 	    android:hardwareAccelerated="true"
 	    android:largeHeap="false" 
-			android:allowBackup="false" > <!--  not valid for proguard option:   android:debuggable="com.gft.UNITYAPP.debuggable"  -->
-
+		android:allowBackup="false" 
+		tools:replace="label,name,allowBackup" > 
+		<!--  not valid for proguard option:   android:debuggable="com.gft.UNITYAPP.debuggable"  -->
+		
 		<activity android:name="org.me.unity4jui_android.MainActivity"
 			android:label="@string/app_name" android:configChanges="orientation|keyboardHidden|screenSize"
 			android:screenOrientation="unspecified" android:hardwareAccelerated="true" > <!-- android:launchMode="singleInstance" -->
@@ -129,6 +125,7 @@
 		</activity>
 
 		<activity android:name="org.me.unity4jui_android.CaptureActivity" android:hardwareAccelerated="true"
+		    android:screenOrientation="unspecified"
 		    android:exported="false">
 			<intent-filter>
 				<action android:name="com.gft.UNITYAPPLICATIONID.SHOW_CAMERA" />
@@ -136,22 +133,21 @@
 			</intent-filter>
 
 		</activity>
-
-		<!-- $START_TOKEN_REMOTE_NOTIFICATIONS$
-		<service android:name="com.gft.unity.android.notification.RemoteNotificationIntentService"
-			android:enabled="true"
-			android:exported="true"/>
-
-		<receiver android:name="com.gft.unity.android.notification.RemoteNotificationReceiver"
-			android:enabled="true"
-			android:permission="com.google.android.c2dm.permission.SEND">
-			<intent-filter>
-				<action android:name="com.google.android.c2dm.intent.RECEIVE"/>
-				<action android:name="com.google.android.c2dm.intent.REGISTRATION"/>
-				<category android:name="com.gft.UNITYAPPLICATIONID"/>
+		
+		<activity android:name="org.me.unity4jui_android.WidgetActivity"
+            android:label="@string/title_activity_widget"
+            android:excludeFromRecents="true"
+	        android:noHistory="true"
+	        android:launchMode="singleTask"
+	        android:taskAffinity=""
+	        android:theme="@android:style/Theme.NoDisplay"
+            >
+			
+		    <intent-filter>
+				<action android:name="com.gft.UNITYAPPLICATIONID.APPVERSE_SERVICE" />
+				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
-		</receiver>
-		$END_TOKEN_REMOTE_NOTIFICATIONS$-->
+        </activity>
 
 		<!-- $START_TOKEN_LOCAL_NOTIFICATIONS$
 		<receiver android:name="com.gft.unity.android.notification.LocalNotificationReceiver" >
