@@ -38,7 +38,7 @@ AppverseEmulator = {
 };
 
 Appverse = {
-    version: "5.1.1",
+    version: "5.1.4.1",
     /**
      * Boolean to indicate if the next request send to the platform (using any Appverse.<API_serviceName>.<API_serviceMethod>() call) should unscape or not the data send.
      * <br>By default platform will unscape any data send. In some cases, scaped characters (for example, the %20 encoded characters in a URL) need to arrive to the service without being unscaped.
@@ -117,7 +117,7 @@ Appverse = {
             responseText = xhr.responseText;
 
             try {
-                if (responseText != null && responseText != '' && responseText != 'listener_result_not_yet_avaliable') {
+                if (responseText != null && responseText != '' && responseText != 'listener_result_not_yet_available') {
                     console.log("processing Appverse Context queued message... ");
                     // ONLY FOR TESTING console.log(responseText);
                     eval(responseText); // evaluate JS code, not JSON (no enclosing brackets are needed here)
@@ -298,7 +298,7 @@ Appverse = {
 
                     try {
                         var xhrResponse = null;
-                        if (responseText != null && responseText != '' && responseText != 'listener_result_not_yet_avaliable') {
+                        if (responseText != null && responseText != '' && responseText != 'listener_result_not_yet_available') {
                             console.log("processing listener queued message... ");
                             xhrResponse = eval(responseText); // evaluate JS code, not JSON (no enclosing brackets are needed here)
                             AppverseEmulator.queuedListenerMessagesCount--;
@@ -345,7 +345,7 @@ Appverse = {
                             var success = false;
                             var responseObject = null;
                             try {
-                                if (responseText != "callback_result_not_yet_avaliable") {
+                                if (responseText != "callback_result_not_yet_available") {
                                     responseObject = eval('(' + responseText + ')');
                                     success = true;
                                     AppverseEmulator.queuedCallbackMessagesCount--;
@@ -624,92 +624,6 @@ Appverse.OnExternallyLaunched = function (launchData) {
     console.log(arguments);
     console.log('%c Override OnExternallyLaunched method! ', 'background: #222; color: #bada55');
 };
-
-
-/**
- * Applications should override/implement this method to be aware of location services petition denial.
- * @aside guide application_listeners
- * <br> @version 5.0.8
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> N/A | android <img src="resources/images/error.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
- */
-Appverse.OnLocationDenied = function () {
-    console.log(arguments);
-    console.log('%c Override OnLocationDenied method! ', 'background: #222; color: #bada55');
-  };
-
-
-/**
- * Applications should override/implement this method to be aware of camera services petition denial.
- * @aside guide application_listeners
- * <br> @version 5.1.2
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
- */
-Appverse.OnCameraDenied = function () {
-    console.log(arguments);
-    console.log('%c Override OnCameraDenied method! ', 'background: #222; color: #bada55');
-  };
-
-/**
- * Applications should override/implement this method to be aware of external storage services petition denial.
- * @aside guide application_listeners
- * <br> @version 5.1.2
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
- */
-Appverse.OnExternalStorageDenied = function () {
-    console.log(arguments);
-    console.log('%c Override OnExternalStorageDenied method! ', 'background: #222; color: #bada55');
-  };
-
-/**
- * Applications should override/implement this method to be aware of contact services petition denial.
- * @aside guide application_listeners
- * <br> @version 5.1.2
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
- */
-Appverse.OnContactDenied = function () {
-    console.log(arguments);
-    console.log('%c Override OnContactDenied method! ', 'background: #222; color: #bada55');
-  };
-
-/**
- * Applications should override/implement this method to be aware of phone services petition denial.
- * @aside guide application_listeners
- * <br> @version 5.1.2
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
- */
-Appverse.OnPhoneDenied = function () {
-    console.log(arguments);
-    console.log('%c Override OnPhoneDenied method! ', 'background: #222; color: #bada55');
-  };
-
-/**
- * Applications should override/implement this method to be aware of calendar services petition denial.
- * @aside guide application_listeners
- * <br> @version 5.1.2
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
- */
-Appverse.OnCalendarDenied = function () {
-    console.log(arguments);
-    console.log('%c Override OnCalendarDenied method! ', 'background: #222; color: #bada55');
-  };
-
-/**
- * Applications should override/implement this method to be aware of sms services petition denial.
- * @aside guide application_listeners
- * <br> @version 5.1.2
- * @method
- * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
- */
-Appverse.OnSMSDenied = function () {
-    console.log(arguments);
-    console.log('%c Override OnSMSDenied method! ', 'background: #222; color: #bada55');
-  };
 
 
 /**
@@ -2668,69 +2582,69 @@ IO = function () {
      */
     this.serviceName = "io";
     /**
-     * SOAP XML Service Type.
+     * SOAP XML Service Type. Value: "text/xml"
      * <br> @version 1.0
      * @type int
      */
     this.SERVICETYPE_SOAP_XML = 0;
     /**
-     * SOAP JSON Service Type.
+     * SOAP JSON Service Type.  Value: "application/json"
      * <br> @version 1.0
      * @type int
      */
     this.SERVICETYPE_SOAP_JSON = 1;
     /**
-     * XML RPC Service Type.
+     * XML RPC Service Type. Value: "text/xml"
      * <br> @version 1.0
      * @type int
      */
     this.SERVICETYPE_XMLRPC_XML = 2;
     /**
-     * REST XML Service Type.
+     * REST XML Service Type. Value: "text/xml"
      * <br> @version 1.0
      * @type int
      */
     this.SERVICETYPE_REST_XML = 3;
     /**
-     * JSON RPC Service Type.
+     * JSON RPC Service Type. Value: "application/json"
      * <br> @version 1.0
      * @type int
      */
     this.SERVICETYPE_XMLRPC_JSON = 4;
     /**
-     * REST JSON Service Type.
+     * REST JSON Service Type. Value: "application/json"
      * @type int
      * <br> @version 1.0
      */
     this.SERVICETYPE_REST_JSON = 5;
     /**
-     * AMF Serialization Service Type.
+     * AMF Serialization Service Type. Value: ""
      * <br> @version 1.0
      * @type int
      */
     this.SERVICETYPE_AMF_SERIALIZATION = 6;
     /**
-     * Remoting Serialization Service Type.
+     * Remoting Serialization Service Type. Value: ""
      * <br> @version 1.0
      * @type int
      */
     this.SERVICETYPE_REMOTING_SERIALIZATION = 7;
     /**
-     * Octet Binary Service Type.
+     * Octet Binary Service Type. Value: "application/octet-stream"
      * <br> @version 1.0
      * @type int
      */
     this.SERVICETYPE_OCTET_BINARY = 8;
 
     /**
-     * GWT RPC Service Type.
+     * GWT RPC Service Type. Value: "text/x-gwt-rpc; charset=utf-8"
      * <br> @version 2.1
      * @type int
      */
     this.SERVICETYPE_GWT_RPC = 9;
 
     /**
-     * Multipart form-data Service Type.
+     * Multipart form-data Service Type. Value: "multipart/form-data; boundary="
      * <br> @version 5.0.12
      * @type int
      */
@@ -2886,6 +2800,18 @@ Geo = function () {
      * @type int
      */
     this.NORTHTYPE_TRUE = 1;
+
+    /**
+     * Applications should override/implement this method to be aware of location services access petition denial.
+     * @aside guide application_listeners
+     * <br> @version 5.1.2
+     * @event
+     * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+     */
+    this.onAccessToLocationDenied = function () {
+        console.log(arguments);
+        console.log('%c Override onAccessToLocationDenied method! ', 'background: #222; color: #bada55');
+    };
 }
 
 Appverse.Geo = new Geo();
@@ -3242,12 +3168,37 @@ Media = function () {
      * <br>Method to be overrided by JS applications, to handle this event.
      * @aside guide application_listeners
      * <br> @version 3.1
-     * @param {Appverse.Media.MediaMetadata} mediaMetadata The metadata for the image picked.
+     * @param {Appverse.Media.MediaMetadata} mediaMetadata The metadata for the image picked. A null object is received if user cancels the action.
      */
     this.onFinishedPickingImage = function (mediaMetadata) {
         console.log(arguments);
         console.log('%c Override onFinishedPickingImage method! ', 'background: #222; color: #bada55');
       };
+
+    /**
+     * Applications should override/implement this method to be aware of camera access petition denial.
+     * @aside guide application_listeners
+     * <br> @version 5.1.2
+     * @event
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+     */
+    this.onAccessToCameraDenied = function () {
+        console.log(arguments);
+        console.log('%c Override onAccessToCameraDenied method! ', 'background: #222; color: #bada55');
+    };
+
+
+    /**
+     * Applications should override/implement this method to be aware of external location services access petition denial.
+     * @aside guide application_listeners
+     * <br> @version 5.1.2
+     * @event
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+     */
+    this.onAccessToExternalStorageDenied = function () {
+        console.log(arguments);
+        console.log('%c Override onAccessToExternalStorageDenied method! ', 'background: #222; color: #bada55');
+    };
 
 }
 
@@ -3427,6 +3378,33 @@ Messaging = function () {
      * <br> @version 1.0
      */
     this.serviceName = "message";
+
+    /**
+     * Applications should override/implement this method to be aware of sms services access petition denial.
+     * @aside guide application_listeners
+     * <br> @version 5.1.2
+     * @event
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+     */
+    this.onAccessToSMSDenied = function () {
+        console.log(arguments);
+        console.log('%c Override onAccessToSMSDenied method! ', 'background: #222; color: #bada55');
+      };
+
+      /**
+       * Applications should override/implement this method to be aware of external storage services access petition denial.
+       * @aside guide application_listeners
+       * <br> @version 5.1.2
+       * @event
+       * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+       */
+      this.onAccessToExternalStorageDenied = function () {
+          console.log(arguments);
+          console.log('%c Override onAccessToExternalStorageDenied method! ', 'background: #222; color: #bada55');
+        };
+
+
+
 }
 
 Appverse.Messaging = new Messaging();
@@ -3835,6 +3813,32 @@ Pim = function () {
         console.log('%c Override onListCalendarEntriesEnd method! ', 'background: #222; color: #bada55');
       };
 
+
+      /**
+       * Applications should override/implement this method to be aware of contact services access petition denial.
+       * @aside guide application_listeners
+       * <br> @version 5.1.2
+       * @event
+       * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+       */
+      this.onAccessToContactsDenied = function () {
+          console.log(arguments);
+          console.log('%c Override onAccessToContactsDenied method! ', 'background: #222; color: #bada55');
+        };
+
+
+      /**
+       * Applications should override/implement this method to be aware of calendar services access petition denial.
+       * @aside guide application_listeners
+       * <br> @version 5.1.2
+       * @event
+       * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+       */
+      this.onAccessToCalendarDenied = function () {
+          console.log(arguments);
+          console.log('%c Override onAccessToCalendarDenied method! ', 'background: #222; color: #bada55');
+        };
+
 }
 
 Appverse.Pim = new Pim();
@@ -4068,6 +4072,18 @@ Telephony = function () {
      * @type int
      */
     this.CALLTYPE_DIALUP = 2;
+
+    /**
+     * Applications should override/implement this method to be aware of phone services access petition denial.
+     * @aside guide application_listeners
+     * <br> @version 5.1.2
+     * @event
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+     */
+    this.onAccessToPhoneDenied = function () {
+        console.log(arguments);
+        console.log('%c Override onAccessToPhoneDenied method! ', 'background: #222; color: #bada55');
+      };
 }
 
 Appverse.Telephony = new Telephony();
