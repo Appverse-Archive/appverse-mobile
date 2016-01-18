@@ -88,12 +88,6 @@ public abstract class AbstractNotification implements INotification {
     @Override
     public abstract void UpdateNotifyLoading(float progress);
     
-    /*@Override
-    public abstract void RegisterForRemoteNotifications (String senderId, RemoteNotificationType[] types);
-
-    @Override
-    public abstract void UnRegisterForRemoteNotifications ();
-    */
     @Override
     public abstract void PresentLocalNotificationNow(NotificationData notification);
 
