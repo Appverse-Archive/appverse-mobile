@@ -41,20 +41,174 @@ namespace Unity.Platform.IPhone
 
 	public class IPhoneUtils
 	{
-		
+		private string _RZ = "$ResourcesZipped$";
+		private ZipFile _zipFile = null;
+		private string[] _zipEntriesNames = null;
+		private Dictionary<string, ZipEntry> _zipEntries = null; 
 		private JavaScriptSerializer Serialiser = null;
 
 		private static IPhoneUtils singleton = null;
 		private IPhoneUtils() : base() {
 		}
 
+		public bool ResourcesZipped { 
+			get {
 
+				bool result = false;
+				try {
+					result = Boolean.Parse(_RZ);
+				} catch (Exception) {}
+
+				return result;
+			} 
+		}
 
 		private void LoadZippedFile() {
+
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.Start();
+
+			try {
+
+				// 0. Get zip resources as binary data (resources are encrypted)
+				byte[] input = GetResourceAsBinaryFromFile(new string(getA_MWFZF ()));
+				//SystemLogger.Log(SystemLogger.Module.PLATFORM, "# input length: " + input.Length);
+
+				//int BLOCK_SIZE = 128;
+				//int KEY_SIZE = 128;
+				int SALT_LENGTH = 8;
+				int SALTED_LENGTH = SALT_LENGTH * 2;
+
+				// 1. Remove the 8 byte salt
+
+				byte[] salt =  new byte[SALT_LENGTH];
+				Buffer.BlockCopy(input, SALT_LENGTH, salt, 0, SALT_LENGTH);
+				
+				// 2. Remove salt from file data
+				//SystemLogger.Log(SystemLogger.Module.PLATFORM, "Salt: " + BitConverter.ToString(salt).Replace("-",""));
+				
+				int aesDataLength = input.Length - SALTED_LENGTH;
+				byte[] aesData = new byte[aesDataLength];
+				Buffer.BlockCopy(input, SALTED_LENGTH, aesData, 0, aesDataLength);
+
+				// 3. Create Key and IV from password
+				byte[] password = getA_AU_EP ();
+				MD5 md5 = MD5.Create();
+				
+				int preKeyLength = password.Length + salt.Length;
+				byte[] preKey = new byte[preKeyLength];
+				
+				Buffer.BlockCopy(password, 0, preKey, 0, password.Length);
+				Buffer.BlockCopy(salt, 0, preKey, password.Length, salt.Length);
+				
+				byte[] key = md5.ComputeHash(preKey);
+				//SystemLogger.Log(SystemLogger.Module.PLATFORM, "key: " + BitConverter.ToString(key).Replace("-",""));
+				
+				int preIVLength = key.Length + preKeyLength;
+				byte[] preIV = new byte[preIVLength];
+				
+				Buffer.BlockCopy(key, 0, preIV, 0, key.Length);
+				Buffer.BlockCopy(preKey, 0, preIV, key.Length, preKey.Length);
+
+				byte[] iv = md5.ComputeHash(preIV);
+				//SystemLogger.Log(SystemLogger.Module.PLATFORM, "iv: " + BitConverter.ToString(iv).Replace("-",""));
+
+				md5.Clear();
+				md5 = null;
+
+				// 4. Decrypt using AES
+				Rijndael rijndael = Rijndael.Create();
+				rijndael.Padding = PaddingMode.None;
+				CryptoStream cs = new CryptoStream(new MemoryStream(input), rijndael.CreateDecryptor(key, iv), CryptoStreamMode.Read);
+				MemoryStream ms = new MemoryStream();
+				cs.CopyTo(ms);
+				cs.Close();
+				//SystemLogger.Log(SystemLogger.Module.PLATFORM, "decrypted ms length: " + ms.Length);
+
+				_zipFile = new ZipFile(ms); // it is more efficient to create the ZipFile object using an Stream (from NSData), instead of using the file path.
+
+				List<string> entries = new List<string>();
+				_zipEntries = new Dictionary<string, ZipEntry>();
+				foreach(ZipEntry entry in _zipFile) {
+					//SystemLogger.Log(SystemLogger.Module.PLATFORM, "# entry found: " + entry.Name);
+					entries.Add(entry.Name);
+					// storing ZipEntry in a HashMap or similar to avoid unnecessary loops looking for the index!
+					_zipEntries.Add(entry.Name, entry);
+				}
+				_zipEntriesNames = entries.ToArray();
 			
+			} catch (Exception ex) {
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "# Exception loading resources as zipped file: " + ex.Message, ex);
+			}
+
+			stopwatch.Stop();
+			SystemLogger.Log(SystemLogger.Module.PLATFORM, "# Time elapsed loading zipped file: "+ stopwatch.Elapsed);
+
+		}
+
+		private char[] getA_MWFZF () {
+			return new char[] { '\x0061', '\x0070', '\x0070', '\x002d', '\x0065', '\x006e', '\x0063', '\x0072', '\x0079', '\x0070', '\x0074', '\x0065', '\x0064', '\x002e', '\x007a', '\x0069', '\x0070'}; 
+		}
+
+		private char[] getA_DMT () {
+			return new char[] { '\x002e', '\x006d', '\x006f', '\x006e', '\x006f', '\x0074', '\x006f', '\x0075', '\x0063', '\x0068', '\x002d', '\x0036', '\x0034'}; 
+		}
+
+		private char[] getA_PM () {
+			return new char[] { '\x002e','\x0069','\x004f','\x0053','\x002e','\x0064','\x006c','\x006c'}; 
+		}
+
+		private List<string> getA_ALB () {
+			List<string> a = new List<string> ();
+			a.Add (new string(new char[] { '\x0055','\x006e','\x0069','\x0074','\x0079','\x0050',
+				'\x006c','\x0061','\x0074','\x0066','\x006f','\x0072','\x006d','\x0049','\x004f','\x0053','\x002e','\x0064','\x006c','\x006c' }));  
+
+			a.Add (new string(new char[] { '\x0055','\x006e','\x0069','\x0074','\x0079','\x0043','\x006f','\x0072','\x0065','\x002e','\x0064','\x006c','\x006c' }));  
+
+			a.Add (new string(new char[] { '\x0053','\x0068','\x0061','\x0072','\x0070','\x005a','\x0069','\x0070','\x004c','\x0069','\x0062','\x002e','\x0064','\x006c','\x006c' }));  
+
+					a.Add (new string(new char[] { '\x0042','\x006f','\x0075','\x006e','\x0063','\x0079','\x0043','\x0061','\x0073','\x0074','\x006c','\x0065',
+				'\x002e','\x0043','\x0072','\x0079','\x0070','\x0074','\x006f','\x002e','\x0064','\x006c','\x006c' }));  							
+
+			return a;
+		}
+
+		private List<string> getA_NALB () {
+			List<string> a = new List<string> ();
+			a.Add (new string(new char[] { '\x0058','\x0061','\x006d','\x0061','\x0072','\x0069','\x006e','\x002e','\x0069','\x004f','\x0053','\x002e','\x0064','\x006c','\x006c' }));  	
+
+			return a;
 		}
 
 
+		private byte[] getA_AU_EP () {
+
+			String md5crc = "";
+
+			NSError error = new NSError ();
+			string[] fs = NSFileManager.DefaultManager.GetDirectoryContent (new string(getA_DMT ()), out error);
+			foreach(string f in fs ) {
+				if((f.EndsWith(new string(getA_PM ())) || getA_ALB().Contains(f)) && !getA_NALB().Contains(f)) {
+					using (var md5 = MD5.Create())
+					{
+						byte[] fileBytes1 = GetResourceAsBinaryFromFile (new string(getA_DMT ()) +"/" + f);
+
+						byte[] md5checksumBytes1 = md5.ComputeHash (fileBytes1);
+						md5crc = md5crc + BitConverter.ToString(md5checksumBytes1).Replace("-",String.Empty).ToLower();
+					}
+				}
+			}
+
+			using (var md5Sum = MD5.Create ()) 
+			{
+				byte[] md5crcBytesSum = Encoding.UTF8.GetBytes (md5crc);
+				byte[] md5checksumBytesSum = md5Sum.ComputeHash (md5crcBytesSum);
+
+				md5crc = BitConverter.ToString(md5checksumBytesSum).Replace("-",String.Empty).ToLower();
+			}
+
+			return Encoding.UTF8.GetBytes(md5crc);
+		}
 		
 		public static IPhoneUtils GetInstance() {
 			if (singleton==null) {
@@ -62,32 +216,115 @@ namespace Unity.Platform.IPhone
 
 				singleton.Serialiser = new JavaScriptSerializer ();
 
-
+				if(singleton.ResourcesZipped) {
+					// testing removing disk and memory cache capacity
+					SystemLogger.Log (SystemLogger.Module.PLATFORM, "# Removing cache disk and memory capacity");
+					NSUrlCache.SharedCache.DiskCapacity = 0;
+					NSUrlCache.SharedCache.MemoryCapacity = 0;
+					singleton.LoadZippedFile();
+				}
 			}
 			return singleton;
 		}
 
 		public string[] GetFilesFromDirectory(string directoryPath, string filePattern) {
-			
-			return Directory.GetFiles (directoryPath, filePattern);
+			if(this.ResourcesZipped) {
 
+				// get relative path (removing application bundle path)
+				directoryPath = this.GetFileFullPath(directoryPath);
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "# getting files entries from directory: " + directoryPath);
+
+				List<string> files = new List<string>();
+				foreach(string entry in _zipEntriesNames) {
+					if(entry.StartsWith(directoryPath) && entry.EndsWith(Path.GetExtension(filePattern)))
+						files.Add(entry);
+				}
+				return files.ToArray();
+			} else {
+				return Directory.GetFiles (directoryPath, filePattern);
+			}
 		}
 
 
 		public bool ResourceExists(string resourcePath) {
 			//SystemLogger.Log (SystemLogger.Module.PLATFORM, "# Checking file exists: " + resourcePath);
-
-			return File.Exists(resourcePath);
-
+			if(this.ResourcesZipped) {
+				return IPhoneUtils.GetInstance().ResourceFromZippedExists(resourcePath);
+			} else {
+				return File.Exists(resourcePath);
+			}
 			
 		}
 
 		private bool ResourceFromZippedExists(string resourcePath) {
 
+			// get relative path (removing application bundle path)
+			resourcePath = this.GetFileFullPath(resourcePath);
+
+			//SystemLogger.Log(SystemLogger.Module.PLATFORM, "# Checking resource exists in zipped file: " + resourcePath);
+			if (_zipFile != null)  {
+				return (this.GetZipEntry (resourcePath)!=null);
+			}
+
 			return false;
 		}
 
+		/// <summary>
+		/// Gets the zip entry.
+		/// </summary>
+		/// <returns>
+		/// The zip entry.
+		/// </returns>
+		/// <param name='entryName'>
+		/// Entry name.
+		/// </param>
+		private ZipEntry GetZipEntry(string entryName) {
+			if(_zipEntries != null && _zipEntries.ContainsKey(entryName))  {
+				return _zipEntries[entryName];
+			} else {
+				return null;
+			}
+		}
 
+		private byte[] GetResourceAsBinaryFromZipped(string resourcePath) {
+			if (_zipFile != null)  {
+				SystemLogger.Log(SystemLogger.Module.PLATFORM, "# Loading resource from zipped file: " + resourcePath);
+				//Stopwatch stopwatch = new Stopwatch();
+				//stopwatch.Start();
+
+				ZipEntry entry = this.GetZipEntry(resourcePath);  // getting the entry from the _zipFile.GetEntry() method is less efficient
+				if(entry != null) {
+					//SystemLogger.Log(SystemLogger.Module.PLATFORM, "# entry found [" + entry.Name + "]: " + entry.Size);
+
+					//long et1 = stopwatch.ElapsedMilliseconds;
+					Stream entryStream = _zipFile.GetInputStream(entry);
+
+					//long et2 = stopwatch.ElapsedMilliseconds;
+
+					// entryStream is not seekable, it should be first readed
+					byte[] data = IPhoneUtils.ConvertNonSeekableStreamToByteArray(entryStream); //, entry.Size
+					//SystemLogger.Log(SystemLogger.Module.PLATFORM, "# entry found [" + entry.Name + "], data byte array size:" + data.Length);
+
+					//long et3 = stopwatch.ElapsedMilliseconds;
+					//SystemLogger.Log(SystemLogger.Module.PLATFORM, "CSV," + resourcePath + "," + entry.Size + "," + entry.CompressedSize + ","+ et1 +","+(et2-et1)+","+(et3-et2)+","+(et3));
+					//stopwatch.Stop();
+					return data;
+				}
+
+				//stopwatch.Stop();
+			}
+			
+			return null;
+		}
+
+		private Stream GetResourceStreamFromZipped(string resourcePath) {
+			byte[] data = GetResourceAsBinaryFromZipped(resourcePath);
+			if(data != null) {
+				return new MemoryStream(data);
+			} else {
+				return null;
+			}
+		}
 
 		public static byte[] ConvertNonSeekableStreamToByteArray(Stream nonSeeakable) {
 			if(nonSeeakable is MemoryStream) {
@@ -106,10 +343,29 @@ namespace Unity.Platform.IPhone
 			NSUrl nsUrl = null;
 			SystemLogger.Log(SystemLogger.Module.PLATFORM, "# Getting nsurl from path: " + path);
 			try {
-			
-				// check resource directly from local file system
-				nsUrl = NSUrl.FromFilename(path);
-			
+				if(this.ResourcesZipped) {
+					//path = this.GetFileFullPath(path);
+					SystemLogger.Log(SystemLogger.Module.PLATFORM, "# Getting nsurl from path inside zipped file: " + path);
+					byte[] result = this.GetResourceAsBinaryFromZipped(path);
+
+					if(result!=null) {
+						string documentsPath = Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments);
+						string tmpPath = Path.Combine (documentsPath, "..", "tmp");
+						string filename = Path.Combine (tmpPath, Path.GetFileName(path));
+						File.WriteAllBytes(filename, result);
+						NSFileManager.SetSkipBackupAttribute (filename, true); // backup will be skipped for this file
+						path = filename;
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "# storing file on temporal path for displaying: " + path);
+					} else {
+						SystemLogger.Log(SystemLogger.Module.PLATFORM, "# Resource not found inside app respurces zipped file: " + path);
+					}
+
+					// check resource directly from local file system
+					nsUrl = NSUrl.FromFilename(path);
+				} else {
+					// check resource directly from local file system
+					nsUrl = NSUrl.FromFilename(path);
+				}
 
 			} catch (Exception e) {
 				SystemLogger.Log(SystemLogger.Module.PLATFORM, "# Error trying to get nsurl from file [" + path +"]", e);
@@ -119,9 +375,17 @@ namespace Unity.Platform.IPhone
 		}
 		
 		public string GetFileFullPath(string filePath) {
-			
-			return Path.Combine(NSBundle.MainBundle.BundlePath, filePath);
-
+			if(this.ResourcesZipped) {
+				string bundlePath = NSBundle.MainBundle.BundlePath;
+				//SystemLogger.Log(SystemLogger.Module.PLATFORM, "# Checking resource exists in zipped file (bundlePath): " + bundlePath);
+				if(filePath.IndexOf(bundlePath)>=0) {
+					filePath = filePath.Substring(filePath.IndexOf(bundlePath) + bundlePath.Length + 1); // +1 for removing leading path separator
+				}
+				//sSystemLogger.Log(SystemLogger.Module.PLATFORM, "# Checking resource exists in zipped file (filePath): " + filePath);
+				return filePath;
+			} else {
+				return Path.Combine(NSBundle.MainBundle.BundlePath, filePath);
+			}
 		}
 
 		private Stream GetResourceAsStreamFromFile(string resourcePath) 
@@ -149,15 +413,25 @@ namespace Unity.Platform.IPhone
 		
 		public Stream GetResourceAsStream(string resourcePath) 
 		{
-			
-			return this.GetResourceAsStreamFromFile(resourcePath);
+			if(this.ResourcesZipped) {
+				// get relative path (removing application bundle path)
+				resourcePath = this.GetFileFullPath(resourcePath);
 
+				return this.GetResourceStreamFromZipped(resourcePath);
+			} else {
+				return this.GetResourceAsStreamFromFile(resourcePath);
+			}
 		}
 
 		public byte[] GetResourceAsBinary(string resourcePath, bool isWebResource)  {
-			
-			return this.GetResourceAsBinaryFromFile(resourcePath);
-
+			if(this.ResourcesZipped && isWebResource) {
+				// get relative path (removing application bundle path)
+				resourcePath = this.GetFileFullPath(resourcePath);
+				
+				return this.GetResourceAsBinaryFromZipped(resourcePath);
+			} else {
+				return this.GetResourceAsBinaryFromFile(resourcePath);
+			}
 		}
 		
 		private byte[] GetResourceAsBinaryFromFile(string resourcePath) 

@@ -54,8 +54,19 @@ namespace Unity.Platform.IPhone
 			this.Opaque = false;  
 			this.BackgroundColor = UIColor.Clear;  // transparent
 
-			// Load the image to show in the overlay:
-			UIImage overlayGraphic = UIImage.FromBundle(@"overlaygraphic.png");
+			UIImage overlayGraphic;
+			string OverlayImage = _settings.Overlay;
+
+			log ("Overlay Image: "+OverlayImage);
+			if (OverlayImage != null && File.Exists("./"+OverlayImage+".png")){
+					log ("Overlay Image: "+OverlayImage + " found!");
+					overlayGraphic = UIImage.FromBundle (OverlayImage+".png");
+
+			} else {
+				log ("Overlay Image not found");
+				// Load the image to show in the overlay:
+				overlayGraphic = UIImage.FromBundle (@"overlaygraphic.png");
+			}
 			overlayGraphic = overlayGraphic.ImageWithRenderingMode (UIImageRenderingMode.AlwaysTemplate);  // convert image to template
 
 			UIImageView overlayGraphicView = new UIImageView (overlayGraphic);
@@ -66,7 +77,9 @@ namespace Unity.Platform.IPhone
 				frame.Height - overlaySettings.GuidelinesMargins * 2);
 
 			log ("guidelines tint color: " + overlaySettings.GuidelinesColorHexadecimal);
-			overlayGraphicView.TintColor = GetUIColorfromHex (overlaySettings.GuidelinesColorHexadecimal);
+			UIColor color = GetUIColorfromHex (overlaySettings.GuidelinesColorHexadecimal);
+			if (color != null)
+				overlayGraphicView.TintColor = color;
 
 			this.AddSubview (overlayGraphicView);
 
@@ -87,7 +100,10 @@ namespace Unity.Platform.IPhone
 									frame.Height - overlaySettings.DescriptionLabelHeight - overlaySettings.DescriptionLabelMarginBottom, 
 					frame.Width - overlaySettings.DescriptionLabelMarginLeftRight * 2, overlaySettings.DescriptionLabelHeight));  // applying "DescriptionLabelMarginLeftRight" margins to width and x position
 				label.Text = overlaySettings.DescriptionLabelText;
-				label.TextColor = GetUIColorfromHex (overlaySettings.DescriptionLabelColorHexadecimal);
+
+				color = GetUIColorfromHex (overlaySettings.DescriptionLabelColorHexadecimal);
+				if(color != null)
+					label.TextColor = color; 
 				label.BaselineAdjustment = UIBaselineAdjustment.AlignCenters;
 				label.TextAlignment = UITextAlignment.Center; // centered aligned
 				label.LineBreakMode = UILineBreakMode.WordWrap; // wrap text by words
@@ -109,7 +125,9 @@ namespace Unity.Platform.IPhone
 				frame.Height - overlaySettings.CancelButtonHeight - overlaySettings.ScanButtonMarginBottom, 
 				overlaySettings.CancelButtonWidth, overlaySettings.CancelButtonHeight));
 			cancelLabel.Text = overlaySettings.CancelButtonText;
-			cancelLabel.TextColor = GetUIColorfromHex (overlaySettings.CancelButtonColorHexadecimal);
+			color = GetUIColorfromHex (overlaySettings.CancelButtonColorHexadecimal);
+			if(color != null)
+				cancelLabel.TextColor = color;
 			cancelLabel.BaselineAdjustment = UIBaselineAdjustment.AlignCenters;
 			cancelLabel.TextAlignment = UITextAlignment.Center; // centered aligned
 
@@ -144,10 +162,13 @@ namespace Unity.Platform.IPhone
 		}
 
 		public static UIColor GetUIColorfromHex (string hexValue) {
-
+			if (hexValue == null)
+				return null;
 			float alpha = 1.0f; // opacity hardcoded
+			
 
 			var colorString = hexValue.Replace ("#", "");
+			
 			if (alpha > 1.0f) {
 				alpha = 1.0f;
 			} else if (alpha < 0.0f) {
@@ -209,16 +230,22 @@ namespace Unity.Platform.IPhone
 					options.ScanButtonIconHeight);  // we will place the icon in the middle of the button image
 
 				SystemLogger.Log (SystemLogger.Module.PLATFORM, "ScanButton : tint color to be used " + options.ScanButtonColorHexadecimal);
-				this.TintColor = CameraOverlayView.GetUIColorfromHex (options.ScanButtonColorHexadecimal);
+				UIColor color = CameraOverlayView.GetUIColorfromHex (options.ScanButtonColorHexadecimal);
+				if (color != null)
+					this.TintColor = color;
 				SystemLogger.Log (SystemLogger.Module.PLATFORM, "ScanButton : tint color to be used for icon " + options.ScanButtonIconColorHexadecimal);
-				buttonIconImageView.TintColor = CameraOverlayView.GetUIColorfromHex (options.ScanButtonIconColorHexadecimal);
+				color = CameraOverlayView.GetUIColorfromHex (options.ScanButtonIconColorHexadecimal);
+				if (color != null)
+					buttonIconImageView.TintColor = color;
 			}
 
 			this.TouchUpInside += delegate {
 
 				if(options != null) {
 					SystemLogger.Log (SystemLogger.Module.PLATFORM, "ScanButton : TouchUpInside... changing color to:  " + options.ScanButtonPressedColorHexadecimal);
-					this.TintColor = CameraOverlayView.GetUIColorfromHex (options.ScanButtonPressedColorHexadecimal);
+					UIColor color = CameraOverlayView.GetUIColorfromHex (options.ScanButtonPressedColorHexadecimal);
+					if(color != null)
+						this.TintColor = color;
 				}
 			};
 

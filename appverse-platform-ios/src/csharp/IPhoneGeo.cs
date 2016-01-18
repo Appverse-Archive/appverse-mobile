@@ -160,6 +160,32 @@ namespace Unity.Platform.IPhone
 		/// reading from the hardware, _until_ StopUpdatingLocation is called
 		/// (which we do call in this method, after the first reading is received)
 		/// </summary>
+		/// <param name="manager">Manager.</param>
+		/// <param name="locations">Locations.</param>
+		public override void LocationsUpdated (CLLocationManager manager, CLLocation[] locations)
+		{
+
+			CLLocation newLocation = locations [locations.Length - 1];
+			if(newLocation.HorizontalAccuracy > 0) {
+				unityLocation.Latitude = newLocation.Coordinate.Latitude;
+				unityLocation.Longitude = newLocation.Coordinate.Longitude;
+				unityLocation.Altitude = newLocation.Altitude;
+				unityLocation.Speed = newLocation.Speed;
+				unityLocation.Course = newLocation.Course;
+				unityLocation.TimeStamp = newLocation.Timestamp;
+			}
+			unityLocation.HorizontalAccuracy = newLocation.HorizontalAccuracy;
+			unityLocation.VerticalAccuracy = newLocation.VerticalAccuracy;
+
+			int numVersionMajor = getMajorVersionNumber();
+
+		}
+
+		/// <summary>
+		/// This method is called every time CLLocationManager gets a new
+		/// reading from the hardware, _until_ StopUpdatingLocation is called
+		/// (which we do call in this method, after the first reading is received)
+		/// </summary>
 		public override void UpdatedLocation (CLLocationManager locationManager, CLLocation newLocation, CLLocation oldLocation)
 		{
 			if(newLocation.HorizontalAccuracy > 0) {
@@ -210,6 +236,8 @@ namespace Unity.Platform.IPhone
 		{
 			SystemLogger.Log (SystemLogger.Module.PLATFORM, "Failed to get location/heading:" + e.ToString ());
 		}
+
+
 		
 		private int getMajorVersionNumber()
 		{
@@ -331,6 +359,8 @@ namespace Unity.Platform.IPhone
 		private UnityHeading unityHeading = null;
 		private GeoDecoderAttributes geoDecoderAttributes = new GeoDecoderAttributes();
 		private CLLocationManager locationManager = new CLLocationManager ();
+
+		
 		private LocationCoordinate locationCoordinate = new LocationCoordinate ();
 		private UIAcceleration uiAcceleration;
 		private Acceleration acceleration;
@@ -360,6 +390,19 @@ namespace Unity.Platform.IPhone
 		{
 			initAccelerometre();
 			initMapDatabase ();
+
+			locationManager.AuthorizationChanged += OnAuthorizationChanged;
+			if (UIDevice.CurrentDevice.CheckSystemVersion (6, 0)) {
+
+				locationManager.LocationsUpdated += (object sender, CLLocationsUpdatedEventArgs e) => {
+					evaluateLocationCoordinates( e.Locations [e.Locations.Length - 1] );
+				};
+			} else {
+
+				locationManager.UpdatedLocation += (object sender, CLLocationUpdatedEventArgs e) => {
+					evaluateLocationCoordinates( e.NewLocation );
+				};
+			}
 		}
 
 		private void initMapDatabase ()
@@ -472,6 +515,8 @@ namespace Unity.Platform.IPhone
 					}
 
 					locationManager.StartUpdatingLocation ();
+
+
 					isStartedOk = true;
 				} catch (Exception) {
 					isStartedOk = false;
@@ -484,6 +529,14 @@ namespace Unity.Platform.IPhone
 			}
 			
 			return isStartedOk;
+		}
+
+		private void OnAuthorizationChanged (object sender, CLAuthorizationChangedEventArgs e)
+		{
+
+			SystemLogger.Log (SystemLogger.Module.PLATFORM, "[K] OnAuthorizationChanged "+e.Status);
+			if (e.Status == CLAuthorizationStatus.Denied || e.Status == CLAuthorizationStatus.Restricted)
+				IPhoneUtils.GetInstance().FireUnityJavascriptEvent("Appverse.Geo.onAccessToLocationDenied", null);
 		}
 
 		public override bool StopUpdatingLocation ()
@@ -564,7 +617,6 @@ namespace Unity.Platform.IPhone
 		/// </summary>
 		private void LocationManagerSetup() {
 			if(locationManager != null && locationManager.Delegate == null) {
-				
 				SystemLogger.Log (SystemLogger.Module.PLATFORM, "LocationManagerSetup() : Setting Location Manager Delegate and settings");
 				locationManager.Delegate = new UnityLocationManagerDelegate (unityLocation, unityHeading, geoDecoderAttributes);
 				
@@ -593,8 +645,39 @@ namespace Unity.Platform.IPhone
 			
 		}
 
+		private void evaluateLocationCoordinates (CLLocation newLocation)
+		{
+			
+
+			if ( (CLLocationManager.LocationServicesEnabled)) {
+				//Set the origin object
+				unityLocation.Latitude = newLocation.Coordinate.Latitude;
+				unityLocation.Longitude = newLocation.Coordinate.Longitude;
+				unityLocation.Altitude = newLocation.Altitude;
+				unityLocation.HorizontalAccuracy = (float)newLocation.HorizontalAccuracy;
+				unityLocation.VerticalAccuracy = (float)newLocation.VerticalAccuracy;
+
+				//not needed
+				locationCoordinate.XCoordinate = newLocation.Coordinate.Latitude;
+				locationCoordinate.YCoordinate = newLocation.Coordinate.Longitude;
+				locationCoordinate.ZCoordinate = newLocation.Altitude;
+				locationCoordinate.XDoP = (float)newLocation.HorizontalAccuracy;
+				locationCoordinate.YDoP = (float)newLocation.VerticalAccuracy;
+			} else {
+				#if DEBUG
+				SystemLogger.Log (SystemLogger.Module.PLATFORM, "GetCoordinates() not set to true LocationServicesEnabled");
+				#endif
+				locationCoordinate.XCoordinate = 0.0f;
+				locationCoordinate.YCoordinate = 0.0f;
+				locationCoordinate.ZCoordinate = 0.0f;
+				locationCoordinate.XDoP = 0.0f;
+				locationCoordinate.YDoP = 0.0f;
+			}
+		}
+
 		private void evaluateLocationCoordinates ()
 		{
+			
 			if ( (CLLocationManager.LocationServicesEnabled) && (unityLocation != null) ) {
 				locationCoordinate.XCoordinate = unityLocation.Latitude;
 				locationCoordinate.YCoordinate = unityLocation.Longitude;

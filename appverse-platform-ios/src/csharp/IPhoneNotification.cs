@@ -332,6 +332,7 @@ namespace Unity.Platform.IPhone
 
 		private UILocalNotification PrepareLocalNotification (NotificationData notification) {
 			if(notification!=null) {
+				notification.AppWasRunning = true;
 				UILocalNotification localNotification = new UILocalNotification();
 				localNotification.AlertBody = notification.AlertMessage;
 				localNotification.ApplicationIconBadgeNumber = notification.Badge;
