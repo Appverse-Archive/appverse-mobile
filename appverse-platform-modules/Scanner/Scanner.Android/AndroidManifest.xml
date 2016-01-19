@@ -20,7 +20,7 @@
           android:versionCode="88"
           android:installLocation="auto">
 
-  <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="21"/>
+  <uses-sdk android:minSdkVersion="15" android:targetSdkVersion="21"/>
 
   <uses-permission android:name="android.permission.CAMERA"/>
    <!-- Don't require camera, as this requires a rear camera. This allows it to work on the Nexus 7 -->

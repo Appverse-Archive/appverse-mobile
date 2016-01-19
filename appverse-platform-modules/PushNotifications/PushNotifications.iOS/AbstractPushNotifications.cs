@@ -286,7 +286,7 @@ namespace Appverse.Core.PushNotifications
 					Dictionary<String,Object> customDic = PushNotificationsUtils.ConvertToDictionary (new NSMutableDictionary (options));
 					customDic.Remove ("aps"); // it is not needed to pass the "aps" (notification iOS data) inside the "custom data json string"
 					notificationData.CustomDataJsonString = PushNotificationsUtils.JSONSerialize (customDic);
-
+					notificationData.AppWasRunning = applicationState == UIApplicationState.Active ? true : false;
 
 				} catch (System.Exception ex) {
 					SystemLogger.Log (SystemLogger.Module.PLATFORM,  "******* Unhanlded exception processing notification payload received. Exception message: " + ex.Message);

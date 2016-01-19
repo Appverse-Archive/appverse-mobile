@@ -43,13 +43,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.PhoneNumberUtils;
 import android.webkit.MimeTypeMap;
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 
 import com.gft.unity.android.AndroidServiceLocator;
+import com.gft.unity.android.activity.AbstractActivityManagerListener;
+import com.gft.unity.android.activity.AndroidActivityManager;
 import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.core.media.MediaMetadata;
 import com.gft.unity.core.media.MediaType;
+import com.gft.unity.core.media.camera.CameraOptions;
 import com.gft.unity.core.storage.filesystem.IFileSystem;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
@@ -84,10 +88,19 @@ public class AndroidScanner extends AbstractScanner {
 		
 	}
 
-	
-	
 	@Override
-	public void DetectQRCode(boolean autoHandleQR) {			
+	public void DetectQRCode(boolean autoHandleQR) {	
+		try {	
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.CAMERA, aam.SCANNER, new CameraPermissionListener(autoHandleQR, false));
+		} catch (Exception ex) {
+			LOGGER.logError("TakeSnapshotWithOptions", "Error", ex);
+		} 
+	}
+	
+	public void DetectQRCodeOnApproval(boolean autoHandleQR) {			
 		try {
 			CameraPreferences.getInstance().setFront(false);
 			
@@ -124,7 +137,18 @@ public class AndroidScanner extends AbstractScanner {
 	
 	
 	@Override
-	public void DetectQRCodeFront(boolean autoHandleQR) {			
+	public void DetectQRCodeFront(boolean autoHandleQR) {	
+		try {	
+			AndroidActivityManager aam = (AndroidActivityManager) AndroidServiceLocator
+					.GetInstance().GetService(AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+			
+			aam.requestPermision(Manifest.permission.CAMERA, aam.SCANNER, new CameraPermissionListener(autoHandleQR, true));
+		} catch (Exception ex) {
+			LOGGER.logError("TakeSnapshotWithOptions", "Error", ex);
+		} 
+	}
+	
+	public void DetectQRCodeFrontOnApproval(boolean autoHandleQR) {	
 		try {
 
 			CameraPreferences.getInstance().setFront(true);
@@ -160,6 +184,59 @@ public class AndroidScanner extends AbstractScanner {
 			LOGGER.logError("DetectQRCode", "Error", ex);
 		}      	
 	}
+	
+	private class CameraPermissionListener extends AbstractActivityManagerListener {
+
+		private boolean autoHandle;
+		private boolean front;
+		
+		public CameraPermissionListener() {
+
+		}
+		
+		public CameraPermissionListener(boolean autoHandle, boolean front) {
+
+			this.autoHandle = autoHandle;
+			this.front = front;
+		}
+		
+
+		@Override
+		public void onOk(int requestCode, Intent data) {
+
+			LOGGER.logInfo("CameraPermissionListener.onOk", "requestCode: "+requestCode);
+
+
+			try {
+				if(this.front){
+					DetectQRCodeFrontOnApproval(this.autoHandle);
+				}else{
+					DetectQRCodeOnApproval(this.autoHandle);
+				
+				}
+				
+			} catch (Exception ex) {
+				LOGGER.logError("CameraPermissionListener.onOk", "Error", ex);
+			}
+		}
+
+
+		@Override
+		public void onCancel(int requestCode, Intent data) {
+			LOGGER.logInfo("CameraPermissionListener.onCancel", ((data!=null)?data.getDataString(): ""));
+
+			try {
+				IActivityManager am = (IActivityManager) AndroidServiceLocator
+						.GetInstance().GetService(
+								AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
+				am.executeJS("Appverse.Scanner.onAccessToCameraDenied", null);
+				
+			} catch (Exception ex) {
+				LOGGER.logError("CameraPermissionListener.onCancel", "Error", ex);
+			}
+		}
+	}
+	
 	
 	
 	@Override
@@ -225,6 +302,19 @@ public class AndroidScanner extends AbstractScanner {
 		} catch (Exception ex) {
 			LOGGER.logError("DetectQRCodeListener.onOk", "Error", ex);
 		}
+	}
+	
+	public void onCancel(Bundle data, boolean bAutoHandle) {
+		LOGGER.logInfo("DetectQRCodeListener.onCancel", ((data!=null)?"result data received": ""));
+		try {			
+			
+	       this.executeJS((Activity)context, "Appverse.Scanner.onQRCodeDetected", null);
+	        
+	      
+		} catch (Exception ex) {
+			LOGGER.logError("DetectQRCodeListener.onCancel", "Error", ex);
+		}
+		
 	}
 	
 	private BarCodeType ZxingToBarcode (BarcodeFormat format){
@@ -561,4 +651,6 @@ public class AndroidScanner extends AbstractScanner {
 	private static String getExtension(String mimeType) {
 		return MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
 	}
+
+	
 }

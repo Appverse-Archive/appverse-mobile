@@ -3,11 +3,11 @@
  */
 
 /**
- * @class Appverse.PushNotifications 
- * Module class to access Appverse PushNotifications module interface. 
+ * @class Appverse.PushNotifications
+ * Module class to access Appverse PushNotifications module interface.
  * <br>This interface provides features to register and unregister the device and app to receive remote notifications.<br>
  * <br> @version 5.0.3
- * <pre>Usage: Appverse.PushNotifications.&lt;metodName&gt;([params]).<br>Example: Appverse.PushNotifications.DetectQRCode().</pre>
+ * <pre>Usage: Appverse.PushNotifications.&lt;metodName&gt;([params]).<br>Example: Appverse.PushNotifications.RegisterForRemoteNotifications('',[1,2]).</pre>
  * @component
  * @aside guide appverse_modules
  * @constructor Constructs a new PushNotifications interface.
@@ -51,14 +51,14 @@ PushNotifications = function() {
      * @type int
      */
     this.REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY = 4;
-	
+
     /**
      * Default registration exception code for remote notifications.
      * <br> @version 5.0.3
      * @type String
      */
     this.REMOTE_NOTIFICATION_REGISTRATION_FAILURE_DEFAULT = "99";
-	
+
     /**
      * Registration exception code for remote notifications indicating unsuccessful registration due to a different sender id previous registration.
      * <br> @version 5.0.3
@@ -81,12 +81,14 @@ PushNotifications = function() {
 	 * <br> @version 5.0.3
 	 * @method
 	 * @param {Appverse.Notification.NotificationData} notificationData The notification data received (visual data and custom provider data)
-	 * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
-	 * 
+	 * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
+	 *
 	 */
 	this.OnRemoteNotificationReceived = function(notificationData) {
+      console.log(arguments);
+      console.log('%c Override OnRemoteNotificationReceived method! ', 'background: #222; color: #bada55');
 	};
-	
+
 	/**
 	 * @event OnRegisterForRemoteNotificationsSuccess Fired on successfully registration for remote notifications.
 	 * <br> For further information see, {@link Appverse.PushNotifications.RegistrationToken RegistrationToken}.
@@ -95,10 +97,12 @@ PushNotifications = function() {
 	 * <br> @version 5.0.3
 	 * @method
 	 * @param {Appverse.PushNotifications.RegistrationToken} registrationToken The registration token ("device token" for iOS or "registration ID" for Android) data received from the Notifications Service (APNs for iOS or GMC for Android).
-	 * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
-	 * 
+	 * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
+	 *
 	 */
 	this.OnRegisterForRemoteNotificationsSuccess = function(registrationToken) {
+      console.log(arguments);
+      console.log('%c Override OnRegisterForRemoteNotificationsSuccess method! ', 'background: #222; color: #bada55');
 	};
 
 	/**
@@ -109,10 +113,12 @@ PushNotifications = function() {
 	 * <br> @version 5.0.3
 	 * @method
 	 * @param {Appverse.PushNotifications.RegistrationError} registrationError The registration error data received from the Notifications Service (APNs for iOS or GMC for Android).
-	 * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
-	 * 
+	 * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
+	 *
 	 */
 	this.OnRegisterForRemoteNotificationsFailure = function(registrationError) {
+      console.log(arguments);
+      console.log('%c Override OnRegisterForRemoteNotificationsFailure method! ', 'background: #222; color: #bada55');
 	};
 
 	/**
@@ -121,12 +127,14 @@ PushNotifications = function() {
 	 * @aside guide application_listeners
 	 * <br> @version 5.0.3
 	 * @method
-	 * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
-	 * 
+	 * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
+	 *
 	 */
 	this.OnUnRegisterForRemoteNotificationsSuccess = function() {
+      console.log(arguments);
+      console.log('%c Override OnUnRegisterForRemoteNotificationsSuccess method! ', 'background: #222; color: #bada55');
 	};
-    
+
 };
 
 Appverse.PushNotifications = new PushNotifications();
@@ -138,7 +146,7 @@ Appverse.PushNotifications = new PushNotifications();
  * @method
  * @param {String} senderId The sender identifier. This parameter is required for some platforms (such as the Android platform), in iOS will be just ignored.
  * @param {int[]} types The remote notifications types accepted by this application. For further information see, {@link Appverse.PushNotifications#REMOTE_NOTIFICATION_TYPE_NONE REMOTE_NOTIFICATION_TYPE_NONE}, {@link Appverse.PushNotifications#REMOTE_NOTIFICATION_TYPE_BADGE REMOTE_NOTIFICATION_TYPE_BADGE}, {@link Appverse.PushNotifications#REMOTE_NOTIFICATION_TYPE_SOUND REMOTE_NOTIFICATION_TYPE_SOUND}, {@link Appverse.PushNotifications#REMOTE_NOTIFICATION_TYPE_ALERT REMOTE_NOTIFICATION_TYPE_ALERT} and {@link Appverse.PushNotifications#REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY REMOTE_NOTIFICATION_TYPE_CONTENT_AVAILABILITY}
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 PushNotifications.prototype.RegisterForRemoteNotifications = function(senderId, types)
 {
@@ -150,7 +158,7 @@ PushNotifications.prototype.RegisterForRemoteNotifications = function(senderId, 
  * <br> Returned data should be handled by overriding the corresponding Platform Listeners Appverse.OnUnRegisterForRemoteNotificationsSuccess
  * <br> @version 5.0.3 (listener callback only available on 4.0)
  * @method
- * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/check.png"/></pre>
+ * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/check.png"/> | emulator <img src="resources/images/check.png"/></pre>
  */
 PushNotifications.prototype.UnRegisterForRemoteNotifications = function()
 {

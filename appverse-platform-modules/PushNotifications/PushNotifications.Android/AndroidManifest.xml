@@ -1,0 +1,35 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.gft.appverse.android.push"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="15"
+        android:targetSdkVersion="23" />
+
+    <permission android:name="com.gft.UNITYAPPLICATIONID.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+	<uses-permission android:name="com.gft.UNITYAPPLICATIONID.permission.C2D_MESSAGE" />
+	<uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+	<uses-permission android:name="android.permission.GET_ACCOUNTS" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+		
+    <application>
+        
+       
+		
+        <service android:name="com.gft.appverse.android.push.notifications.RemoteNotificationIntentService"
+			android:enabled="true"
+			android:exported="true"/>
+
+		<receiver android:name="com.gft.appverse.android.push.notifications.RemoteNotificationReceiver"
+			android:enabled="true"
+			android:permission="com.google.android.c2dm.permission.SEND">
+			<intent-filter>
+				<action android:name="com.google.android.c2dm.intent.RECEIVE"/>
+				<action android:name="com.google.android.c2dm.intent.REGISTRATION"/>
+				<category android:name="com.gft.UNITYAPPLICATIONID"/>
+			</intent-filter>
+		</receiver>
+    </application>
+
+</manifest>
