@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notification-config>
+	<android>
+	    <field name="body" type="RN_BODY"/>
+	    <field name="title" type="RN_TITLE"/>
+	    <field name="sound" type="RN_SOUND"/>
+	    <field name="ticker" type="RN_TICKER"/>
+	    <field name="largeicon" type="RN_LARGE_ICON"/>
+	    <field name="smallicon" type="RN_SMALL_ICON"/>
+	    <field name="ledcolor" type="RN_LED_COLOR_ARGB"/>
+	</android>
+</notification-config>
