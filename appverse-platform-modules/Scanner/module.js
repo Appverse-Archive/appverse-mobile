@@ -3,8 +3,8 @@
  */
 
 /**
- * @class Appverse.Scanner 
- * Module class to access Appverse Scanner module interface. 
+ * @class Appverse.Scanner
+ * Module class to access Appverse Scanner module interface.
  * <br>This interface provides features to scan different types of codes. Currently the module only implements the QRCode handling.<br>
  * <br> @version 5.0.3
  * <pre>Usage: Appverse.Scanner.&lt;metodName&gt;([params]).<br>Example: Appverse.Scanner.DetectQRCode().</pre>
@@ -114,11 +114,11 @@ Scanner = function () {
      * @event
      * @param {Appverse.Scanner.MediaQRContent} QRCodeContent The scanned QR Code data read
      * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
-     * 
+     *
      */
     this.onQRCodeDetected = function (QRCodeContent) {
         console.log(arguments);
-        console.log('%c Override this method! ', 'background: #222; color: #bada55');
+        console.log('%c Override onQRCodeDetected method! ', 'background: #222; color: #bada55');
     };
 
     /**
@@ -131,11 +131,24 @@ Scanner = function () {
      * @param {Appverse.Scanner.MediaQRContent} metaData The generated QR Code data
      * <br> Use with Appverse.DOCUMENTS_RESOURCE_URI+MetaData.ReferenceUrl to access the stored image.
      * <pre> Available in: <br> iOS <img src="resources/images/check.png"/> | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
-     * 
+     *
      */
     this.onGeneratedQR = function (metaData) {
         console.log(arguments);
-        console.log('%c Override this method! ', 'background: #222; color: #bada55');
+        console.log('%c Override onGeneratedQR method! ', 'background: #222; color: #bada55');
+    };
+
+
+    /**
+     * Applications should override/implement this method to be aware of camera services petition denial.
+     * @aside guide application_listeners
+     * <br> @version 5.1.2
+     * @event
+     * <pre> Available in: <br> iOS <img src="resources/images/error.png"/> N/A | android <img src="resources/images/check.png"/> | windows <img src="resources/images/error.png"/> | emulator <img src="resources/images/error.png"/></pre>
+     */
+    this.onAccessToCameraDenied = function (metaData) {
+        console.log(arguments);
+        console.log('%c Override onAccessToCameraDenied method! ', 'background: #222; color: #bada55');
     };
 };
 

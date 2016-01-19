@@ -1,0 +1,33 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.gft.appverse.android.appsflyer"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="15"
+        android:targetSdkVersion="21" />
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>	
+	<uses-permission android:name="android.permission.READ_PHONE_STATE"/> 
+	
+	<application>
+
+	    <!--
+	    	Android apps cannot have multiple receivers that have the same intent-filtered action.
+			AppsFlyer provides a solution that broadcasts INSTALL_REFERRER to all other receivers automatically.
+			In the AndroidManifest.xml, please add the following receiver as the FIRST for INSTALL_REFERRER:
+			******** PLEASE MAKE SURE THE RECEIVER TAG IS WITHIN THE APPLICATION TAG
+		-->
+	    <receiver android:name="com.appsflyer.MultipleInstallBroadcastReceiver" android:exported="true">
+			<intent-filter>
+			<action android:name="com.android.vending.INSTALL_REFERRER" />
+			</intent-filter>
+		</receiver>
+
+		<!-- Add the following entry to the AndroidManifest.xml as the last entry under application -->
+		<meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+
+	</application>
+
+</manifest>

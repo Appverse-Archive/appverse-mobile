@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<project name="Build Appverse Platform iOS - Webtrekk Module" default="compile-c">
+   
+	<property name="dll.name" value="Webtrekk.iOS" overwrite="true"/>
+	
+	<property name="output.dir" value="./Webtrekk.iOS/bin" overwrite="true"/>
+	<property name="source.dir" value="./Webtrekk.iOS" overwrite="true"/>
+	<property name="mode" value="Debug_Device" overwrite="true"/>
+	
+	<property name="build.mode.dir" value="iPhone/Debug" if="${mode == 'Debug_Device'}" />
+	<property name="build.mode.dir" value="iPhone/Release" if="${mode == 'Release_Device'}" />
+	
+	<property name="build.dir" value="${output.dir}/${build.mode.dir}" />
+	
+	<property name="monotouch.bin.dir" value="/Developer/MonoTouch/usr/bin"/>
+	<property name="monotouch.lib.dir" value="/Developer/MonoTouch/usr/lib"/>
+	<property name="monotouch.lib.mono" value="mono/Xamarin.iOS"/>
+	<property name="monotouch.command.smcs" value="${monotouch.bin.dir}/smcs"/>
+	<property name="monotouch.command.mtouch" value="${monotouch.bin.dir}/mtouch"/>
+	
+	<property name="source.files" value=""/>
+	
+	<target name="clean">
+		<delete dir="${build.dir}" />
+    </target>
+
+    <target name="compile-c" depends="clean">
+        <mkdir dir="${build.dir}" />
+
+		<echo message="Compiling C# sources to generate Webtrekk Module iOS DLL: ${build.dir}/${dll.name}.dll"/>
+		
+		<echo message="## Searching for source files on: ${source.dir}"/>
+		<foreach item="File" property="filename">
+			<in>
+				<items basedir="${source.dir}">
+					<include name="*.cs" />
+					<include name="Properties/*.cs" />
+				</items>
+			</in>
+		    <do>
+		    	<echo message="## Added source file: ${filename}"/>
+				<property name="source.files" value="${source.files}${filename} "/>
+		    </do>
+		</foreach>
+		
+		<exec program="${monotouch.command.smcs}" verbose="true">
+			<arg value="/noconfig"/>
+			<arg value="/out:${build.dir}/${dll.name}.dll"/>
+			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Xml.dll" />
+			<arg value="/r:${monotouch.lib.dir}/${monotouch.lib.mono}/System.Core.dll" />
+			<arg value="/r:/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/mono/Xamarin.iOS/Xamarin.iOS.dll" />
+			<arg value="/r:./Webtrekk.iOS/lib/Webtrekk.dll" />
+			<arg value="/nologo" />
+			<arg value="/warn:4" />
+			<arg value="/debug:full" if="${mode == 'Debug_Device'}"/>
+			<arg value="/optimize-" />
+			<arg value="/codepage:utf8" />
+			<arg value="/define:DEBUG;MONOTOUCH" if="${mode == 'Debug_Device'}"/>
+			<arg value="/t:library" />
+			<arg line="${source.files}" />
+		</exec>
+	</target>
+</project>
