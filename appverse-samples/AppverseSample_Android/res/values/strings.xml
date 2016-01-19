@@ -1,5 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <resources>
 
-    <string name="app_name">AppverseSample</string>
+    <string name="app_name">Unity4j</string>
+    <string name="toast_create_contact">Contact created successfully!</string>
+    <string name="Unity_HoldSplashScreenOnStartup">HOLD_SPLASHSCREEN_ON_STARTUP</string>
+    <string name="Unity_DisableThumbnails">DISABLE_THUMBNAILS</string>
+    <string name="Appverse_Shared_PackageName">SHARED_PACKAGE_NAME</string>
+    <string name="Appverse_Shared_Preferences_Filename">SHARED_PREFERENCES_FILENAME</string>
+    <string name="Appverse_NFC_featured_used">NFC_FEATURED_USED</string>
+    <string name="Appverse_BlockRooted">BLOCK_ROOTED</string>
+    <string name="Appverse_BlockROMModified">BLOCK_ROM_MODIFIED</string>
+    <string name="Shot">Take Photo</string>
+    <string name="Help_Text">Suggestion</string>
+    <string name="Cancel">Cancel</string>
+    <string name="title_activity_widget">WidgetActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

@@ -1,2 +1,140 @@
-<!DOCTYPE html><!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"><![endif]--><!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"><![endif]--><!--[if IE 8]><html class="no-js lt-ie9"><![endif]--><!--[if gt IE 8]><!--><html class="no-js"><!--<![endif]--><head><title data-ng-bind="$state.current.name">rss</title><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="description" content=""><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="styles/26f5d48c.vendor.css"><link rel="stylesheet" href="styles/47ebca11.styles.css"><body data-ng-app="rssApp"><!--[if lt IE 7]><p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p><![endif]--><!--[if lt IE 9]><script src="bower_components/es5-shim/es5-shim.js"></script>
-      <script src="bower_components/json3/lib/json3.min.js"></script><![endif]--><nav class="navbar navbar-default navbar-fixed-top"><div class="navbar-header"><button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar-collapse"><span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button> <a class="navbar-brand" ui-sref="home">rss</a></div><div class="collapse navbar-collapse" id="main-navbar-collapse"><ul class="nav navbar-nav"><li data-ng-class="{ active: $state.includes('home') }"><a ui-sref="home"><i class="glyphicon glyphicon-home"></i> Home</a></li><li data-ng-class="{ active: $state.includes('theme') }"><a ui-sref="theme"><i class="glyphicon glyphicon-pencil"></i> Theme</a></li></ul></div></nav><div ui-view="" class="myslide" autoscroll="false"></div><footer class="footer clearfix"><hr><div class="col-md-2 col-md-offset-5"></div></footer><script src="js/appverse.js"></script><script src="scripts/6b4b6ca9.scripts.js"></script>
+<!DOCTYPE html>
+<html>
+<head><meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimun-scale=1, user-scalable=no"/>
+    <title>Basic jQuery Mobile Map</title>
+    <link rel="stylesheet" type="text/css" href="css/themes/black-theme.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/themes/jquery.mobile.icons.min.css"/>
+    <link rel="stylesheet" href="css/esri.css">
+	<link rel="stylesheet" href="css/font.css">    
+	<link rel="stylesheet" href="css/style.css">    
+    <style type="text/css">
+        html,body, div[data-role ="page"] {
+			    max-width: 100%;
+            height: 100%;
+            width: 100%;
+            margin: 0px;
+            padding: 0px;
+            overflow: hidden !important;
+            font-size: 20px;
+        }
+        .ui-header{
+            margin: 0px !important;
+            padding: 0px !important;
+            float: left;
+        }
+        .ui-content{
+			box-sizing: border-box;
+			max-width: 100%;
+            height: 100%;
+            width: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+        #mapDiv {
+            position: absolute;
+            background-color: #EEEEDD;
+            height: 100%;
+            width: 100%;
+            padding: 0px;
+            z-index: 0;
+            left: 0px;
+        }
+    </style>
+	
+    
+	<link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css" />  
+
+	<script type="text/javascript" src="js/appverse.js"></script>
+	<script type="text/javascript" src="js/jquery-1.11.3.min.js"></script> 
+	<script type="text/javascript" src="js/jquery.mobile-1.4.5.min.js"></script>
+</head>
+
+<body>
+	
+	<div data-role="page" id="home">
+	
+		<div data-theme="b" data-role="header" data-position="fixed">
+			<h3>WEATHER</h3>
+			<a href="#map" data-role="button" data-transition="slide"
+			   data-icon="location" class="ui-btn-right" data-iconpos="notext">Settings</a>
+		</div>
+	
+		<div data-role="content">
+			<h1 class="location">Sant Cugat del Valles</h1>
+			
+			<div class="now">
+				<h2>Right now</h2>
+				<div class="row">
+					<div class="col">
+						<div class="wheatherIcon" data-icon-weather="A"></div>						
+						<div class="iconDesc">clear</div>
+						
+					</div>
+					<div class="col">
+						<span class="temperature">10</span><span class="celsius">º</span>
+					</div>
+				</div>
+				<div class="row desc">
+					
+				</div>
+			</div>
+			<div class="next">
+				<div class="hour">
+					<h2>Next 24h</h2>
+					<div class="row desc">
+					
+					</div>
+				</div>				
+				<div class="day">
+					<h2>This week</h2>
+					<div class="row desc">
+					
+					</div>				
+				</div>
+				
+			</div>
+		</div>
+	
+	</div>
+	
+	
+    <div data-role="page" id="map">
+    
+        <div data-theme="b" data-role="header" data-position="fixed">
+            <h3>Geolocation</h3>
+			<a href="#home" data-role="button" data-transition="slide"
+			   data-icon="home" data-direction="reverse" class="ui-btn-right" data-iconpos="notext">Settings</a>
+        </div>
+    
+        <div data-role="content">
+			<div id="info" onclick="startGPS();" class="hide">
+				<span class="label">Latitude: </span><span id="latitude"></span><br>
+				<span class="label">Longitude: </span><span id="longitude"></span><br>
+				<span class="label">time: </span><span id="time"></span><br>
+			</div>
+            <div id="mapDiv"></div>
+        </div>
+
+        <script type="text/javascript">
+            $( '#home' ).on( 'pagecreate',function(event){
+                jqueryInit();
+            });
+			
+			
+        </script>
+    
+    </div>	
+			
+
+    <script src="src/jQueryHelper.js"></script>
+    <script type="text/javascript" src="js/arcgis.js"></script>
+
+    <script>
+
+       
+    </script>    
+	<script type="text/javascript" src="js/index.js"></script>
+</body>
+</html>
