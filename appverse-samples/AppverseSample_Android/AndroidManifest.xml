@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	android:versionCode="1" android:versionName="1.0.0"
-	package="com.gft.appverse.sample.rss"
+	package="org.me.unity4jui_android"
 	android:sharedUserId="com.gft.appverse.mobile">
 	<uses-sdk android:minSdkVersion="14" android:targetSdkVersion="23"/>
 	
