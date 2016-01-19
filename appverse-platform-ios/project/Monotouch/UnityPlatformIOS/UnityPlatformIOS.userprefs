@@ -1,13 +1,11 @@
 ﻿<Properties StartupItem="UnityPlatformIOS/UnityPlatformIOS.csproj" RefactoringSettings.EnableRefactorings="True">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.Appverse's iPhone 6s Plus" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="../../../src/csharp/IPhoneSystem.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../../src/csharp/SecurityUtils.cs">
     <Files>
-      <File FileName="../../../src/csharp/IPhoneGeo.cs" Line="244" Column="53" />
-      <File FileName="../../../src/csharp/CameraOverlayView.cs" Line="187" Column="53" />
-      <File FileName="../../../src/csharp/IPhoneSystem.cs" Line="67" Column="64" />
-      <File FileName="../../../src/csharp/IPhoneServiceLocator.cs" Line="286" Column="47" />
-      <File FileName="../../../src/csharp/IPhoneUtils.cs" Line="426" Column="68" />
-      <File FileName="../../../../UnityPlatformModules/InfoCert/InfoCert.iOS/STPUtils.cs" Line="78" Column="6" />
+      <File FileName="../../../src/csharp/IPhoneSystem.cs" Line="39" Column="3" />
+      <File FileName="../../../src/csharp/IPhoneDatabase.cs" Line="29" Column="13" />
+      <File FileName="../../../../../Appverse5/UnityPlatformIOS/src/csharp/CameraOverlayView.cs" Line="68" Column="58" />
+      <File FileName="../../../src/csharp/SecurityUtils.cs" Line="27" Column="29" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
