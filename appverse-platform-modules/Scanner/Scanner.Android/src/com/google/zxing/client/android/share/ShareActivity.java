@@ -142,7 +142,7 @@ public final class ShareActivity extends Activity {
       switch (requestCode) {
         case PICK_BOOKMARK:
         case PICK_APP:
-          showTextAsBarcode(intent.getStringExtra(Browser.BookmarkColumns.URL));
+        	//NOT SUPPORTED IN ANDROID 6 - showTextAsBarcode(intent.getStringExtra(Browser.BookmarkColumns.URL));
           break;
         case PICK_CONTACT:
           // Data field is content://contacts/people/984
