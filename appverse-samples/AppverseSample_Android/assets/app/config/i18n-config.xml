@@ -4,7 +4,5 @@
 	<supportedLanguages>
 		<supportedLanguage id = "es" language = "es" textlanguage = "Spanish" />
 		<supportedLanguage id = "en" language = "en" textlanguage = "English" />
-                <supportedLanguage id = "spa" language = "spa" textlanguage = "Spanish" />
-                <supportedLanguage id = "eng" language = "eng" textlanguage = "English" />
 	</supportedLanguages>
 </i18n-config>
