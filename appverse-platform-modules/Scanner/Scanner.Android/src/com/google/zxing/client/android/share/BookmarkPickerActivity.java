@@ -36,22 +36,25 @@ public final class BookmarkPickerActivity extends ListActivity {
   private static final String TAG = BookmarkPickerActivity.class.getSimpleName();
 
   private static final String[] BOOKMARK_PROJECTION = {
-      Browser.BookmarkColumns.TITLE,
-      Browser.BookmarkColumns.URL
+	//NOT SUPPORTED IN ANDROID 6 - Browser.BookmarkColumns.TITLE,
+	//NOT SUPPORTED IN ANDROID 6 - Browser.BookmarkColumns.URL
   };
 
   static final int TITLE_COLUMN = 0;
   static final int URL_COLUMN = 1;
 
-  private static final String BOOKMARK_SELECTION = 
-      Browser.BookmarkColumns.BOOKMARK + " = 1 AND " + Browser.BookmarkColumns.URL + " IS NOT NULL";
+  private static final String BOOKMARK_SELECTION = "";
+		//NOT SUPPORTED IN ANDROID 6 -  Browser.BookmarkColumns.BOOKMARK + " = 1 AND " + Browser.BookmarkColumns.URL + " IS NOT NULL";
 
   private Cursor cursor = null;
 
   @Override
   protected void onCreate(Bundle icicle) {
     super.onCreate(icicle);
-
+    
+    Log.w(TAG, "Browser.BOOKMARKS_URI not supported in Android 6 (api level 23)");
+    
+  /* NOT SUPPORTED IN ANDROID 6 - 
     cursor = getContentResolver().query(Browser.BOOKMARKS_URI, BOOKMARK_PROJECTION,
         BOOKMARK_SELECTION, null, null);
     if (cursor == null) {
@@ -61,6 +64,7 @@ public final class BookmarkPickerActivity extends ListActivity {
       startManagingCursor(cursor);
       setListAdapter(new BookmarkAdapter(this, cursor));
     }
+   */
   }
 
   @Override
@@ -68,8 +72,8 @@ public final class BookmarkPickerActivity extends ListActivity {
     if (!cursor.isClosed() && cursor.moveToPosition(position)) {
       Intent intent = new Intent();
       intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-      intent.putExtra(Browser.BookmarkColumns.TITLE, cursor.getString(TITLE_COLUMN));
-      intent.putExtra(Browser.BookmarkColumns.URL, cursor.getString(URL_COLUMN));
+    //NOT SUPPORTED IN ANDROID 6 - intent.putExtra(Browser.BookmarkColumns.TITLE, cursor.getString(TITLE_COLUMN));
+    //NOT SUPPORTED IN ANDROID 6 - intent.putExtra(Browser.BookmarkColumns.URL, cursor.getString(URL_COLUMN));
       setResult(RESULT_OK, intent);
     } else {
       setResult(RESULT_CANCELED);

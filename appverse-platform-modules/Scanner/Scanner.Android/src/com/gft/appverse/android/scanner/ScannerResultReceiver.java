@@ -57,6 +57,7 @@ public class ScannerResultReceiver extends ResultReceiver {
 		
 		if (activityResultCode == Activity.RESULT_CANCELED){
 			LOGGER.logInfo("onReceiveResult", "Cancel button pressed. No action.");
+			this.scanner.onCancel(null, false);
 		}
 		else if (resultCode == QRCODE_DETECT_RC_AUTOHANDLE && activityResultCode == Activity.RESULT_OK){
 			LOGGER.logInfo("onReceiveResult", "handling result with AUTO");

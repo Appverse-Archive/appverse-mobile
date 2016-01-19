@@ -187,7 +187,7 @@ namespace Appverse.Platform.IPhone
 
 
 				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-					BeaconUtils.FireUnityJavascriptEvent ("Appverse.OnLocationDenied", null);
+					BeaconUtils.FireUnityJavascriptEvent ("Appverse.Beacon.onAccessToLocationDenied", null);
 				});
 			}
 			else if(status == CLAuthorizationStatus.Restricted)
@@ -195,7 +195,7 @@ namespace Appverse.Platform.IPhone
 				SystemLogger.Log (SystemLogger.Module.PLATFORM, "Restricted " + UUID);
 
 				UIApplication.SharedApplication.InvokeOnMainThread (delegate {
-					BeaconUtils.FireUnityJavascriptEvent ("Appverse.OnLocationDenied", null);
+					BeaconUtils.FireUnityJavascriptEvent ("Appverse.Beacon.onAccessToLocationDenied", null);
 				});
 			}
 
