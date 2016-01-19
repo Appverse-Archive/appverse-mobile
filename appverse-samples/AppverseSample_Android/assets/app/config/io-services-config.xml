@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <io-services-config>
    <services>      
+<!--
+https://api.forecast.io/forecast/0236fde6d04c571aa10643106c7d175c/41.4926,2.0763?units=si
+http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=2.0763%2C+41.4926&distance=200&outSR=&f=pjson
 
-    <service name="generic" type="XMLRPC_JSON" req-method="GET"> <end-point host=""
-        path=""/>
-    </service>
-   <service name="bbc" type="XMLRPC_JSON">
-  	<end-point host="http://www.bbc.com" path="/mundo/temas/tecnologia/index.xml" />
-	</service>
-	
+@@LAT@@,@@LON@@?units=si
+?location=@@LON@@%2C+@@LAT@@&distance=200&outSR=&f=pjson
+-->
+		<service name="weather" type="XMLRPC_JSON" req-method="GET"> <end-point host="https://api.forecast.io"
+			path=""/>
+		</service>
+		
+		<service name="geodecoder" type="XMLRPC_JSON" req-method="GET"> <end-point host="http://geocode.arcgis.com"
+			path=""/>
+		</service>
+	   
+      
    </services>
    <!-- include here any other service your application might require -->
 </io-services-config>
