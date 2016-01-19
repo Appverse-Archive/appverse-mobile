@@ -1,11 +1,11 @@
 ﻿<Properties StartupItem="AppverseSample_iOS/AppverseSample_iOS.csproj">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="../../../../../../Library/Frameworks/Xamarin.iOS.framework/Versions/9.0.1.29/lib/mono/2.1/Xamarin.iOS.Common.targets">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.Appverse's iPhone 6s Plus" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../../../../../Library/Frameworks/Xamarin.iOS.framework/Versions/9.4.0.0/lib/mono/2.1/Xamarin.iOS.Common.targets">
     <Files>
       <File FileName="../../appverse-core/src/csharp/Unity/Core/System/Server/Net/HandlerThread.cs" Line="28" Column="7" />
-      <File FileName="../../appverse-core/src/csharp/Unity/Core/Messaging/AttachmentData.cs" Line="30" Column="46" />
-      <File FileName="../../appverse-platform-ios/src/csharp/IPhoneDatabase.cs" Line="29" Column="13" />
-      <File FileName="../../../../../../Library/Frameworks/Xamarin.iOS.framework/Versions/9.0.1.29/lib/mono/2.1/Xamarin.iOS.Common.targets" Line="478" Column="17" />
+      <File FileName="../../appverse-core/src/csharp/Unity/Core/Messaging/AttachmentData.cs" Line="1" Column="1" />
+      <File FileName="../../appverse-platform-ios/src/csharp/IPhoneDatabase.cs" Line="1" Column="1" />
+      <File FileName="../../../../../../Library/Frameworks/Xamarin.iOS.framework/Versions/9.4.0.0/lib/mono/2.1/Xamarin.iOS.Common.targets" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
