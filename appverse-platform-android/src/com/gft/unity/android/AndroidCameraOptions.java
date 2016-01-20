@@ -18,6 +18,7 @@ public class AndroidCameraOptions extends com.gft.unity.core.media.camera.Camera
 		dest.writeStringArray(new String[] {String.valueOf(this.getImageScaleFactor()),
 				String.valueOf(this.getUseFrontCamera()),
 				String.valueOf(this.getUseCustomCameraOverlay()),
+				String.valueOf(this.getOverlay()),
 				String.valueOf(this.getGuidelinesMargins()),
 				String.valueOf(this.getGuidelinesColorHexadecimal()),
 				this.getScanButtonColorHexadecimal(),
@@ -56,7 +57,7 @@ public class AndroidCameraOptions extends com.gft.unity.core.media.camera.Camera
     };
     
     public AndroidCameraOptions(Parcel in){
-		String[] data = new String[26];
+		String[] data = new String[27];
 		int i = 0;
 	    try {
 			in.readStringArray(data);
@@ -66,6 +67,8 @@ public class AndroidCameraOptions extends com.gft.unity.core.media.camera.Camera
 			this.setUseFrontCamera(Boolean.parseBoolean(data[i++]));
 			Log.d("AndroidCameraOptions", "[boolean] setUseCustomCameraOverlay index: "+i+" data: "+data[i]);
 			this.setUseCustomCameraOverlay(Boolean.parseBoolean(data[i++]));
+			Log.d("AndroidCameraOptions", "setOverlay index: "+i+" data: "+data[i]);
+			this.setOverlay(data[i++]);
 			Log.d("AndroidCameraOptions", "[int] setGuidelinesMargins index: "+i+" data: "+data[i]);
 			this.setGuidelinesMargins(Integer.valueOf(data[i++]));
 			Log.d("AndroidCameraOptions", "setGuidelinesColorHexadecimal index: "+i+" data: "+data[i]);
@@ -129,6 +132,7 @@ public class AndroidCameraOptions extends com.gft.unity.core.media.camera.Camera
 			this.setImageScaleFactor(options.getImageScaleFactor());
 			this.setUseFrontCamera(options.getUseFrontCamera());
 			this.setUseCustomCameraOverlay(options.getUseCustomCameraOverlay());
+			this.setOverlay(options.getOverlay());
 			this.setGuidelinesMargins(options.getGuidelinesMargins());
 			this.setGuidelinesColorHexadecimal(options.getGuidelinesColorHexadecimal());
 			this.setScanButtonColorHexadecimal(options.getScanButtonColorHexadecimal());
@@ -165,6 +169,7 @@ public class AndroidCameraOptions extends com.gft.unity.core.media.camera.Camera
         builder.append("getImageScaleFactor: "+String.valueOf(this.getImageScaleFactor())+", ");
 		builder.append("getUseFrontCamera: "+String.valueOf(this.getUseFrontCamera())+", ");
 		builder.append("getUseCustomCameraOverlay: "+String.valueOf(this.getUseCustomCameraOverlay())+", ");
+		builder.append("getOverlay: "+String.valueOf(this.getOverlay())+", ");
 		builder.append("getGuidelinesMargins: "+String.valueOf(this.getGuidelinesMargins())+", ");
 		builder.append("getGuidelinesColorHexadecimal: "+String.valueOf(this.getGuidelinesColorHexadecimal())+", ");
 		builder.append("getScanButtonColorHexadecimal: "+this.getScanButtonColorHexadecimal()+", ");

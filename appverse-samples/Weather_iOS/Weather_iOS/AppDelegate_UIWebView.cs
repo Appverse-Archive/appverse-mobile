@@ -33,9 +33,8 @@ namespace UnityUI.iOS
 	{
 		public AppDelegate_UIWebView () : base()
 		{
-			#if DEBUG
+			Console.WriteLine ("loquetesalgadeloshuevos");
 			log ("AppDelegate_UIWebView constructor default");
-			#endif
 			
 			loadApplicationPreferences();
 		}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
 
-    <string name="app_name">Unity4j</string>
+    <string name="app_name">Weather</string>
     <string name="toast_create_contact">Contact created successfully!</string>
     <string name="Unity_HoldSplashScreenOnStartup">HOLD_SPLASHSCREEN_ON_STARTUP</string>
     <string name="Unity_DisableThumbnails">DISABLE_THUMBNAILS</string>

@@ -73,7 +73,7 @@
       <HintPath>..\..\..\..\lib\AntiDebuggingBinding.dll</HintPath>
     </Reference>
     <Reference Include="UnityCore">
-      <HintPath>..\..\..\..\lib\UnityCore.dll</HintPath>
+      <HintPath>..\..\..\..\lib\Core\Debug\UnityCore.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />

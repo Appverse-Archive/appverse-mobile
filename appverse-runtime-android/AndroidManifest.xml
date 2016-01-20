@@ -32,7 +32,7 @@
           <screen android:screenSize="xlarge" android:screenDensity="xhdpi" />
      </compatible-screens-->
 
-	<uses-sdk android:minSdkVersion="app.android.target.version" android:targetSdkVersion="23"/>
+	<uses-sdk android:minSdkVersion="15" android:targetSdkVersion="23"/>
 
 	<!-- THIS PERMISSION NEEDS TO BE ENABLED FOR APPVERSE APPS -->
 	<uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
