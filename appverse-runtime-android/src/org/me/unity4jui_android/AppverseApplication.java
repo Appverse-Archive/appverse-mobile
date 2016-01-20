@@ -25,8 +25,8 @@ package org.me.unity4jui_android;
 
 import android.app.Application;
 import android.content.Context;
-import android.support.multidex.MultiDex;
-import android.support.multidex.MultiDexApplication;
+//import android.support.multidex.MultiDex;
+//import android.support.multidex.MultiDexApplication;
 
 import com.gft.unity.android.AndroidSystemLogger;
 import com.gft.unity.core.system.SystemLogger;
@@ -62,7 +62,7 @@ public class AppverseApplication extends Application {
 		return applicationContext;
 	}
 
-	@Override
+	/*@Override
 	protected void attachBaseContext(Context base) {
 		
 		super.attachBaseContext(base);
@@ -70,7 +70,7 @@ public class AppverseApplication extends Application {
 		// enable multidex
 		MultiDex.install(this) ;
 				
-	}
+	}*/
 	
 	
 	

@@ -165,8 +165,7 @@ public class AndroidServiceLocator extends AbstractServiceLocator {
 				AndroidServiceLocator.SERVICE_TYPE_APPLOADER);
 		
 		// TODO :: create implementation classes for modules
-		this.RegisterService(new AndroidNotification(),
-				AndroidServiceLocator.SERVICE_TYPE_PUSH);
+		
 		
 	}
 	

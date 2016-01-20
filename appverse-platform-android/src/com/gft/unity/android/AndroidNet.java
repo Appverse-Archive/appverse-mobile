@@ -51,7 +51,7 @@ import com.gft.unity.core.system.SystemLogger.Module;
 // TODO review implementation for HTTPs, proxies, ...
 public class AndroidNet extends AbstractNet {
 
-	private static final SystemLogger LOG = AndroidSystemLogger.getInstance();
+	private static final AndroidSystemLogger LOG = AndroidSystemLogger.getSuperClassInstance();
 
 	private static final String HTTP_SCHEME = "http://";
 	private static final String HTTPS_SCHEME = "https://";
@@ -101,7 +101,7 @@ public class AndroidNet extends AbstractNet {
 				types[i] = typesList.get(i);
 			}
 		} catch (Exception ex) {
-			LOG.Log(Module.PLATFORM, "GetNetworkTypeSupported error", ex);
+			LOG.LogDebug(Module.PLATFORM, "GetNetworkTypeSupported error: "+ ex.getLocalizedMessage());
 		}
 
 		return types;
@@ -130,18 +130,18 @@ public class AndroidNet extends AbstractNet {
 			if (lastUrl != null
 					&& lastUrl.equals(url)
 					&& REACHABLE_TIMEOUT > (System.currentTimeMillis() - lastChecked)) {
-				LOG.Log(Module.PLATFORM,
+				LOG.LogDebug(Module.PLATFORM,
 						"IsNetworkReachable: Using cached result");
 				return lastResult;
 			} else {
 				lastResult = checkHttpConnection(url);
 				lastChecked = System.currentTimeMillis();
-				LOG.Log(Module.PLATFORM,
+				LOG.LogDebug(Module.PLATFORM,
 						"IsNetworkReachable: result checking url [" + url + "]: " + lastResult);
 			}
 		} else {
 			lastResult = false;
-			LOG.Log(Module.PLATFORM, "IsNetworkReachable: The Network Connectivity is not available.");
+			LOG.LogDebug(Module.PLATFORM, "IsNetworkReachable: The Network Connectivity is not available.");
 			lastChecked = 0;
 		}
 		lastUrl = url;
@@ -192,11 +192,11 @@ public class AndroidNet extends AbstractNet {
 				result = tryConnection(urlObj);
 			}
 		} catch (MalformedURLException ex) {
-			LOG.Log(Module.PLATFORM, "checkHttpConnection MalformedURLException [" + schemeUrl +"]: " + ex.getMessage());
+			LOG.LogDebug(Module.PLATFORM, "checkHttpConnection MalformedURLException [" + schemeUrl +"]: " + ex.getMessage());
 			// it's not a valid URL... it means it's not reachable
 			result = false;
 		} catch (Exception ex) {
-			LOG.Log(Module.PLATFORM, "checkHttpConnection unhandled exception [" + schemeUrl +"]", ex);
+			LOG.LogDebug(Module.PLATFORM, "checkHttpConnection unhandled exception [" + schemeUrl +"]: "+ ex.getLocalizedMessage());
 			result = false;
 		}
 
@@ -207,11 +207,11 @@ public class AndroidNet extends AbstractNet {
 		boolean result = false;
 
 		try {
-			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection [" + url +"]...");
+			LOG.LogDebug(SystemLogger.Module.PLATFORM, "tryConnection [" + url +"]...");
 			url.openConnection().connect();
 			result = true;
 		} catch (Exception ex) {
-			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection warning [" + url +"]: " + ex.getMessage());
+			LOG.LogDebug(SystemLogger.Module.PLATFORM, "tryConnection warning [" + url +"]: " + ex.getMessage());
 		}
 
 		return result;
@@ -236,7 +236,7 @@ public class AndroidNet extends AbstractNet {
 
 			result = aam.startActivity(intent);
 		} catch (Exception ex) {
-			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection error", ex);
+			LOG.LogDebug(SystemLogger.Module.PLATFORM, "tryConnection error: " + ex.getLocalizedMessage());
 		}
 		return result;
 	}	
@@ -260,7 +260,7 @@ public class AndroidNet extends AbstractNet {
 
 			result = aam.startActivity(intent);
 		} catch (Exception ex) {
-			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection error", ex);
+			LOG.LogDebug(SystemLogger.Module.PLATFORM, "tryConnection error: " + ex.getLocalizedMessage());
 		}
 
 		return result;
@@ -287,7 +287,7 @@ public class AndroidNet extends AbstractNet {
 			result = aam.startActivity(intent);
 
 		} catch (Exception ex) {
-			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection error", ex);
+			LOG.LogDebug(SystemLogger.Module.PLATFORM, "tryConnection error: " + ex.getLocalizedMessage());
 		}
 
 		return result;
@@ -311,7 +311,7 @@ public class AndroidNet extends AbstractNet {
 
 			result = aam.startActivity(intent);
 		} catch (Exception ex) {
-			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection error", ex);
+			LOG.LogDebug(SystemLogger.Module.PLATFORM, "tryConnection error: " + ex.getLocalizedMessage());
 		}
 		return result;
 	}
@@ -328,7 +328,7 @@ public class AndroidNet extends AbstractNet {
 
 			result = true;
 		} catch (Exception ex) {
-			LOG.Log(SystemLogger.Module.PLATFORM, "tryConnection error", ex);
+			LOG.LogDebug(SystemLogger.Module.PLATFORM, "tryConnection error: " + ex.getLocalizedMessage());
 		}
 
 		return result;
@@ -361,7 +361,9 @@ public class AndroidNet extends AbstractNet {
 				}
 			}
 			return returnData;
-		}catch(Exception ex){LOG.Log(SystemLogger.Module.PLATFORM, "Error retrieveing Device IP Address", ex);}
+		}catch(Exception ex){
+			LOG.LogDebug(SystemLogger.Module.PLATFORM, "Error retrieveing Device IP Address: " + ex.getLocalizedMessage());
+		}
 		return null;
 	}
 }

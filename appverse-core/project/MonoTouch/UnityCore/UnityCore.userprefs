@@ -1,5 +1,5 @@
 ﻿<Properties StartupItem="UnityCore/UnityCore.csproj">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.Appverse's iPhone 6s Plus" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.Appverse's iPhone 6s Plus" />
   <MonoDevelop.Ide.Workbench ActiveDocument="../../../src/csharp/Unity/Core/System/Server/Net/HandlerThread.cs">
     <Files>
       <File FileName="../../../src/csharp/Unity/Core/System/Server/Net/HandlerThread.cs" Line="28" Column="7" />

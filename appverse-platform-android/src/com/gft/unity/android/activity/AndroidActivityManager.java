@@ -90,8 +90,11 @@ public class AndroidActivityManager implements IActivityManager {
 
 
 	public static final int SENDEMAIL = 1017;
-
+	public static final int SCANNER = 1018;
 	
+	public static final int REQUEST_PHONE_STATE = 1019;
+
+
 
 	protected Activity main;
 	private WebView view;
@@ -556,52 +559,59 @@ public class AndroidActivityManager implements IActivityManager {
 		if(appView != null) {
 			this.view = appView;
 		}
-		
-		int splashId = this.getSplashId();
-		if(splashId != 0) {
-			LOG.Log(Module.PLATFORM, "AndroidActivityManager SHOWING SPLASHCREEN");
+		if(!splashExist()){
+			int splashId = this.getSplashId();
+			if(splashId != 0) {
+				LOG.Log(Module.PLATFORM, "AndroidActivityManager SHOWING SPLASHCREEN");
+				
+				int themeIdentifier = this.main.getResources().getIdentifier(SPLASH_STYLE_ID, STYLE_TYPE, this.main.getPackageName());
+				this.splashDialog = new Dialog(this.main, themeIdentifier);
+				
+				this.splashImage = new ImageView(this.main);
+				this.splashImage.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+				
+				//LOG.Log(Module.PLATFORM, "scale type: " + this.splashImage.getScaleType().name());
+				
+				this.splashImage.setImageResource(splashId);
+				this.splashImage.setScaleType(ScaleType.FIT_XY);
+				this.splashDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+				this.splashDialog.setContentView(this.splashImage);
+				this.splashDialog.setCancelable(false);
+				this.splashDialog.show();
+				
+				this.main.setContentView(this.view);
+				
+				return true;
+				
+			} else {
+				LOG.Log(Module.PLATFORM, "AndroidActivityManager WARNING splashcreen not found, please provide the proper splashscreens on the AndroidResources folder");
+				this.main.setContentView(this.view);
+			}
 			
-			int themeIdentifier = this.main.getResources().getIdentifier(SPLASH_STYLE_ID, STYLE_TYPE, this.main.getPackageName());
-			this.splashDialog = new Dialog(this.main, themeIdentifier);
-			
-			this.splashImage = new ImageView(this.main);
-			this.splashImage.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-			
-			//LOG.Log(Module.PLATFORM, "scale type: " + this.splashImage.getScaleType().name());
-			
-			this.splashImage.setImageResource(splashId);
-			this.splashImage.setScaleType(ScaleType.FIT_XY);
-			this.splashDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-			this.splashDialog.setContentView(this.splashImage);
-			this.splashDialog.setCancelable(false);
-			this.splashDialog.show();
-			
-			this.main.setContentView(this.view);
-			
-			return true;
-			
-		} else {
-			LOG.Log(Module.PLATFORM, "AndroidActivityManager WARNING splashcreen not found, please provide the proper splashscreens on the AndroidResources folder");
-			this.main.setContentView(this.view);
+			return false;
+		}else {
+			return splashVisibility(true);
 		}
-		
-		return false;
 	}
 	
 	public boolean dismissSplashScreen() {
 		
-		
-		if(this.splashImage!=null && this.splashDialog!=null) {
-			LOG.Log(Module.PLATFORM, "AndroidActivityManager DISMISSING SPLASHCREEN");
-			
-			this.splashDialog.dismiss();
-			
-			this.splashImage = null;
-			this.splashDialog = null;
-			return true;
+		LOG.Log(Module.PLATFORM, "AndroidActivityManager DISMISSING SPLASHCREEN");
+		if(!splashExist()){
+			if(this.splashImage!=null && this.splashDialog!=null) {
+				
+				
+				this.splashDialog.dismiss();
+				
+				this.splashImage = null;
+				this.splashDialog = null;
+				return true;
+			}
+			LOG.Log(Module.PLATFORM, "AndroidActivityManager Splashscreen not visible, it couldn't be dismissed");
+			return false;
+		}else{
+			return splashVisibility(false);
 		}
-		LOG.Log(Module.PLATFORM, "AndroidActivityManager Splashscreen not visible, it couldn't be dismissed");
-		return false;
 	}
 
 	@Override
@@ -660,6 +670,30 @@ public class AndroidActivityManager implements IActivityManager {
 		i.addCategory(Intent.CATEGORY_HOME);
 		this.startActivity(i);
 		*/
+	}
+	
+	private boolean splashExist() {
+		int splash = main.getResources().getIdentifier("splash", "drawable", main.getPackageName());
+		LOG.Log(Module.PLATFORM, "splash: "+splash);
+		return splash != 0;
+	}
+	
+	private boolean splashVisibility(boolean visible) {
+		
+		try {
+			if(visible){
+				int layoutId = main.getResources().getIdentifier("splash_screen", "layout", main.getPackageName());
+			    main.setContentView(layoutId);
+			}else{
+				main.setContentView(view);
+			}
+			return true;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			LOG.Log("Exception with splashscreen: "+e.getMessage());
+			return false;
+		}
+		
 	}
 	
 }
