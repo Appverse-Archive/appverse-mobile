@@ -60,7 +60,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhone\Debug</OutputPath>
-    <DefineConstants>DEBUG;ENABLE_TEST_CLOUD;</DefineConstants>
+    <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -107,22 +107,6 @@
   <ItemGroup>
     <None Include="Info.plist" />
     <None Include="Entitlements.plist" />
-    <None Include="WebResources\www\CONTRIBUTING.md" />
-    <None Include="WebResources\www\README.md" />
-    <None Include="WebResources\www\index.html" />
-    <None Include="WebResources\www\license.txt" />
-    <None Include="WebResources\www\css\esri.css" />
-    <None Include="WebResources\www\css\font.css" />
-    <None Include="WebResources\www\css\jquery.mobile-1.4.5.css" />
-    <None Include="WebResources\www\css\jquery.mobile-1.4.5.min.css" />
-    <None Include="WebResources\www\css\jquery.mobile.simpledialog.min.css" />
-    <None Include="WebResources\www\css\meteocons-font.zip" />
-    <None Include="WebResources\www\css\meteocons-webfont.eot" />
-    <None Include="WebResources\www\css\meteocons-webfont.svg" />
-    <None Include="WebResources\www\css\meteocons-webfont.ttf" />
-    <None Include="WebResources\www\css\meteocons-webfont.woff" />
-    <None Include="WebResources\www\css\style.css" />
-    <None Include="WebResources\www\css\images\ajax-loader.gif" />
     <None Include="WebResources\www\css\images\icons-svg\action-black.svg" />
     <None Include="WebResources\www\css\images\icons-svg\action-white.svg" />
     <None Include="WebResources\www\css\images\icons-svg\alert-black.svg" />
@@ -223,30 +207,6 @@
     <None Include="WebResources\www\css\images\icons-svg\user-white.svg" />
     <None Include="WebResources\www\css\images\icons-svg\video-black.svg" />
     <None Include="WebResources\www\css\images\icons-svg\video-white.svg" />
-    <None Include="WebResources\www\css\meteocons-font\meteocons-font\License.txt" />
-    <None Include="WebResources\www\css\meteocons-font\meteocons-font\FONT\Desktop-font\meteocons.otf" />
-    <None Include="WebResources\www\css\meteocons-font\meteocons-font\FONT\Desktop-font\meteocons.ttf" />
-    <None Include="WebResources\www\css\meteocons-font\meteocons-font\FONT\Font-face\meteocons-webfont.eot" />
-    <None Include="WebResources\www\css\meteocons-font\meteocons-font\FONT\Font-face\meteocons-webfont.svg" />
-    <None Include="WebResources\www\css\meteocons-font\meteocons-font\FONT\Font-face\meteocons-webfont.ttf" />
-    <None Include="WebResources\www\css\meteocons-font\meteocons-font\FONT\Font-face\meteocons-webfont.woff" />
-    <None Include="WebResources\www\css\meteocons-font\meteocons-font\FONT\Font-face\stylesheet.css" />
-    <None Include="WebResources\www\css\themes\black-theme.css" />
-    <None Include="WebResources\www\css\themes\black-theme.min.css" />
-    <None Include="WebResources\www\css\themes\jquery.mobile.icons.min.css" />
-    <None Include="WebResources\www\css\themes\images\ajax-loader.gif" />
-    <None Include="WebResources\www\dijit\images\ajax-loader.gif" />
-    <None Include="WebResources\www\js\appverse.js" />
-    <None Include="WebResources\www\js\arcgis.js" />
-    <None Include="WebResources\www\js\index.js" />
-    <None Include="WebResources\www\js\jquery-1.11.3.min.js" />
-    <None Include="WebResources\www\js\jquery.mobile-1.4.5.min.js" />
-    <None Include="WebResources\www\src\jQueryHelper.js" />
-    <None Include="app\config\en.plist" />
-    <None Include="app\config\es.plist" />
-    <None Include="app\config\i18n-config.xml" />
-    <None Include="app\config\io-services-config.xml" />
-    <None Include="app\config\notification-config.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
@@ -280,6 +240,11 @@
     <BundleResource Include="Icon-Small%402x.png" />
     <BundleResource Include="Icon.png" />
     <BundleResource Include="Icon%402x.png" />
+    <BundleResource Include="app\config\en.plist" />
+    <BundleResource Include="app\config\es.plist" />
+    <BundleResource Include="app\config\i18n-config.xml" />
+    <BundleResource Include="app\config\io-services-config.xml" />
+    <BundleResource Include="app\config\notification-config.xml" />
     <BundleResource Include="WebResources\www\css\images\screen-font.png" />
     <BundleResource Include="WebResources\www\css\images\icons-png\action-black.png" />
     <BundleResource Include="WebResources\www\css\images\icons-png\action-white.png" />
@@ -381,7 +346,6 @@
     <BundleResource Include="WebResources\www\css\images\icons-png\user-white.png" />
     <BundleResource Include="WebResources\www\css\images\icons-png\video-black.png" />
     <BundleResource Include="WebResources\www\css\images\icons-png\video-white.png" />
-    <BundleResource Include="WebResources\www\css\meteocons-font\meteocons-font\meteocons-preview.jpg" />
     <BundleResource Include="WebResources\www\css\themes\images\icons-png\action-black.png" />
     <BundleResource Include="WebResources\www\css\themes\images\icons-png\action-white.png" />
     <BundleResource Include="WebResources\www\css\themes\images\icons-png\alert-black.png" />
@@ -487,5 +451,32 @@
     <BundleResource Include="WebResources\www\images\pin.png" />
     <BundleResource Include="WebResources\www\images\pushpin104x108.png" />
     <BundleResource Include="WebResources\www\images\pushpin52x54.png" />
+    <BundleResource Include="WebResources\www\CONTRIBUTING.md" />
+    <BundleResource Include="WebResources\www\README.md" />
+    <BundleResource Include="WebResources\www\index.html" />
+    <BundleResource Include="WebResources\www\license.txt" />
+    <BundleResource Include="WebResources\www\src\jQueryHelper.js" />
+    <BundleResource Include="WebResources\www\js\appverse.js" />
+    <BundleResource Include="WebResources\www\js\arcgis.js" />
+    <BundleResource Include="WebResources\www\js\index.js" />
+    <BundleResource Include="WebResources\www\js\jquery-1.11.3.min.js" />
+    <BundleResource Include="WebResources\www\js\jquery.mobile-1.4.5.min.js" />
+    <BundleResource Include="WebResources\www\dijit\images\ajax-loader.gif" />
+    <BundleResource Include="WebResources\www\css\esri.css" />
+    <BundleResource Include="WebResources\www\css\font.css" />
+    <BundleResource Include="WebResources\www\css\jquery.mobile-1.4.5.css" />
+    <BundleResource Include="WebResources\www\css\jquery.mobile-1.4.5.min.css" />
+    <BundleResource Include="WebResources\www\css\jquery.mobile.simpledialog.min.css" />
+    <BundleResource Include="WebResources\www\css\meteocons-font.zip" />
+    <BundleResource Include="WebResources\www\css\meteocons-webfont.eot" />
+    <BundleResource Include="WebResources\www\css\meteocons-webfont.svg" />
+    <BundleResource Include="WebResources\www\css\meteocons-webfont.ttf" />
+    <BundleResource Include="WebResources\www\css\meteocons-webfont.woff" />
+    <BundleResource Include="WebResources\www\css\themes\black-theme.css" />
+    <BundleResource Include="WebResources\www\css\themes\black-theme.min.css" />
+    <BundleResource Include="WebResources\www\css\themes\jquery.mobile.icons.min.css" />
+    <BundleResource Include="WebResources\www\css\style.css" />
+    <BundleResource Include="WebResources\www\css\themes\images\ajax-loader.gif" />
+    <BundleResource Include="WebResources\www\css\images\ajax-loader.gif" />
   </ItemGroup>
 </Project>

@@ -32,12 +32,10 @@ import android.telephony.PhoneNumberUtils;
 import com.gft.unity.android.activity.AbstractActivityManagerListener;
 import com.gft.unity.android.activity.AndroidActivityManager;
 import com.gft.unity.android.activity.IActivityManager;
-import com.gft.unity.core.media.camera.CameraOptions;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
 import com.gft.unity.core.telephony.AbstractTelephony;
 import com.gft.unity.core.telephony.CallType;
-import com.gft.unity.core.telephony.ICallControl;
 
 // TODO implement other call types
 public class AndroidTelephony extends AbstractTelephony {

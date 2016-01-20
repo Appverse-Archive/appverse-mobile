@@ -45,12 +45,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.ResultReceiver;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import com.gft.unity.android.log.AndroidLoggerDelegate;
 import com.gft.unity.android.notification.LocalNotificationReceiver;
 import com.gft.unity.android.notification.NotificationUtils;
-import com.gft.unity.android.notification.RemoteNotificationIntentService;
 import com.gft.unity.android.server.AndroidNetworkReceiver;
 import com.gft.unity.android.server.HttpServer;
 import com.gft.unity.android.server.ProxySettings;
@@ -111,7 +111,7 @@ public abstract class AppverseMainActivity extends Activity {
 	public static final String PREFS_NAME = "IntentState";
 	SharedPreferences settings;
 	
-	
+	private Bundle extras;
 	/** METHODS TO NEEDED TO INCLUDE MODULES **/
 	
 	protected IActivityManager getActivityManager() {
@@ -144,9 +144,14 @@ public abstract class AppverseMainActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		
 		LOG.Log(Module.GUI, "onCreate");
 
+	    if(getIntent() != null && getIntent().getExtras() != null){
+
+			extras = getIntent().getExtras();
+	    	LOG.LogDebug(Module.GUI, "[K] notification Extra:" + extras.getString("item_id") );
+	    }
 		// GUI initialization code
 		getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(
@@ -161,15 +166,6 @@ public abstract class AppverseMainActivity extends Activity {
 		/* not valid for builds under level 14 */
 		//TODO DISABLETHUMBNAILS_1
 		//@@DISABLETHUMBNAILS_1@@
-
-
-
-
-
-
-
-
-
 
 
 		
@@ -300,11 +296,12 @@ public abstract class AppverseMainActivity extends Activity {
 		holdSplashScreenOnStartup = checkUnityProperty("Unity_HoldSplashScreenOnStartup");
 		this.showSplashScreen();
 		
-		RemoteNotificationIntentService.loadNotificationOptions(getResources(), this.activityManager, this);
+		
 		LocalNotificationReceiver.initialize(this.activityManager, this);
 		
 		// notify app delegates about the onCreate event
 		((AndroidServiceLocator)AndroidServiceLocator.GetInstance()).sendApplicationEvent(AndroidApplicationEvent.onCreate);
+		LOG.Log(Module.GUI, "[K] endCreate." );
 	}
 	
 	
@@ -313,15 +310,6 @@ public abstract class AppverseMainActivity extends Activity {
 		LOG.Log(Module.GUI, "onCreateThumbnail");
 		//TODO DISABLETHUMBNAILS_2
 		//@@DISABLETHUMBNAILS_2@@
-
-
-
-
-
-
-
-
-
 
 		
 		
@@ -381,20 +369,22 @@ public abstract class AppverseMainActivity extends Activity {
 
 		// Save the context for further access
 		AndroidServiceLocator.setContext(this, activityManager);
-		NotificationManager nMngr = (NotificationManager) this
-				.getSystemService(Context.NOTIFICATION_SERVICE);
-		nMngr.cancelAll();
+		if(extras != null){
+			NotificationManager nMngr = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+			nMngr.cancelAll();
+			//nMngr.cancel(Integer.parseInt(id));
+		}
 		LOG.Log(Module.GUI, "onResume");
-
+		activityManager.dismissSplashScreen(); 
 		/*
 		 * // security reasons if(splashShownOnBackground) {
 		 * activityManager.dismissSplashScreen(); splashShownOnBackground =
 		 * false; }
 		 */
-		
-		if(!performSecurityChecks((AndroidServiceLocator) AndroidServiceLocator.GetInstance())) return;
+		LOG.Log(Module.GUI, "Security checks not needed... beaking up Appverse...");
+		//if(!performSecurityChecks((AndroidServiceLocator) AndroidServiceLocator.GetInstance())) return;
 
-		LOG.Log(Module.GUI, "Security checks passed... beaking up Appverse...");
+		//LOG.Log(Module.GUI, "Security checks passed... beaking up Appverse...");
 		
 		((AndroidServiceLocator)AndroidServiceLocator.GetInstance()).sendApplicationEvent(AndroidApplicationEvent.onResume);
 
@@ -770,15 +760,6 @@ public abstract class AppverseMainActivity extends Activity {
 
 
 
-
-
-
-
-
-
-
-
-
 		
 		if(!securityChecksPassed) {
 			securityChecksPerfomed = true; // show first error page
@@ -789,15 +770,6 @@ public abstract class AppverseMainActivity extends Activity {
 		
 		//TODO BLOCKROOTED
 		//@@BLOCKROOTED@@
-
-
-
-
-
-
-
-
-
 
 
 
@@ -861,20 +833,22 @@ public abstract class AppverseMainActivity extends Activity {
 			hwInfoJsonString = "_HwInfo = " + hwInfoJsonString;
 			LOG.LogDebug(Module.GUI, "InitializeAppverseContext: "+hwInfoJsonString);
 			am.executeJS( hwInfoJsonString );
-
-			// 4. Get all configured localized keys (Appverse.i18n)
-			Locale[] supportedLocales = i18nService.GetLocaleSupported ();
-			String localizedStrings = "_i18n = {}; _i18n['default'] = '" + i18nService.getDefaultLocale() +"'; ";
-			String localeLiterals = "";
-			for(Locale supportedLocale : supportedLocales) {
-				ResourceLiteralDictionary literals = i18nService.GetResourceLiterals(supportedLocale);				
-				String literalsJsonString = JSONSerializer.serialize (literals);
-				localeLiterals = localeLiterals + " _i18n['" + supportedLocale.toString() + "'] = " + literalsJsonString + "; ";
+			try{
+				// 4. Get all configured localized keys (Appverse.i18n)
+				Locale[] supportedLocales = i18nService.GetLocaleSupported ();
+				String localizedStrings = "_i18n = {}; _i18n['default'] = '" + i18nService.getDefaultLocale() +"'; ";
+				String localeLiterals = "";
+				for(Locale supportedLocale : supportedLocales) {
+					ResourceLiteralDictionary literals = i18nService.GetResourceLiterals(supportedLocale);				
+					String literalsJsonString = JSONSerializer.serialize (literals);
+					localeLiterals = localeLiterals + " _i18n['" + supportedLocale.toString() + "'] = " + literalsJsonString + "; ";
+				}
+				localizedStrings = localizedStrings + localeLiterals;
+				LOG.LogDebug(Module.GUI, "InitializeAppverseContext: "+localizedStrings);
+				am.executeJS( localizedStrings );
+			} catch (Exception ex) {			
+				LOG.LogDebug(Module.GUI,"Unable to load all languages. Exception message: " + ex.getMessage());			
 			}
-			localizedStrings = localizedStrings + localeLiterals;
-			LOG.LogDebug(Module.GUI, "InitializeAppverseContext: "+localizedStrings);
-			am.executeJS( localizedStrings );
-
 			// 5. Current device locale
 			com.gft.unity.core.system.Locale currentLocale = systemService.GetLocaleCurrent();
 			String currentLocaleJsonString = JSONSerializer.serialize (currentLocale);
@@ -882,16 +856,19 @@ public abstract class AppverseMainActivity extends Activity {
 			LOG.LogDebug(Module.GUI, "InitializeAppverseContext: "+currentLocaleJsonString);
 			am.executeJS( currentLocaleJsonString );
 
-			// 6. Configured IO services endpoints
-			IOService[] services = ioService.GetServices();
-			String servicesJsonString = "_IOServices = {}; ";
-			for(IOService service : services) {
-				String serviceJson = JSONSerializer.serialize (service);
-				servicesJsonString = servicesJsonString + " _IOServices['" + service.getName() + "-" + JSONSerializer.serialize (service.getType()) + "'] = " + serviceJson + "; ";
+			try{
+				// 6. Configured IO services endpoints
+				IOService[] services = ioService.GetServices();
+				String servicesJsonString = "_IOServices = {}; ";
+				for(IOService service : services) {
+					String serviceJson = JSONSerializer.serialize (service);
+					servicesJsonString = servicesJsonString + " _IOServices['" + service.getName() + "-" + JSONSerializer.serialize (service.getType()) + "'] = " + serviceJson + "; ";
+				}
+				LOG.LogDebug(Module.GUI, "InitializeAppverseContext: "+servicesJsonString);
+				am.executeJS( servicesJsonString );
+			} catch (Exception ex) {			
+				LOG.LogDebug(Module.GUI,"Unable to load all services. Exception message: " + ex.getMessage());			
 			}
-			LOG.LogDebug(Module.GUI, "InitializeAppverseContext: "+servicesJsonString);
-			am.executeJS( servicesJsonString );
-			
 			String networkStatusString = "_NetworkStatus = " + networkType + ";";
 			LOG.LogDebug(Module.GUI, "InitializeAppverseContext: networkType: "+networkType);
 			am.executeJS( networkStatusString );

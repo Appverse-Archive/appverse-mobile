@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	android:versionCode="1" android:versionName="1.0.0"
-	package="org.me.unity4jui_android"
-	android:sharedUserId="com.gft.appverse.mobile">
-	<uses-sdk android:minSdkVersion="14" android:targetSdkVersion="23"/>
+	package="com.gft.appverse.sample.weather"
+	android:sharedUserId="com.gft.appverse.mobile.sample">
+	<uses-sdk android:minSdkVersion="15" android:targetSdkVersion="23"/>
 	
 	<!-- THIS PERMISSION NEEDS TO BE ENABLED FOR UNITY APPS -->
 	<uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>

@@ -57,23 +57,25 @@ public class AndroidUtils {
 	}
 	
 	public boolean isResourcesZipped() {
+		LOG.LogDebug(Module.PLATFORM, "isResourcesZipped called");
 		return false;
 	}
 	
 	public static String toHex(byte[] bytes) {	    
+		LOG.LogDebug(Module.PLATFORM, "toHex called");
 	    return "";
 	}
 	
 	
 	
 	private void loadZippedFile() {
-		
+		LOG.LogDebug(Module.PLATFORM, "loadZippedFile called");
 	}
 
 	
     
     public InputStream getAssetInputStream(AssetManager assetManager, String assetPath) throws IOException {
-    	
+    	LOG.LogDebug(Module.PLATFORM, "getAssetInputStream called");
     	
 		
 		InputStream is = assetManager.open(assetPath);
@@ -84,7 +86,9 @@ public class AndroidUtils {
     
     public static Map<String, String> getUrlParameters(String url, boolean includeContextPath, String contextPathKey)
             throws UnsupportedEncodingException {
-        
+    	LOG.LogDebug(Module.PLATFORM, "getUrlParameters called");
+    	
+    	
     	Map<String, String> params = new HashMap<String, String>();
     	if(url!=null){ // prevent errors if passing null url string
 	        String[] urlParts = url.split("\\?");
