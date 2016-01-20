@@ -61,8 +61,8 @@ public class AppverseApplication extends Application {
 	public static Context getAppContext() {
 		return applicationContext;
 	}
-/*
-	@Override
+
+	/*@Override
 	protected void attachBaseContext(Context base) {
 		
 		super.attachBaseContext(base);

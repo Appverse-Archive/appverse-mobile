@@ -13,9 +13,9 @@
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvm.clang.1_0</string>
 	<key>DTPlatformVersion</key>
-	<string>7.1</string>
+	<string>9.2</string>
 	<key>DTSDKName</key>
-	<string>iphoneos7.1</string>
+	<string>iphoneos9.2</string>
 	<key>CustomUISupportedInterfaceOrientations~ipod</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -117,10 +117,6 @@
 	</array>
 	<key>Appverse_BlockRooted</key>
 	<false/>
-	<key>UIMainNibFile</key>
-	<string>UnityUI_iOSViewController_iPad</string>
-	<key>UIMainNibFile~ipad</key>
-	<string>UnityUI_iOSViewController_iPad</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

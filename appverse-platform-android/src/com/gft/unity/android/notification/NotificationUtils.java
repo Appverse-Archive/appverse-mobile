@@ -49,7 +49,7 @@ public class NotificationUtils {
 
 	public static final String APPLICATION_NAME = "$REPLACE_APPNAME_TOKEN$";
 	public static final String PACKAGE_NAME = "$REPLACE_PACKAGE_TOKEN$";
-	private static final String MAIN_ACTIVITY_CLASS_NAME = "$REPLACE_MAINACTIVITY_NAME_TOKEN$";
+	public static final String MAIN_ACTIVITY_CLASS_NAME = "$REPLACE_MAINACTIVITY_NAME_TOKEN$";
 	private static final String LOCAL_NOTIFICATIONS_SHARED_PREFERENCES = PACKAGE_NAME + ".LOCAL_NOTIFICATIONS_SHARED_PREFERENCES";
 	private static final String REMOTE_NOTIFICATIONS_SHARED_PREFERENCES = PACKAGE_NAME + ".REMOTE_NOTIFICATIONS_SHARED_PREFERENCES";
 	
@@ -60,6 +60,7 @@ public class NotificationUtils {
 	public static final int RN_GCM_SERVER_EXCEPTION = 11;
 	
 	public static final String DRAWABLE_TYPE = "drawable";
+	public static final String DEFAULT_NOTIFICATION_NAME = "iconnotification";
 	public static final String DEFAULT_ICON_NAME = "icon";
 	
 	private static final String TAG = "Appverse.NotificationUtils";

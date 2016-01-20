@@ -63,6 +63,7 @@ import com.gft.unity.core.IAppDelegate;
 import com.gft.unity.core.system.SystemLogger; 
 
 import android.os.ResultReceiver;
+import android.util.Log;
 
 public class MainActivity extends AppverseMainActivity {
 
@@ -81,7 +82,7 @@ public class MainActivity extends AppverseMainActivity {
 		LOG.Log(Module.GUI, "Initializing native Android Webview component..." );
 		
 		if (Build.VERSION.SDK_INT >= 19) { // >= android sdk 4.4
-		    if (AndroidServiceLocator.isDebuggable()) { 
+		    if(true){// (AndroidServiceLocator.isDebuggable()) {  HARDCODED TO ALLOW DEBUG
 		    	LOG.Log(Module.GUI, "debug version; activating webview for remote debugging");
 				try {
 					Class webviewClass = Class
@@ -97,7 +98,7 @@ public class MainActivity extends AppverseMainActivity {
 		    		
 		    }
 		  }
-		
+		LOG.Log(Module.GUI, "[K] init Webview1." );
 		appView = new WebView(this);
 		
 		setGlobalProxy();
@@ -105,7 +106,8 @@ public class MainActivity extends AppverseMainActivity {
 		appView.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 		appView.setId(APPVIEW_ID);
-		
+
+		LOG.Log(Module.GUI, "[K] init Webview2." );
 		if(Build.VERSION.SDK_INT >= 17){
 			LOG.Log(Module.GUI, "Using new AppverseWebviewClient..." );
 			appverseWebviewClient = new AppverseWebViewClient();
@@ -115,7 +117,8 @@ public class MainActivity extends AppverseMainActivity {
 			webViewClient = new UnityWebViewClient();
 			appView.setWebViewClient(webViewClient);
 		}
-		
+
+		LOG.Log(Module.GUI, "[K] init Webview3." );
 		appView.getSettings().setJavaScriptEnabled(true);
 		appView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
 		appView.getSettings().setAllowFileAccess(true);
@@ -134,6 +137,7 @@ public class MainActivity extends AppverseMainActivity {
 															// local storage
 		appView.setVerticalScrollBarEnabled(false);
 
+		LOG.Log(Module.GUI, "[K] init Webview4." );
 		// Required settings to enable HTML5 database storage
 		appView.getSettings().setDatabaseEnabled(true);
 		String databasePath = this.getApplicationContext()
@@ -170,6 +174,7 @@ public class MainActivity extends AppverseMainActivity {
 
 		appView.setWebChromeClient(webChromeClient);
 
+		LOG.Log(Module.GUI, "[K] init Webview5."+appView.getId() );
 	}
 	
 	@Override
@@ -185,7 +190,7 @@ public class MainActivity extends AppverseMainActivity {
 	
 	@Override
 	protected void startServer() {
-
+		Log.d("[K]", "[K] startServer");
 		if(appverseWebviewClient != null) {
 			LOG.LogDebug(Module.GUI,"******** Using Appverse Webview Client - No Internal Server used");
 			return;
@@ -222,9 +227,12 @@ public class MainActivity extends AppverseMainActivity {
 	
 	@Override
 	protected void loadMainURLIntoWebview() {
+		LOG.Log(Module.GUI, "[K] loadMainURLIntoWebview");
 		if(webViewClient != null) {
+			LOG.Log(Module.GUI, "[K] webViewClient");
 			webViewClient.loadMainURLIntoWebview(appView);
 		} else if(appverseWebviewClient != null) {
+			LOG.Log(Module.GUI, "[K] appverseWebviewClient");
 			appverseWebviewClient.loadMainURLIntoWebview(appView);
 		}
 	}

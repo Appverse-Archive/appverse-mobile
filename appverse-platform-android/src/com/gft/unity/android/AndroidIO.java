@@ -25,59 +25,31 @@ package com.gft.unity.android;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Security;
-import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.CertPathBuilder;
-import java.security.cert.CertPathBuilderException;
-import java.security.cert.CertStore;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CollectionCertStoreParameters;
-import java.security.cert.PKIXBuilderParameters;
-import java.security.cert.PKIXCertPathBuilderResult;
-import java.security.cert.TrustAnchor;
-import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
 import javax.net.ssl.HostnameVerifier;
@@ -115,28 +87,11 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
-import org.spongycastle.asn1.ASN1Primitive;
-import org.spongycastle.asn1.ASN1Sequence;
-import org.spongycastle.asn1.DEROctetString;
-import org.spongycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.spongycastle.asn1.x509.AccessDescription;
-import org.spongycastle.asn1.x509.AuthorityInformationAccess;
-import org.spongycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.spongycastle.asn1.x509.X509Extension;
-import org.spongycastle.asn1.x509.X509Extensions;
-import org.spongycastle.jce.provider.X509CertParser;
-import org.spongycastle.jce.provider.X509CertificateObject;
-import org.spongycastle.ocsp.BasicOCSPResp;
-import org.spongycastle.ocsp.CertificateID;
-import org.spongycastle.ocsp.OCSPException;
-import org.spongycastle.ocsp.OCSPReq;
-import org.spongycastle.ocsp.OCSPReqGenerator;
-import org.spongycastle.ocsp.OCSPResp;
-import org.spongycastle.ocsp.RevokedStatus;
-import org.spongycastle.ocsp.SingleResp;
-import org.spongycastle.x509.util.StreamParsingException;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
+
+import android.content.Context;
+import android.os.Build;
 
 import com.gft.unity.android.helpers.AndroidUtils;
 import com.gft.unity.android.helpers.ValidatingSSLSocketFactory;
@@ -156,9 +111,6 @@ import com.gft.unity.core.io.RequestMethod;
 import com.gft.unity.core.io.ServiceType;
 import com.gft.unity.core.system.IOperatingSystem;
 import com.gft.unity.core.system.SystemLogger.Module;
-
-import android.content.Context;
-import android.os.Build;
 
 public class AndroidIO extends AbstractIO implements Runnable{
 
@@ -559,7 +511,8 @@ public class AndroidIO extends AbstractIO implements Runnable{
 
 			httpRequest = new HttpAppverse(new URI(requestUriString), "POST");
 			httpRequest.setHeader("Content-Type", contentTypes.get(ServiceType.MULTIPART_FORM_DATA) + boundary);
-			httpRequest.setHeader("Accept", contentTypes.get(ServiceType.MULTIPART_FORM_DATA));
+			// KO in some servers if Accept header is filled 
+            //httpRequest.setHeader("Accept", contentTypes.get(ServiceType.MULTIPART_FORM_DATA));
 			httpRequest.setHeader("keep-alive", String.valueOf(true));
 			
 			//Map<String,String> postData = new HashMap<String,String>();

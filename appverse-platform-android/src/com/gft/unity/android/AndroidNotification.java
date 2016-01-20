@@ -38,20 +38,14 @@ import android.content.Intent;
 import android.os.Vibrator;
 
 import com.gft.unity.android.activity.AndroidActivityManager;
-import com.gft.unity.android.activity.IActivityManager;
 import com.gft.unity.android.notification.LocalNotificationReceiver;
 import com.gft.unity.android.notification.NotificationUtils;
-import com.gft.unity.core.json.JSONSerializer;
 import com.gft.unity.core.notification.AbstractNotification;
 import com.gft.unity.core.notification.DateTime;
 import com.gft.unity.core.notification.NotificationData;
-import com.gft.unity.core.notification.RegistrationError;
-import com.gft.unity.core.notification.RegistrationToken;
-import com.gft.unity.core.notification.RemoteNotificationType;
 import com.gft.unity.core.notification.SchedulingData;
 import com.gft.unity.core.system.log.Logger;
 import com.gft.unity.core.system.log.Logger.LogCategory;
-import com.google.android.gcm.GCMRegistrar;
 
 public class AndroidNotification extends AbstractNotification {
 	private static final String LOGGER_MODULE = "INotification";
@@ -376,94 +370,7 @@ public class AndroidNotification extends AbstractNotification {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
-	@Override
-	public void RegisterForRemoteNotifications(String senderID,
-			RemoteNotificationType[] types) {
-		LOGGER.logOperationBegin("RegisterForRemoteNotifications", new String[]{"senderID","types"},
-				new Object[]{senderID,types});
-		
-		try{
-			Context ctx = AndroidServiceLocator.getContext();
-			GCMRegistrar.checkDevice(ctx);
-			GCMRegistrar.checkManifest(ctx);
-			if(GCMRegistrar.isRegistered(ctx)) LOGGER.logInfo("RegisterForRemoteNotifications", "REGISTERED");
-			String regId = GCMRegistrar.getRegistrationId(ctx);
-			if(regId.equals("")){ 
-				LOGGER.logInfo("RegisterForRemoteNotifications", "Registering device for sender id: " + senderID);
-				GCMRegistrar.register(ctx, senderID);
-				if(NotificationUtils.storeRemoteNotificationsSharedPreference(ctx, NotificationUtils.RN_PREFERENCE_SENDER_ID, senderID))
-					LOGGER.logInfo("RegisterForRemoteNotifications", "Stored sender id on shared preferences");
-			
-			}else {
-				String storedSenderId = NotificationUtils.getRemoteNotificationsSharedPreference(ctx, NotificationUtils.RN_PREFERENCE_SENDER_ID);
-				LOGGER.logInfo("RegisterForRemoteNotifications", "Device already registered with ID: " + regId + ", and sender id: " + storedSenderId);
-				
-				if(storedSenderId!=null && senderID!=null && !storedSenderId.equalsIgnoreCase(senderID)) {
-					LOGGER.logInfo("RegisterForRemoteNotifications", "Requested sender id does not match with the previous registered.");
-					
-					this.SendRegistrationFailureMessage(""+NotificationUtils.RN_ALREADY_REGISTERED_WITH_ANOTHER_SENDER_ID_EXCEPTION, 
-							"Device already registered with a different sender Id. Please, unregister before register with another sender id");
-				} else {
-					// call the onSuccess listener if registration token is reused or a new token is obtained for the same sender id registration .
-					this.SendRegistrationSuccessMessage(regId);
-				}
-			}
-		}catch(Exception ex){ 
-			LOGGER.logError("RegisterForRemoteNotifications", "Error", ex);
-			this.SendRegistrationFailureMessage(""+NotificationUtils.RN_REGISTRATION_DEFAULT_EXCEPTION, ex.getMessage());
-			
-		}finally{LOGGER.logOperationEnd("RegisterForRemoteNotifications", null);}
-	}
 	
-	/**
-	 * Executes the Success listener to advise the application about a successful registration.
-	 * @param registrationId
-	 */
-	private void SendRegistrationSuccessMessage(String registrationId) {
-		
-		IActivityManager am = (IActivityManager) AndroidServiceLocator
-				.GetInstance().GetService(
-						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		
-		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Appverse.PushNotifications.OnRegisterForRemoteNotificationsSuccess...");
-		
-		RegistrationToken notificationToken = new RegistrationToken();
-		notificationToken.setStringRepresentation(registrationId);
-		notificationToken.setBinary(registrationId.getBytes());
-			
-		am.loadUrlIntoWebView("javascript:try{Appverse.PushNotifications.OnRegisterForRemoteNotificationsSuccess(" + JSONSerializer.serialize(notificationToken) +")}catch(e){}");
-	}
-	
-	
-	/**
-	 * Executes the Failure listener to advise the application about some registration failure.
-	 * @param exceptionCode The exception code
-	 * @param exceptionMessage The exception message
-	 */
-	private void SendRegistrationFailureMessage(String exceptionCode, String exceptionMessage) {
-		IActivityManager am = (IActivityManager) AndroidServiceLocator
-				.GetInstance().GetService(
-						AndroidServiceLocator.SERVICE_ANDROID_ACTIVITY_MANAGER);
-		
-		LOGGER.logInfo("RegisterForRemoteNotifications", "Calling Appverse.PushNotifications.OnRegisterForRemoteNotificationsFailure...");
-		
-		RegistrationError notificationError = new RegistrationError();
-		notificationError.setCode(exceptionCode);
-		notificationError.setLocalizedDescription(exceptionMessage);
-		am.loadUrlIntoWebView("javascript:try{Appverse.PushNotifications.OnRegisterForRemoteNotificationsFailure(" + JSONSerializer.serialize(notificationError) +")}catch(e){}");
-	}
-
-	@Override
-	public void UnRegisterForRemoteNotifications() {
-		LOGGER.logOperationBegin("UnRegisterForRemoteNotifications", Logger.EMPTY_PARAMS,
-				Logger.EMPTY_VALUES);
-		try{
-			Context ctx = AndroidServiceLocator.getContext();
-			GCMRegistrar.unregister(ctx);
-		}catch(Exception ex){ LOGGER.logError("UnRegisterForRemoteNotifications", "Error", ex);
-		}finally{LOGGER.logOperationEnd("UnRegisterForRemoteNotifications", null);}
-		
-	}
 
 	@Override
 	public void CancelAllLocalNotifications() {
@@ -533,6 +440,7 @@ public class AndroidNotification extends AbstractNotification {
 
 	@Override
 	public void PresentLocalNotificationNow(NotificationData notificationData) {
+		notificationData.setAppWasRunning(true);
 		LOGGER.logOperationBegin("PresentLocalNotificationNow", new String[]{"notificationData"}, new Object[]{notificationData});
 		
 		Context context = AndroidServiceLocator.getContext();
@@ -545,7 +453,7 @@ public class AndroidNotification extends AbstractNotification {
 	@Override
 	public void ScheduleLocalNotification(NotificationData notificationData, SchedulingData schedule) {
 		LOGGER.logOperationBegin("ScheduleLocalNotification", new String[]{"notificationData", "schedule"}, new Object[]{notificationData,schedule});
-		
+		notificationData.setAppWasRunning(true);
 		Context context = AndroidServiceLocator.getContext();
 		if(schedule != null) {
 			int notificationId = NotificationUtils.processLocalNotification(context, notificationData, schedule);
@@ -558,5 +466,6 @@ public class AndroidNotification extends AbstractNotification {
 		
 		LOGGER.logOperationEnd("ScheduleLocalNotification", null);
 	}
+
 	
 }
