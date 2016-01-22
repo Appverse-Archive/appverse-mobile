@@ -1,6 +1,6 @@
 # Appverse Application Samples
 
-# **HIS SECTION IS BEING UPDATED, NOT FINISHED YET**
+# **THIS SECTION IS BEING UPDATED, NOT FINISHED YET**
 
 This module contains application samples build using the Appverse platform.
 
