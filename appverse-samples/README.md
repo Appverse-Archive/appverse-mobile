@@ -1,5 +1,7 @@
 # Appverse Application Samples
 
+++THIS SECTION IS BEING UPDATED, NOT FINISHED YET**
+
 This module contains application samples build using the Appverse platform.
 
 You will find here a bunch of application projects ready to be compiled and executed for all supported platforms (iOS, Android, etc), in the following project configurations:
