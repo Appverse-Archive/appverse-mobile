@@ -1,0 +1,49 @@
+﻿<Page
+    x:Class="UnityRuntimeWindowsPhone.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    x:Name="MainPageObject">
+
+    <Page.Resources>
+        
+        <Storyboard x:Name="MainGridFadeOutStoryBoard" x:Key="MainGridFadeOutStoryBoard" Completed="MainGridFadeOutStoryBoard_Completed">
+            <DoubleAnimation Storyboard.TargetName="MainBrowserGrid" Storyboard.TargetProperty="Opacity" From="1" To="0" Duration="0:0:.2"></DoubleAnimation>
+        </Storyboard>
+        <Storyboard x:Name="MainGridFadeInStoryBoard" x:Key="MainGridFadeInStoryBoard">
+            <DoubleAnimation Storyboard.TargetName="MainBrowserGrid" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:.2"></DoubleAnimation>
+        </Storyboard>
+        <Storyboard x:Name="HideSplashStoryBoard" x:Key="HideSplashStoryBoard" Completed="HideSplashStoryBoard_OnCompleted">
+            <DoubleAnimation Storyboard.TargetName="SplashGrid" Storyboard.TargetProperty="Opacity" From="1" To="0" Duration="0:0:.2"></DoubleAnimation>
+            <Storyboard Storyboard.TargetName="MainPageObject" Storyboard.TargetProperty="(Page.Background).(SolidColorBrush.Color)">
+                <ColorAnimation  To="{Binding Source={StaticResource ThemeBrush}, Path=Color}" Duration="0:0:.1"/>
+            </Storyboard>
+        </Storyboard>
+                    
+    </Page.Resources >
+
+    <Grid x:Name="LayoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="MainBrowserGrid" Grid.Row="0" Background="{StaticResource ThemeBrush}">
+            <WebView x:Name="WebViewControl"
+                     ScriptNotify="WebViewControl_ScriptNotify"
+                     NavigationCompleted="WebViewControl_NavigationCompleted"
+                     NavigationStarting="WebViewControl_NavigationStarting" Grid.Row="0" />
+        </Grid>
+         
+        <Grid x:Name="SplashGrid" Grid.Row="0" Background="{StaticResource SplashBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="9*"/>
+                <RowDefinition Height="2*"/>
+            </Grid.RowDefinitions>
+            <Image  x:Name="extendedSplashImage" Source="Assets/SplashScreen.png" Grid.Row="0" Grid.RowSpan="2" Stretch="Uniform" VerticalAlignment="Top"/>
+            <ProgressRing Foreground="{StaticResource RingBrush}" Background="Transparent" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" IsActive="True" x:Name="MyProgressRing"></ProgressRing>
+        </Grid>
+    </Grid>
+</Page>
