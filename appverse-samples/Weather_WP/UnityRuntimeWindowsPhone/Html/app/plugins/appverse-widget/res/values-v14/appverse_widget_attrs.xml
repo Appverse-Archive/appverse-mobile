@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Attribute than enable/disable the widget depending on the version -->
+    <bool name="ubiwidget_available_in_api_14">true</bool>
+
+</resources>

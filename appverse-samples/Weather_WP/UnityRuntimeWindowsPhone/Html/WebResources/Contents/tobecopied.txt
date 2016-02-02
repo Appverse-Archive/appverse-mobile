@@ -1,0 +1,4 @@
+This file is used to illustrate the following test case:
+* API: FileSystem
+* Method: CopyFromFresources
+* Description: The file located on a relative path under the "resources" application folder (../WebResources) would be copied on the "documents" application folder.

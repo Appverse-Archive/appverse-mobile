@@ -1,0 +1,35 @@
+
+
+	
+    
+	
+
+    
+		
+		
+
+			
+		
+		
+		
+
+        <receiver android:name="com.gft.appverse.showcase.widget.WidgetProvider" 
+            android:enabled="true"
+            android:label="@string/appverse_widget_app_widget_name" >
+            
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
+            </intent-filter>
+	        
+	        <meta-data android:name="android.appwidget.provider" android:resource="@xml/appverse_widget_provider_info" />
+        </receiver>
+
+        
+
+        <service android:name="com.gft.appverse.showcase.widget.services.ActionDispacherService" android:enabled="true" />
+			
+	
+

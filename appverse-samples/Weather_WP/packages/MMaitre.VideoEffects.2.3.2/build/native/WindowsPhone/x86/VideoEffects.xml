@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        "VideoEffects.WindowsPhone"
+    </assembly>
+    <members>
+        <member name="M:VideoEffects.CanvasEffectDefinition.#ctor(VideoEffects.CanvasVideoEffectFactory)">
+            <summary>Create an effect definition from an CanvasVideoEffectFactory delegate.</summary>
+        </member>
+        <member name="M:VideoEffects.SquareEffectDefinition.#ctor">
+            <summary>Crop the video to its centered square using metadata (MF_MT_MINIMUM_DISPLAY_APERTURE).</summary>
+            <remark>Only works reliably with MediaElement.</remark>
+        </member>
+        <member name="P:VideoEffects.LumiaEffectDefinition.OutputHeight">
+            <summary>Override the output height coming from the pipeline.</summary>
+        </member>
+        <member name="P:VideoEffects.LumiaEffectDefinition.OutputWidth">
+            <summary>Override the output width coming from the pipeline.</summary>
+        </member>
+        <member name="P:VideoEffects.LumiaEffectDefinition.InputHeight">
+            <summary>Override the input height coming from the pipeline.</summary>
+        </member>
+        <member name="P:VideoEffects.LumiaEffectDefinition.InputWidth">
+            <summary>Override the input width coming from the pipeline.</summary>
+        </member>
+        <member name="M:VideoEffects.LumiaEffectDefinition.#ctor(VideoEffects.BitmapVideoEffectFactory)">
+            <summary>Create an effect definition from an BitmapVideoEffectFactory delegate.</summary>
+        </member>
+        <member name="M:VideoEffects.LumiaEffectDefinition.#ctor(VideoEffects.AnimatedFilterChainFactory)">
+            <summary>Create an effect definition from an AnimatedFilterChainFactory delegate.</summary>
+        </member>
+        <member name="M:VideoEffects.LumiaEffectDefinition.#ctor(VideoEffects.FilterChainFactory)">
+            <summary>Create an effect definition from a FilterChainFactory delegate.</summary>
+        </member>
+        <member name="M:VideoEffects.LumiaEffectDefinition.#ctor(System.String)">
+            <summary>Create an effect definition from a class implementing IFilterChainFactory.</summary>
+            <param name="filterChainFactory">ActivatableClassId of the filter factory.</param>
+        </member>
+        <member name="M:VideoEffects.ICanvasVideoEffect.Process(Microsoft.Graphics.Canvas.CanvasBitmap,Microsoft.Graphics.Canvas.CanvasRenderTarget,Windows.Foundation.TimeSpan)">
+            <summary>Process one video frame.</summary>
+            <param name="input">Input bitmap.</param>
+            <param name="output">Output render target.</param>
+            <param name="time">Timestamp of the frame. Time typically starts at zero. 
+MediaCapture is an exception: time there is tied to QueryPerformanceCounter.</param>
+            <remarks>
+The inputs and outputs are closed when the method returns. Any
+async calls in that method must be run synchronously.
+Bitmaps are in B8G8R8X8 color mode with no alpha channel.
+</remarks>
+        </member>
+        <member name="M:VideoEffects.IBitmapVideoEffect.Process(Lumia.Imaging.Bitmap,Lumia.Imaging.Bitmap,Windows.Foundation.TimeSpan)">
+            <summary>Process one video frame.</summary>
+            <param name="input">Input bitmap.</param>
+            <param name="output">Output bitmap.</param>
+            <param name="time">Timestamp of the frame. Time typically starts at zero. 
+MediaCapture is an exception: time there is tied to QueryPerformanceCounter.</param>
+            <remarks>
+The input and output bitmaps are closed when the method returns. Any
+async calls in that method must be run synchronously to avoid corrupting
+memory.
+Bitmaps are in Bgra8888 color mode with no alpha channel.
+</remarks>
+        </member>
+        <member name="M:VideoEffects.IAnimatedFilterChain.UpdateTime(Windows.Foundation.TimeSpan)">
+            <summary>Update the current time.</summary>
+            <remarks>
+This method is called once per frame before querying the FilterChain property. It
+gives a chance to update the filter chain. Time typically starts at zero. MediaCapture is
+an exception: time there is tied to QueryPerformanceCounter.
+</remarks>
+        </member>
+        <member name="P:VideoEffects.IAnimatedFilterChain.Filters">
+            <summary>The chain of Lumia image filters at the current time.</summary>
+        </member>
+        <member name="M:VideoEffects.LumiaAnalyzerDefinition.#ctor(Lumia.Imaging.ColorMode,System.UInt32,VideoEffects.BitmapVideoAnalyzer)">
+            <summary>Constructor</summary>
+            <param name="colorMode">
+The color mode must be either Bgra8888, Yuv420Sp, or Gray8. In either case no alpha
+is present.
+The color mode of bitmaps passed to Process() is independent from the
+one of frames flowing through the video pipeline. Color conversion, frame
+resizing, and copy from GPU to CPU happen automatically.
+</param>
+            <param name="length">
+The largest dimension of the bitmaps passed in Process(), either width or height.
+The smallest dimension of the bitmaps is set to preserve the aspect ratio of the video frames.
+</param>
+            <param name="analyzer">
+Delegate running image analysis on the bitmaps
+</param>
+        </member>
+        <member name="M:VideoEffects.ShaderEffectDefinitionBgrx8.UpdateShader(Windows.Storage.Streams.IBuffer)">
+            <summary>Replaces the current shader.</summary>
+        </member>
+        <member name="M:VideoEffects.ShaderEffectDefinitionBgrx8.#ctor(Windows.Storage.Streams.IBuffer)">
+            <summary>Creates an effect definition from a Bgrx8 CSO shader (32bpp no alpha).</summary>
+        </member>
+        <member name="M:VideoEffects.TranscodingProfile.CreateFromFileAsync(Windows.Storage.StorageFile)">
+            <summary>Create a transcoding profile whose properties match those of the file passed in.</summary>
+            <remarks>This is an extension of MediaEncodingProfile.CreateFromFileAsync() which adjusts width/height based on video orientation.</remarks>
+        </member>
+        <member name="M:VideoEffects.ShaderEffectDefinitionNv12.UpdateShader(Windows.Storage.Streams.IBuffer,Windows.Storage.Streams.IBuffer)">
+            <summary>Replaces the current shader.</summary>
+        </member>
+        <member name="M:VideoEffects.ShaderEffectDefinitionNv12.#ctor(Windows.Storage.Streams.IBuffer,Windows.Storage.Streams.IBuffer)">
+            <summary>Creates an effect definition from a CSO shader.</summary>
+        </member>
+        <member name="M:VideoEffects.ShaderEffectDefinitionNv12.TestGraphicsDeviceSupport">
+            <summary>Returns true if the graphics device supports Nv12 pixel shaders.</summary>
+        </member>
+    </members>
+</doc>
