@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="250dp"
+    android:layout_height="180dp"
+    android:background="@drawable/appverse_widget_bg"
+    android:clickable="false"
+    android:padding="@dimen/appverse_widget_margin"
+    tools:context=".widget.services.ActionDispacherService" >
+
+    <ImageView
+        android:id="@+id/home_image1"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/appverse_widget_image_description"
+        android:gravity="left"
+        android:scaleType="fitStart"
+        android:src="@drawable/appverse_widget_logo" />
+
+    <LinearLayout
+        android:id="@+id/footer"
+        style="@android:style/ButtonBar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="horizontal"
+        android:paddingTop="1dp" >
+
+        <Button
+            android:id="@+id/synchronous"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:minHeight="40dip"
+            android:minWidth="40dip"
+            android:text="@string/appverse_widget_synchronous" />
+
+        <Button
+            android:id="@+id/store"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:minHeight="40dip"
+            android:minWidth="40dip"
+            android:text="@string/appverse_widget_store" />
+
+        <Button
+            android:id="@+id/getEnc"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:minHeight="40dip"
+            android:minWidth="40dip"
+            android:text="@string/appverse_widget_get_enc" />
+
+        <Button
+            android:id="@+id/get"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:minHeight="40dip"
+            android:minWidth="40dip"
+            android:text="@string/appverse_widget_key" />
+
+        <Button
+            android:id="@+id/remove"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:minHeight="40dip"
+            android:minWidth="40dip"
+            android:text="@string/appverse_widget_remove" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/result_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/home_image1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="11dp"
+        android:text="@string/appverse_widget_placeholder"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/appverse_widget_blue_dark" />
+
+</RelativeLayout>

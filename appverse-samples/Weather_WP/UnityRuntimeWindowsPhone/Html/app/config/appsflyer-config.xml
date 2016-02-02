@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Check possible attributes values for AppsFyer Initialization: 
+
+	dev-key  				[string] : Unique developer ID accessible from AppsFlyer account.
+	app-id   				[string] : Application ID.
+	currency-code 			[string] : Acceptable ISO currency code. Default is USD.
+	customer-id 			[string] : Customer ID that will be added to the reports.
+	communications-protocol	[string] : HTTP or HTTPS
+	use-http-fallback		[boolean]: True to allow the HTTP fallback in case HTTPs is configured but not enabled. Default is false.
+-->
+
+<appsflyer-config 
+	
+	dev-key="123456" 
+	app-id="66666666"	
+	currency-code="EUR"
+	customer-id="1234"
+	communications-protocol="HTTP"
+	use-http-fallback="false"
+	
+	/>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    
+
+    <!-- Attribute than enable/disable the widget depending on the version -->
+    <bool name="appverse_widget_available_in_api_14">false</bool>
+
+    
+    
+     <string name="appverse_widget_group_code">101</string>
+     <string name="appverse_widget_app_version">1.0.0</string>
+
+    <!--
+    use this property in order to enable de nfc hacks for development
+    true: enabled, flag: disabled
+	In EVERY HACK it has to be enabled this flag
+    -->
+    <bool name="appverse_widget_debug_flag">false</bool>
+    
+    <!-- This flag if for simulating the settings value to enable the widget -->
+    <bool name="appverse_widget_debug_enabled">true</bool>
+    
+    <!-- This flag if for simulating the rooted mode of the phone -->
+    <bool name="appverse_widget_debug_rooted">false</bool>
+
+
+
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Check possible attributes values for Adform Initialization: 
+
+	tracking-id  [integer] : Tracking ID provided by the Adform account.
+-->
+
+<adform-config tracking-id="123456" /> <!-- adform tacking id for UBI Pay application (244452) -->
