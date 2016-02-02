@@ -1,0 +1,12 @@
+﻿<Application
+    x:Class="UnityRuntimeWindowsPhone.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources>
+        <SolidColorBrush Color="AppverseCarrierBarBG" x:Key="SplashBrush" x:Name="SplashBrush"></SolidColorBrush>
+        <SolidColorBrush Color="AppverseBottomBarBG" x:Key="ThemeBrush" x:Name="ThemeBrush"></SolidColorBrush>
+		<SolidColorBrush Color="AppverseRingColor" x:Key="RingBrush" x:Name="RingBrush"></SolidColorBrush>
+		<SolidColorBrush Color="gray" x:Key="GuideMarkColorBrush"></SolidColorBrush>
+    </Application.Resources>
+    
+</Application>

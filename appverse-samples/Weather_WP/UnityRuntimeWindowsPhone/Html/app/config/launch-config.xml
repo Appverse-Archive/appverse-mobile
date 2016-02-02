@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch-config>
+
+<apps>
+	
+	<!-- Usage Tips:
+		
+		 1. For iOS applications, use the <ios /> node.
+		
+			Use the "uri-scheme" attribute to define the URL scheme to use to open that url.
+			Parameters are passed when launching application (using the Appverse.System.LaunchApplication method) via a query string.
+			
+		 2. For Android application, there are two options:
+		
+			2.1. Launch an explicit intent: <android-explicit-intent />
+				 
+				 Explicit Intents have specified a component, which provides the exact class to be run. 
+				 
+				 Use the "component-name" attribute to define that component name (<package_name>/<fully_qualified_class_name>) on the native application to be launched 
+			
+			2.2. Launch an implicit intent: <android-implicit-intent />
+				 
+				 Implicit Intents have not specified a component;
+				 Instead, they must include enough information for the system to determine which of the available components is best to run for that intent.
+				
+				 Possible node attributes (all optionals) :
+				 
+				 * action [string] : The general action to be performed. For example, "android.intent.action.VIEW"
+				   See other possible values at: http://developer.android.com/reference/android/content/Intent.html
+				
+				 * category [string] : Gives additional information about the action to execute. For example, "android.intent.category.LAUNCHER"
+				   See other possible values at: http://developer.android.com/reference/android/content/Intent.html
+				
+				 * mime-type [string] : Specifies an explicit type (a MIME type) of the intent data.
+				   Normally the type is inferred from the data itself. By setting this attribute, you disable that evaluation and force an explicit type.	
+				 
+				 * uri-scheme [string] : Depending on the intent you want to launch, the data might be a Uri.
+				   See information at: 
+				   http://developer.android.com/reference/android/net/Uri.html
+				   http://developer.android.com/training/basics/intents/sending.html
+				
+				   Parameters are passed when launching application (using the Appverse.System.LaunchApplication method) via a query string.
+				
+				 * uri-remove-double-slash [boolean] : true to remove the double slashes from the URI scheme (default: false)
+			
+		3. Default URL schemes contain the "//" characters in the syntax (example: myapp://mypath?param=value&param=value). 
+			To remove the double slashes set the "uri-remove-double-slash" attribute to true in both <ios /> or <android-implicit-intent /> nodes
+		
+	-->
+	
+	<!-- The following are examples to call native applications in both platforms iOS and Android -->
+	
+    <!-- 	example: launching Mail native application.
+			
+			iOS:
+			mailto:${EMAIL_ADDRESS}?cc=${EMAIL_ADDRESS_CC}&subject=Greetings
+			
+			Android: 
+			Using an implicit intent with the action SEND and a plain text mime type. In this case, no URI scheme is used.
+			Parameters passed when launching application (using the Appverse.System.LaunchApplication method) via the query string argument will be parsed and 
+			passed to the Intent as extras (name/value string pairs)
+	-->
+    <app name="appmail">
+		<ios uri-scheme="mailto" uri-remove-double-slash="true"/>
+		<android-implicit-intent action="android.intent.action.SEND" mime-type="text/plain" parse-query-as-intent-extras="true"/>
+	</app>
+	
+	<!-- 	example: launching telephone native application.
+			
+			iOS: tel:${PHONENUMBER}
+			
+			Android: 
+			Using an implicit intent with the action DIAL and the "tel:" URI scheme.
+	-->
+	<app name="apptel">
+		<ios uri-scheme="tel" uri-remove-double-slash="true"/>
+		<android-implicit-intent action="android.intent.action.VIEW" category="android.intent.category.BROWSABLE" uri-scheme="tel" uri-remove-double-slash="true" />
+	</app>
+	 
+	<!-- 	example: launching Maps native application.
+			
+			iOS: 
+			Specific URL. Example: http://maps.apple.com/?daddr?San+Francisco,+CA&saddr=cupertino
+			
+			Android: 
+			
+			Two options, using explicit intent, or using the action VIEW with a specific "geo:" URI scheme
+			
+			// example: map point based on address
+			geo:0,0?q=1600+Amphitheatre+Parkway,+Mountain+View,+California
+			
+			// Or map point based on latitude/longitude
+			geo:37.422219,-122.08364?z=14
+			
+			
+	-->
+	<app name="appmaps">
+		<ios uri-scheme="http" />
+		<android-explicit-intent component-name="com.google.android.apps.maps/com.google.android.maps.MapsActivity"/>
+	</app> 
+	
+	<app name="appmaps-google">
+		<ios uri-scheme="http" />
+		<android-implicit-intent action="android.intent.action.VIEW" uri-scheme="geo" uri-remove-double-slash="true" />
+	</app>
+
+</apps>
+
+</launch-config>

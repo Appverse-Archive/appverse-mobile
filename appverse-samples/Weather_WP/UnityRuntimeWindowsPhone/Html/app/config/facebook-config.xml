@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Check possible attributes values for Facebook Initialization: 
+
+	app-id   			[string] : Application ID.
+    display-name        [string] : Display name
+-->
+
+<facebook-config 
+	
+	app-id="427435030750769"	
+	display-name="Showcase"
+	
+	/>

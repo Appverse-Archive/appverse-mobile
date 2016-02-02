@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Lumia.InteropServices.WindowsRuntime</name>
+  </assembly>
+  <members>
+    <member name="T:Lumia.InteropServices.WindowsRuntime.BufferFactory">
+      <summary>Factory for creating <see cref="T:Windows.Storage.Streams.IBuffer" /> objects that have extra behavior useful in interop scenarios.</summary>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.BufferFactory.#ctor">
+      <summary>
+        <markup>
+          <include item="SMCAutoDocConstructor">
+            <parameter>Lumia.InteropServices.WindowsRuntime.BufferFactory</parameter>
+          </include>
+        </markup>
+      </summary>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.BufferFactory.CreateBuffer(Lumia.InteropServices.WindowsRuntime.ILockableMemory)">
+      <summary>This API is deprecated.</summary>
+      <param name="lockableMemory">This API is deprecated.</param>
+      <returns>This API is deprecated.</returns>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.BufferFactory.CreateFromBuffer(Windows.Storage.Streams.IBuffer,System.UInt32,System.UInt32)">
+      <summary>
+Create a wrapping <see cref="T:Windows.Storage.Streams.IBuffer" /> that references data within another <see cref="T:Windows.Storage.Streams.IBuffer" />.
+</summary>
+      <param name="buffer">The source buffer where the data resides.</param>
+      <param name="rangeOffset">Offset into the source buffer data where the range starts, in bytes.</param>
+      <param name="rangeLength">Length of the range, in bytes.</param>
+      <returns>The wrapping buffer.</returns>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.BufferFactory.CreateFromBuffer(Windows.Storage.Streams.IBuffer,Windows.UI.Core.CoreDispatcher)">
+      <summary>Create an <see cref="T:Windows.Storage.Streams.IBuffer" /> that wraps another <see cref="T:Windows.Storage.Streams.IBuffer" />, making sure that the inner <see cref="T:Windows.Storage.Streams.IBuffer" />
+is accessed using the provided <see cref="T:Windows.UI.Core.CoreDispatcher" />. Currently only the retreival of 
+IBufferByteAccess is handled, which is enough for WriteableBitmap.
+</summary>
+      <param name="buffer">The source buffer.</param>
+      <param name="dispatcher">
+        <see cref="T:Windows.UI.Core.CoreDispatcher" /> used when accessing the source buffer.</param>
+      <returns>The wrapping buffer.</returns>
+    </member>
+    <member name="T:Lumia.InteropServices.WindowsRuntime.ILockableMemory">
+      <summary>
+This API is deprecated.
+</summary>
+    </member>
+    <member name="P:Lumia.InteropServices.WindowsRuntime.ILockableMemory.Length">
+      <summary>This API is deprecated.</summary>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.ILockableMemory.Lock">
+      <summary>This API is deprecated.</summary>
+      <returns>This API is deprecated.</returns>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.ILockableMemory.Unlock">
+      <summary>This API is deprecated.</summary>
+    </member>
+  </members>
+</doc>

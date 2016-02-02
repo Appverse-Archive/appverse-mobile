@@ -1,0 +1,524 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Lumia.Imaging.Managed</name>
+  </assembly>
+  <members>
+    <member name="T:Lumia.Imaging.ImageProviderExtensions">
+      <summary>
+            Extension methods for <see cref="T:Lumia.Imaging.IImageProvider" />.
+            </summary>
+    </member>
+    <member name="M:Lumia.Imaging.ImageProviderExtensions.AsAnimationFrame(Lumia.Imaging.IImageProvider,System.Int32,Windows.Foundation.Point,Lumia.Imaging.AnimationFrameDithering)">
+      <summary>Returns an <see cref="T:Lumia.Imaging.AnimationFrame" /> with the specified <see cref="T:Lumia.Imaging.IImageProvider" /> as its source and the specified frame duration.</summary>
+      <param name="imageProvider">The provider of the image for the animation frame.</param>
+      <param name="duration">Specifies the duration that this frame should be displayed, in milliseconds. The actual precision may not be in single milliseconds.</param>
+      <param name="position">Optional, specifies the position of the frame. The position is relative to the top-left corner of the first animation frame.</param>
+      <param name="dithering">Optional, specifies if the frame should be dithered.</param>
+      <returns>An <see cref="T:Lumia.Imaging.AnimationFrame" />. Note that if <paramref name="imageProvider" /> is already an <see cref="T:Lumia.Imaging.AnimationFrame" />, the same object will be returned with updated property values.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.ImageProviderExtensions.GetBitmapAsync(Lumia.Imaging.IImageProvider,System.Windows.Media.Imaging.WriteableBitmap,Lumia.Imaging.OutputOption)">
+      <summary>Creates a <see cref="T:System.Windows.Media.Imaging.WriteableBitmap" /> with the contents of the image provider.</summary>
+      <param name="imageProvider">The extended <see cref="T:Lumia.Imaging.IImageProvider" />.</param>
+      <param name="writeableBitmap">The <see cref="T:System.Windows.Media.Imaging.WriteableBitmap" /> to fill.</param>
+      <param name="outputOption">Specifies how to adjust if the source image has different aspect ratio from the bitmap passed into this method.</param>
+      <returns>An async result with the <see cref="T:System.Windows.Media.Imaging.WriteableBitmap" />.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.ImageProviderExtensions.Then``1(Lumia.Imaging.IImageProvider,``0)">
+      <summary>Enables a fluid way of chaining multiple <see cref="T:Lumia.Imaging.IImageProvider" /> objects and <see cref="T:Lumia.Imaging.IImageConsumer" /> objects.</summary>
+      <param name="provider">The image provider.</param>
+      <param name="consumer">The image consumer.</param>
+      <typeparam name="TImageConsumer">The extended image consumer.</typeparam>
+      <returns>The consumer that was passed in.</returns>
+    </member>
+    <member name="T:Lumia.Imaging.StreamImageSource">
+      <summary>An image source implementing <see cref="T:Lumia.Imaging.IImageProvider" />, reading its data from a <see cref="T:System.IO.Stream" />.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.StreamImageSource.#ctor(System.IO.Stream,Lumia.Imaging.ImageFormat)">
+      <summary>Initializes a new instance of the <see cref="T:Lumia.Imaging.StreamImageSource" /> class.</summary>
+      <param name="stream">The <see cref="T:System.IO.Stream" /> to read and use as an image source.</param>
+      <param name="imageFormat">The format of the image. If not specified, the format is autodetected from the stream.</param>
+    </member>
+    <member name="M:Lumia.Imaging.StreamImageSource.Dispose">
+      <summary>Performs tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+    </member>
+    <member name="P:Lumia.Imaging.StreamImageSource.FrameIndex">
+      <summary>The index of the currently active frame.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.StreamImageSource.GetBitmapAsync(Lumia.Imaging.Bitmap,Lumia.Imaging.OutputOption)">
+      <summary>Creates a <see cref="T:Lumia.Imaging.Bitmap" /> from the contents of the image provider.</summary>
+      <param name="bitmap">An input <see cref="T:Lumia.Imaging.Bitmap" /> to fill. If null, a <see cref="T:Lumia.Imaging.Bitmap" /> will be created and returned.</param>
+      <param name="outputOption">Specifies how to adjust if the source image has different aspect ratio from the <see cref="T:Lumia.Imaging.Bitmap" /> passed into this method.</param>
+      <returns>An async result with the <see cref="T:Lumia.Imaging.Bitmap" />.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.StreamImageSource.GetInfoAsync">
+      <summary>Asynchronously gets information about this image provider.</summary>
+      <returns>An async result with a <see cref="T:Lumia.Imaging.ImageProviderInfo" /> object containing information such as image size.</returns>
+    </member>
+    <member name="P:Lumia.Imaging.StreamImageSource.ImageFormat">
+      <summary>
+            The format of the compressed image data.
+            </summary>
+    </member>
+    <member name="M:Lumia.Imaging.StreamImageSource.Lock(Lumia.Imaging.RenderRequest)">
+      <summary>For internal use. Locks the image provider for the purpose of rendering.</summary>
+      <param name="renderRequest">The <see cref="T:Lumia.Imaging.RenderRequest" /> with which to lock.</param>
+      <returns>True if the <paramref name="renderRequest" /> owns the lock. False if the lock was already taken.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.StreamImageSource.PreloadAsync">
+      <summary>Perform expensive loading operations, typically involving I/O, needed to render or get info from this image provider.</summary>
+      <returns>An async action that completes when the loading is done.</returns>
+    </member>
+    <member name="P:Lumia.Imaging.StreamImageSource.Stream">
+      <summary>
+            The stream containing compressed image data.
+            </summary>
+    </member>
+    <member name="T:Lumia.Imaging.WriteableBitmapRenderer">
+      <summary>
+            Renders an image source to a writeable bitmap.
+            </summary>
+    </member>
+    <member name="M:Lumia.Imaging.WriteableBitmapRenderer.#ctor">
+      <summary>
+        <summary>Initializes a new instance of the <see cref="T:Lumia.Imaging.WriteableBitmapRenderer" /> class.</summary>
+      </summary>
+    </member>
+    <member name="M:Lumia.Imaging.WriteableBitmapRenderer.#ctor(Lumia.Imaging.IImageProvider)">
+      <summary>Initializes a new instance of the <see cref="T:Lumia.Imaging.WriteableBitmapRenderer" /> class.</summary>
+      <param name="source">The image source that will be rendered.</param>
+    </member>
+    <member name="M:Lumia.Imaging.WriteableBitmapRenderer.#ctor(Lumia.Imaging.IImageProvider,System.Windows.Media.Imaging.WriteableBitmap,Lumia.Imaging.OutputOption)">
+      <summary>Initializes a new instance of the <see cref="T:Lumia.Imaging.WriteableBitmapRenderer" /> class.</summary>
+      <param name="source">The image source that will be rendered.</param>
+      <param name="writeableBitmap">The <see cref="P:Lumia.Imaging.WriteableBitmapRenderer.WriteableBitmap" /> object where the image will be rendered.</param>
+      <param name="outputOption">Controls how the image is rendered.</param>
+    </member>
+    <member name="M:Lumia.Imaging.WriteableBitmapRenderer.Dispose">
+      <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+    </member>
+    <member name="P:Lumia.Imaging.WriteableBitmapRenderer.OutputOption">
+      <summary>Output option for the desired behavior when the source and target aspect ratio differ.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.WriteableBitmapRenderer.RenderAsync">
+      <summary>Renders the image asynchronously.</summary>
+      <returns>An <see cref="T:Windows.Foundation.IAsyncAction" /> representing the render operation.</returns>
+    </member>
+    <member name="P:Lumia.Imaging.WriteableBitmapRenderer.Source">
+      <summary>The <see cref="T:Lumia.Imaging.IImageProvider" /> that will be rendered.</summary>
+    </member>
+    <member name="P:Lumia.Imaging.WriteableBitmapRenderer.WriteableBitmap">
+      <summary>The <see cref="P:Lumia.Imaging.WriteableBitmapRenderer.WriteableBitmap" /> to which the image will be rendered.</summary>
+    </member>
+    <member name="T:Lumia.Imaging.Custom.CustomEffectBase">
+      <summary>Base class for user-defined custom effects.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.#ctor(Lumia.Imaging.IImageProvider,System.Boolean)">
+      <summary>Initializes a new instance of the <see cref="T:Lumia.Imaging.Custom.CustomEffectBase" /> class.</summary>
+      <param name="source">
+        <see cref="T:Lumia.Imaging.IImageProvider" /> to use as the image source.</param>
+      <param name="isInplace">If true, the sourcePixels and targetPixels parameters to <see cref="M:Lumia.Imaging.Custom.CustomEffectBase.OnProcess(Lumia.Imaging.Custom.PixelRegion,Lumia.Imaging.Custom.PixelRegion)">CustomEffectBase.OnProcess</see> refer to the same array. This can be more efficient, but may restrict the effect. Writing a pixel means the original source pixel is discarded. If false, the buffers are not the same object. The default value is false.</param>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.Dispose">
+      <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.Dispose(System.Boolean)">
+      <summary>Called by the <see cref="M:Lumia.Imaging.Custom.CustomEffectBase.Dispose" /> method.</summary>
+      <param name="disposing">True if this is a call to <see cref="M:Lumia.Imaging.Custom.CustomEffectBase.Dispose" />, or false if called by the finalizer.</param>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.FromColor(Windows.UI.Color)">
+      <summary>Encodes the specified <see cref="T:Windows.UI.Color" /> into an unsigned integer.</summary>
+      <param name="color">The <see cref="T:Windows.UI.Color" /> to encode.</param>
+      <returns>The <paramref name="color" /> represented as a <see cref="T:System.UInt32" /> value.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.GetBitmapAsync(Lumia.Imaging.Bitmap,Lumia.Imaging.OutputOption)">
+      <summary>Creates a <see cref="T:Lumia.Imaging.Bitmap" /> from the contents of the image provider.</summary>
+      <param name="bitmap">An input <see cref="T:Lumia.Imaging.Bitmap" /> to fill. If null, a <see cref="T:Lumia.Imaging.Bitmap" /> will be created and returned.</param>
+      <param name="outputOption">Specifies how to adjust if the source image has different aspect ratio from the <see cref="T:Lumia.Imaging.Bitmap" /> passed into this method.</param>
+      <returns>An async result with the <see cref="T:Lumia.Imaging.Bitmap" />.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.GetInfoAsync">
+      <summary>Asynchronously gets information about this image provider.</summary>
+      <returns>An async result with a <see cref="T:Lumia.Imaging.ImageProviderInfo" /> object containing information such as image size.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.Lock(Lumia.Imaging.RenderRequest)">
+      <summary>For internal use. Locks the image provider for the purpose of rendering.</summary>
+      <param name="renderRequest">The <see cref="T:Lumia.Imaging.RenderRequest" /> with which to lock.</param>
+      <returns>True if the <paramref name="renderRequest" /> owns the lock. False if the lock was already taken.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.Lumia#Imaging#Custom#ICustomEffect#LoadAsync">
+      <summary>Load/prepare for rendering.</summary>
+      <returns>An async action representing the load operation.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.OnLoadAsync">
+      <summary>Called when the effect should load and prepare for rendering.</summary>
+      <returns>An async action representing the work.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.OnProcess(Lumia.Imaging.Custom.PixelRegion,Lumia.Imaging.Custom.PixelRegion)">
+      <summary>
+            Called when the effect is asked to process a rectangular area of the image.
+            </summary>
+      <param name="sourcePixelRegion">The region of source pixels to read.</param>
+      <param name="targetPixelRegion">The region of target pixels to write.</param>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.PreloadAsync">
+      <summary>Perform expensive loading operations, typically involving I/O, needed to render or get info from this image provider.</summary>
+      <returns>An async action that completes when the loading is done.</returns>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.CustomEffectBase.Source">
+      <summary>
+The <see cref="T:Lumia.Imaging.IImageProvider" /> that will be used as source.
+</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomEffectBase.ToColor(System.UInt32)">
+      <summary>Creates a <see cref="T:Windows.UI.Color" /> from a <see cref="T:System.UInt32" />.</summary>
+      <param name="uintColor">The <see cref="T:System.UInt32" /> to convert into a color.</param>
+      <returns>Returns a <see cref="T:Windows.UI.Color" /> instance.</returns>
+    </member>
+    <member name="T:Lumia.Imaging.Custom.CustomFilterBase">
+      <summary>Base class for user-defined custom filters with support for block based processing.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.#ctor(Lumia.Imaging.Margins,System.Boolean,System.Collections.Generic.IEnumerable{Lumia.Imaging.ColorMode})">
+      <summary>
+            Creates and initializes CustomFilterBase.
+            </summary>
+      <param name="blockMargins">
+            Size of the margins needed if the filter wants to sample neighboring pixels around a source pixel. 
+            This should be set to the maximum distance the filter will sample away from the source pixel in the left, right, up and down directions. 
+            Note that when any margin is is non-zero, the sourcePixelRegion passed to <see cref="M:Lumia.Imaging.Custom.CustomFilterBase.OnProcess(Lumia.Imaging.Custom.PixelRegion,Lumia.Imaging.Custom.PixelRegion)" /> will be larger than the targetPixelRegion.
+            </param>
+      <param name="wrapBorders">
+            If true, and the block margins are non-zero, when processing a block at the edge of an image the pixel data outside the edge of the image will 
+            be taken from a mirrored location inside the image. 
+            If false, the pixels in the margin will be transparent black.
+            </param>
+      <param name="supportedColorModes">
+            The color modes that the implementation supports. Valid values are <see cref="F:Lumia.Imaging.ColorMode.Bgra8888" /> and <see cref="F:Lumia.Imaging.ColorMode.Ayuv4444" />.
+            </param>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.CustomFilterBase.AcceptedColorMode">
+      <summary>The color mode used, from one of the supported ones.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.CreateSessionState">
+      <summary>
+            Called when a new filter session is created. If the filter overrides this method, it should return an object representing
+            session state that is specific to the filter. It can then access this object using the <see cref="P:Lumia.Imaging.Custom.CustomFilterBase.SessionState" /> property from within <see cref="M:Lumia.Imaging.Custom.CustomFilterBase.OnProcess(Lumia.Imaging.Custom.PixelRegion,Lumia.Imaging.Custom.PixelRegion)" />.
+            </summary>
+      <returns>An object representing session state.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.Dispose">
+      <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.Dispose(System.Boolean)">
+      <summary>Called by the <see cref="M:Lumia.Imaging.Custom.CustomFilterBase.Dispose" /> method.</summary>
+      <param name="disposing">True if this is a call to <see cref="M:Lumia.Imaging.Custom.CustomFilterBase.Dispose" />, or false if called by the finalizer.</param>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.CustomFilterBase.ImageSize">
+      <summary>The size of the entire image.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.Lumia#Imaging#Custom#ICustomFilter#BeginProcessing(Lumia.Imaging.Custom.ICustomFilterRequest)">
+      <summary>Called when the block-based rendering is about to begin, or new source/target buffers are requested.</summary>
+      <param name="request">Information about the processing operation.</param>
+      <returns>Acknowledgement in response, or null if the custom filter cannot perform the requested operation. Returning null will cause the overall rendering operation to throw an exception.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.Lumia#Imaging#Custom#ICustomFilter#PrepareAsync">
+      <summary>Load/prepare for processing.</summary>
+      <returns>An async action representing the preparation work. Return null if no preparation work is required.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.Lumia#Imaging#Custom#ICustomFilter#ProcessBlock(Lumia.Imaging.Custom.CustomFilterBlockParameters)">
+      <summary>Called when a rectangular block in the image should be processed.</summary>
+      <param name="blockParameters">Information about the block that should be processed.</param>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.Lumia#Imaging#Custom#ICustomFilter2#CreateSession">
+      <summary>Create a new filter session.</summary>
+      <returns>A new filter session that can be rendered concurrently with other sessions created by this filter.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.Lumia#Imaging#IFilter#Apply(Lumia.Imaging.IFilterEffect)">
+      <summary>
+Internal framework method.
+</summary>
+      <param name="filterEffect">This parameter is passed internally.</param>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.Lumia#Imaging#IFilter#Lock(Lumia.Imaging.RenderRequest)">
+      <summary>
+Internal framework method.
+</summary>
+      <param name="renderRequest">This parameter is passed internally.</param>
+      <returns>
+The returned value is for internal use.
+</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.Lumia#Imaging#IFilter#PrepareAsync">
+      <summary>
+Internal framework method.
+</summary>
+      <returns>
+The returned value is for internal use.
+</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.OnPrepareAsync">
+      <summary>Called when the filter should load and prepare for rendering.</summary>
+      <returns>An async action representing the work.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomFilterBase.OnProcess(Lumia.Imaging.Custom.PixelRegion,Lumia.Imaging.Custom.PixelRegion)">
+      <summary>
+            Called when the filter is asked to process a rectangular area of the image.
+            </summary>
+      <param name="sourcePixelRegion">The region of source pixels to read.</param>
+      <param name="targetPixelRegion">The region of target pixels to write.</param>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.CustomFilterBase.SessionState">
+      <summary>
+            Session state. If the filter has overridden the <see cref="M:Lumia.Imaging.Custom.CustomFilterBase.CreateSessionState" /> method, this property holds the object corresponding to the current session.
+            </summary>
+    </member>
+    <member name="T:Lumia.Imaging.Custom.CustomImageSourceBase">
+      <summary>
+            Managed base class for custom image sources.
+            </summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.#ctor(Windows.Foundation.Size)">
+      <summary>Initializes a new instance of the <see cref="T:Lumia.Imaging.Custom.CustomImageSourceBase" /> class.</summary>
+      <param name="size">The size of the image.</param>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.CustomImageSourceBase.CanSetSize">
+      <summary>If true, the <see cref="P:Lumia.Imaging.IImageSize.Size" /> property can be set.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.Dispose">
+      <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.Dispose(System.Boolean)">
+      <summary>Called by the <see cref="M:Lumia.Imaging.Custom.CustomImageSourceBase.Dispose" /> method.</summary>
+      <param name="disposing">True if this is a call to <see cref="M:Lumia.Imaging.Custom.CustomImageSourceBase.Dispose" />, or false if called by the finalizer.</param>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.FromColor(Windows.UI.Color)">
+      <summary>Converts a <see cref="T:Windows.UI.Color" /> into an integer.</summary>
+      <param name="color">The <see cref="T:Windows.UI.Color" /> to convert.</param>
+      <returns>The <paramref name="color" /> represented as a <see cref="T:System.UInt32" /> value.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.GetBitmapAsync(Lumia.Imaging.Bitmap,Lumia.Imaging.OutputOption)">
+      <summary>Creates a <see cref="T:Lumia.Imaging.Bitmap" /> from the contents of the image provider.</summary>
+      <param name="bitmap">An input <see cref="T:Lumia.Imaging.Bitmap" /> to fill. If null, a <see cref="T:Lumia.Imaging.Bitmap" /> will be created and returned.</param>
+      <param name="outputOption">Specifies how to adjust if the source image has different aspect ratio from the <see cref="T:Lumia.Imaging.Bitmap" /> passed into this method.</param>
+      <returns>An async result with the <see cref="T:Lumia.Imaging.Bitmap" />.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.GetInfoAsync">
+      <summary>Asynchronously gets information about this image provider.</summary>
+      <returns>An async result with a <see cref="T:Lumia.Imaging.ImageProviderInfo" /> object containing information such as image size.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.Invalidate">
+      <summary>Requests a reloading of the image source during the next load or render operation.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.Lock(Lumia.Imaging.RenderRequest)">
+      <summary>For internal use. Locks the image provider for the purpose of rendering.</summary>
+      <param name="renderRequest">The <see cref="T:Lumia.Imaging.RenderRequest" /> with which to lock.</param>
+      <returns>True if the <paramref name="renderRequest" /> owns the lock. False if the lock was already taken.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.Lumia#Imaging#Custom#ICustomImageSource#LoadAsync">
+      <summary>Load/prepare for rendering.</summary>
+      <returns>An async action representing the load operation.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.OnLoadAsync">
+      <summary>Called when the image source should load and prepare for rendering.</summary>
+      <returns>An async action representing the work.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.OnProcess(Lumia.Imaging.Custom.PixelRegion)">
+      <summary>Called when the image source is asked to generate a rectangular area of the image.</summary>
+      <param name="pixelRegion">The region of pixels to process.</param>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.CustomImageSourceBase.PreloadAsync">
+      <summary>Perform expensive loading operations, typically involving I/O, needed to render or get info from this image provider.</summary>
+      <returns>An async action that completes when the loading is done.</returns>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.CustomImageSourceBase.Size">
+      <summary>The inherent size of the image.</summary>
+    </member>
+    <member name="T:Lumia.Imaging.Custom.EffectGroupBase">
+      <summary>Base class for effect groups.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.#ctor">
+      <summary>Initializes a new instance of the <see cref="T:Lumia.Imaging.Custom.EffectGroupBase" /> class.</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.#ctor(Lumia.Imaging.IImageProvider)">
+      <summary>Initializes a new instance of the <see cref="T:Lumia.Imaging.Custom.EffectGroupBase" /> class with a source <see cref="T:Lumia.Imaging.IImageProvider" /> specified.</summary>
+      <param name="source">The source <see cref="T:Lumia.Imaging.IImageProvider" /> used to initialize the new <see cref="T:Lumia.Imaging.Custom.EffectGroupBase" />.</param>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.Dispose">
+      <summary>
+            Dispose the object.
+            </summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.Dispose(System.Boolean)">
+      <summary>Called by the <see cref="M:Lumia.Imaging.Custom.EffectGroupBase.Dispose" /> method.</summary>
+      <param name="disposing">True if this is a call to <see cref="M:Lumia.Imaging.Custom.EffectGroupBase.Dispose" />, or false if called by the finalizer.</param>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.DisposeAndSetNull``1(``0@)">
+      <summary>Disposes the passed field value if it implements <see cref="T:System.IDisposable" />. Also sets the field to null.</summary>
+      <param name="field">The field to dispose.</param>
+      <typeparam name="T">Type of the <paramref name="field" /> parameter.</typeparam>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.Finalize">
+      <summary>
+            Finalizer.
+            </summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.LoadAsync">
+      <summary>Lets the effect group do asynchronous preparation work before being rendered.</summary>
+      <returns>An asynchronous action that completes when the effect group preparation work is done.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.Lumia#Imaging#Custom#IEffectGroup#PrepareGroup(Lumia.Imaging.IImageProvider)">
+      <summary>
+Prepare the internal structure of the effect group prior to loading and rendering.
+</summary>
+      <param name="groupSource">
+The source <see cref="T:Lumia.Imaging.IImageProvider" />.
+</param>
+      <returns>
+The result <see cref="T:Lumia.Imaging.IImageProvider" /> of the effect group. 
+Note that only a weak reference is made by the caller. 
+The implementor of this interface should hold a strong reference.
+</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.Lumia#Imaging#IImageProvider#GetBitmapAsync(Lumia.Imaging.Bitmap,Lumia.Imaging.OutputOption)">
+      <summary>Creates a <see cref="T:Lumia.Imaging.Bitmap" /> from the contents of the image provider.</summary>
+      <param name="bitmap">An input <see cref="T:Lumia.Imaging.Bitmap" /> to fill. If null, a <see cref="T:Lumia.Imaging.Bitmap" /> will be created and returned.</param>
+      <param name="outputOption">Specifies how to adjust if the source image has different aspect ratio from the <see cref="T:Lumia.Imaging.Bitmap" /> passed into this method.</param>
+      <returns>An async result with the <see cref="T:Lumia.Imaging.Bitmap" />.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.Lumia#Imaging#IImageProvider#GetInfoAsync">
+      <summary>Asynchronously gets information about this image provider.</summary>
+      <returns>An async result with a <see cref="T:Lumia.Imaging.ImageProviderInfo" /> object containing information such as image size.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.Lumia#Imaging#IImageProvider#Lock(Lumia.Imaging.RenderRequest)">
+      <summary>For internal use. Locks the image provider for the purpose of rendering.</summary>
+      <param name="renderRequest">The <see cref="T:Lumia.Imaging.RenderRequest" /> with which to lock.</param>
+      <returns>True if the <paramref name="renderRequest" /> owns the lock. False if the lock was already taken.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.Lumia#Imaging#IImageProvider#PreloadAsync">
+      <summary>Perform expensive loading operations, typically involving I/O, needed to render or get info from this image provider.</summary>
+      <returns>An async action that completes when the loading is done.</returns>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.PrepareGroup(Lumia.Imaging.IImageProvider)">
+      <summary>Prepares the internal structure of the effect group. Implementors should ensure that members are configured correctly in preparation for rendering.</summary>
+      <param name="groupSource">An <see cref="T:Lumia.Imaging.IImageProvider" /> to use as the source for the effect group.</param>
+      <returns>The resulting <see cref="T:Lumia.Imaging.IImageProvider" /> of the effect group.</returns>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.EffectGroupBase.Source">
+      <summary>
+The <see cref="T:Lumia.Imaging.IImageProvider" /> that will be used as source.
+</summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.EffectGroupBase.ThrowIfDisposed">
+      <summary>
+            Throw an <see cref="T:System.ObjectDisposedException" /> if this object has been disposed.
+            </summary>
+    </member>
+    <member name="T:Lumia.Imaging.Custom.PixelRegion">
+      <summary>Represents a region of pixels within a pixel array and contains metrics and helper methods for traversing them.</summary>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.PixelRegion.Bounds">
+      <summary>
+            The bounds of the region within the image to be processed.
+            </summary>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.PixelRegion.ForEachRow(Lumia.Imaging.Custom.PixelRegion,Lumia.Imaging.Custom.PixelRegion.ProcessRowWithSourceAction)">
+      <summary>Runs the specified action on each row within the <see cref="P:Lumia.Imaging.Custom.PixelRegion.Bounds" />. This method also tracks a source <see cref="T:Lumia.Imaging.Custom.PixelRegion" /> having margins that will be read from.</summary>
+      <param name="sourcePixelRegion">A source <see cref="T:Lumia.Imaging.Custom.PixelRegion" /> that will be read from. It is assumed to have non-zero margins.</param>
+      <param name="rowAction">The <see cref="T:Lumia.Imaging.Custom.PixelRegion.ProcessRowAction" /> that is called to process one row of pixels.</param>
+    </member>
+    <member name="M:Lumia.Imaging.Custom.PixelRegion.ForEachRow(Lumia.Imaging.Custom.PixelRegion.ProcessRowAction)">
+      <summary>Run the specified action on each row within the <see cref="P:Lumia.Imaging.Custom.PixelRegion.Bounds" />.</summary>
+      <param name="rowAction">The <see cref="T:Lumia.Imaging.Custom.PixelRegion.ProcessRowAction" /> that is called to process one row of pixels.</param>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.PixelRegion.ImagePixels">
+      <summary>The array of pixels that make up the image.</summary>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.PixelRegion.ImageSize">
+      <summary>The size of the image in <see cref="P:Lumia.Imaging.Custom.PixelRegion.ImagePixels" />.</summary>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.PixelRegion.Pitch">
+      <summary>The distance between rows in <see cref="P:Lumia.Imaging.Custom.PixelRegion.ImagePixels" />.</summary>
+    </member>
+    <member name="P:Lumia.Imaging.Custom.PixelRegion.StartIndex">
+      <summary>The index within <see cref="P:Lumia.Imaging.Custom.PixelRegion.ImagePixels" /> of the first pixel to process, based on <see cref="P:Lumia.Imaging.Custom.PixelRegion.Bounds" />.</summary>
+    </member>
+    <member name="T:Lumia.Imaging.Custom.PixelRegion.ProcessRowAction">
+      <summary>An action that can be used with <see cref="M:Lumia.Imaging.Custom.PixelRegion.ForEachRow(Lumia.Imaging.Custom.PixelRegion.ProcessRowAction)" />.</summary>
+      <param name="startIndex">The index within <see cref="P:Lumia.Imaging.Custom.PixelRegion.ImagePixels" /> of the first pixel to process in the current row.</param>
+      <param name="width">The number of pixels to process in the current row.</param>
+      <param name="startPosition">For reference, this is the position of the first pixel in this row, within the entire image.</param>
+    </member>
+    <member name="T:Lumia.Imaging.Custom.PixelRegion.ProcessRowWithSourceAction">
+      <summary>An action that can be used with <see cref="M:Lumia.Imaging.Custom.PixelRegion.ForEachRow(Lumia.Imaging.Custom.PixelRegion,Lumia.Imaging.Custom.PixelRegion.ProcessRowWithSourceAction)" />, where a source <see cref="T:Lumia.Imaging.Custom.PixelRegion" /> with non-zero margins is taken into account.</summary>
+      <param name="sourceStartIndex">The index within the source <see cref="P:Lumia.Imaging.Custom.PixelRegion.ImagePixels" /> of the first pixel to process in the current row.</param>
+      <param name="targetStartIndex">The index within <see cref="P:Lumia.Imaging.Custom.PixelRegion.ImagePixels" /> of the first pixel to process in the current row.</param>
+      <param name="width">The number of target pixels to write in the current row.</param>
+      <param name="startPosition">The position of the first pixel in the current row, within the entire image. Margins are not included.</param>
+    </member>
+    <member name="T:Lumia.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions">
+      <summary>
+            Provides extension methods for operating on Windows Runtime buffers (<see cref="T:Windows.Storage.Streams.IBuffer" />). 
+            </summary>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Int32[])">
+      <summary>
+            Wraps an array of <see cref="T:System.Int32" /> in an <see cref="T:Windows.Storage.Streams.IBuffer" />.
+            </summary>
+      <param name="data">The array to wrap.</param>
+      <returns>An <see cref="T:Windows.Storage.Streams.IBuffer" /> representing the data.</returns>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Int32[],System.Int32,System.Int32)">
+      <summary>
+            Wraps an array of <see cref="T:System.Int32" /> in an <see cref="T:Windows.Storage.Streams.IBuffer" />.
+            </summary>
+      <param name="data">The array to wrap.</param>
+      <param name="index">The starting index of a range to wrap within the array. The default value is 0.</param>
+      <param name="length">The length of a range to wrap within the array. The default value is 0, which implies the remainder of the array.</param>
+      <returns>An <see cref="T:Windows.Storage.Streams.IBuffer" /> representing the data.</returns>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.UInt32[])">
+      <summary>
+            Wraps an array of <see cref="T:System.UInt32" /> in an <see cref="T:Windows.Storage.Streams.IBuffer" />.
+            </summary>
+      <param name="data">The array to wrap.</param>
+      <returns>An <see cref="T:Windows.Storage.Streams.IBuffer" /> representing the data.</returns>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.UInt32[],System.Int32,System.Int32)">
+      <summary>
+            Wraps an array of <see cref="T:System.UInt32" /> in an <see cref="T:Windows.Storage.Streams.IBuffer" />.
+            </summary>
+      <param name="data">The array to wrap.</param>
+      <param name="index">The starting index of a range to wrap within the array. The default value is 0.</param>
+      <param name="length">The length of a range to wrap within the array. The default value is 0, which implies the remainder of the array.</param>
+      <returns>An <see cref="T:Windows.Storage.Streams.IBuffer" /> representing the data.</returns>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBufferWithRelease(System.Byte[])">
+      <summary>
+            Wraps an array of <see cref="T:System.Byte" /> in an <see cref="T:Windows.Storage.Streams.IBuffer" />.
+            </summary>
+      <param name="data">The array to wrap.</param>
+      <returns>An <see cref="T:Windows.Storage.Streams.IBuffer" /> representing the data.</returns>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBufferWithRelease(System.Byte[],System.Int32,System.Int32)">
+      <summary>
+            Wraps an array of <see cref="T:System.Byte" /> in an <see cref="T:Windows.Storage.Streams.IBuffer" />.
+            </summary>
+      <param name="data">The array to wrap.</param>
+      <param name="index">The starting index of a range to wrap within the array. The value is 0 by default.</param>
+      <param name="length">The length of a range to wrap within the array. The value is 0 by default, which implies the remainder of the array, or (data.Length - index).</param>
+      <returns>An <see cref="T:Windows.Storage.Streams.IBuffer" /> representing the data.</returns>
+    </member>
+    <member name="T:Lumia.InteropServices.WindowsRuntime.WriteableBitmapExtensions">
+      <summary>
+            Extension methods for <see cref="T:System.Windows.Media.Imaging.WriteableBitmap" /></summary>
+    </member>
+    <member name="M:Lumia.InteropServices.WindowsRuntime.WriteableBitmapExtensions.AsBitmap(System.Windows.Media.Imaging.WriteableBitmap,Windows.Foundation.Rect)">
+      <summary>
+            Creates an <see cref="T:Lumia.Imaging.IReadableBitmap" /> wrapping the pixel data of a <see cref="T:System.Windows.Media.Imaging.WriteableBitmap" />, without copying it.
+            </summary>
+      <param name="writeableBitmap">The <see cref="T:System.Windows.Media.Imaging.WriteableBitmap" />.</param>
+      <param name="cropArea">The area of the <see cref="T:System.Windows.Media.Imaging.WriteableBitmap" /> to wrap as a <see cref="T:Lumia.Imaging.Bitmap" />. By default the entire <see cref="T:System.Windows.Media.Imaging.WriteableBitmap" /> is used.</param>
+      <returns>A <see cref="T:Lumia.Imaging.Bitmap" /> wrapping the pixel data of <paramref name="writeableBitmap" />.</returns>
+    </member>
+  </members>
+</doc>
