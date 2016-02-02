@@ -1,0 +1,50 @@
+[data-icon-weather]:before {
+	font-family: 'MeteoconsRegular';
+	content: attr(data-icon-weather);
+}
+
+.location{
+    max-width: 100%;    
+    width: 100%;
+    
+}
+
+.row{
+    display: flex;
+    flex-direction: row;
+}
+
+.row .col{
+    flex: 1;    
+}
+
+.temperature,.celsius{
+    font-size: 70px;
+    
+}
+
+
+
+.wheatherIcon{
+    font-size: 90px;
+    text-decoration: none;
+    text-align: center;
+}
+
+.iconDesc{
+    font-size: 30px;
+    text-align: center;
+}
+
+.hide{
+    display:none;
+}
+
+h2{
+    margin-bottom: 5px;
+
+}
+
+.ui-bar-b{
+    background-color:#213e7f !important;
+}
