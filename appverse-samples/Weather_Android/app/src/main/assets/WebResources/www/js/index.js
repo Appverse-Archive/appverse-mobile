@@ -76,10 +76,10 @@ function jqueryInit(){
 
 			Appverse.System.DismissSplashScreen();
 			
-			$('#longitude').html("Calculating...");
-			$('#latitude').html("Calculating...");
-			$('#time').html(elapsed()+'s');
-			$('#home').scrollview();
+			//$('#longitude').html("Calculating...");
+			//$('#latitude').html("Calculating...");
+			//$('#time').html(elapsed()+'s');
+			
 
 		}
 
