@@ -1,6 +1,6 @@
 # Appverse Application Samples
 
-# **THIS SECTION IS BEING UPDATED, NOT FINISHED YET**
+# **THIS SECTION IS BEING UPDATED, PENDING iOS SAMPLE**
 
 This module contains application samples build using the Appverse platform.
 
@@ -15,7 +15,7 @@ This software is licensed under APL 2.0 <http://appverse.org/legal/appverse-lice
 
 * [Appverse HTML5 Application](#appverseHTML5_application)
 * [Monotouch C# iOS Application](#monotouch_application)
-* [Eclipse Android Application](#eclipse_application)
+* [Android Studio Application](#android_application)
 * [Android Known Issues](#android_known_issues)
 
 ## What you need to configure per application?
@@ -33,7 +33,7 @@ The initial sample application using Appverse HTML5
 
 
 <a name="monotouch_application"/>
-### Monotouch C# iOS Application 
+## Monotouch C# iOS Application 
 
 **How to embed your Web resources**
 * In order to add the web resources for an application, you first need to add them to the project in MonoDevelop. To accomplish this perform the following steps:
@@ -121,19 +121,16 @@ In order to properly sign the application for device deployment, you should prov
 * **Provisioning profile** (optional): the provisioning profile file to be embedded inside the application bundle. This file usually contains information about the allowed devices that could install the application and which certificates could sign it. It is used for *Over the Air* device deployments.
 * Custom **entitlements** and **resource rules**.
 
-<a name="eclipse_application"/>
-### Eclipse Android Application 
+<a name="android_application"/>
+## Android Studio Application 
 
-Before you start with your first Android app as an Eclipse project, you will need to check that you have your development environment set up.
+Before you start with your first Android app, you will need to check that you have your development environment set up.
 You will need to install the following:
 
-1. Download the Android SDK: [http://developer.android.com/sdk/index.html]
-2. Install the ADT Plugin for Eclipse. See instructions here: [http://developer.android.com/tools/sdk/eclipse-adt.html] and [http://developer.android.com/sdk/installing/installing-adt.html]
-3. Download the latest SDK Tools and platforms using the SDK Manager.
+1. Install the Android Studio. See instructions here: [http://developer.android.com/intl/es/sdk/index.html]
+2. Download the latest SDK Tools and platforms using the SDK Manager.
 	* API level 23 is required as it is the Appverse Android default target.
 	
-* **Note**: Once the project as been loaded into Eclipse, go to the project's **Java Build Path --> Order and Export**, select (checkbox should be checked) Android Private Libraries and modify the order by sending it up, then down. This is made to prevent and error in which Eclipse does not reload the libraries.
-
 **System requirements**:
 
 *Operating Systems*
@@ -144,23 +141,21 @@ You will need to install the following:
 	* On Ubuntu Linux, version 8.04 or later is required.
 	* 64-bit distributions must be capable of running 32-bit applications.
 
-*Eclipse IDE*
-* Eclipse 3.6.2 (Helios) or greater
-	> Note: Eclipse 3.5 (Galileo) is no longer supported with the latest version of ADT.
-* Eclipse JDT plugin (included in most Eclipse IDE packages)
-* JDK 6 (JRE alone is not sufficient)
-* Android Development Tools plugin (recommended)
-* Not compatible with GNU Compiler for Java (gcj)
+
+* JDK 7 (JRE alone is not sufficient)
 
 
 **How to embed your Web resources**:
-* In order to add the web resources for an application, you just need to add them to the _"assets"_ Eclipse project folder. They will be included automatically to the final native application on build time. 
+* In order to add the web resources for an application, you just need to add them to the _"assets"_ project folder (Weather_Android\app\src\main\assets). They will be included automatically to the final native application on build time. 
 * The folder structure is important:
 	* You should place the application configuration files in the _"app"_ folder under the assets folder.
 	* You should place your application web resources under the _"WebResources"_ >> _"www"_  folders; under the assets folder.
 
+**How to load your app**
+* Once you have your web HTML working just load the root of the project in Android Studio and run the solucion nvigating through the gradle menu to the assambleDebug task and it will build your apk
+
 **Appverse and Third-party Libraries**:
-* The **Android dependencies** in an Eclipse project are automatically included if you place the corresponding JAR libraries in the  _"libs"_ Eclipse project folder.
+* The **Android dependencies** in this Android project are automatically included if you place the corresponding JAR libraries in the  _"libs"_  project folder.
 
 **General Settings**
 
@@ -192,6 +187,8 @@ You will need to install the following:
 	*  the *launch_lanscape.png* 1024x748 pixels image at the *res/drawable* folder; for the smartphone landscape launch mode.
 	*  the *launch_portrait_tablet.png* 800x1232 pixels image at the *res/drawable* folder; for the tablet portrait launch mode.
 	*  the *launch_lansacape_tablet.png* 1280x752 pixels image at the *res/drawable* folder; for the tablet landscape launch mode.
+
+
 
 **Android Emulator behind a Proxy**
 
