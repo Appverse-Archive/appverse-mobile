@@ -35,3 +35,4 @@ appverse-platform-android/projects/Eclipse/dist/appverse-platform-android.jar
 .svn
 appverse-samples/AppverseHTML5/node_modules/
 appverse-samples/AppverseHTML5/app/bower_components/
+build/

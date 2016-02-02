@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="lib" path="lib/android.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="lib/SpongyCastle_147.jar"/>
-	<classpathentry kind="lib" path="lib/gcm.jar"/>
-	<classpathentry kind="lib" path="lib/httpclient-cache-4.3.5.jar"/>
-	<classpathentry kind="lib" path="lib/httpcore-4.3.2.jar"/>
-	<classpathentry kind="lib" path="lib/httpmime-4.3.5.jar"/>
-	<classpathentry kind="lib" path="lib/httpclient-4.3.5.jar"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="lib" path="lib/prov-1.52.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/core-1.52.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/pkix-1.52.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/pg-1.52.0.0.jar"/>
 	<classpathentry kind="lib" path="/UnityCoreAndroid/bin/unitycoreandroid.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.3.5.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-cache-4.3.5.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/httpmime-4.3.5.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
