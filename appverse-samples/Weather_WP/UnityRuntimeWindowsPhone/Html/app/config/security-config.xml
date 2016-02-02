@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<security-config>
+
+	<!--
+	List here the keys of the security keychain items that must be protected by passcode.
+	ONLY FOR iOS devices (available since iOS 8 and for iPhone 5s and above devices)
+
+	This is a expanded feature in the Security Keychain that includes the use of ACLs.
+
+	A device with Touch ID enabled will first request the user to enter the fingerprint
+	in order to get the value of any protected key, or passcode (as a second choice)
+
+	This protection implies:
+		- access to these security keychain items is limited to this device
+		and requires a passcode to be set
+		- and the data is only available if the device is currently unlocked.
+		- if the user removes the passcode on the device, these items are automatically removed.
+		- if a request to the keychain returns multiple matching items,
+		authentication may be required (if any of hte items are passcode protected)
+	-->
+		<keychain-items-with-passcode-protection>
+
+			<key>mykey2</key>
+			<key>mykey3</key>
+
+		</keychain-items-with-passcode-protection>
+
+</security-config>

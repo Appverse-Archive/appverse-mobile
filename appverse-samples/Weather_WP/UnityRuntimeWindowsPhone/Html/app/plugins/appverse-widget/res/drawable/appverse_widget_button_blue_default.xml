@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <stroke android:width="0dp" />
+
+    <corners android:radius="5dp" />
+
+    <padding
+        android:bottom="0dp"
+        android:left="10dp"
+        android:right="10dp"
+        android:top="0dp" />
+
+    <solid android:color="@color/appverse_widget_blue_dark" />
+
+</shape>

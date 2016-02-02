@@ -118,7 +118,7 @@
       <HintPath>..\..\appverse-runtime-wp\packages\Newtonsoft.Json.8.0.1-beta3\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NotificationsExtensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c936aba0ac6438e9, processorArchitecture=MSIL">
-      <HintPath>..\..\UnityRuntimeWindowsPhone\packages\NotificationsExtensions.Portable.1.0.7\lib\portable-net45+wpa8+win8+xamarin.ios+monoandroid+monotouch\NotificationsExtensions.dll</HintPath>
+      <HintPath>..\packages\NotificationsExtensions.Portable.1.0.7\lib\dotnet\NotificationsExtensions.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Collections.Immutable">

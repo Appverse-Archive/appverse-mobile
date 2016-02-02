@@ -1,0 +1,18 @@
+<resources>
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="appverse_widget_activity_horizontal_margin">16dp</dimen>
+    <dimen name="appverse_widget_activity_vertical_margin">16dp</dimen>
+    
+    <!-- WIDGET CONFIG - Margins Definitions
+     -->
+    <dimen name="appverse_widget_widget_margin">8dp</dimen>
+    <dimen name="appverse_widget_margin_10">10dp</dimen>
+    
+    <dimen name="appverse_widget_min_dim_logo">40dp</dimen>
+    <dimen name="appverse_widget_min_button_logo">33dp</dimen>
+    <dimen name="appverse_widget_margin">8dp</dimen>
+    
+    
+
+</resources>

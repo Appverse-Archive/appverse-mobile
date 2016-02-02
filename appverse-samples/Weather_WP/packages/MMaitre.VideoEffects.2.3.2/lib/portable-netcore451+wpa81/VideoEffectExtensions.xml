@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VideoEffectExtensions</name>
+    </assembly>
+    <members>
+        <member name="T:VideoEffectExtensions.IBufferByteAccess">
+            <summary>
+            COM interop interface giving an unsafe pointer to the buffer data
+            </summary>
+        </member>
+        <member name="P:VideoEffectExtensions.IBufferByteAccess.Buffer">
+            <summary>
+            Unsafe pointer to the buffer data
+            </summary>
+        </member>
+        <member name="T:VideoEffectExtensions.BufferExtensions">
+            <summary>
+            Extension methods on IBuffer
+            </summary>
+        </member>
+        <member name="M:VideoEffectExtensions.BufferExtensions.GetData(Windows.Storage.Streams.IBuffer)">
+            <summary>
+            Returns a pointer to the data contained in the IBuffer.
+            </summary>
+            <remarks>
+            The pointer must not be used after the buffer has been destroyed. The pointer
+            alone does not keep the buffer alive: the code must keep an explicit reference to IBuffer.
+            </remarks>
+        </member>
+    </members>
+</doc>
