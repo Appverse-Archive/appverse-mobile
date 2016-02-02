@@ -1,0 +1,53 @@
+﻿<Page
+    x:Class="UnityRuntimeWindowsPhone.AuxBrowserPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UnityRuntimeWindowsPhone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{StaticResource ThemeBrush}">
+    <Page.Transitions>
+        <TransitionCollection>
+            <NavigationThemeTransition>
+                <NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                    <SlideNavigationTransitionInfo/>
+                </NavigationThemeTransition.DefaultNavigationTransitionInfo>
+            </NavigationThemeTransition>
+        </TransitionCollection>
+    </Page.Transitions>
+
+    <Page.Resources>
+        <Storyboard x:Name="AuxGridFadeOutStoryBoard" x:Key="AuxGridFadeOutStoryBoard" Completed="AuxGridFadeOutStoryBoard_Completed">
+            <DoubleAnimation Storyboard.TargetName="AuxBrowserGrid" Storyboard.TargetProperty="Opacity" From="1" To="0" Duration="0:0:.2"></DoubleAnimation>
+        </Storyboard>
+        <Storyboard x:Name="AuxGridFadeInStoryBoard" x:Key="AuxGridFadeInStoryBoard" Completed="AuxGridFadeInStoryBoard_OnCompleted">
+            <DoubleAnimation Storyboard.TargetName="AuxBrowserGrid" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:.2"></DoubleAnimation>
+        </Storyboard>
+    </Page.Resources>
+
+    <Grid x:Name="AuxBrowserGrid" Background="{StaticResource ThemeBrush}" Opacity="0" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="AuxBrowserTitleBar" Text="TitleBar" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{ThemeResource TitleTextBlockStyle}" Margin="0" Grid.Row="0"/>
+        <WebView x:Name="WebViewAux" NavigationStarting="WebViewAux_NavigationStarting" NavigationCompleted="WebViewAux_NavigationCompleted" Grid.Row="1"/>
+    </Grid>
+    <Page.BottomAppBar>
+        <CommandBar x:Name="Appbar" Background="{StaticResource ThemeBrush}" Opacity="0">
+            <CommandBar.PrimaryCommands>
+                <AppBarButton
+                    x:Name="BackAppBarButton"
+                    x:Uid="BackAppBarButton"
+                    Click="BackAppBarButton_Click"
+                    Icon="Back"/>
+                <AppBarButton
+                    x:Name="HomeAppBarButton1"
+                    x:Uid="HomeAppBarButton1"
+                    Click="HomeAppBarButton1_Click"
+                    Icon="Home"/>
+            </CommandBar.PrimaryCommands>
+        </CommandBar>
+    </Page.BottomAppBar>
+</Page>

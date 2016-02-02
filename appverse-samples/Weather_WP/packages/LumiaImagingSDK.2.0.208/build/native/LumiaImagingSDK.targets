@@ -1,0 +1,51 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Target Name="CheckAnyCPU" Condition="('$(Platform)' != 'x64' AND '$(Platform)' != 'x86' AND '$(Platform)' != 'ARM')" BeforeTargets="BeforeBuild">
+		<Error Text="Lumia Imaging SDK does not support the $(Platform) target platform. Please consult http://developer.nokia.com/Resources/Library/Lumia/#!nokia-imaging-sdk/adding-libraries-to-the-project.html;#toc_InstallingtheSDKandincludingthelibrariestoaprojectusingNuGet " />
+	</Target>
+	
+	<PropertyGroup Condition="'$(Platform)|$(PlatformToolset)'=='Win32|v110_wp80'" Label="x86 and WinPRT 8.0">
+		<MappedPlatform>x86</MappedPlatform>
+		<MappedPlatformToolset>wp8</MappedPlatformToolset>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Platform)|$(PlatformToolset)'=='ARM|v110_wp80'" Label="ARM and WinPRT 8.0">
+		<MappedPlatform>ARM</MappedPlatform>
+		<MappedPlatformToolset>wp8</MappedPlatformToolset>
+	</PropertyGroup>
+	
+	<PropertyGroup Condition="'$(Platform)|$(PlatformToolset)'=='Win32|v120_wp81'" Label="x86 and WinPRT 8.1">
+		<MappedPlatform>x86</MappedPlatform>
+		<MappedPlatformToolset>wpa81</MappedPlatformToolset>	
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Platform)|$(PlatformToolset)'=='ARM|v120_wp81'" Label="ARM and WinPRT 8.1">
+		<MappedPlatform>ARM</MappedPlatform>		
+		<MappedPlatformToolset>wpa81</MappedPlatformToolset>	
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Platform)|$(PlatformToolset)'=='ARM|v120'" Label="ARM and WinRT 8.1">
+		<MappedPlatform>ARM</MappedPlatform>
+		<MappedPlatformToolset>win81</MappedPlatformToolset>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Platform)|$(PlatformToolset)'=='Win32|v120'" Label="x86 and WinRT 8.1">
+		<MappedPlatform>x86</MappedPlatform>
+		<MappedPlatformToolset>win81</MappedPlatformToolset>
+	</PropertyGroup>
+ 	<PropertyGroup Condition="'$(Platform)|$(PlatformToolset)'=='x64|v120'" Label="x64 and WinRT 8.1">
+		<MappedPlatform>x64</MappedPlatform>
+		<MappedPlatformToolset>win81</MappedPlatformToolset>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="$(MSBuildThisFileDirectory)\..\..\content\$(MappedPlatformToolset)\Help\Lumia Imaging SDK.chm" />
+	</ItemGroup>
+
+	<ItemGroup>
+	    <Reference Include="Lumia.Imaging">
+	      <HintPath>$(MSBuildThisFileDirectory)\..\..\lib\$(MappedPlatformToolset)\$(MappedPlatform)\Lumia.Imaging.winmd</HintPath>
+	      <IsWinMDFile>true</IsWinMDFile>
+	    </Reference>
+	    <Reference Include="Lumia.InteropServices.WindowsRuntime">
+	      <HintPath>$(MSBuildThisFileDirectory)\..\..\lib\$(MappedPlatformToolset)\$(MappedPlatform)\Lumia.InteropServices.WindowsRuntime.winmd</HintPath>
+	      <IsWinMDFile>true</IsWinMDFile>
+	    </Reference>
+	</ItemGroup>
+</Project>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <io-services-config>
+
+        <services>
+
+            <service name="iWorkspaceSrv" type="XMLRPC_JSON">
+                <end-point host="https://workspace.gft.com" path="/iworkspacesrv/jsonrpc" scheme="/iworkspacesrv/scheme" fingerprint="123123,123123,13 62 F4 6E A6 17 36 4B FC 61 0A 71 75 62 FA 8E F5 E9 97 16" />
+            </service>
+
+            <service name="iWorkspaceSrv" type="XMLRPC_XML">
+                <end-point host="https://workspace.gft.com" path="/iworkspacesrv/xmlrpc" scheme="/iworkspacesrv/scheme" />
+            </service>
+
+            <service name="appverseBank" type="XMLRPC_JSON">
+                <end-point host="https://appversebank.gftlabs.com/org-appverse-app-banking" path="/rest/login/es/prelogin" fingerprint="06 a8 df df 9f 68 c9 e6 b2 63 a0 2c 28 d7 0a 78 76 3b 98 1a" />
+            </service>
+
+            <service name="opencpu" type="XMLRPC_JSON">
+                <end-point host="https://public.opencpu.org" path="/ocpu/library/" fingerprint="5b e6 31 ab 96 90 87 c7 53 9f 73 0c d5 bc 2e a1 a0 7d ed 6d" public-key="30 82 01 0a 02 82 01 01 00 bf 81 60 51 be 18 f7 f2 19 f5 32 1b 51 ee 5c f9 ae 7f c4 d0 80 08 b5 53 b7 59 e3 15 7d 31 be 47 e9 2c ff 28 4c 7f 39 a5 d2 f9 77 5f 5b 3d 52 86 fd 2b 5a 7e bd 36 79 c7 6a ee 1c 6d d7 30 40 e5 9f 77 4c 2e b3 25 f4 ba df d2 c0 9f 34 f5 60 14 e3 85 5a 40 4f d5 28 50 89 c5 53 8e d9 54 cc 69 89 44 e6 00 05 29 08 e3 44 3f 88 3c d7 2d c1 9b 09 40 1d 03 06 7b 25 61 bc 45 e1 35 5e c3 a9 5b f8 e4 f9 04 74 96 87 77 06 d6 f8 fd d1 8e dc 5f ce ff 90 68 33 92 81 9f b4 c5 d4 2b 76 0c 9a 54 11 e5 ed 8e d3 02 86 5a 9c 9b 6c 3f 75 1e 5e 6e 3c 2d f7 b6 ac 55 0d fa 2c c6 60 fc 4c 7c 57 55 ab e8 9f 96 b9 ae 66 28 20 f0 48 90 17 29 1b 89 cb 75 c8 af c4 d9 e8 3d fd 8f 20 57 8a af 7e 9a 00 09 a0 47 36 b2 81 3a 14 cf fd d9 c9 82 67 a7 28 83 d7 b6 44 d5 8a 17 24 73 07 21 04 d5 62 3b 02 03 01 00 01" />
+            </service>
+
+            <service name="test_SIA_server" type="XMLRPC_JSON">
+                <end-point host="https://app.vaservices.eu" path="/cariparma-p2pMobileServer" fingerprint="54 3d a7 d4 26 bf 6e f5 95 bb f1 c9 1e 47 ea 8b 51 79 9d ce" public-key="30 82 01 0a 02 82 01 01 00 d8 aa b5 b0 d1 fc bf 3e 86 63 75 f2 37 74 a3 57 73 c4 df 70 c1 c6 af be 4d db 81 2b af 34 62 7a 55 00 47 f8 e2 ec af 6f 0c fc 5b 23 84 e9 56 be f2 b0 b8 b2 98 5b 08 33 8e 1b a5 f2 ab d0 2b 00 0a 9c c1 1a 28 29 66 96 4c e9 6e d2 b4 00 61 b1 4a de 3b 9c 1b 0e 25 2a 5a ff 4a c7 e8 35 a8 fa cc 74 cc c7 b2 99 72 5b 20 a0 b6 1a c8 aa 92 9b ea 3f 5e 16 c1 4b 52 08 a2 08 c0 9f c4 d7 41 4f 80 99 ec 50 3c da b8 ca ab a5 9e d3 1a 4c ad a8 a1 32 03 7b 13 c4 cb c9 99 de ec 55 40 55 70 cb 41 b1 17 c6 9b 97 1f ce 56 d1 0b fd 42 2b 03 f4 0a 8a 3e 3d 08 56 59 9d 0e c5 2c 2d 3f ff 4c 45 1e 17 1c e0 be bc 17 6c 59 95 f1 5b 22 eb 02 60 93 31 5a 91 b1 01 42 5b 2a bb b7 d2 55 0c f3 24 2c b7 f4 87 d7 e2 4e ec 51 aa cf c6 65 04 02 95 65 9e 45 25 9b c1 a5 c0 51 5e 11 0c c9 11 98 5b 02 03 01 00 01"/>
+            </service>
+
+            <service name="updateModule">
+                <end-point host="http://builder.gft.com" path="/appstore/apploader-test" fingerprint="108BF76B3436AB2AD79468792CF6797497682D98" />
+            </service>
+
+            <service name="fidor" type="XMLRPC_JSON" req-method="GET">
+                <end-point host="https://aps.fidor.de" path="/mobile/checkpassword" />
+            </service>
+
+            <service name="mockServerMultipart" type="MULTIPART_FORM_DATA">
+                <end-point host="https://builder.gft.com" path="/mockservice/multipart" />
+            </service>
+			
+			<service name="p2pServer_DEV" type="XMLRPC_JSON">
+			            <end-point host="http://156.54.155.74:8080" path="/sia-p2bMobileServer" />
+			        </service>
+			        <service name="p2pServer_SIT" type="XMLRPC_JSON">
+			            <end-point host="https://app-te.vaservices.eu:446" path="/sit-sia-p2bMobileServer" fingerprint="32 74 45 6b 08 94 5d 41 95 93 5c c0 20 90 d5 eb 47 41 e6 a2" />
+			        </service>
+
+			        <service name="p2pServer_UAT" type="XMLRPC_JSON">
+			            <end-point host="https://app-te.vaservices.eu" path="/unicredit-p2pMobileServer" fingerprint="32 74 45 6b 08 94 5d 41 95 93 5c c0 20 90 d5 eb 47 41 e6 a2" />
+			        </service>
+
+			        <service name="p2pServer_PROD" type="XMLRPC_JSON">
+			            <end-point host="https://app.vaservices.eu" path="/unicredit-p2pMobileServer" fingerprint="54 3d a7 d4 26 bf 6e f5 95 bb f1 c9 1e 47 ea 8b 51 79 9d ce" />
+			        </service>
+
+			        <!-- Service for push notification -->
+
+			        <service name="pushServer" type="REST_XML">
+			            <end-point host="https://ubipush-coll.ubiquity.it" path="/UbiPush_demo" fingerprint="9 d7 3c ef 96 e1 7c 5f ad 19 b8 a8 98 48 39 be 9f c9 4d b5"/>
+			        </service>
+
+
+        </services>
+
+
+    </io-services-config>
+	<!--,MIIBCgKCAQEAv4FgUb4Y9/IZ9TIbUe5c+a5/xNCACLVTt1njFX0xvkfpLP8oTH85pdL5d19bPVKG/Stafr02ecdq7hxt1zBA5Z93TC6zJfS639LAnzT1YBTjhVpAT9UoUInFU47ZVMxpiUTmAAUpCONEP4g81y3BmwlAHQMGeyVhvEXhNV7DqVv45PkEdJaHdwbW+P3Rjtxfzv+QaDOSgZ+0xdQrdgyaVBHl7Y7TAoZanJtsP3UeXm48Lfe2rFUN+izGYPxMfFdVq+iflrmuZigg8EiQFykbict1yK/E2eg9/Y8gV4qvfpoACaBHNrKBOhTP/dnJgmenKIPXtkTVihckcwchBNViOwIDAQAB-->
