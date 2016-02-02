@@ -1,0 +1,35 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Target Name="CheckAnyCPU" Condition="('$(Platform)' != 'x86') AND ('$(Platform)' != 'ARM')" BeforeTargets="BeforeBuild">
+		<Error Text="Lumia Imaging SDK does not support the $(Platform) target platform. Please consult http://developer.nokia.com/Resources/Library/Lumia/#!nokia-imaging-sdk/adding-libraries-to-the-project.html;#toc_InstallingtheSDKandincludingthelibrariestoaprojectusingNuGet " />
+	</Target>
+
+	<ItemGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' Or '$(MSBuildProjectExtension)' == '.vbproj' ">
+		<Reference Include="Lumia.Imaging.Managed">
+			<HintPath>$(MSBuildThisFileDirectory)\..\..\lib\wpa81-hidden\$(Platform)\Lumia.Imaging.Managed.dll</HintPath>	
+		</Reference>
+		<Reference Include="Lumia.Imaging">
+			<HintPath>$(MSBuildThisFileDirectory)\..\..\lib\wpa81\$(Platform)\Lumia.Imaging.winmd</HintPath>	
+		</Reference>
+		<Reference Include="Lumia.InteropServices.WindowsRuntime">
+			<HintPath>$(MSBuildThisFileDirectory)\..\..\lib\wpa81\$(Platform)\Lumia.InteropServices.WindowsRuntime.winmd</HintPath>				
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(MSBuildProjectExtension)' == '.jsproj' ">
+		<Reference Include="Lumia.Imaging">
+			<HintPath>$(MSBuildThisFileDirectory)\..\..\lib\wpa81\$(Platform)\Lumia.Imaging.winmd</HintPath>	
+			<IsWinMDFile>true</IsWinMDFile>
+		</Reference>
+		<Reference Include="Lumia.InteropServices.WindowsRuntime">
+			<HintPath>$(MSBuildThisFileDirectory)\..\..\lib\wpa81\$(Platform)\Lumia.InteropServices.WindowsRuntime.winmd</HintPath>				
+			<IsWinMDFile>true</IsWinMDFile>
+		</Reference>
+	</ItemGroup>
+	
+	<ItemGroup>
+		<SDKReference Include="Microsoft.VCLibs, Version=12.0">
+			<Name>Microsoft Visual C++ 2013 Runtime Package for Windows Phone</Name>
+		</SDKReference>
+  </ItemGroup>
+  
+</Project>
