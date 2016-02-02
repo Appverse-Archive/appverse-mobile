@@ -43,6 +43,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.spongycastle.jce.provider.BouncyCastleProvider;
 
 import com.gft.unity.android.AndroidSystemLogger;
 import com.gft.unity.core.system.SystemLogger.Module;
@@ -85,7 +86,7 @@ public class ValidatingSSLSocketFactory extends SSLSocketFactory {
         myCertificateList = new HashMap<Integer, Long>();
         publicKeys = pbks;
         fingerprints = fps;
-        Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
+        Security.addProvider(new BouncyCastleProvider());
         
         TrustManager tm = new X509TrustManager() {
         	
