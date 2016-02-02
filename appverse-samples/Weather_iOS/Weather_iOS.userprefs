@@ -1,13 +1,13 @@
 ﻿<Properties StartupItem="Weather_iOS/Weather_iOS.csproj">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.Appverse's iPhone 6s Plus" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Weather_iOS/AppDelegate_UIWebView.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.iPhone 6s Plus Appverse" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../../Appverse_5.0/UnityPlatformIOS/src/csharp/CameraOverlayView.cs">
     <Files>
       <File FileName="Weather_iOS/Info.plist" />
-      <File FileName="Weather_iOS/AppDelegate.cs" Line="136" Column="11" />
-      <File FileName="Weather_iOS/Main.cs" Line="36" Column="3" />
-      <File FileName="Weather_iOS/AppDelegate_UIWebView.cs" Line="37" Column="54" />
+      <File FileName="Weather_iOS/AppDelegate_UIWebView.cs" Line="37" Column="51" />
+      <File FileName="Weather_iOS/AppDelegate.cs" Line="1" Column="1" />
       <File FileName="Weather_iOS/UnityUI_iOSViewController.cs" Line="1" Column="1" />
-      <File FileName="Weather_iOS/UnityUI_iOSViewController_UIWebView.cs" Line="37" Column="58" />
+      <File FileName="Weather_iOS/UnityUI_iOSViewController_UIWebView.cs" Line="1" Column="1" />
+      <File FileName="../../../Appverse_5.0/UnityPlatformIOS/src/csharp/CameraOverlayView.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

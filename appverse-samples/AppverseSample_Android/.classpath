@@ -5,7 +5,5 @@
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry exported="true" kind="lib" path="/UnityCoreAndroid/bin/unitycoreandroid.jar"/>
-	<classpathentry exported="true" kind="lib" path="/UnityPlatformAndroid/bin/unityplatformandroid.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
