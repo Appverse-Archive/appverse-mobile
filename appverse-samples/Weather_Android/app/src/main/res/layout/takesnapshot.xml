@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+	
+    <SurfaceView
+        android:id="@+id/preview_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+     </SurfaceView>
+
+    <FrameLayout
+        android:id="@+id/scanOverlayLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginBottom="@dimen/frameMargin"
+        android:layout_marginLeft="@dimen/frameMargin"
+        android:layout_marginRight="@dimen/frameMargin"
+        android:layout_marginTop="@dimen/frameMargin"
+        android:background="@drawable/background"
+        android:visibility="visible" >
+    </FrameLayout>
+    
+    <FrameLayout
+   	    android:id="@+id/scanLayout"
+   	    android:layout_width="match_parent"
+   	    android:layout_height="match_parent"
+   	    android:visibility="visible" >
+
+        <EditText
+            android:id="@+id/helpText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="@dimen/Help_Text_Margin"
+            android:layout_marginEnd="@dimen/help_margin"
+            android:layout_marginStart="@dimen/help_margin"
+            android:background="#00000000"
+            android:clickable="false"
+            android:cursorVisible="false"
+            android:ems="10"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:gravity="center"
+            android:height="@dimen/DescriptionHeight"
+            android:inputType="textMultiLine"
+            android:labelFor="@+id/helpText"
+            android:text="@string/Help_Text"
+            android:visibility="visible" >
+
+        </EditText>
+
+        <TextView
+            android:id="@+id/cancelTextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="@dimen/CancelTextBottomMargin"
+            android:layout_marginStart="@dimen/CancelTextLeftMargin"
+            android:clickable="true"
+            android:text="@string/Cancel"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/photo_button_holder"
+        android:layout_width="match_parent"
+        android:layout_height="109dp"
+        android:layout_gravity="bottom|center_horizontal|center"
+        android:background="@android:color/transparent"
+        android:gravity="center"
+        android:visibility="visible" >
+
+        <ImageButton
+            android:id="@+id/btnTakePicture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/roundcorners"
+            android:contentDescription="@string/Shot"
+            android:src="@drawable/cameraicon" />
+           
+    </FrameLayout>
+    
+    <FrameLayout
+        android:id="@+id/scan_button_holder"
+        android:layout_width="75dp"
+        android:layout_height="35dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="@dimen/scanButtonMargin"
+        android:background="@drawable/roundcorners_scan"
+        android:clickable="@bool/clickable"
+        android:gravity="center_vertical|center_horizontal"
+        android:visibility="invisible" >
+
+        <ImageButton
+            android:id="@+id/btnScanBG"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY"
+            android:background="@drawable/selector"
+            android:contentDescription="@string/Shot"  
+            android:src="@drawable/scanbutton" />
+        
+        <FrameLayout
+            android:id="@+id/camera_button_holder"
+            android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|center_horizontal|center"
+            android:gravity="center_vertical|center_horizontal"
+            android:visibility="visible" >
+	
+	        <ImageButton
+	            android:id="@+id/btnScan"
+	            android:layout_width="28dp"
+            	android:layout_height="24dp"	
+            	android:scaleType="fitXY"
+            	android:adjustViewBounds="true"            
+	            android:gravity="center_vertical"
+	            android:background="@android:color/transparent"
+	            android:contentDescription="@string/Shot"  
+	            android:src="@drawable/scanicon" />
+	           
+	    </FrameLayout>
+           
+    </FrameLayout>
+    
+   	
+    
+</FrameLayout>
